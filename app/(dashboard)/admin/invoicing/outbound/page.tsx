@@ -21,13 +21,13 @@ export default async function AdminOutboundInvoicingPage() {
   const qbConnected = await isQuickBooksConnected();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+          <h1 className="text-2xl font-bold font-heading text-foreground">
             Outbound Invoices
           </h1>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-muted-foreground">
             Review, approve, and manage invoices to centres and schools.
           </p>
         </div>

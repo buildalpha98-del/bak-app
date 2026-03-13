@@ -27,7 +27,7 @@ function TaskCardInner({ task, onClick }: TaskCardProps) {
   };
 
   const priorityColors: Record<string, { bg: string; text: string }> = {
-    low: { bg: "bg-gray-100", text: "text-gray-600" },
+    low: { bg: "bg-secondary", text: "text-muted-foreground" },
     medium: { bg: "bg-blue-100", text: "text-blue-700" },
     high: { bg: "bg-amber-100", text: "text-amber-700" },
     urgent: { bg: "bg-red-100", text: "text-red-700" },
@@ -47,9 +47,9 @@ function TaskCardInner({ task, onClick }: TaskCardProps) {
       {...attributes}
       {...listeners}
       onClick={() => onClick(task.id)}
-      className="bg-white border border-gray-200 rounded-lg p-3 mb-2 cursor-grab active:cursor-grabbing hover:border-gray-300 hover:shadow-sm transition-all min-h-[44px]"
+      className="bg-card border border-border rounded-lg p-3 mb-2 cursor-grab active:cursor-grabbing hover:border-border hover:shadow-sm transition-all min-h-[44px]"
     >
-      <p className="text-sm font-semibold text-[#1A1A1A] line-clamp-2 mb-2">
+      <p className="text-sm font-semibold text-foreground line-clamp-2 mb-2">
         {task.title}
       </p>
 
@@ -82,23 +82,23 @@ function TaskCardInner({ task, onClick }: TaskCardProps) {
                   className="w-5 h-5 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-[#E8712A] text-white text-[10px] font-semibold flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
                   {task.assignee.name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="text-[11px] text-[#666666]">
+              <span className="text-[11px] text-muted-foreground">
                 {task.assignee.name.split(" ")[0]}
               </span>
             </>
           ) : (
-            <span className="text-[11px] text-gray-400">Unassigned</span>
+            <span className="text-[11px] text-muted-foreground">Unassigned</span>
           )}
         </div>
 
         {task.due_date && (
           <span
             className={`text-[11px] font-medium ${
-              isOverdue ? "text-red-500" : "text-[#666666]"
+              isOverdue ? "text-red-500" : "text-muted-foreground"
             }`}
           >
             {isOverdue ? "Overdue: " : "Due: "}

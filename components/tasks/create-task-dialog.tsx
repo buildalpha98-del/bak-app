@@ -99,7 +99,7 @@ export function CreateTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#1A1A1A]">Create Task</DialogTitle>
+          <DialogTitle className="text-foreground">Create Task</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
@@ -170,7 +170,7 @@ export function CreateTaskDialog({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm"
               />
             </div>
 
@@ -208,7 +208,7 @@ export function CreateTaskDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#E8712A] hover:bg-[#d4661f] text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               {loading ? "Creating..." : "Create Task"}
             </Button>

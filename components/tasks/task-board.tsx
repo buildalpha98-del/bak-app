@@ -243,7 +243,7 @@ export function TaskBoard({
                   </div>
                 ))}
                 {(tasksByColumn[col.id] ?? []).length === 0 && (
-                  <p className="text-sm text-gray-400 text-center py-8">
+                  <p className="text-sm text-muted-foreground text-center py-8">
                     No tasks
                   </p>
                 )}

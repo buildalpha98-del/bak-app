@@ -47,8 +47,8 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
           key={i}
           className={`${sizeClass} ${
             i <= rating
-              ? "fill-[#E8712A] text-[#E8712A]"
-              : "fill-none text-gray-300"
+              ? "fill-primary text-primary"
+              : "fill-none text-muted-foreground/40"
           }`}
         />
       ))}
@@ -103,7 +103,7 @@ export function EntityFeedbackTab({
   if (loading) {
     return (
       <div className="mt-4 flex items-center justify-center py-12">
-        <p className="text-sm text-[#666666]">Loading feedback...</p>
+        <p className="text-sm text-muted-foreground">Loading feedback...</p>
       </div>
     );
   }
@@ -123,13 +123,13 @@ export function EntityFeedbackTab({
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-[#666666]">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Average Rating
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold text-[#1A1A1A]">
+              <span className="text-3xl font-bold text-foreground">
                 {stats.averageRating.toFixed(1)}
               </span>
               <StarRating rating={Math.round(stats.averageRating)} size="md" />
@@ -139,15 +139,15 @@ export function EntityFeedbackTab({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-[#666666]">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Feedback
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-3xl font-bold text-[#1A1A1A]">
+            <span className="text-3xl font-bold text-foreground">
               {stats.totalCount}
             </span>
-            <span className="ml-2 text-sm text-[#666666]">
+            <span className="ml-2 text-sm text-muted-foreground">
               {stats.totalCount === 1 ? "rating" : "ratings"}
             </span>
           </CardContent>
@@ -176,17 +176,17 @@ export function EntityFeedbackTab({
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-[#666666]">
+                <p className="text-sm text-muted-foreground">
                   {entityType === "centre" ? "Coach" : "Centre"}:{" "}
-                  <span className="font-medium text-[#1A1A1A]">
+                  <span className="font-medium text-foreground">
                     {item.label}
                   </span>
                 </p>
                 {item.comment && (
-                  <p className="text-sm text-[#1A1A1A]">{item.comment}</p>
+                  <p className="text-sm text-foreground">{item.comment}</p>
                 )}
               </div>
-              <span className="shrink-0 text-xs text-[#666666]">
+              <span className="shrink-0 text-xs text-muted-foreground">
                 {formatDate(item.submitted_at)}
               </span>
             </div>

@@ -14,10 +14,10 @@ export default async function IntegrationsSettingsPage() {
   const { data: status } = await getConnectionStatus();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">Integrations</h1>
-        <p className="text-sm text-[#666666]">
+        <h1 className="text-2xl font-bold font-heading text-foreground">Integrations</h1>
+        <p className="text-sm text-muted-foreground">
           Manage third-party integrations for invoicing and accounting.
         </p>
       </div>

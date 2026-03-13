@@ -16,7 +16,7 @@ interface MyTasksWidgetProps {
 }
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
-  low: { label: "Low", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
+  low: { label: "Low", className: "bg-secondary text-secondary-foreground hover:bg-secondary" },
   medium: { label: "Medium", className: "bg-blue-100 text-blue-700 hover:bg-blue-100" },
   high: { label: "High", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" },
   urgent: { label: "Urgent", className: "bg-red-100 text-red-700 hover:bg-red-100" },
@@ -58,9 +58,9 @@ export function MyTasksWidget({ tasks, onRefresh }: MyTasksWidgetProps) {
   return (
     <WidgetWrapper title="My Tasks" icon={CheckSquare} count={tasks.length}>
       {tasks.length === 0 ? (
-        <p className="py-4 text-sm text-[#666666]">No tasks assigned</p>
+        <p className="py-4 text-sm text-muted-foreground">No tasks assigned</p>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-border/50">
           {tasks.map((task) => {
             const priority = priorityConfig[task.priority] ?? priorityConfig.low;
             const overdue = task.due_date ? isOverdue(task.due_date) : false;
@@ -71,7 +71,7 @@ export function MyTasksWidget({ tasks, onRefresh }: MyTasksWidgetProps) {
                 className="flex items-start justify-between gap-3 py-3 first:pt-0"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-[#1A1A1A]">
+                  <p className="text-sm font-medium text-foreground">
                     {task.title}
                   </p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -81,7 +81,7 @@ export function MyTasksWidget({ tasks, onRefresh }: MyTasksWidgetProps) {
                     {task.due_date && (
                       <span
                         className={`text-xs ${
-                          overdue ? "font-medium text-red-600" : "text-[#666666]"
+                          overdue ? "font-semibold text-destructive" : "text-muted-foreground"
                         }`}
                       >
                         {overdue && "Overdue \u2022 "}
@@ -91,7 +91,7 @@ export function MyTasksWidget({ tasks, onRefresh }: MyTasksWidgetProps) {
                     {task.linked_entity_type && (
                       <Badge
                         variant="outline"
-                        className="text-xs text-[#666666]"
+                        className="text-xs text-muted-foreground"
                       >
                         {task.linked_entity_type.replace(/_/g, " ")}
                       </Badge>
@@ -113,10 +113,10 @@ export function MyTasksWidget({ tasks, onRefresh }: MyTasksWidgetProps) {
         </div>
       )}
 
-      <div className="mt-3 border-t pt-3">
+      <div className="mt-3 border-t border-border pt-3">
         <Link
           href="/ops/tasks"
-          className="text-sm font-medium text-[#E8712A] hover:underline"
+          className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
         >
           View All
         </Link>

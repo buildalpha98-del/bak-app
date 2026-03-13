@@ -82,24 +82,22 @@ export function PendingSwapsWidget({ swapRequests, onRefresh }: PendingSwapsWidg
   return (
     <WidgetWrapper title="Pending Swaps" icon={ArrowLeftRight} count={swapRequests.length}>
       {swapRequests.length === 0 ? (
-        <p className="py-4 text-center text-sm text-[#666666]">No pending swaps</p>
+        <p className="py-4 text-center text-sm text-muted-foreground">No pending swaps</p>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-border/50">
           {swapRequests.map((swap) => {
             const isLoading = loadingIds.has(swap.id);
             const isRejecting = rejectingId === swap.id;
 
             return (
               <div key={swap.id} className="py-3 space-y-2">
-                {/* Coach swap names */}
-                <p className="text-sm font-medium text-[#1A1A1A]">
+                <p className="text-sm font-medium text-foreground">
                   {swap.requesting_coach_name}
-                  <span className="mx-1.5 text-[#666666]">&rarr;</span>
+                  <span className="mx-1.5 text-muted-foreground">&rarr;</span>
                   {swap.proposed_coach_name}
                 </p>
 
-                {/* Session details */}
-                <p className="text-sm text-[#666666]">
+                <p className="text-sm text-muted-foreground">
                   {new Date(swap.session_date).toLocaleDateString("en-AU", {
                     day: "numeric",
                     month: "short",
@@ -108,8 +106,7 @@ export function PendingSwapsWidget({ swapRequests, onRefresh }: PendingSwapsWidg
                   {swap.centre_name}
                 </p>
 
-                {/* Request date */}
-                <p className="text-xs text-[#666666]">
+                <p className="text-xs text-muted-foreground/70">
                   Requested{" "}
                   {new Date(swap.created_at).toLocaleDateString("en-AU", {
                     day: "numeric",
@@ -117,7 +114,6 @@ export function PendingSwapsWidget({ swapRequests, onRefresh }: PendingSwapsWidg
                   })}
                 </p>
 
-                {/* Reject reason input */}
                 {isRejecting && (
                   <div className="flex gap-2">
                     <Input
@@ -148,14 +144,13 @@ export function PendingSwapsWidget({ swapRequests, onRefresh }: PendingSwapsWidg
                   </div>
                 )}
 
-                {/* Action buttons */}
                 {!isRejecting && (
                   <div className="flex gap-2">
                     <Button
                       size="sm"
                       disabled={isLoading}
                       onClick={() => handleApprove(swap.id)}
-                      className="bg-green-600 text-white hover:bg-green-700"
+                      className="bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                       {isLoading ? "Approving..." : "Approve"}
                     </Button>
@@ -163,7 +158,7 @@ export function PendingSwapsWidget({ swapRequests, onRefresh }: PendingSwapsWidg
                       variant="outline"
                       size="sm"
                       disabled={isLoading}
-                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      className="border-destructive/30 text-destructive hover:bg-destructive/5"
                       onClick={() => setRejectingId(swap.id)}
                     >
                       Reject

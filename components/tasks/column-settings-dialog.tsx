@@ -104,7 +104,7 @@ export function ColumnSettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#1A1A1A]">
+          <DialogTitle className="text-foreground">
             Manage Columns
           </DialogTitle>
         </DialogHeader>
@@ -113,14 +113,14 @@ export function ColumnSettingsDialog({
           {localColumns.map((col, idx) => (
             <div
               key={col.id}
-              className="flex items-center gap-2 p-2 rounded-md bg-gray-50 border border-gray-200"
+              className="flex items-center gap-2 p-2 rounded-md bg-secondary border border-border"
             >
               {/* Reorder buttons */}
               <div className="flex flex-col">
                 <button
                   onClick={() => handleMoveUp(idx)}
                   disabled={idx === 0 || col.is_final}
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  className="text-muted-foreground hover:text-muted-foreground disabled:opacity-30"
                 >
                   <ChevronUp className="w-4 h-4" />
                 </button>
@@ -129,7 +129,7 @@ export function ColumnSettingsDialog({
                   disabled={
                     col.is_final || localColumns[idx + 1]?.is_final
                   }
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  className="text-muted-foreground hover:text-muted-foreground disabled:opacity-30"
                 >
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -154,7 +154,7 @@ export function ColumnSettingsDialog({
                       setEditingId(col.id);
                       setEditName(col.name);
                     }}
-                    className="text-sm font-medium text-[#1A1A1A] hover:underline"
+                    className="text-sm font-medium text-foreground hover:underline"
                   >
                     {col.name}
                   </button>
@@ -163,7 +163,7 @@ export function ColumnSettingsDialog({
 
               {/* Lock icon for final */}
               {col.is_final && (
-                <Lock className="w-4 h-4 text-[#666666]" />
+                <Lock className="w-4 h-4 text-muted-foreground" />
               )}
 
               {/* Delete */}
@@ -171,7 +171,7 @@ export function ColumnSettingsDialog({
                 <button
                   onClick={() => handleDelete(col.id)}
                   disabled={nonFinalCount <= 1 || saving}
-                  className="text-gray-400 hover:text-red-500 disabled:opacity-30"
+                  className="text-muted-foreground hover:text-red-500 disabled:opacity-30"
                   title={
                     nonFinalCount <= 1
                       ? "Must have at least one non-final column"
@@ -197,7 +197,7 @@ export function ColumnSettingsDialog({
           <Button
             onClick={handleAddColumn}
             disabled={!newName.trim() || saving}
-            className="bg-[#E8712A] hover:bg-[#d4661f] text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             <Plus className="w-4 h-4 mr-1" /> Add
           </Button>

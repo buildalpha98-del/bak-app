@@ -119,7 +119,7 @@ export function TaskDetailSheet({
   };
 
   const priorityColors: Record<string, string> = {
-    low: "text-gray-600",
+    low: "text-muted-foreground",
     medium: "text-blue-700",
     high: "text-amber-700",
     urgent: "text-red-700",
@@ -136,7 +136,7 @@ export function TaskDetailSheet({
       case "priority_change":
         return <AlertTriangle className="w-4 h-4 text-amber-500" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-400" />;
+        return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -144,14 +144,14 @@ export function TaskDetailSheet({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-[#1A1A1A]">Task Details</SheetTitle>
+          <SheetTitle className="text-foreground">Task Details</SheetTitle>
         </SheetHeader>
 
         {loading || !task ? (
           <div className="space-y-4 mt-6">
-            <div className="h-6 bg-gray-100 rounded animate-pulse" />
-            <div className="h-20 bg-gray-100 rounded animate-pulse" />
-            <div className="h-6 bg-gray-100 rounded animate-pulse w-1/2" />
+            <div className="h-6 bg-secondary rounded animate-pulse" />
+            <div className="h-20 bg-secondary rounded animate-pulse" />
+            <div className="h-6 bg-secondary rounded animate-pulse w-1/2" />
           </div>
         ) : (
           <div className="mt-6 space-y-6">
@@ -160,7 +160,7 @@ export function TaskDetailSheet({
               {canEdit ? (
                 <Input
                   defaultValue={task.title}
-                  className="text-lg font-semibold border-0 px-0 focus-visible:ring-0 text-[#1A1A1A]"
+                  className="text-lg font-semibold border-0 px-0 focus-visible:ring-0 text-foreground"
                   onBlur={(e) => {
                     if (e.target.value !== task.title) {
                       handleFieldUpdate("title", e.target.value);
@@ -168,7 +168,7 @@ export function TaskDetailSheet({
                   }}
                 />
               ) : (
-                <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                <h2 className="text-lg font-semibold text-foreground">
                   {task.title}
                 </h2>
               )}
@@ -183,7 +183,7 @@ export function TaskDetailSheet({
 
             {/* Description */}
             <div>
-              <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Description
               </label>
               {canEdit ? (
@@ -199,7 +199,7 @@ export function TaskDetailSheet({
                   }}
                 />
               ) : (
-                <p className="mt-1 text-sm text-[#1A1A1A]">
+                <p className="mt-1 text-sm text-foreground">
                   {task.description || "No description"}
                 </p>
               )}
@@ -209,7 +209,7 @@ export function TaskDetailSheet({
             <div className="grid grid-cols-2 gap-4">
               {/* Priority */}
               <div>
-                <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Priority
                 </label>
                 {canEdit ? (
@@ -236,7 +236,7 @@ export function TaskDetailSheet({
 
               {/* Assignee */}
               <div>
-                <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Assignee
                 </label>
                 {canEdit ? (
@@ -262,7 +262,7 @@ export function TaskDetailSheet({
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="mt-1 text-sm text-[#1A1A1A]">
+                  <p className="mt-1 text-sm text-foreground">
                     {task.assignee?.name ?? "Unassigned"}
                   </p>
                 )}
@@ -270,20 +270,20 @@ export function TaskDetailSheet({
 
               {/* Due date */}
               <div>
-                <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Due Date
                 </label>
                 {canEdit ? (
                   <input
                     type="date"
                     defaultValue={task.due_date ?? ""}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
                     onChange={(e) =>
                       handleFieldUpdate("dueDate", e.target.value || null)
                     }
                   />
                 ) : (
-                  <p className="mt-1 text-sm text-[#1A1A1A]">
+                  <p className="mt-1 text-sm text-foreground">
                     {task.due_date
                       ? new Date(task.due_date).toLocaleDateString("en-AU", {
                           day: "numeric",
@@ -297,10 +297,10 @@ export function TaskDetailSheet({
 
               {/* Status */}
               <div>
-                <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Status
                 </label>
-                <p className="mt-1 text-sm text-[#1A1A1A]">
+                <p className="mt-1 text-sm text-foreground">
                   {task.column?.name}
                 </p>
               </div>
@@ -309,10 +309,10 @@ export function TaskDetailSheet({
             {/* Linked entity */}
             {task.linked_entity_name && (
               <div>
-                <label className="text-xs font-medium text-[#666666] uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Linked To
                 </label>
-                <p className="mt-1 text-sm text-[#1A1A1A]">
+                <p className="mt-1 text-sm text-foreground">
                   <span className="capitalize">
                     {task.linked_entity_type?.replace(/_/g, " ")}
                   </span>
@@ -325,7 +325,7 @@ export function TaskDetailSheet({
               {!task.column?.is_final && (
                 <Button
                   onClick={handleMarkComplete}
-                  className="bg-[#E8712A] hover:bg-[#d4661f] text-white"
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-1" /> Mark Complete
                 </Button>
@@ -358,7 +358,7 @@ export function TaskDetailSheet({
 
             {/* Activity Timeline */}
             <div>
-              <h3 className="text-sm font-semibold text-[#1A1A1A] mb-3">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
                 Activity
               </h3>
               <div className="space-y-3">
@@ -367,10 +367,10 @@ export function TaskDetailSheet({
                     <div className="mt-0.5">{activityIcon(activity.type)}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-[#1A1A1A]">
+                        <span className="text-xs font-medium text-foreground">
                           {activity.user?.name ?? "System"}
                         </span>
-                        <span className="text-[10px] text-[#666666]">
+                        <span className="text-[10px] text-muted-foreground">
                           {new Date(activity.created_at).toLocaleDateString(
                             "en-AU",
                             {
@@ -383,11 +383,11 @@ export function TaskDetailSheet({
                         </span>
                       </div>
                       {activity.type === "comment" ? (
-                        <p className="text-sm text-[#1A1A1A] mt-0.5 bg-gray-50 rounded-md p-2">
+                        <p className="text-sm text-foreground mt-0.5 bg-secondary rounded-md p-2">
                           {activity.content}
                         </p>
                       ) : (
-                        <p className="text-xs text-[#666666] mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {activity.content}
                         </p>
                       )}
@@ -396,7 +396,7 @@ export function TaskDetailSheet({
                 ))}
 
                 {task.activities.length === 0 && (
-                  <p className="text-xs text-gray-400">No activity yet</p>
+                  <p className="text-xs text-muted-foreground">No activity yet</p>
                 )}
               </div>
             </div>
@@ -413,7 +413,7 @@ export function TaskDetailSheet({
               <Button
                 onClick={handleAddComment}
                 disabled={!comment.trim() || submitting}
-                className="bg-[#E8712A] hover:bg-[#d4661f] text-white self-end"
+                className="bg-primary hover:bg-primary/90 text-white self-end"
               >
                 Add
               </Button>

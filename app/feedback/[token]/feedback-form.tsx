@@ -69,7 +69,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
 
   if (submitted) {
     return (
-      <div className="rounded-lg bg-white p-8 text-center shadow-sm">
+      <div className="rounded-lg bg-card p-8 text-center shadow-sm">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
           <svg
             className="h-8 w-8 text-green-600"
@@ -85,10 +85,10 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
             />
           </svg>
         </div>
-        <h2 className="text-xl font-semibold text-[#1A1A1A]">
+        <h2 className="text-xl font-semibold text-foreground">
           Thank you for your feedback!
         </h2>
-        <p className="mt-2 text-sm text-[#666666]">
+        <p className="mt-2 text-sm text-muted-foreground">
           Your rating of {rating}/5 has been recorded. We appreciate you taking
           the time to share your experience.
         </p>
@@ -98,8 +98,8 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
               key={star}
               className={`h-6 w-6 ${
                 star <= rating
-                  ? "fill-[#E8712A] text-[#E8712A]"
-                  : "text-gray-300"
+                  ? "fill-primary text-primary"
+                  : "text-muted-foreground/40"
               }`}
             />
           ))}
@@ -109,35 +109,35 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
   }
 
   return (
-    <div className="rounded-lg bg-white shadow-sm">
+    <div className="rounded-lg bg-card shadow-sm">
       {/* Session details */}
-      <div className="border-b border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-[#1A1A1A]">
+      <div className="border-b border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground">
           Session Feedback
         </h2>
-        <p className="mt-1 text-sm text-[#666666]">
+        <p className="mt-1 text-sm text-muted-foreground">
           How was your recent coaching session?
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
           <div>
-            <span className="text-[#666666]">Sport</span>
-            <p className="font-medium text-[#1A1A1A]">{sessionInfo.sport}</p>
+            <span className="text-muted-foreground">Sport</span>
+            <p className="font-medium text-foreground">{sessionInfo.sport}</p>
           </div>
           <div>
-            <span className="text-[#666666]">Date</span>
-            <p className="font-medium text-[#1A1A1A]">
+            <span className="text-muted-foreground">Date</span>
+            <p className="font-medium text-foreground">
               {formatDate(sessionInfo.date)}
             </p>
           </div>
           <div>
-            <span className="text-[#666666]">Coach</span>
-            <p className="font-medium text-[#1A1A1A]">
+            <span className="text-muted-foreground">Coach</span>
+            <p className="font-medium text-foreground">
               {sessionInfo.coach_name}
             </p>
           </div>
           <div>
-            <span className="text-[#666666]">Centre</span>
-            <p className="font-medium text-[#1A1A1A]">
+            <span className="text-muted-foreground">Centre</span>
+            <p className="font-medium text-foreground">
               {sessionInfo.centre_name}
             </p>
           </div>
@@ -145,8 +145,8 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
       </div>
 
       {/* Rating */}
-      <div className="border-b border-gray-100 p-6">
-        <label className="block text-sm font-medium text-[#1A1A1A]">
+      <div className="border-b border-border p-6">
+        <label className="block text-sm font-medium text-foreground">
           Overall rating
         </label>
         <div className="mt-3 flex items-center gap-2">
@@ -157,31 +157,31 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
               onClick={() => setRating(star)}
               onMouseEnter={() => setHoveredStar(star)}
               onMouseLeave={() => setHoveredStar(0)}
-              className="rounded-md p-1 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#E8712A] focus:ring-offset-2"
+              className="rounded-md p-1 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
             >
               <Star
                 className={`h-10 w-10 transition-colors ${
                   star <= displayRating
-                    ? "fill-[#E8712A] text-[#E8712A]"
-                    : "text-gray-300 hover:text-gray-400"
+                    ? "fill-primary text-primary"
+                    : "text-muted-foreground/40 hover:text-muted-foreground/60"
                 }`}
               />
             </button>
           ))}
         </div>
         {displayRating > 0 && (
-          <p className="mt-2 text-sm text-[#666666]">
+          <p className="mt-2 text-sm text-muted-foreground">
             {ratingLabels[displayRating]}
           </p>
         )}
       </div>
 
       {/* Comment */}
-      <div className="border-b border-gray-100 p-6">
+      <div className="border-b border-border p-6">
         <label
           htmlFor="feedback-comment"
-          className="block text-sm font-medium text-[#1A1A1A]"
+          className="block text-sm font-medium text-foreground"
         >
           Comments
         </label>
@@ -191,7 +191,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
           onChange={(e) => setComment(e.target.value)}
           placeholder="Any additional comments? (optional)"
           rows={3}
-          className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] placeholder:text-gray-400 focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+          className="mt-2 w-full rounded-md border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           maxLength={1000}
         />
       </div>
@@ -209,7 +209,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
           type="button"
           onClick={handleSubmit}
           disabled={loading || rating === 0}
-          className="w-full rounded-md bg-[#E8712A] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#d4641f] focus:outline-none focus:ring-2 focus:ring-[#E8712A] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Submitting..." : "Submit Feedback"}
         </button>

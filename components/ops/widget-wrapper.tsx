@@ -9,6 +9,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 
 // ============================================================
 // Shared collapsible widget wrapper for command centre
@@ -35,22 +36,25 @@ export function WidgetWrapper({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className={className}>
-      <Card>
+      <Card className="card-hover">
         <CollapsibleTrigger className="w-full cursor-pointer lg:cursor-default">
           <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Icon className="size-5 text-[#E8712A]" />
-              <CardTitle className="text-base">{title}</CardTitle>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-orange-light)]">
+                <Icon className="size-4 text-primary" />
+              </div>
+              <CardTitle className="text-base font-semibold">{title}</CardTitle>
               {count !== undefined && count > 0 && (
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge variant="secondary" className="ml-0.5 text-xs font-semibold">
                   {count}
                 </Badge>
               )}
             </div>
             <ChevronDown
-              className={`size-4 text-[#666666] transition-transform lg:hidden ${
-                open ? "rotate-180" : ""
-              }`}
+              className={cn(
+                "size-4 text-muted-foreground transition-transform duration-200 lg:hidden",
+                open && "rotate-180"
+              )}
             />
           </CardHeader>
         </CollapsibleTrigger>

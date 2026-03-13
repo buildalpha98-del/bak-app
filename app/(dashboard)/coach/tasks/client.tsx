@@ -22,8 +22,8 @@ export function CoachTasksClient({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">My Tasks</h1>
-        <p className="text-sm text-[#666666] mt-1">
+        <h1 className="text-2xl font-bold font-heading text-foreground">My Tasks</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Tasks assigned to you
         </p>
       </div>

@@ -25,16 +25,16 @@ export function TaskColumn({ column, tasks, onTaskClick }: TaskColumnProps) {
 
   return (
     <div
-      className={`flex-1 min-w-[280px] max-w-[360px] bg-gray-50 rounded-lg border ${
-        isOver ? "border-[#E8712A] bg-orange-50/30" : "border-gray-200"
+      className={`flex-1 min-w-[280px] max-w-[360px] bg-secondary rounded-lg border ${
+        isOver ? "border-primary bg-orange-50/30" : "border-border"
       } flex flex-col ${column.is_final ? "opacity-70" : ""}`}
     >
-      <div className="px-3 py-2.5 border-b border-gray-200">
+      <div className="px-3 py-2.5 border-b border-border">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-[#1A1A1A]">
+          <h3 className="text-sm font-semibold text-foreground">
             {column.name}
           </h3>
-          <span className="text-xs text-[#666666] bg-gray-200 rounded-full px-2 py-0.5">
+          <span className="text-xs text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
             {tasks.length}
           </span>
         </div>
@@ -51,7 +51,7 @@ export function TaskColumn({ column, tasks, onTaskClick }: TaskColumnProps) {
         </SortableContext>
 
         {tasks.length === 0 && (
-          <div className="flex items-center justify-center h-20 text-xs text-gray-400">
+          <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
             No tasks
           </div>
         )}

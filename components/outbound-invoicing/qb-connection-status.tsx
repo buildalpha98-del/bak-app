@@ -50,10 +50,10 @@ export function QBConnectionStatus({
     <div className="rounded-lg border p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-[#1A1A1A]">
+          <h3 className="text-lg font-semibold text-foreground">
             QuickBooks Online
           </h3>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-muted-foreground">
             Connect your QuickBooks account to push outbound invoices directly.
           </p>
         </div>
@@ -67,9 +67,9 @@ export function QBConnectionStatus({
       </div>
 
       {connected && companyName && (
-        <div className="text-sm text-[#666666]">
+        <div className="text-sm text-muted-foreground">
           <p>
-            <span className="font-medium text-[#1A1A1A]">{companyName}</span>
+            <span className="font-medium text-foreground">{companyName}</span>
           </p>
           {connectedAt && (
             <p>
@@ -102,7 +102,7 @@ export function QBConnectionStatus({
           <Button
             onClick={handleConnect}
             disabled={loading}
-            className="bg-[#E8712A] hover:bg-[#D4631F]"
+            className="bg-primary hover:bg-primary/90"
           >
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

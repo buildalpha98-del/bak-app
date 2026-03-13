@@ -2,9 +2,9 @@ import { FeedbackSummaryWidget } from "@/components/feedback/feedback-summary-wi
 
 export default async function AdminDashboard() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">Admin Dashboard</h1>
-      <p className="mt-2 text-[#666666]">
+    <div className="animate-fade-up">
+      <h1 className="text-2xl font-bold font-heading text-foreground">Admin Dashboard</h1>
+      <p className="mt-2 text-muted-foreground">
         Welcome to the Build Alpha Kids admin portal.
       </p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -50,7 +50,7 @@ export function AdminTasksClient({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">Tasks</h1>
+        <h1 className="text-2xl font-bold font-heading text-foreground">Tasks</h1>
         <Button
           variant="outline"
           size="sm"

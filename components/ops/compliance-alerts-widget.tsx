@@ -10,7 +10,6 @@ import type { ComplianceAlert } from "@/lib/ops/actions";
 // Compliance Alerts widget for command centre
 // ============================================================
 
-/** Convert snake_case doc type to Title Case (e.g. "first_aid" → "First Aid") */
 function formatDocType(docType: string): string {
   return docType
     .split("_")
@@ -53,21 +52,21 @@ export function ComplianceAlertsWidget({ alerts }: ComplianceAlertsWidgetProps) 
     <WidgetWrapper title="Compliance Alerts" icon={ShieldAlert} count={alerts.length}>
       {alerts.length === 0 ? (
         <div className="flex items-center gap-2 py-4 justify-center">
-          <CheckCircle2 className="size-5 text-green-500" />
-          <span className="text-sm text-[#666666]">All compliance up to date</span>
+          <CheckCircle2 className="size-5 text-emerald-500" />
+          <span className="text-sm text-muted-foreground">All compliance up to date</span>
         </div>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-border/50">
           {alerts.map((alert, idx) => (
             <div key={`${alert.coach_id}-${alert.doc_type}-${idx}`} className="flex items-start justify-between gap-3 py-3">
               <div className="min-w-0 space-y-0.5">
                 <Link
                   href="/ops/staff"
-                  className="text-sm font-medium text-[#1A1A1A] hover:text-[#E8712A] transition-colors"
+                  className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
                 >
                   {alert.coach_name}
                 </Link>
-                <p className="text-sm text-[#666666]">{formatDocType(alert.doc_type)}</p>
+                <p className="text-sm text-muted-foreground">{formatDocType(alert.doc_type)}</p>
               </div>
               <div className="shrink-0">
                 <SeverityBadge alert={alert} />

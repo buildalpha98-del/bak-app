@@ -55,34 +55,32 @@ export function UnconfirmedShiftsWidget({ shifts, onRefresh }: UnconfirmedShifts
     <WidgetWrapper title="Unconfirmed Shifts" icon={AlertTriangle} count={shifts.length}>
       {shifts.length === 0 ? (
         <div className="flex items-center gap-2 py-4 justify-center">
-          <CheckCircle2 className="size-5 text-green-500" />
-          <span className="text-sm text-[#666666]">All shifts confirmed</span>
+          <CheckCircle2 className="size-5 text-emerald-500" />
+          <span className="text-sm text-muted-foreground">All shifts confirmed</span>
         </div>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-border/50">
           {shifts.map((shift) => (
-            <div key={shift.session_id} className="py-3 space-y-1.5">
-              {/* Date, time, centre, sport */}
+            <div key={shift.session_id} className="py-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A]">
+                  <p className="text-sm font-medium text-foreground">
                     {new Date(shift.date).toLocaleDateString("en-AU", {
                       day: "numeric",
                       month: "short",
                     })}{" "}
                     at {formatTime12hr(shift.time)}
                   </p>
-                  <p className="text-sm text-[#666666]">
+                  <p className="text-sm text-muted-foreground">
                     {shift.centre_name} &middot; {shift.sport}
                   </p>
-                  <p className="text-sm text-[#666666]">{shift.coach_name}</p>
+                  <p className="text-sm text-muted-foreground">{shift.coach_name}</p>
                 </div>
-                <span className="shrink-0 text-xs font-medium text-amber-600">
+                <span className="shrink-0 text-xs font-semibold text-amber-600">
                   Pending for {shift.hours_pending}h
                 </span>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"

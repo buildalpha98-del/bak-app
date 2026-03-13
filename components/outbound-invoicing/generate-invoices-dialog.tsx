@@ -52,7 +52,7 @@ export function GenerateInvoicesDialog() {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} className="bg-[#E8712A] hover:bg-[#D4631F]">
+      <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
         <FileText className="mr-2 h-4 w-4" />
         Generate Invoices
       </Button>
@@ -60,12 +60,12 @@ export function GenerateInvoicesDialog() {
   }
 
   return (
-    <div className="rounded-lg border p-6 space-y-4 bg-white">
-      <h3 className="text-lg font-semibold text-[#1A1A1A]">Generate Outbound Invoices</h3>
+    <div className="rounded-lg border p-6 space-y-4 bg-card">
+      <h3 className="text-lg font-semibold text-foreground">Generate Outbound Invoices</h3>
 
       <div className="flex gap-4 items-end">
         <div>
-          <label className="text-sm font-medium text-[#1A1A1A]">Period Start</label>
+          <label className="text-sm font-medium text-foreground">Period Start</label>
           <Input
             type="date"
             value={periodStart}
@@ -73,7 +73,7 @@ export function GenerateInvoicesDialog() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-[#1A1A1A]">Period End</label>
+          <label className="text-sm font-medium text-foreground">Period End</label>
           <Input
             type="date"
             value={periodEnd}
@@ -90,7 +90,7 @@ export function GenerateInvoicesDialog() {
         <>
           <div className="rounded-lg border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-[#F5F5F5]">
+              <thead className="bg-secondary">
                 <tr>
                   <th className="text-left px-4 py-2 font-medium">Centre</th>
                   <th className="text-left px-4 py-2 font-medium">Model</th>
@@ -102,13 +102,13 @@ export function GenerateInvoicesDialog() {
                 {previews.map((p) => (
                   <tr key={p.centreId}>
                     <td className="px-4 py-2">{p.centreName}</td>
-                    <td className="px-4 py-2 text-[#666666]">{p.pricingModel.replace("_", " ")}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{p.pricingModel.replace("_", " ")}</td>
                     <td className="px-4 py-2 text-right">{p.sessionCount}</td>
                     <td className="px-4 py-2 text-right font-medium">${p.totalAmount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-[#F5F5F5]">
+              <tfoot className="bg-secondary">
                 <tr>
                   <td className="px-4 py-2 font-semibold" colSpan={2}>
                     Total ({previews.length} centres)
@@ -128,7 +128,7 @@ export function GenerateInvoicesDialog() {
             <Button
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-[#E8712A] hover:bg-[#D4631F]"
+              className="bg-primary hover:bg-primary/90"
             >
               {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Generate All

@@ -23,8 +23,8 @@ function StarRating({ rating }: { rating: number }) {
           key={i}
           className={`h-3.5 w-3.5 ${
             i < rating
-              ? "fill-[#E8712A] text-[#E8712A]"
-              : "fill-none text-gray-300"
+              ? "fill-primary text-primary"
+              : "fill-none text-muted-foreground/40"
           }`}
         />
       ))}
@@ -39,13 +39,13 @@ export async function RecentFeedbackWidget() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#1A1A1A]">
-            <MessageSquare className="h-4 w-4 text-[#E8712A]" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <MessageSquare className="h-4 w-4 text-primary" />
             Recent Feedback
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[#666666]">Unable to load feedback data.</p>
+          <p className="text-sm text-muted-foreground">Unable to load feedback data.</p>
         </CardContent>
       </Card>
     );
@@ -54,14 +54,14 @@ export async function RecentFeedbackWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-[#1A1A1A]">
-          <MessageSquare className="h-4 w-4 text-[#E8712A]" />
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <MessageSquare className="h-4 w-4 text-primary" />
           Recent Feedback
         </CardTitle>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <p className="text-sm text-[#666666]">No feedback received yet.</p>
+          <p className="text-sm text-muted-foreground">No feedback received yet.</p>
         ) : (
           <div className="space-y-3">
             {data.map((item) => {
@@ -70,13 +70,13 @@ export async function RecentFeedbackWidget() {
                 <div
                   key={item.id}
                   className={`flex items-start justify-between rounded-lg px-3 py-2 ${
-                    isLow ? "bg-red-50" : "bg-[#F5F5F5]"
+                    isLow ? "bg-red-50" : "bg-secondary"
                   }`}
                 >
                   <div className="min-w-0 flex-1">
                     <p
                       className={`text-sm font-medium truncate ${
-                        isLow ? "text-red-700" : "text-[#1A1A1A]"
+                        isLow ? "text-red-700" : "text-foreground"
                       }`}
                     >
                       {item.centre_name}
@@ -84,11 +84,11 @@ export async function RecentFeedbackWidget() {
                     <div className="mt-1 flex items-center gap-2">
                       <StarRating rating={item.rating} />
                       {item.sport && (
-                        <span className="text-xs text-[#666666]">{item.sport}</span>
+                        <span className="text-xs text-muted-foreground">{item.sport}</span>
                       )}
                     </div>
                   </div>
-                  <span className="ml-2 shrink-0 text-xs text-[#666666]">
+                  <span className="ml-2 shrink-0 text-xs text-muted-foreground">
                     {timeAgo(item.submitted_at)}
                   </span>
                 </div>
@@ -99,7 +99,7 @@ export async function RecentFeedbackWidget() {
         <div className="mt-4">
           <Link
             href="/ops/feedback"
-            className="text-sm font-medium text-[#E8712A] hover:underline"
+            className="text-sm font-medium text-primary hover:underline"
           >
             View All
           </Link>

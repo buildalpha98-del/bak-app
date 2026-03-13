@@ -42,8 +42,8 @@ function StarDisplay({ rating }: { rating: number }) {
             star <= rating
               ? rating <= 2
                 ? "fill-red-500 text-red-500"
-                : "fill-[#E8712A] text-[#E8712A]"
-              : "text-gray-300"
+                : "fill-primary text-primary"
+              : "text-muted-foreground/40"
           }`}
         />
       ))}
@@ -148,7 +148,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
         {/* Filter bar */}
         <div className="flex flex-wrap items-end gap-3 mb-4">
           <div>
-            <label className="block text-xs text-[#666666] mb-1">Rating</label>
+            <label className="block text-xs text-muted-foreground mb-1">Rating</label>
             <select
               value={ratingFilter}
               onChange={(e) => handleRatingChange(Number(e.target.value))}
@@ -163,7 +163,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
           </div>
 
           <div>
-            <label className="block text-xs text-[#666666] mb-1">From</label>
+            <label className="block text-xs text-muted-foreground mb-1">From</label>
             <Input
               type="date"
               value={dateFrom}
@@ -173,7 +173,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
           </div>
 
           <div>
-            <label className="block text-xs text-[#666666] mb-1">To</label>
+            <label className="block text-xs text-muted-foreground mb-1">To</label>
             <Input
               type="date"
               value={dateTo}
@@ -183,7 +183,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
           </div>
 
           <div>
-            <label className="block text-xs text-[#666666] mb-1">
+            <label className="block text-xs text-muted-foreground mb-1">
               Centre / Coach
             </label>
             <Input
@@ -200,7 +200,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
               variant="ghost"
               size="sm"
               onClick={handleClearFilters}
-              className="text-[#666666] h-8"
+              className="text-muted-foreground h-8"
             >
               <Filter className="w-3.5 h-3.5 mr-1" />
               Clear
@@ -224,7 +224,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
             <TableBody>
               {filteredData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-[#666666] py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     No feedback found.
                   </TableCell>
                 </TableRow>
@@ -234,16 +234,16 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
                     key={item.id}
                     className={item.rating <= 2 ? "bg-red-50" : ""}
                   >
-                    <TableCell className="text-[#1A1A1A]">
+                    <TableCell className="text-foreground">
                       {formatDate(item.submitted_at)}
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A]">
+                    <TableCell className="text-foreground">
                       {item.centre.name}
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A]">
+                    <TableCell className="text-foreground">
                       {item.coach?.name ?? "—"}
                     </TableCell>
-                    <TableCell className="text-[#666666]">
+                    <TableCell className="text-muted-foreground">
                       {item.sport ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -251,7 +251,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
                         <StarDisplay rating={item.rating} />
                         <span
                           className={`text-xs font-medium ${
-                            item.rating <= 2 ? "text-red-600" : "text-[#666666]"
+                            item.rating <= 2 ? "text-red-600" : "text-muted-foreground"
                           }`}
                         >
                           {item.rating}/5
@@ -259,7 +259,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="text-[#666666] truncate max-w-[300px]">
+                      <p className="text-muted-foreground truncate max-w-[300px]">
                         {item.comment ?? "—"}
                       </p>
                     </TableCell>
@@ -273,7 +273,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-[#666666]">
+            <p className="text-sm text-muted-foreground">
               Showing {(page - 1) * PAGE_SIZE + 1}–
               {Math.min(page * PAGE_SIZE, total)} of {total}
             </p>
@@ -286,7 +286,7 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="px-2 text-sm text-[#1A1A1A]">
+              <span className="px-2 text-sm text-foreground">
                 Page {page} of {totalPages}
               </span>
               <Button

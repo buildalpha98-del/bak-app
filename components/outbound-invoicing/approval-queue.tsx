@@ -28,7 +28,7 @@ export function ApprovalQueue({ invoices }: Props) {
 
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
-      <h3 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
+      <h3 className="font-semibold text-foreground flex items-center gap-2">
         <Badge className="bg-amber-100 text-amber-800">
           {invoices.length}
         </Badge>
@@ -38,17 +38,17 @@ export function ApprovalQueue({ invoices }: Props) {
         {invoices.map((inv) => (
           <div
             key={inv.id}
-            className="flex items-center justify-between bg-white rounded-md p-3 border"
+            className="flex items-center justify-between bg-card rounded-md p-3 border"
           >
             <div>
               <Link
                 href={`/admin/invoicing/outbound/${inv.id}`}
-                className="font-medium text-[#E8712A] hover:underline"
+                className="font-medium text-primary hover:underline"
               >
                 {inv.invoice_number}
               </Link>
-              <span className="text-[#666666] ml-2">{inv.centre_name}</span>
-              <span className="text-[#666666] ml-2 font-medium">
+              <span className="text-muted-foreground ml-2">{inv.centre_name}</span>
+              <span className="text-muted-foreground ml-2 font-medium">
                 ${inv.amount.toFixed(2)}
               </span>
             </div>

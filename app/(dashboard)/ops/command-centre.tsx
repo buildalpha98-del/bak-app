@@ -117,15 +117,15 @@ export function CommandCentre(props: CommandCentreProps) {
   return (
     <div className="space-y-6">
       {/* Top Bar */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between animate-fade-up">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+          <h1 className="text-2xl font-bold text-foreground font-heading">
             Command Centre
           </h1>
-          <p className="mt-1 text-sm text-[#666666]">{formatTodayDate()}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{formatTodayDate()}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="hidden text-xs text-[#666666] sm:block">
+        <div className="flex items-center gap-3">
+          <span className="hidden text-xs text-muted-foreground sm:block">
             Updated {lastRefreshedLabel}
           </span>
           <Button
@@ -133,6 +133,7 @@ export function CommandCentre(props: CommandCentreProps) {
             size="sm"
             onClick={refreshAll}
             disabled={refreshing}
+            className="transition-all duration-200"
           >
             <RefreshCw
               className={`mr-1.5 size-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -143,40 +144,54 @@ export function CommandCentre(props: CommandCentreProps) {
       </div>
 
       {/* Today's Sessions — full width hero */}
-      <TodaysSessionsWidget
-        sessions={data.todaySessions}
-        stats={data.todayStats}
-      />
+      <div className="animate-fade-up stagger-1">
+        <TodaysSessionsWidget
+          sessions={data.todaySessions}
+          stats={data.todayStats}
+        />
+      </div>
 
       {/* Widget grid — 2 cols desktop, 1 col mobile */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Left column — action items (higher urgency) */}
         <div className="space-y-4">
-          <UnconfirmedShiftsWidget
-            shifts={data.unconfirmedShifts}
-            onRefresh={refreshAll}
-          />
-          <PendingSwapsWidget
-            swapRequests={data.swapRequests}
-            onRefresh={refreshAll}
-          />
-          <ComplianceAlertsWidget
-            alerts={data.complianceAlerts}
-            onRefresh={refreshAll}
-          />
+          <div className="animate-fade-up stagger-2">
+            <UnconfirmedShiftsWidget
+              shifts={data.unconfirmedShifts}
+              onRefresh={refreshAll}
+            />
+          </div>
+          <div className="animate-fade-up stagger-3">
+            <PendingSwapsWidget
+              swapRequests={data.swapRequests}
+              onRefresh={refreshAll}
+            />
+          </div>
+          <div className="animate-fade-up stagger-4">
+            <ComplianceAlertsWidget
+              alerts={data.complianceAlerts}
+              onRefresh={refreshAll}
+            />
+          </div>
         </div>
 
         {/* Right column — monitoring */}
         <div className="space-y-4">
-          <EquipmentIssuesWidget
-            issues={data.equipmentIssues}
-            onRefresh={refreshAll}
-          />
-          <MyTasksWidget tasks={data.tasks} onRefresh={refreshAll} />
-          <RecentRatingsWidget
-            ratings={data.recentRatings}
-            onRefresh={refreshAll}
-          />
+          <div className="animate-fade-up stagger-2">
+            <EquipmentIssuesWidget
+              issues={data.equipmentIssues}
+              onRefresh={refreshAll}
+            />
+          </div>
+          <div className="animate-fade-up stagger-3">
+            <MyTasksWidget tasks={data.tasks} onRefresh={refreshAll} />
+          </div>
+          <div className="animate-fade-up stagger-4">
+            <RecentRatingsWidget
+              ratings={data.recentRatings}
+              onRefresh={refreshAll}
+            />
+          </div>
         </div>
       </div>
     </div>

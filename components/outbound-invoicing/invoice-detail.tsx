@@ -20,7 +20,7 @@ import type {
 } from "@/lib/types/database";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  draft: { label: "Draft", className: "bg-gray-100 text-gray-800" },
+  draft: { label: "Draft", className: "bg-secondary text-foreground" },
   pending_approval: { label: "Pending Approval", className: "bg-amber-100 text-amber-800" },
   approved: { label: "Approved", className: "bg-blue-100 text-blue-800" },
   sent: { label: "Sent", className: "bg-purple-100 text-purple-800" },
@@ -111,13 +111,13 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A]">
+          <h2 className="text-xl font-bold text-foreground">
             {invoice.invoice_number ?? "Draft Invoice"}
           </h2>
-          <p className="text-[#666666]">
+          <p className="text-muted-foreground">
             {invoice.centre.name} — {invoice.centre.primary_contact_email ?? "No email"}
           </p>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-muted-foreground">
             Period:{" "}
             {new Date(invoice.period_start).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
             {" — "}
@@ -130,7 +130,7 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
       {/* Line items table */}
       <div className="rounded-lg border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-[#F5F5F5]">
+          <thead className="bg-secondary">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Date</th>
               <th className="text-left px-4 py-3 font-medium">Sport</th>
@@ -144,7 +144,7 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
           <tbody className="divide-y">
             {lineItems.map((item, index) => (
               <tr key={item.session_id}>
-                <td className="px-4 py-3 text-[#666666]">
+                <td className="px-4 py-3 text-muted-foreground">
                   {new Date(item.date).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
                 </td>
                 <td className="px-4 py-3">{item.sport}</td>
@@ -179,12 +179,12 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-[#F5F5F5]">
+          <tfoot className="bg-secondary">
             <tr>
               <td colSpan={isDraft ? 5 : 5} className="px-4 py-3 font-semibold text-right">
                 Total
               </td>
-              <td className="px-4 py-3 text-right font-bold text-[#1A1A1A]">
+              <td className="px-4 py-3 text-right font-bold text-foreground">
                 ${total.toFixed(2)}
               </td>
               {isDraft && <td></td>}
@@ -201,7 +201,7 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save Changes
             </Button>
-            <Button onClick={handleSubmit} className="bg-[#E8712A] hover:bg-[#D4631F]" disabled={loading}>
+            <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90" disabled={loading}>
               <Send className="mr-2 h-4 w-4" />
               Submit for Approval
             </Button>
@@ -239,7 +239,7 @@ export function InvoiceDetail({ invoice, userRole, qbConnected }: Props) {
         )}
 
         {isApproved && qbConnected && (
-          <Button onClick={handlePushToQB} className="bg-[#E8712A] hover:bg-[#D4631F]" disabled={loading}>
+          <Button onClick={handlePushToQB} className="bg-primary hover:bg-primary/90" disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
             Send to QuickBooks
           </Button>

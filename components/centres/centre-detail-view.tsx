@@ -211,8 +211,8 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <TypeIcon className="size-5 text-[#E8712A]" />
-              <h1 className="text-2xl font-semibold text-[#1A1A1A]">
+              <TypeIcon className="size-5 text-primary" />
+              <h1 className="text-2xl font-semibold text-foreground">
                 {centre.name}
               </h1>
             </div>
@@ -220,7 +220,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
               <Badge variant={contractStatusVariant(centre.contract_status)}>
                 {formatContractStatus(centre.contract_status)}
               </Badge>
-              <span className="text-sm text-[#666666]">
+              <span className="text-sm text-muted-foreground">
                 {formatCentreType(centre.type)}
               </span>
             </div>

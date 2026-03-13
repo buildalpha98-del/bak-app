@@ -9,13 +9,13 @@ export async function FeedbackSummaryWidget() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#1A1A1A]">
-            <MessageSquare className="h-4 w-4 text-[#E8712A]" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <MessageSquare className="h-4 w-4 text-primary" />
             Session Feedback
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[#666666]">Unable to load feedback data.</p>
+          <p className="text-sm text-muted-foreground">Unable to load feedback data.</p>
         </CardContent>
       </Card>
     );
@@ -29,8 +29,8 @@ export async function FeedbackSummaryWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-[#1A1A1A]">
-          <MessageSquare className="h-4 w-4 text-[#E8712A]" />
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <MessageSquare className="h-4 w-4 text-primary" />
           Session Feedback
         </CardTitle>
       </CardHeader>
@@ -38,21 +38,21 @@ export async function FeedbackSummaryWidget() {
         {/* Average rating */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <Star className="h-8 w-8 fill-[#E8712A] text-[#E8712A]" />
-            <span className="text-3xl font-bold text-[#1A1A1A]">
+            <Star className="h-8 w-8 fill-primary text-primary" />
+            <span className="text-3xl font-bold text-foreground">
               {averageRating > 0 ? averageRating.toFixed(1) : "—"}
             </span>
           </div>
-          <div className="text-sm text-[#666666]">
+          <div className="text-sm text-muted-foreground">
             <p>Average rating</p>
             <p>{totalCount} total {totalCount === 1 ? "response" : "responses"}</p>
           </div>
         </div>
 
         {/* 30-day trend */}
-        <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2">
-          <div className="text-sm text-[#666666]">
-            <p className="font-medium text-[#1A1A1A]">Last 30 days</p>
+        <div className="flex items-center justify-between rounded-lg bg-secondary px-3 py-2">
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Last 30 days</p>
             <p>{last30DaysCount} {last30DaysCount === 1 ? "response" : "responses"}</p>
           </div>
           {hasTrend ? (
@@ -65,7 +65,7 @@ export async function FeedbackSummaryWidget() {
               <span>{trendDiff.toFixed(1)}</span>
             </div>
           ) : (
-            <span className="text-xs text-[#666666]">Not enough data</span>
+            <span className="text-xs text-muted-foreground">Not enough data</span>
           )}
         </div>
       </CardContent>

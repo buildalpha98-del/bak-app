@@ -52,7 +52,7 @@ export function OpsTasksClient({
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Tasks</h1>
+          <h1 className="text-2xl font-bold font-heading text-foreground">Tasks</h1>
         </div>
       </div>
 

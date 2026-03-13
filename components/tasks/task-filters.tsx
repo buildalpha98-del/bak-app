@@ -75,7 +75,7 @@ export function TaskFilters({
         onClick={() => update({ myTasksOnly: !filters.myTasksOnly })}
         className={
           filters.myTasksOnly
-            ? "bg-[#E8712A] hover:bg-[#d4661f] text-white"
+            ? "bg-primary hover:bg-primary/90 text-white"
             : ""
         }
       >
@@ -150,7 +150,7 @@ export function TaskFilters({
         >
           <Filter className="w-4 h-4 mr-1" /> Filters
           {hasActiveFilters && (
-            <span className="ml-1 w-2 h-2 rounded-full bg-[#E8712A]" />
+            <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
           )}
         </Button>
       </div>
@@ -161,8 +161,8 @@ export function TaskFilters({
           onClick={() => onViewModeChange("board")}
           className={`p-1.5 rounded ${
             viewMode === "board"
-              ? "bg-[#E8712A] text-white"
-              : "text-[#666666] hover:bg-gray-100"
+              ? "bg-primary text-white"
+              : "text-muted-foreground hover:bg-secondary"
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -171,8 +171,8 @@ export function TaskFilters({
           onClick={() => onViewModeChange("list")}
           className={`p-1.5 rounded ${
             viewMode === "list"
-              ? "bg-[#E8712A] text-white"
-              : "text-[#666666] hover:bg-gray-100"
+              ? "bg-primary text-white"
+              : "text-muted-foreground hover:bg-secondary"
           }`}
         >
           <List className="w-4 h-4" />

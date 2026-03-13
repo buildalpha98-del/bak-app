@@ -26,8 +26,8 @@ function StarRating({ rating }: { rating: number }) {
           key={star}
           className={`w-4 h-4 ${
             star <= Math.round(rating)
-              ? "fill-[#E8712A] text-[#E8712A]"
-              : "text-gray-300"
+              ? "fill-primary text-primary"
+              : "text-muted-foreground/40"
           }`}
         />
       ))}
@@ -56,20 +56,20 @@ export function OpsFeedbackClient({
       : 0;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#1A1A1A] mb-6">Session Feedback</h1>
+    <div className="animate-fade-up">
+      <h1 className="text-2xl font-bold font-heading text-foreground mb-6">Session Feedback</h1>
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card>
+        <Card className="stagger-1">
           <CardContent className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#E8712A]/10">
-              <Star className="w-5 h-5 text-[#E8712A]" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+              <Star className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-[#666666]">Average Rating</p>
+              <p className="text-sm text-muted-foreground">Average Rating</p>
               <div className="flex items-center gap-2">
-                <p className="text-xl font-semibold text-[#1A1A1A]">
+                <p className="text-xl font-semibold text-foreground">
                   {aggregation?.averageRating.toFixed(1) ?? "—"}
                 </p>
                 <StarRating rating={aggregation?.averageRating ?? 0} />
@@ -78,35 +78,35 @@ export function OpsFeedbackClient({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="stagger-2">
           <CardContent className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#E8712A]/10">
-              <MessageSquare className="w-5 h-5 text-[#E8712A]" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+              <MessageSquare className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-[#666666]">Total Responses</p>
-              <p className="text-xl font-semibold text-[#1A1A1A]">
+              <p className="text-sm text-muted-foreground">Total Responses</p>
+              <p className="text-xl font-semibold text-foreground">
                 {aggregation?.totalCount ?? 0}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="stagger-3">
           <CardContent className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#E8712A]/10">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
               {trendDirection === "up" ? (
                 <TrendingUp className="w-5 h-5 text-green-600" />
               ) : trendDirection === "down" ? (
                 <TrendingDown className="w-5 h-5 text-red-500" />
               ) : (
-                <TrendingUp className="w-5 h-5 text-[#666666]" />
+                <TrendingUp className="w-5 h-5 text-muted-foreground" />
               )}
             </div>
             <div>
-              <p className="text-sm text-[#666666]">30-Day Trend</p>
+              <p className="text-sm text-muted-foreground">30-Day Trend</p>
               <div className="flex items-center gap-1.5">
-                <p className="text-xl font-semibold text-[#1A1A1A]">
+                <p className="text-xl font-semibold text-foreground">
                   {aggregation?.last30DaysAvg.toFixed(1) ?? "—"}
                 </p>
                 {trendDirection !== "flat" && trendDiff > 0 && (
@@ -119,7 +119,7 @@ export function OpsFeedbackClient({
                     {trendDiff.toFixed(1)}
                   </span>
                 )}
-                <span className="text-xs text-[#666666]">
+                <span className="text-xs text-muted-foreground">
                   ({aggregation?.last30DaysCount ?? 0} responses)
                 </span>
               </div>

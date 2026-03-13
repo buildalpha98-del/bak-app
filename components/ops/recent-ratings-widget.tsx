@@ -32,8 +32,8 @@ function StarRating({ rating }: { rating: number }) {
           key={i}
           className={`size-4 ${
             i <= rating
-              ? "fill-[#E8712A] text-[#E8712A]"
-              : "fill-gray-300 text-gray-300"
+              ? "fill-primary text-primary"
+              : "fill-muted text-muted"
           }`}
         />
       ))}
@@ -47,30 +47,30 @@ export function RecentRatingsWidget({
   return (
     <WidgetWrapper title="Recent Ratings" icon={Star} count={ratings.length}>
       {ratings.length === 0 ? (
-        <p className="py-4 text-sm text-[#666666]">
+        <p className="py-4 text-sm text-muted-foreground">
           No feedback received yet
         </p>
       ) : (
-        <div className="divide-y">
+        <div className="divide-y divide-border/50">
           {ratings.map((r) => (
             <div
               key={r.id}
-              className={`py-3 first:pt-0 -mx-2 px-2 rounded-md ${
+              className={`py-3 first:pt-0 -mx-2 px-2 rounded-lg ${
                 r.rating < 3
-                  ? "bg-red-50 border border-red-200"
+                  ? "bg-destructive/5 border border-destructive/15"
                   : ""
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A]">
+                  <p className="text-sm font-medium text-foreground">
                     {r.centre_name}
                   </p>
                   {r.sport && (
-                    <p className="text-xs text-[#666666]">{r.sport}</p>
+                    <p className="text-xs text-muted-foreground">{r.sport}</p>
                   )}
                 </div>
-                <span className="shrink-0 text-xs text-[#666666]">
+                <span className="shrink-0 text-xs text-muted-foreground">
                   {formatRelativeDate(r.submitted_at)}
                 </span>
               </div>
@@ -82,10 +82,10 @@ export function RecentRatingsWidget({
         </div>
       )}
 
-      <div className="mt-3 border-t pt-3">
+      <div className="mt-3 border-t border-border pt-3">
         <Link
           href="/ops/feedback"
-          className="text-sm font-medium text-[#E8712A] hover:underline"
+          className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
         >
           View All
         </Link>

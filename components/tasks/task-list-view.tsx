@@ -23,7 +23,7 @@ export function TaskListView({
   onTaskClick,
 }: TaskListViewProps) {
   const priorityColors: Record<string, { bg: string; text: string }> = {
-    low: { bg: "bg-gray-100", text: "text-gray-600" },
+    low: { bg: "bg-secondary", text: "text-muted-foreground" },
     medium: { bg: "bg-blue-100", text: "text-blue-700" },
     high: { bg: "bg-amber-100", text: "text-amber-700" },
     urgent: { bg: "bg-red-100", text: "text-red-700" },
@@ -54,12 +54,12 @@ export function TaskListView({
             return (
               <TableRow
                 key={task.id}
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer hover:bg-secondary"
                 onClick={() => onTaskClick(task.id)}
               >
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-[#1A1A1A] line-clamp-1">
+                    <span className="text-sm font-medium text-foreground line-clamp-1">
                       {task.title}
                     </span>
                     {task.source !== "manual" && (
@@ -70,7 +70,7 @@ export function TaskListView({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs text-[#666666]">
+                  <span className="text-xs text-muted-foreground">
                     {task.column?.name}
                   </span>
                 </TableCell>
@@ -92,16 +92,16 @@ export function TaskListView({
                             className="w-5 h-5 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-[#E8712A] text-white text-[10px] font-semibold flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
                             {task.assignee.name.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className="text-xs text-[#666666]">
+                        <span className="text-xs text-muted-foreground">
                           {task.assignee.name.split(" ")[0]}
                         </span>
                       </>
                     ) : (
-                      <span className="text-xs text-gray-400">—</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </div>
                 </TableCell>
@@ -109,7 +109,7 @@ export function TaskListView({
                   {task.due_date ? (
                     <span
                       className={`text-xs ${
-                        isOverdue ? "text-red-500 font-medium" : "text-[#666666]"
+                        isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"
                       }`}
                     >
                       {isOverdue ? "Overdue: " : ""}
@@ -119,7 +119,7 @@ export function TaskListView({
                       })}
                     </span>
                   ) : (
-                    <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -128,7 +128,7 @@ export function TaskListView({
                       {task.linked_entity_name}
                     </span>
                   ) : (
-                    <span className="text-xs text-gray-400">—</span>
+                    <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </TableCell>
               </TableRow>
@@ -137,7 +137,7 @@ export function TaskListView({
 
           {tasks.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-gray-400">
+              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                 No tasks found
               </TableCell>
             </TableRow>

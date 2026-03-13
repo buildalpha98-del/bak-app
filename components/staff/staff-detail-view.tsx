@@ -71,7 +71,7 @@ import type {
 
 const STATUS_STYLES: Record<UserStatus, { label: string; className: string }> = {
   active: { label: "Active", className: "bg-emerald-100 text-emerald-700" },
-  inactive: { label: "Inactive", className: "bg-gray-100 text-gray-600" },
+  inactive: { label: "Inactive", className: "bg-secondary text-muted-foreground" },
   onboarding: { label: "Onboarding", className: "bg-amber-100 text-amber-700" },
 };
 
@@ -99,7 +99,7 @@ const COMPLIANCE_STATUS_STYLES: Record<
   verified: { label: "Verified", className: "bg-emerald-100 text-emerald-700" },
   pending: { label: "Pending", className: "bg-amber-100 text-amber-700" },
   expired: { label: "Expired", className: "bg-red-100 text-red-700" },
-  rejected: { label: "Rejected", className: "bg-gray-100 text-gray-600" },
+  rejected: { label: "Rejected", className: "bg-secondary text-muted-foreground" },
 };
 
 const SESSION_TYPE_LABELS: Record<SessionType, string> = {
@@ -184,12 +184,12 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         </Button>
         <Avatar size="lg">
           {profile.photo_url && <AvatarImage src={profile.photo_url} alt={profile.name} />}
-          <AvatarFallback className="bg-[#E8712A] text-sm font-semibold text-white">
+          <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
             {getInitials(profile.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">{profile.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{profile.name}</h1>
           <div className="mt-1 flex items-center gap-2">
             <Badge variant="outline">{ROLE_LABELS[profile.role]}</Badge>
             <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}>
@@ -237,7 +237,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
 
         {/* Tab 1: Overview */}
         <TabsContent value="overview">
-          <div className="mt-4 rounded-lg border bg-white p-6">
+          <div className="mt-4 rounded-lg border bg-card p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <InfoRow label="Email" value={profile.email} />
               <InfoRow label="Phone" value={profile.phone} />
@@ -259,7 +259,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         <TabsContent value="compliance">
           <div className="mt-4 space-y-3">
             <div className="flex justify-end">
-              <Button size="sm" onClick={() => setAddDocOpen(true)} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+              <Button size="sm" onClick={() => setAddDocOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Plus className="h-3.5 w-3.5" />
                 Add Document
               </Button>
@@ -267,7 +267,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
             {compDocs.length === 0 ? (
               <EmptyState icon={<Shield className="h-8 w-8" />} message="No compliance documents yet." />
             ) : (
-              <div className="rounded-lg border bg-white">
+              <div className="rounded-lg border bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -286,7 +286,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
                           <TableCell className="font-medium">
                             {DOC_TYPE_LABELS[doc.doc_type]}
                           </TableCell>
-                          <TableCell className="text-[#666666]">
+                          <TableCell className="text-muted-foreground">
                             {doc.doc_number || "—"}
                           </TableCell>
                           <TableCell>
@@ -294,7 +294,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
                               {cs.label}
                             </span>
                           </TableCell>
-                          <TableCell className="text-[#666666]">
+                          <TableCell className="text-muted-foreground">
                             {formatDate(doc.expiry_date)}
                           </TableCell>
                           <TableCell className="text-right">
@@ -334,7 +334,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         <TabsContent value="pay-rates">
           <div className="mt-4 space-y-3">
             <div className="flex justify-end">
-              <Button size="sm" onClick={() => setAddRateOpen(true)} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+              <Button size="sm" onClick={() => setAddRateOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Plus className="h-3.5 w-3.5" />
                 Add Rate
               </Button>
@@ -342,7 +342,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
             {payRates.length === 0 ? (
               <EmptyState icon={<Clock className="h-8 w-8" />} message="No pay rates set." />
             ) : (
-              <div className="rounded-lg border bg-white">
+              <div className="rounded-lg border bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -359,10 +359,10 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
                           {SESSION_TYPE_LABELS[rate.session_type as SessionType] ?? rate.session_type}
                         </TableCell>
                         <TableCell>${rate.rate.toFixed(2)}</TableCell>
-                        <TableCell className="text-[#666666]">
+                        <TableCell className="text-muted-foreground">
                           {RATE_UNIT_LABELS[rate.rate_unit]}
                         </TableCell>
-                        <TableCell className="text-[#666666]">
+                        <TableCell className="text-muted-foreground">
                           {formatDate(rate.effective_from)}
                         </TableCell>
                       </TableRow>
@@ -378,7 +378,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         <TabsContent value="availability">
           <div className="mt-4 space-y-3">
             <div className="flex justify-end">
-              <Button size="sm" onClick={() => setAddSlotOpen(true)} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+              <Button size="sm" onClick={() => setAddSlotOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Plus className="h-3.5 w-3.5" />
                 Add Slot
               </Button>
@@ -386,7 +386,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
             {availability.length === 0 ? (
               <EmptyState icon={<Clock className="h-8 w-8" />} message="No availability set." />
             ) : (
-              <div className="rounded-lg border bg-white">
+              <div className="rounded-lg border bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -405,7 +405,7 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
                         </TableCell>
                         <TableCell>{slot.start_time}</TableCell>
                         <TableCell>{slot.end_time}</TableCell>
-                        <TableCell className="text-[#666666]">
+                        <TableCell className="text-muted-foreground">
                           {slot.location_preferences.length > 0
                             ? slot.location_preferences.join(", ")
                             : "Any"}
@@ -439,9 +439,9 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         <TabsContent value="sessions">
           <div className="mt-4">
             {!sessionsLoaded ? (
-              <p className="text-sm text-[#666666]">Loading sessions...</p>
+              <p className="text-sm text-muted-foreground">Loading sessions...</p>
             ) : sessions && sessions.length > 0 ? (
-              <div className="rounded-lg border bg-white">
+              <div className="rounded-lg border bg-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -541,19 +541,19 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-[#999999] uppercase tracking-wide">
+      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {label}
       </dt>
-      <dd className="mt-0.5 text-sm text-[#1A1A1A]">{value || "—"}</dd>
+      <dd className="mt-0.5 text-sm text-foreground">{value || "—"}</dd>
     </div>
   );
 }
 
 function EmptyState({ icon, message }: { icon: React.ReactNode; message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 py-12 text-center">
-      <div className="text-[#999999]">{icon}</div>
-      <p className="mt-2 text-sm text-[#666666]">{message}</p>
+    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+      <div className="text-muted-foreground">{icon}</div>
+      <p className="mt-2 text-sm text-muted-foreground">{message}</p>
     </div>
   );
 }
@@ -656,7 +656,7 @@ function EditProfileDialog({
             <Input id="edit-abn" name="abn" defaultValue={profile.abn ?? ""} />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={loading} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {loading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
@@ -716,7 +716,7 @@ function DeactivateDialog({
             variant={isActive ? "destructive" : "default"}
             onClick={handleConfirm}
             disabled={loading}
-            className={!isActive ? "bg-[#E8712A] text-white hover:bg-[#d4641f]" : ""}
+            className={!isActive ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
           >
             {loading
               ? "Processing..."
@@ -828,7 +828,7 @@ function AddComplianceDocDialog({
             <Input id="doc-notes" name="notes" placeholder="Optional notes" />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={loading} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {loading ? "Adding..." : "Add Document"}
             </Button>
           </DialogFooter>
@@ -946,7 +946,7 @@ function AddPayRateDialog({
             <Input id="rate-from" name="effective_from" type="date" required />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={loading} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {loading ? "Adding..." : "Add Rate"}
             </Button>
           </DialogFooter>
@@ -1051,7 +1051,7 @@ function AddAvailabilityDialog({
             <Input id="slot-end" name="end_time" type="time" required />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={loading} className="bg-[#E8712A] text-white hover:bg-[#d4641f]">
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {loading ? "Adding..." : "Add Slot"}
             </Button>
           </DialogFooter>

@@ -11,9 +11,9 @@ export default async function FeedbackPage({
   const { data } = await getFeedbackByToken(token);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-secondary">
       {/* Brand header */}
-      <div className="w-full bg-[#E8712A] py-4">
+      <div className="w-full bg-primary py-4">
         <div className="mx-auto max-w-lg px-4">
           <h1 className="text-center text-lg font-semibold text-white">
             Build Alpha Kids
@@ -24,11 +24,11 @@ export default async function FeedbackPage({
       <main className="mx-auto max-w-lg px-4 py-8">
         {/* Invalid / expired link */}
         {!data && (
-          <div className="rounded-lg bg-white p-8 text-center shadow-sm">
-            <p className="text-[#1A1A1A] text-lg font-medium">
+          <div className="rounded-lg bg-card p-8 text-center shadow-sm">
+            <p className="text-foreground text-lg font-medium">
               Invalid or expired feedback link
             </p>
-            <p className="mt-2 text-sm text-[#666666]">
+            <p className="mt-2 text-sm text-muted-foreground">
               This link may have already been used or is no longer valid.
             </p>
           </div>
@@ -36,7 +36,7 @@ export default async function FeedbackPage({
 
         {/* Already submitted */}
         {data && data.submitted_at && (
-          <div className="rounded-lg bg-white p-8 text-center shadow-sm">
+          <div className="rounded-lg bg-card p-8 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
               <svg
                 className="h-6 w-6 text-green-600"
@@ -52,7 +52,7 @@ export default async function FeedbackPage({
                 />
               </svg>
             </div>
-            <p className="text-[#1A1A1A] text-lg font-medium">
+            <p className="text-foreground text-lg font-medium">
               Thank you! Your feedback has already been submitted.
             </p>
             <div className="mt-4 flex items-center justify-center gap-1">
@@ -61,12 +61,12 @@ export default async function FeedbackPage({
                   key={star}
                   className={`h-6 w-6 ${
                     star <= (data.rating ?? 0)
-                      ? "fill-[#E8712A] text-[#E8712A]"
-                      : "text-gray-300"
+                      ? "fill-primary text-primary"
+                      : "text-muted-foreground/40"
                   }`}
                 />
               ))}
-              <span className="ml-2 text-sm text-[#666666]">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {data.rating}/5
               </span>
             </div>
