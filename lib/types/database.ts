@@ -120,6 +120,7 @@ export interface Centre {
   created_at: string;
   updated_at: string;
   qb_customer_id: string | null;
+  send_feedback_emails: boolean;
 }
 
 // ========================
@@ -479,7 +480,9 @@ export interface FeedbackRating {
   id: string;
   session_id: string;
   centre_id: string;
-  rating: number;
+  coach_id: string | null;
+  sport: string | null;
+  rating: number | null;
   comment: string | null;
   feedback_token: string;
   submitted_at: string | null;

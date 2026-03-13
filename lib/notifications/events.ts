@@ -51,4 +51,5 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   invoice_status_changed: "informational",
   feedback_received: "informational",
   task_completed: "informational",
+  low_session_rating: "important",
 };

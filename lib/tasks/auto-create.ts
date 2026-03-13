@@ -20,7 +20,8 @@ interface AutoCreateTaskInput {
     | "equipment_issue"
     | "compliance_expiry"
     | "shift_declined"
-    | "invoice_flagged";
+    | "invoice_flagged"
+    | "low_session_rating";
 }
 
 /**
