@@ -137,7 +137,6 @@ export async function calculateOutboundInvoices(
 
     const admin = createSupabaseAdmin();
 
-    // Fetch completed sessions in the period with centre and coach info
     const { data: sessions, error: sessionsError } = await admin
       .from("sessions")
       .select(
@@ -152,7 +151,6 @@ export async function calculateOutboundInvoices(
       return { data: [], error: null };
     }
 
-    // Check for existing invoices that overlap this period
     const { data: existingInvoices } = await admin
       .from("outbound_invoices")
       .select("centre_id")
@@ -163,7 +161,6 @@ export async function calculateOutboundInvoices(
       (existingInvoices ?? []).map((inv: { centre_id: string }) => inv.centre_id)
     );
 
-    // Group sessions by centre
     const centreMap = new Map<string, {
       centre: { id: string; name: string; pricing_model: string; agreed_rate: number | null };
       sessions: typeof sessions;
@@ -178,7 +175,6 @@ export async function calculateOutboundInvoices(
       };
       if (!centre) continue;
 
-      // Skip centres with existing invoices
       if (existingCentreIds.has(centre.id)) continue;
 
       if (!centreMap.has(centre.id)) {
@@ -187,7 +183,6 @@ export async function calculateOutboundInvoices(
       centreMap.get(centre.id)!.sessions.push(session);
     }
 
-    // Build previews
     const previews: OutboundInvoicePreview[] = [];
 
     for (const [centreId, { centre, sessions: centreSessions }] of centreMap) {
@@ -253,7 +248,6 @@ export async function generateOutboundInvoices(
     const invoices = [];
 
     for (const preview of previews) {
-      // Get next invoice number atomically
       const { data: numberResult } = await admin.rpc(
         "next_outbound_invoice_number",
         { year_month: yearMonth }
@@ -279,7 +273,6 @@ export async function generateOutboundInvoices(
 
     if (insertError) return { data: null, error: insertError.message };
 
-    // Log activity
     await admin.from("activity_log").insert({
       user_id: user.id,
       action: "outbound_invoices_generated",
@@ -324,7 +317,7 @@ export async function updateOutboundLineItems(
         amount: newTotal,
       })
       .eq("id", invoiceId)
-      .eq("status", "draft"); // Only allow editing drafts
+      .eq("status", "draft");
 
     if (error) return { data: null, error: error.message };
 
@@ -391,7 +384,6 @@ export async function submitForApproval(invoiceId: string): Promise<{
       );
     }
 
-    // Log activity
     await admin.from("activity_log").insert({
       user_id: user.id,
       action: "outbound_invoice_submitted",
@@ -443,7 +435,6 @@ export async function approveInvoice(invoiceId: string): Promise<{
       .eq("id", invoiceId)
       .single();
 
-    // Log activity
     await admin.from("activity_log").insert({
       user_id: user.id,
       action: "outbound_invoice_approved",
@@ -503,7 +494,6 @@ export async function rejectInvoice(
       entityId: invoiceId,
     });
 
-    // Log activity with rejection reason
     await admin.from("activity_log").insert({
       user_id: user.id,
       action: "outbound_invoice_rejected",
