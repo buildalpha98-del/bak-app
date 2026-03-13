@@ -3,6 +3,7 @@ import "./globals.css";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PWAProvider } from "@/components/shared/pwa-provider";
 
 const heading = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -48,7 +49,9 @@ export default function RootLayout({
       className={cn("font-sans", heading.variable, body.variable)}
     >
       <body className="antialiased">
-        <TooltipProvider delay={300}>{children}</TooltipProvider>
+        <PWAProvider>
+          <TooltipProvider delay={300}>{children}</TooltipProvider>
+        </PWAProvider>
       </body>
     </html>
   );
