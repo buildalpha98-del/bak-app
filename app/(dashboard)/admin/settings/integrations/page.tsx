@@ -11,7 +11,15 @@ export default async function IntegrationsSettingsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: status } = await getConnectionStatus();
+  const { data: status, error } = await getConnectionStatus();
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-up">

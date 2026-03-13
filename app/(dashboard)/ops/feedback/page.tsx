@@ -26,6 +26,15 @@ export default async function OpsFeedbackPage() {
     getFeedbackAggregation(),
   ]);
 
+  const firstError = feedbackResult.error || aggregationResult.error;
+  if (firstError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Failed to load page data. Please try refreshing.
+      </div>
+    );
+  }
+
   return (
     <OpsFeedbackClient
       initialFeedback={feedbackResult.data ?? []}

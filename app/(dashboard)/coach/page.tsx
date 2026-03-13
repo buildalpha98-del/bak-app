@@ -30,6 +30,20 @@ export default async function CoachDashboard() {
       getCoachEarnings(),
     ]);
 
+  const firstError =
+    nextSessionRes.error ||
+    pendingRes.error ||
+    announcementRes.error ||
+    swapInboxRes.error ||
+    earningsRes.error;
+  if (firstError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Failed to load page data. Please try refreshing.
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-lg space-y-4">
       <h1 className="text-xl font-bold text-foreground font-heading animate-fade-up">Home</h1>

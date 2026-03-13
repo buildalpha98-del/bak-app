@@ -14,7 +14,16 @@ export default async function OpsOutboundInvoicingPage() {
 
   if (!user) redirect("/login");
 
-  const { data: invoices } = await getOutboundInvoices();
+  const { data: invoices, error } = await getOutboundInvoices();
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        {error}
+      </div>
+    );
+  }
+
   const qbConnected = await isQuickBooksConnected();
 
   return (

@@ -60,13 +60,13 @@ export function InstallPrompt() {
       </div>
       <button
         onClick={handleInstall}
-        className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 min-h-[44px]"
+        className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 min-h-[44px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         Install
       </button>
       <button
         onClick={handleDismiss}
-        className="shrink-0 flex items-center justify-center h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        className="shrink-0 flex items-center justify-center h-8 w-8 min-h-[44px] min-w-[44px] rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />

@@ -133,14 +133,14 @@ export function MessageBubble({
                 setEditContent(message.content ?? "");
                 setIsEditing(true);
               }}
-              className="h-6 w-6 flex items-center justify-center rounded-md bg-card border border-border text-muted-foreground hover:text-foreground transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md bg-card border border-border text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label="Edit message"
             >
               <Pencil className="h-3 w-3" />
             </button>
             <button
               onClick={() => setIsConfirmingDelete(true)}
-              className="h-6 w-6 flex items-center justify-center rounded-md bg-card border border-border text-muted-foreground hover:text-destructive transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md bg-card border border-border text-muted-foreground hover:text-destructive transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label="Delete message"
             >
               <Trash2 className="h-3 w-3" />
@@ -171,7 +171,7 @@ export function MessageBubble({
                 <button
                   onClick={handleSaveEdit}
                   disabled={isSaving}
-                  className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50"
+                  className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Save
@@ -181,7 +181,7 @@ export function MessageBubble({
                     setIsEditing(false);
                     setEditContent(message.content ?? "");
                   }}
-                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   <X className="h-3.5 w-3.5" />
                   Cancel

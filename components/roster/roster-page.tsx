@@ -1,0 +1,351 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  CalendarDays,
+  List,
+  Plus,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SessionCalendarView } from "./session-calendar-view";
+import { SessionListView } from "./session-list-view";
+import { SessionDetailSheet } from "./session-detail-sheet";
+import { CreateSessionDialog } from "./create-session-dialog";
+import { GenerateSessionsDialog } from "./generate-sessions-dialog";
+import { ClashDetectionDialog } from "./clash-detection-dialog";
+import { useSessionsRealtime } from "@/lib/hooks/useSessionsRealtime";
+import {
+  getMonday,
+  formatWeekLabel,
+} from "@/lib/utils/roster";
+import {
+  bulkUpdateSessionStatus,
+  bulkReassignCoach,
+} from "@/lib/sessions/actions";
+import type { SessionWithRelations } from "@/lib/sessions/actions";
+import type { Centre, Profile, Term } from "@/lib/types/database";
+import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
+import type { UnconfirmedShift } from "@/lib/sessions/shift-actions";
+import { UnconfirmedShiftsBanner } from "./unconfirmed-shifts-banner";
+
+// ============================================================
+// Props
+// ============================================================
+
+interface RosterPageProps {
+  initialSessions: SessionWithRelations[];
+  initialWeekStart: string; // "YYYY-MM-DD" Monday
+  centres: Pick<Centre, "id" | "name">[];
+  coaches: Pick<Profile, "id" | "name">[];
+  activeTerm: Term | null;
+  basePath: string; // "/admin/roster" or "/ops/roster"
+  /** Compliance warnings keyed by coach_id */
+  complianceWarnings?: Record<string, ComplianceCheckResult>;
+  /** Unconfirmed shifts for ops banner */
+  unconfirmedShifts?: UnconfirmedShift[];
+}
+
+// ============================================================
+// Component
+// ============================================================
+
+export function RosterPage({
+  initialSessions,
+  initialWeekStart,
+  centres,
+  coaches,
+  activeTerm,
+  basePath,
+  complianceWarnings,
+  unconfirmedShifts,
+}: RosterPageProps) {
+  const router = useRouter();
+  const weekStart = new Date(initialWeekStart + "T00:00:00");
+
+  // View toggle
+  const [view, setView] = useState<"calendar" | "list">("calendar");
+
+  // Session detail sheet
+  const [selectedSession, setSelectedSession] =
+    useState<SessionWithRelations | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Create session dialog
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createDefaults, setCreateDefaults] = useState<{
+    date?: string;
+    time?: string;
+  }>({});
+
+  // Generate sessions dialog
+  const [genOpen, setGenOpen] = useState(false);
+
+  // Clash detection dialog
+  const [clashOpen, setClashOpen] = useState(false);
+
+  // Realtime subscription
+  const handleRealtimeUpdate = useCallback(() => {
+    router.refresh();
+  }, [router]);
+
+  useSessionsRealtime(initialWeekStart, handleRealtimeUpdate);
+
+  // ---- Navigation ----
+
+  function navigateToWeek(date: Date) {
+    const monday = getMonday(date);
+    const dateStr = monday.toISOString().split("T")[0];
+    router.push(`${basePath}?week=${dateStr}`);
+  }
+
+  function goToPrevWeek() {
+    const prev = new Date(weekStart);
+    prev.setDate(prev.getDate() - 7);
+    navigateToWeek(prev);
+  }
+
+  function goToNextWeek() {
+    const next = new Date(weekStart);
+    next.setDate(next.getDate() + 7);
+    navigateToWeek(next);
+  }
+
+  function goToToday() {
+    navigateToWeek(new Date());
+  }
+
+  function handleDatePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value) {
+      navigateToWeek(new Date(e.target.value + "T00:00:00"));
+    }
+  }
+
+  // ---- Session actions ----
+
+  function handleSessionClick(session: SessionWithRelations) {
+    setSelectedSession(session);
+    setDetailOpen(true);
+  }
+
+  function handleEmptySlotClick(date: string, time: string) {
+    setCreateDefaults({ date, time });
+    setCreateOpen(true);
+  }
+
+  function handleAddSession() {
+    setCreateDefaults({});
+    setCreateOpen(true);
+  }
+
+  function handleRefresh() {
+    router.refresh();
+  }
+
+  // ---- Bulk actions ----
+
+  async function handleBulkPublish(ids: string[]) {
+    await bulkUpdateSessionStatus(ids, "published");
+    router.refresh();
+  }
+
+  async function handleBulkCancel(ids: string[]) {
+    await bulkUpdateSessionStatus(ids, "cancelled");
+    router.refresh();
+  }
+
+  async function handleBulkReassign(ids: string[], coachId: string) {
+    await bulkReassignCoach(ids, coachId);
+    router.refresh();
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Unconfirmed shifts banner */}
+      {unconfirmedShifts && unconfirmedShifts.length > 0 && (
+        <UnconfirmedShiftsBanner shifts={unconfirmedShifts} />
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Roster</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage weekly coaching sessions
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          nativeButton={false}
+          render={<Link href={`${basePath}/terms`} />}
+        >
+          View Terms
+        </Button>
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Week navigation */}
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="icon-sm" className="min-h-[44px] min-w-[44px]" onClick={goToPrevWeek} aria-label="Previous week">
+            <ChevronLeft className="size-4" />
+          </Button>
+
+          <span className="min-w-[180px] text-center text-sm font-medium text-foreground">
+            {formatWeekLabel(weekStart)}
+          </span>
+
+          <Button variant="outline" size="icon-sm" className="min-h-[44px] min-w-[44px]" onClick={goToNextWeek} aria-label="Next week">
+            <ChevronRight className="size-4" />
+          </Button>
+        </div>
+
+        <Button variant="outline" size="sm" onClick={goToToday}>
+          Today
+        </Button>
+
+        <Input
+          type="date"
+          className="w-[150px]"
+          value={initialWeekStart}
+          onChange={handleDatePickerChange}
+          aria-label="Select date"
+        />
+
+        <div className="ml-auto" />
+
+        {/* View toggle */}
+        <div className="flex rounded-lg border">
+          <Button
+            variant={view === "calendar" ? "default" : "ghost"}
+            size="icon-sm"
+            className="min-h-[44px] min-w-[44px]"
+            onClick={() => setView("calendar")}
+            title="Calendar view"
+            aria-label="Calendar view"
+          >
+            <CalendarDays className="size-4" />
+          </Button>
+          <Button
+            variant={view === "list" ? "default" : "ghost"}
+            size="icon-sm"
+            className="min-h-[44px] min-w-[44px]"
+            onClick={() => setView("list")}
+            title="List view"
+            aria-label="List view"
+          >
+            <List className="size-4" />
+          </Button>
+        </div>
+
+        {/* Check for Clashes */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setClashOpen(true)}
+        >
+          <AlertTriangle className="size-4" />
+          Check Clashes
+        </Button>
+
+        {/* Actions */}
+        <Button variant="outline" size="sm" onClick={handleAddSession}>
+          <Plus className="size-4" />
+          Add Session
+        </Button>
+
+        {activeTerm && (
+          <Button size="sm" onClick={() => setGenOpen(true)}>
+            <Zap className="size-4" />
+            Generate Week
+          </Button>
+        )}
+      </div>
+
+      {/* Content */}
+      {initialSessions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+          <CalendarDays className="mb-3 size-10 text-muted-foreground/50" />
+          <p className="text-sm font-medium text-muted-foreground">
+            No sessions scheduled this week
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Add a session or generate from a term template
+          </p>
+        </div>
+      ) : view === "calendar" ? (
+        <SessionCalendarView
+          sessions={initialSessions}
+          weekStart={weekStart}
+          onSessionClick={handleSessionClick}
+          onEmptySlotClick={handleEmptySlotClick}
+          complianceWarnings={complianceWarnings}
+        />
+      ) : (
+        <SessionListView
+          sessions={initialSessions}
+          centres={centres}
+          coaches={coaches}
+          onSessionClick={handleSessionClick}
+          onBulkPublish={handleBulkPublish}
+          onBulkCancel={handleBulkCancel}
+          onBulkReassign={handleBulkReassign}
+        />
+      )}
+
+      {/* Summary */}
+      <p className="text-center text-xs text-muted-foreground">
+        {initialSessions.length} session
+        {initialSessions.length !== 1 ? "s" : ""} this week
+      </p>
+
+      {/* Detail Sheet */}
+      <SessionDetailSheet
+        session={selectedSession}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        centres={centres}
+        coaches={coaches}
+        onUpdate={handleRefresh}
+        complianceWarnings={complianceWarnings}
+      />
+
+      {/* Create Session Dialog */}
+      <CreateSessionDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        termId={activeTerm?.id ?? ""}
+        centres={centres}
+        coaches={coaches}
+        defaultDate={createDefaults.date}
+        defaultTime={createDefaults.time}
+        onSuccess={handleRefresh}
+      />
+
+      {/* Generate Sessions Dialog */}
+      {activeTerm && (
+        <GenerateSessionsDialog
+          open={genOpen}
+          onOpenChange={setGenOpen}
+          term={activeTerm}
+          templateCount={0}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {/* Clash Detection Dialog */}
+      <ClashDetectionDialog
+        open={clashOpen}
+        onOpenChange={setClashOpen}
+        weekStartDate={initialWeekStart}
+      />
+    </div>
+  );
+}

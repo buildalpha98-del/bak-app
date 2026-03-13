@@ -14,10 +14,22 @@ export default async function AdminOutboundInvoicingPage() {
 
   if (!user) redirect("/login");
 
-  const { data: allInvoices } = await getOutboundInvoices();
-  const { data: pendingInvoices } = await getOutboundInvoices({
+  const allResult = await getOutboundInvoices();
+  const pendingResult = await getOutboundInvoices({
     status: ["pending_approval"],
   });
+
+  const firstError = allResult.error || pendingResult.error;
+  if (firstError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Failed to load page data. Please try refreshing.
+      </div>
+    );
+  }
+
+  const allInvoices = allResult.data;
+  const pendingInvoices = pendingResult.data;
   const qbConnected = await isQuickBooksConnected();
 
   return (

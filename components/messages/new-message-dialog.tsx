@@ -95,6 +95,7 @@ export function NewMessageDialog({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-border bg-card pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[44px]"
             autoFocus
+            aria-label="Search contacts"
           />
         </div>
 

@@ -26,6 +26,15 @@ export default async function CoachTasksPage() {
     getTasks({ myTasksOnly: true }),
   ]);
 
+  const firstError = columnsResult.error || tasksResult.error;
+  if (firstError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Failed to load page data. Please try refreshing.
+      </div>
+    );
+  }
+
   return (
     <CoachTasksClient
       columns={columnsResult.data ?? []}

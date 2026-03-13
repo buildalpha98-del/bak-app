@@ -57,7 +57,13 @@ export function AnnouncementCard({
   onClick,
 }: AnnouncementCardProps) {
   return (
-    <Card className="card-hover cursor-pointer" onClick={onClick}>
+    <Card
+      className="card-hover cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+    >
       <CardContent className="p-4">
         {/* Title row */}
         <div className="flex items-start justify-between gap-2">

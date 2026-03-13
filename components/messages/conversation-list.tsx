@@ -81,7 +81,7 @@ export function ConversationList({
             <button
               key={convo.partner_id}
               onClick={() => onSelect(convo.partner_id, convo.partner_name)}
-              className={`flex w-full items-center gap-3 p-3 border-b border-border cursor-pointer hover:bg-secondary/50 transition-colors text-left ${
+              className={`flex w-full items-center gap-3 p-3 border-b border-border cursor-pointer hover:bg-secondary/50 transition-colors text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 selectedId === convo.partner_id
                   ? "bg-primary/5 border-l-2 border-l-primary"
                   : ""
