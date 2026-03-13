@@ -1,15 +1,27 @@
-import { RecentFeedbackWidget } from "@/components/feedback/recent-feedback-widget";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCommandCentreData } from "@/lib/ops/actions";
+import { CommandCentre } from "./command-centre";
 
-export default async function OpsDashboard() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">Operations Dashboard</h1>
-      <p className="mt-2 text-[#666666]">
-        Welcome to the Build Alpha Kids operations portal.
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <RecentFeedbackWidget />
-      </div>
-    </div>
-  );
+export default async function OpsCommandCentrePage() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "ops" && profile.role !== "admin")) {
+    redirect("/");
+  }
+
+  const data = await getCommandCentreData(user.id);
+
+  return <CommandCentre {...data} userId={user.id} />;
 }
