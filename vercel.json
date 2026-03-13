@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-digest",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/overdue-tasks",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/compliance-expiry-tasks",
+      "schedule": "0 21 * * *"
+    }
+  ]
+}
