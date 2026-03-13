@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { autoCreateTask } from "@/lib/tasks/auto-create";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
@@ -249,7 +249,7 @@ export async function getFeedbackList(filters: FeedbackListFilters = {}): Promis
   total: number;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 20;
   const offset = (page - 1) * pageSize;
@@ -318,7 +318,7 @@ export async function getFeedbackAggregation(): Promise<{
   } | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -381,7 +381,7 @@ export async function getCentreFeedbackStats(centreId: string): Promise<{
   } | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data: ratings, error } = await supabase
     .from("feedback_ratings")
@@ -428,7 +428,7 @@ export async function getCoachFeedbackStats(coachId: string): Promise<{
   } | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data: ratings, error } = await supabase
     .from("feedback_ratings")
@@ -471,7 +471,7 @@ export async function getSportFeedbackStats(): Promise<{
   data: { sport: string; averageRating: number; count: number }[];
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("feedback_ratings")
@@ -519,7 +519,7 @@ export async function getRecentFeedback(limit = 5): Promise<{
   }[];
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("feedback_ratings")

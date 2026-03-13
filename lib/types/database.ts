@@ -420,8 +420,11 @@ export interface ShiftThread {
   id: string;
   session_id: string;
   user_id: string;
-  content: string;
+  content: string | null;
   created_at: string;
+  updated_at: string | null;
+  deleted_at: string | null;
+  parent_message_id: string | null;
 }
 
 // ========================
@@ -431,9 +434,11 @@ export interface DirectMessage {
   id: string;
   sender_id: string;
   recipient_id: string;
-  content: string;
+  content: string | null;
   read_at: string | null;
   created_at: string;
+  updated_at: string | null;
+  deleted_at: string | null;
 }
 
 // ========================

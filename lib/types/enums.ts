@@ -126,7 +126,9 @@ export type NotificationEventType =
   | "equipment_changed"
   | "invoice_status_changed"
   | "feedback_received"
-  | "low_session_rating";
+  | "low_session_rating"
+  | "dm_received"
+  | "shift_thread_message";
 
 // Session types used for pay rate lookup
 export type SessionType =
