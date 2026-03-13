@@ -24,7 +24,6 @@ import type {
   AnnouncementAudience,
   DocumentCategory,
   DocumentVisibility,
-  TaskStatus,
   TaskPriority,
   NotificationChannel,
 } from "./enums";
@@ -461,13 +460,14 @@ export interface Task {
   title: string;
   description: string | null;
   assignee_id: string | null;
-  status: TaskStatus;
+  column_id: string;
   priority: TaskPriority;
   due_date: string | null;
   column_order: number;
+  source: string;
   linked_entity_type: string | null;
   linked_entity_id: string | null;
-  created_by: string;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -543,6 +543,67 @@ export interface PushSubscription {
 }
 
 // ========================
+// 30. task_columns
+// ========================
+export interface TaskColumn {
+  id: string;
+  name: string;
+  position: number;
+  is_final: boolean;
+  created_at: string;
+}
+
+// ========================
+// 31. task_activity
+// ========================
+export type TaskActivityType =
+  | "comment"
+  | "status_change"
+  | "assignment_change"
+  | "priority_change"
+  | "created";
+
+export interface TaskActivity {
+  id: string;
+  task_id: string;
+  user_id: string | null;
+  type: TaskActivityType;
+  content: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+// ========================
+// Task relation types (for queries)
+// ========================
+export interface TaskWithRelations {
+  id: string;
+  title: string;
+  description: string | null;
+  assignee_id: string | null;
+  column_id: string;
+  priority: TaskPriority;
+  due_date: string | null;
+  column_order: number;
+  source: string;
+  linked_entity_type: string | null;
+  linked_entity_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  column: { name: string; is_final: boolean };
+  assignee: { id: string; name: string; photo_url: string | null } | null;
+  creator: { id: string; name: string } | null;
+  linked_entity_name: string | null;
+}
+
+export interface TaskDetail extends TaskWithRelations {
+  activities: (TaskActivity & {
+    user: { name: string; photo_url: string | null } | null;
+  })[];
+}
+
+// ========================
 // Database type map (for generic helpers)
 // ========================
 export interface Database {
@@ -576,6 +637,8 @@ export interface Database {
   notifications: Notification;
   push_subscriptions: PushSubscription;
   integration_tokens: IntegrationToken;
+  task_columns: TaskColumn;
+  task_activity: TaskActivity;
 }
 
 // ========================
