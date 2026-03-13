@@ -3,6 +3,7 @@ import "./globals.css";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { PWAProvider } from "@/components/shared/pwa-provider";
 
 const heading = Bricolage_Grotesque({
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body className="antialiased">
         <PWAProvider>
           <TooltipProvider delay={300}>{children}</TooltipProvider>
+          <Toaster position="top-right" richColors closeButton />
         </PWAProvider>
       </body>
     </html>
