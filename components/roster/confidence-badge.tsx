@@ -30,17 +30,17 @@ export function ConfidenceBadge({ confidence, reasoning }: ConfidenceBadgeProps)
   const label = CONFIDENCE_LABELS[confidence];
 
   return (
-    <TooltipProvider delayDuration={200}>
+    <TooltipProvider delay={200}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex cursor-help" aria-label={label}>
-            <Circle
-              className="size-2.5"
-              fill={fill}
-              stroke={fill}
-              strokeWidth={0}
-            />
-          </span>
+        <TooltipTrigger
+          render={<span className="inline-flex cursor-help" aria-label={label} />}
+        >
+          <Circle
+            className="size-2.5"
+            fill={fill}
+            stroke={fill}
+            strokeWidth={0}
+          />
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-[240px]">
           <p className="text-xs font-medium">{label}</p>
