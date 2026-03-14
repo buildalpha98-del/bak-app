@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
+  SchedulingCoach,
   SchedulingInput,
   SchedulingSession,
   SchedulingCentre,

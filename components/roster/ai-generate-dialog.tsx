@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -60,38 +60,17 @@ export function AIGenerateDialog({
 }: AIGenerateDialogProps) {
   const [weekStart, setWeekStart] = useState(getNextMonday);
   const [keepExisting, setKeepExisting] = useState(true);
+  const [includeUnconfirmed, setIncludeUnconfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewStats, setPreviewStats] = useState<PreviewStats | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
 
-  // Fetch preview stats when week changes
-  const fetchPreview = useCallback(async (weekDate: string) => {
-    setPreviewLoading(true);
-    try {
-      const weekEnd = getFridayFromMonday(weekDate);
-      const res = await fetch(
-        `/api/scheduling/generate?weekStart=${weekDate}&weekEnd=${weekEnd}&preview=true`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setPreviewStats({
-          sessionsCount: data.sessionsCount ?? 0,
-          coachesCount: data.coachesCount ?? 0,
-        });
-      }
-    } catch {
-      // Non-critical — preview is informational
-    } finally {
-      setPreviewLoading(false);
-    }
-  }, []);
-
+  // Reset preview when dialog opens
   useEffect(() => {
-    if (open && weekStart) {
-      fetchPreview(weekStart);
+    if (open) {
+      setPreviewStats(null);
     }
-  }, [open, weekStart, fetchPreview]);
+  }, [open]);
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
@@ -99,6 +78,7 @@ export function AIGenerateDialog({
       setPreviewStats(null);
       setWeekStart(getNextMonday());
       setKeepExisting(true);
+      setIncludeUnconfirmed(false);
     }
     onOpenChange(nextOpen);
   }
@@ -133,6 +113,7 @@ export function AIGenerateDialog({
           weekEnd,
           termId,
           keepExisting,
+          includeUnconfirmed,
         }),
       });
 
@@ -210,12 +191,7 @@ export function AIGenerateDialog({
           </div>
 
           {/* Preview stats */}
-          {previewLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
-              Loading preview...
-            </div>
-          ) : previewStats ? (
+          {previewStats && (
             <div className="rounded-lg border bg-muted/50 p-3">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{previewStats.sessionsCount}</span>{" "}
@@ -224,20 +200,34 @@ export function AIGenerateDialog({
                 coach{previewStats.coachesCount !== 1 ? "es" : ""} available
               </p>
             </div>
-          ) : null}
+          )}
 
-          {/* Keep existing */}
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="keep-existing"
-              checked={keepExisting}
-              onCheckedChange={(checked) =>
-                setKeepExisting(checked === true)
-              }
-            />
-            <Label htmlFor="keep-existing" className="text-sm font-normal">
-              Keep existing coach assignments
-            </Label>
+          {/* Options */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="keep-existing"
+                checked={keepExisting}
+                onCheckedChange={(checked) =>
+                  setKeepExisting(checked === true)
+                }
+              />
+              <Label htmlFor="keep-existing" className="text-sm font-normal">
+                Keep existing coach assignments
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="include-unconfirmed"
+                checked={includeUnconfirmed}
+                onCheckedChange={(checked) =>
+                  setIncludeUnconfirmed(checked === true)
+                }
+              />
+              <Label htmlFor="include-unconfirmed" className="text-sm font-normal">
+                Include unconfirmed coaches
+              </Label>
+            </div>
           </div>
 
           <DialogFooter>
