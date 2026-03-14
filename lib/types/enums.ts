@@ -41,7 +41,8 @@ export type SessionStatus =
   | "confirmed"
   | "in_progress"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "needs_replacement";
 
 export type SwapStatus =
   | "pending_coach"
@@ -130,7 +131,14 @@ export type NotificationEventType =
   | "dm_received"
   | "shift_thread_message"
   | "assessment_ready"
-  | "assessment_reminder";
+  | "assessment_reminder"
+  | "rerostering_offer"
+  | "rerostering_accepted"
+  | "rerostering_declined"
+  | "rerostering_expired"
+  | "rerostering_escalation"
+  | "roster_generated"
+  | "roster_published";
 
 // Children & attendance
 export type AgeGroup = "3-5" | "5-8" | "8-12";
@@ -186,6 +194,20 @@ export type SessionType =
   | "school_local"
   | "school_travel"
   | "holiday_clinic";
+
+// Scheduling
+export type SchedulingPreferenceType = "preferred" | "avoid";
+export type SchedulingRunStatus = "generated" | "reviewed" | "published" | "discarded";
+
+// Rerostering
+export type CancellationReasonType = "sick" | "emergency" | "personal" | "other";
+export type RerosteringOfferStatus =
+  | "pending_offer"
+  | "offer_sent"
+  | "accepted"
+  | "declined"
+  | "expired"
+  | "no_replacement";
 
 // Sports offered
 export const SPORTS = [

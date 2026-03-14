@@ -46,11 +46,12 @@ export interface UpdateSessionData {
 const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
   draft: ["published", "cancelled"],
   published: ["pending_confirmation", "cancelled"],
-  pending_confirmation: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "cancelled"],
+  pending_confirmation: ["confirmed", "cancelled", "needs_replacement"],
+  confirmed: ["in_progress", "cancelled", "needs_replacement"],
   in_progress: ["completed"],
   completed: [],
   cancelled: [],
+  needs_replacement: ["confirmed", "cancelled"],
 };
 
 function isValidTransition(

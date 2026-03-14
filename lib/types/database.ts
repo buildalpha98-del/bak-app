@@ -968,6 +968,9 @@ export interface Database {
   email_sends: EmailSend;
   revenue_forecasts: RevenueForecast;
   forecast_config: ForecastConfig;
+  scheduling_preferences: SchedulingPreference;
+  scheduling_runs: SchedulingRun;
+  rerostering_events: RerosteringEvent;
 }
 
 // ========================
@@ -997,6 +1000,106 @@ export interface ForecastConfig {
   value: Record<string, unknown>;
   updated_by: string | null;
   updated_at: string;
+}
+
+// ========================
+// 50. scheduling_preferences
+// ========================
+export interface SchedulingPreference {
+  id: string;
+  coach_id: string;
+  centre_id: string;
+  preference_type: import("./enums").SchedulingPreferenceType;
+  reason: string | null;
+  learned: boolean;
+  created_by: string;
+  created_at: string;
+}
+
+// ========================
+// 51. scheduling_runs
+// ========================
+export interface SchedulingRunInputSummary {
+  coaches_count: number;
+  sessions_count: number;
+  constraints: string[];
+}
+
+export interface SchedulingRunOutputSummary {
+  assigned_count: number;
+  unassigned_count: number;
+  confidence_breakdown: { green: number; amber: number; red: number };
+}
+
+export interface SchedulingAssignment {
+  session_id: string;
+  assigned_coach_id: string | null;
+  score: number;
+  confidence: "green" | "amber" | "red";
+  reasoning: string[];
+  eligible_coaches: { coach_id: string; score: number; name: string }[];
+}
+
+export interface SchedulingAdjustment {
+  session_id: string;
+  original_coach_id: string | null;
+  original_score: number;
+  replacement_coach_id: string;
+  adjusted_by: string;
+  adjusted_at: string;
+}
+
+export interface SchedulingRun {
+  id: string;
+  term_id: string;
+  week_start: string;
+  week_end: string;
+  input_summary: SchedulingRunInputSummary;
+  output_summary: SchedulingRunOutputSummary;
+  assignments_json: SchedulingAssignment[];
+  adjustments_json: SchedulingAdjustment[];
+  status: import("./enums").SchedulingRunStatus;
+  generated_at: string;
+  published_at: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+// ========================
+// 52. rerostering_events
+// ========================
+export interface RerosteringSuggestion {
+  coach_id: string;
+  coach_name: string;
+  coach_phone: string | null;
+  availability_status: "confirmed" | "potentially_available";
+  score: number;
+  score_breakdown: {
+    familiarity: number;
+    utilisation: number;
+    location: number;
+    preference: number;
+    compliance: number;
+  };
+  last_at_centre: string | null;
+  current_week_hours: number;
+}
+
+export interface RerosteringEvent {
+  id: string;
+  session_id: string;
+  original_coach_id: string;
+  cancellation_reason: import("./enums").CancellationReasonType;
+  cancellation_details: string | null;
+  suggestions_json: RerosteringSuggestion[];
+  selected_replacement_id: string | null;
+  offer_status: import("./enums").RerosteringOfferStatus;
+  offer_sent_at: string | null;
+  offer_expires_at: string | null;
+  approved_by: string | null;
+  escalated: boolean;
+  created_at: string;
+  resolved_at: string | null;
 }
 
 // ========================

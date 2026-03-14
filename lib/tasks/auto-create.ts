@@ -21,7 +21,8 @@ interface AutoCreateTaskInput {
     | "compliance_expiry"
     | "shift_declined"
     | "invoice_flagged"
-    | "low_session_rating";
+    | "low_session_rating"
+    | "rerostering";
 }
 
 /**
