@@ -121,10 +121,13 @@ export function CommandCentre(props: CommandCentreProps) {
       {/* Top Bar */}
       <div className="flex items-start justify-between animate-fade-up">
         <div>
-          <h1 className="text-2xl font-bold text-foreground font-heading">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+            Operations
+          </p>
+          <h1 className="text-3xl font-bold text-foreground font-heading tracking-tight page-header-sport">
             Command Centre
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{formatTodayDate()}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{formatTodayDate()}</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:block">

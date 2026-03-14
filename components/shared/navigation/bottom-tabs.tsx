@@ -15,31 +15,38 @@ export function BottomTabs({ role }: BottomTabsProps) {
   const items = getMobileItems(role);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-end border-t border-border bg-card/90 backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)]">
-      {items.map((item) => {
-        const active = isNavItemActive(item.href, pathname);
-        const Icon = item.icon;
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="flex items-end">
+        {items.map((item) => {
+          const active = isNavItemActive(item.href, pathname);
+          const Icon = item.icon;
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-1 py-2 min-h-[56px] transition-all duration-200 relative",
-              active ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            {/* Active indicator line */}
-            {active && (
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary" />
-            )}
-            <Icon className={cn("h-5 w-5 transition-transform duration-200", active && "scale-110")} />
-            <span className={cn("text-[10px]", active ? "font-semibold" : "font-medium")}>
-              {item.label}
-            </span>
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] transition-all duration-200 relative",
+                active ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {/* Active indicator — bold top stripe with glow */}
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-10 rounded-b-full bg-primary shadow-[0_2px_8px_rgba(232,113,42,0.3)]" />
+              )}
+              <div className={cn(
+                "flex items-center justify-center h-7 w-7 rounded-lg transition-all duration-200",
+                active && "bg-primary/10"
+              )}>
+                <Icon className={cn("h-[18px] w-[18px] transition-transform duration-200", active && "scale-110")} />
+              </div>
+              <span className={cn("text-[10px] leading-tight", active ? "font-bold" : "font-medium")}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

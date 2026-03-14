@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/shared/auth-shell";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -24,32 +24,32 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthShell title="Build Alpha Kids" description="Sign in to your account">
-      <form action={handleSubmit} className="space-y-4">
+    <AuthShell title="Welcome Back" description="Sign in to your Build Alpha Kids account">
+      <form action={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-fade-up">
+          <div className="rounded-xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-fade-up font-medium">
             {error}
           </div>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-foreground font-medium">
+          <Label htmlFor="email" className="text-foreground font-semibold text-xs uppercase tracking-wider">
             Email
           </Label>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="you@buildalphakids.com.au"
             required
             autoComplete="email"
             disabled={loading}
-            className="h-11"
+            className="h-12 rounded-xl bg-background/50 border-border/60 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-foreground font-medium">
+          <Label htmlFor="password" className="text-foreground font-semibold text-xs uppercase tracking-wider">
             Password
           </Label>
           <Input
@@ -60,13 +60,13 @@ export default function LoginPage() {
             required
             autoComplete="current-password"
             disabled={loading}
-            className="h-11"
+            className="h-12 rounded-xl bg-background/50 border-border/60 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
           />
         </div>
 
         <Button
           type="submit"
-          className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 transition-all duration-200"
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 font-bold text-sm tracking-wide group"
           disabled={loading}
         >
           {loading ? (
@@ -75,14 +75,17 @@ export default function LoginPage() {
               Signing in...
             </>
           ) : (
-            "Sign in"
+            <>
+              Sign in
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </>
           )}
         </Button>
 
-        <div className="text-center">
+        <div className="text-center pt-1">
           <Link
             href="/reset-password"
-            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200"
+            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 underline underline-offset-4 decoration-primary/30 hover:decoration-primary/60"
           >
             Forgot your password?
           </Link>

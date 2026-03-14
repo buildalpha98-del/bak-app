@@ -9,18 +9,24 @@ interface StatCardProps {
   icon: LucideIcon;
   value: number;
   label: string;
+  accentColor: string;
+  stripeClass: string;
+  index: number;
 }
 
-function StatCard({ icon: Icon, value, label }: StatCardProps) {
+function StatCard({ icon: Icon, value, label, accentColor, stripeClass, index }: StatCardProps) {
   return (
-    <Card className="min-h-[44px]">
-      <CardContent className="flex items-center gap-4 py-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-orange-light)]">
-          <Icon className="size-5 text-primary" />
+    <Card className={`stat-card ${stripeClass} min-h-[44px] card-hover animate-fade-up stagger-${index + 1}`}>
+      <CardContent className="flex items-center gap-4 py-5 pl-6">
+        <div
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm"
+          style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+        >
+          <Icon className="size-5" />
         </div>
         <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="scoreboard-number text-3xl font-bold animate-count-up">{value}</p>
+          <p className="text-xs font-medium text-muted-foreground mt-0.5 uppercase tracking-wider">{label}</p>
         </div>
       </CardContent>
     </Card>
@@ -32,28 +38,42 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
+  const cards = [
+    {
+      icon: Users,
+      value: stats.totalActiveChildren,
+      label: "Children Tracked",
+      accentColor: "#E8712A",
+      stripeClass: "",
+    },
+    {
+      icon: ClipboardCheck,
+      value: stats.assessmentsCompletedThisTerm,
+      label: "Assessments This Term",
+      accentColor: "#4CAF50",
+      stripeClass: "stat-card-green",
+    },
+    {
+      icon: UserCheck,
+      value: stats.namedAttendanceSessions,
+      label: "Named Attendance",
+      accentColor: "#2962FF",
+      stripeClass: "stat-card-blue",
+    },
+    {
+      icon: Hash,
+      value: stats.headcountOnlySessions,
+      label: "Headcount Only",
+      accentColor: "#FFD600",
+      stripeClass: "stat-card-yellow",
+    },
+  ];
+
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-      <StatCard
-        icon={Users}
-        value={stats.totalActiveChildren}
-        label="Children Tracked"
-      />
-      <StatCard
-        icon={ClipboardCheck}
-        value={stats.assessmentsCompletedThisTerm}
-        label="Assessments This Term"
-      />
-      <StatCard
-        icon={UserCheck}
-        value={stats.namedAttendanceSessions}
-        label="Named Attendance Sessions"
-      />
-      <StatCard
-        icon={Hash}
-        value={stats.headcountOnlySessions}
-        label="Headcount-Only Sessions"
-      />
+      {cards.map((card, i) => (
+        <StatCard key={card.label} {...card} index={i} />
+      ))}
     </div>
   );
 }

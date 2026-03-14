@@ -1,6 +1,6 @@
 "use client";
 
-import { AppLogo } from "@/components/shared/app-logo";
+/* eslint-disable @next/next/no-img-element */
 import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
 import { Breadcrumbs } from "./breadcrumbs";
@@ -12,13 +12,19 @@ interface TopBarProps {
 
 export function TopBar({ profile }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-4 sm:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 sm:px-6">
       {/* Left: logo on mobile, breadcrumbs on desktop */}
       <div className="flex items-center gap-3">
-        <AppLogo className="flex md:hidden shrink-0" />
-        <span className="md:hidden text-sm font-semibold text-foreground font-heading">
-          Build Alpha Kids
-        </span>
+        <div className="flex md:hidden items-center gap-2.5 shrink-0">
+          <img
+            src="/logo-full.png"
+            alt="Build Alpha Kids"
+            className="h-8 w-8 object-contain"
+          />
+          <span className="font-display text-sm font-bold text-foreground tracking-tight">
+            BAK
+          </span>
+        </div>
         <Breadcrumbs />
       </div>
 
