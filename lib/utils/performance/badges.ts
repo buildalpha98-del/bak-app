@@ -1,4 +1,3 @@
-"use server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CoachBadge } from "@/lib/types/database";
 
