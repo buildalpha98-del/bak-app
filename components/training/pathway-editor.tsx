@@ -494,12 +494,14 @@ export function PathwayEditor({ mode, pathway }: Props) {
               Modules ({modules.length})
             </h3>
             <Dialog open={dialogOpen} onOpenChange={handleDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Module
-                </Button>
-              </DialogTrigger>
+              <DialogTrigger
+                render={
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Module
+                  </Button>
+                }
+              />
               <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle>Add Module to Pathway</DialogTitle>
