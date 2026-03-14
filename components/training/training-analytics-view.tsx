@@ -30,7 +30,7 @@ import { BookOpen, CheckCircle2, AlertTriangle, Trophy } from "lucide-react";
 import type {
   TrainingAnalytics,
   LeaderboardEntry,
-} from "@/lib/training/analytics-actions";
+} from "@/lib/training/analytics-types";
 
 interface TrainingAnalyticsViewProps {
   analytics: TrainingAnalytics;

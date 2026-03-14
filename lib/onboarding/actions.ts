@@ -12,7 +12,7 @@ import type {
 // The 10 onboarding steps definition
 // ─────────────────────────────────────────────
 
-export const ONBOARDING_STEPS = [
+const ONBOARDING_STEPS = [
   { number: 1, name: "Complete centre profile", type: "manual" as const },
   { number: 2, name: "Upload centre logo", type: "manual" as const },
   { number: 3, name: "Send welcome email", type: "auto_email" as const },
