@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { signIn } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/shared/auth-shell";
@@ -12,10 +11,16 @@ import { Loader2, ArrowRight } from "lucide-react";
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!formRef.current || loading) return;
+
     setError(null);
     setLoading(true);
+
+    const formData = new FormData(formRef.current);
     const result = await signIn(formData);
     if (result?.error) {
       setError(result.error);
@@ -25,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell title="Welcome Back" description="Sign in to your Build Alpha Kids account">
-      <form action={handleSubmit} className="space-y-5">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
         {error && (
           <div className="rounded-xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-fade-up font-medium">
             {error}
@@ -64,9 +69,9 @@ export default function LoginPage() {
           />
         </div>
 
-        <Button
+        <button
           type="submit"
-          className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 font-bold text-sm tracking-wide group"
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 font-bold text-sm tracking-wide group inline-flex items-center justify-center disabled:pointer-events-none disabled:opacity-50"
           disabled={loading}
         >
           {loading ? (
@@ -80,7 +85,7 @@ export default function LoginPage() {
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </>
           )}
-        </Button>
+        </button>
 
         <div className="text-center pt-1">
           <Link
