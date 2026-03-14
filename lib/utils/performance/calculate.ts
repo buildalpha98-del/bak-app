@@ -7,7 +7,7 @@ import type { CoachMetrics } from "@/lib/types/database";
 // ============================================================
 export const METRIC_WEIGHTS = {
   session_volume: 0.10,
-  feedback_rating: 0.25,
+  feedback_rating: 0.20,
   attendance_consistency: 0.10,
   form_completion: 0.15,
   punctuality: 0.15,
