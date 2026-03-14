@@ -30,6 +30,8 @@ import { formatTime12 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { confirmShift, declineShift } from "@/lib/sessions/shift-actions";
 import { startSession } from "@/lib/sessions/session-workflow-actions";
+import { cancelSessionAsCoach } from "@/lib/rerostering/actions";
+import { CancelSessionDialog } from "@/components/roster/cancel-session-dialog";
 import { getProgramById } from "@/lib/programs/actions";
 import { ProgramView } from "@/components/programs/program-view";
 import type { ProgramContentJson } from "@/lib/ai/types";
@@ -94,6 +96,7 @@ export function SessionDetailView({
   const [showDeclineReason, setShowDeclineReason] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [swapDialogOpen, setSwapDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const endTime = getEndTime(session.time, session.duration_minutes);
@@ -104,6 +107,12 @@ export function SessionDetailView({
   const canStart =
     session.status === "confirmed" &&
     sessionDateTime.getTime() - Date.now() <= 30 * 60 * 1000;
+
+  // Can cancel: future sessions that are confirmed or pending
+  const isFutureSession = sessionDateTime.getTime() > Date.now();
+  const canCancel =
+    isFutureSession &&
+    (session.status === "confirmed" || session.status === "pending_confirmation");
 
   // Pay rate display
   const payRate = session.pay_rate_override ?? session.pay_rate_resolved;
@@ -459,6 +468,17 @@ export function SessionDetailView({
                 </Button>
               </div>
             )}
+
+            {canCancel && (
+              <Button
+                variant="outline"
+                className="w-full min-h-[44px] text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                onClick={() => setCancelDialogOpen(true)}
+              >
+                <XCircle className="mr-2 size-4" />
+                Can&apos;t Make It
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
@@ -491,6 +511,16 @@ export function SessionDetailView({
               <p className="text-xs text-muted-foreground text-center">
                 Start button activates 30 minutes before session time.
               </p>
+            )}
+            {canCancel && (
+              <Button
+                variant="outline"
+                className="w-full min-h-[44px] text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                onClick={() => setCancelDialogOpen(true)}
+              >
+                <XCircle className="mr-2 size-4" />
+                Can&apos;t Make It
+              </Button>
             )}
           </CardContent>
         </Card>
@@ -564,6 +594,17 @@ export function SessionDetailView({
           </CardContent>
         </Card>
       )}
+
+      {/* Cancel dialog */}
+      <CancelSessionDialog
+        sessionId={session.id}
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onSuccess={() => {
+          toast.success("Session cancelled. Ops is finding a replacement.");
+          router.refresh();
+        }}
+      />
 
       {/* Swap dialog */}
       <SwapRequestDialog
