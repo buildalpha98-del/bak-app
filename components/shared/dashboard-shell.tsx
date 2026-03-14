@@ -9,6 +9,8 @@ import { SyncStatusIndicator } from "./sync-status-indicator";
 import { InstallPrompt } from "./install-prompt";
 import { SessionTimeoutWarning } from "./session-timeout-warning";
 import { useEphemeralSession } from "@/lib/hooks/useEphemeralSession";
+import { CommandPalette } from "./command-palette";
+import { QuickActions } from "./quick-actions";
 
 interface DashboardShellProps {
   profile: Profile;
@@ -30,6 +32,8 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
           </main>
         </div>
         <BottomTabs role={profile.role} />
+        <QuickActions role={profile.role} />
+        <CommandPalette userRole={profile.role} />
         <InstallPrompt />
         <SessionTimeoutWarning />
       </div>
