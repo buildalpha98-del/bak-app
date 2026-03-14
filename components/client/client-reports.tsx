@@ -10,6 +10,7 @@ import {
   BarChart3,
   Star,
   Dumbbell,
+  Download,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import type { ClientReport } from "@/lib/client/portal-actions";
 
 interface ClientReportsProps {
   reports: ClientReport[];
+  centreId: string;
 }
 
 function formatDate(dateStr: string): string {
@@ -54,13 +56,22 @@ function statusBadge(status: string) {
   }
 }
 
-export function ClientReports({ reports }: ClientReportsProps) {
+export function ClientReports({ reports, centreId }: ClientReportsProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (reports.length === 0) {
     return (
       <div className="animate-fade-up">
-        <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
+          <a
+            href={`/api/client/${centreId}/calendar`}
+            className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100 transition-colors"
+          >
+            <Calendar className="h-4 w-4" />
+            Sync Calendar
+          </a>
+        </div>
         <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
             <FileText className="h-6 w-6 text-cyan-600" />
@@ -77,7 +88,16 @@ export function ClientReports({ reports }: ClientReportsProps) {
 
   return (
     <div className="animate-fade-up">
-      <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
+        <a
+          href={`/api/client/${centreId}/calendar`}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100 transition-colors"
+        >
+          <Calendar className="h-4 w-4" />
+          Sync Calendar
+        </a>
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">
         Term reports summarising your centre&apos;s coaching sessions.
       </p>
@@ -114,6 +134,15 @@ export function ClientReports({ reports }: ClientReportsProps) {
                         Sent {formatDate(report.sent_at.split("T")[0])}
                       </span>
                     )}
+                    <a
+                      href={`/api/client/${centreId}/report-pdf?reportId=${report.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      aria-label="Download PDF report"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Download PDF</span>
+                    </a>
                     {isExpanded ? (
                       <ChevronUp className="h-5 w-5 text-gray-400" />
                     ) : (
