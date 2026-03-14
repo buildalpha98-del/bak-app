@@ -15,6 +15,14 @@
     {
       "path": "/api/cron/performance-snapshot",
       "schedule": "0 22 1 * *"
+    },
+    {
+      "path": "/api/cron/onboarding-emails",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron/training-overdue",
+      "schedule": "0 7 * * *"
     }
   ]
 }

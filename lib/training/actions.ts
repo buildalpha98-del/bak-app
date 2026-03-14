@@ -623,3 +623,58 @@ export async function reorderPathwayModules(
 
   return { success: true };
 }
+
+// ─────────────────────────────────────────────
+// PATHWAY PUBLISHING
+// ─────────────────────────────────────────────
+
+/**
+ * Publish a training pathway, making it available for assignment.
+ */
+export async function publishTrainingPathway(
+  id: string
+): Promise<{ success: true } | { error: string }> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "Not authenticated." };
+
+  const { error } = await supabase
+    .from("training_pathways")
+    .update({ status: "published", updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error publishing pathway:", error);
+    return { error: error.message };
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "training_pathway_published",
+    entity_type: "training_pathway",
+    entity_id: id,
+  });
+
+  revalidatePath("/admin/training");
+  return { success: true };
+}
+
+/**
+ * Lightweight fetch of published modules for the pathway "Add Module" dropdown.
+ */
+export async function getPublishedModulesForSearch(): Promise<
+  Array<{ id: string; title: string; type: string; estimated_minutes: number | null }>
+> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("training_modules")
+    .select("id, title, type, estimated_minutes")
+    .eq("status", "published")
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching published modules:", error);
+    return [];
+  }
+  return data ?? [];
+}

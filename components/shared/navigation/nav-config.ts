@@ -66,6 +66,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Schedule", href: "/coach/schedule", icon: Calendar, mobileOrder: 2 },
     { label: "Forms", href: "/coach/forms", icon: ClipboardList, mobileOrder: 3 },
     { label: "Messages", href: "/coach/messages", icon: MessageSquare, mobileOrder: 4 },
+    { label: "Training", href: "/coach/training", icon: GraduationCap },
     { label: "Invoicing", href: "/coach/invoicing", icon: Receipt },
     { label: "Docs", href: "/coach/docs", icon: FileText },
     { label: "Performance", href: "/coach/performance", icon: TrendingUp },

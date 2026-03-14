@@ -41,6 +41,9 @@ import type {
   TrainingCategory,
   TrainingStatus,
   TrainingAssignmentStatus,
+  OnboardingStatus,
+  OnboardingStepType,
+  OnboardingStepStatus,
 } from "./enums";
 
 // ========================
@@ -1071,6 +1074,81 @@ export interface TrainingCompletion {
 }
 
 // ========================
+// 60. centre_onboarding_checklists
+// ========================
+export interface CentreOnboardingChecklist {
+  id: string;
+  centre_id: string;
+  status: OnboardingStatus;
+  started_at: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 61. centre_onboarding_steps
+// ========================
+export interface CentreOnboardingStep {
+  id: string;
+  checklist_id: string;
+  step_number: number;
+  step_name: string;
+  step_type: OnboardingStepType;
+  status: OnboardingStepStatus;
+  completed_at: string | null;
+  completed_by: string | null;
+  notes: string | null;
+  scheduled_for: string | null;
+  created_at: string;
+}
+
+// ========================
+// 62. centre_onboarding_emails
+// ========================
+export interface CentreOnboardingEmail {
+  id: string;
+  checklist_id: string;
+  step_number: number;
+  email_type: string;
+  sent_to: string;
+  sent_at: string;
+  opened_at: string | null;
+}
+
+// ========================
+// 63. ai_assistant_conversations
+// ========================
+export interface AiAssistantConversation {
+  id: string;
+  coach_id: string;
+  session_id: string | null;
+  messages_json: Array<{ role: "user" | "assistant"; content: string; timestamp: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 64. ai_assistant_cache
+// ========================
+export interface AiAssistantCache {
+  id: string;
+  cache_key: string;
+  response: string;
+  created_at: string;
+  expires_at: string;
+}
+
+// ========================
+// 65. ai_assistant_usage
+// ========================
+export interface AiAssistantUsage {
+  id: string;
+  coach_id: string;
+  usage_date: string;
+  count: number;
+}
+
+// ========================
 // Database type map (for generic helpers)
 // ========================
 export interface Database {
@@ -1134,6 +1212,12 @@ export interface Database {
   training_pathway_modules: TrainingPathwayModule;
   training_assignments: TrainingAssignment;
   training_completions: TrainingCompletion;
+  centre_onboarding_checklists: CentreOnboardingChecklist;
+  centre_onboarding_steps: CentreOnboardingStep;
+  centre_onboarding_emails: CentreOnboardingEmail;
+  ai_assistant_conversations: AiAssistantConversation;
+  ai_assistant_cache: AiAssistantCache;
+  ai_assistant_usage: AiAssistantUsage;
 }
 
 // ========================

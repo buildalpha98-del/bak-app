@@ -1,7 +1,7 @@
 import { getTrainingModules } from "@/lib/training/actions";
 import { getTrainingPathways } from "@/lib/training/actions";
 import { ModuleListView } from "@/components/training/module-list-view";
-import { PathwaysPlaceholder } from "@/components/training/pathways-placeholder";
+import { PathwayListView } from "@/components/training/pathway-list-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function OpsTrainingPage() {
@@ -35,7 +35,7 @@ export default async function OpsTrainingPage() {
         </TabsContent>
 
         <TabsContent value="pathways" className="mt-4">
-          <PathwaysPlaceholder pathways={pathways} />
+          <PathwayListView pathways={pathways} />
         </TabsContent>
       </Tabs>
     </div>

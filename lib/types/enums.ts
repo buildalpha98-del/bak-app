@@ -220,6 +220,11 @@ export type TrainingCategory = "onboarding" | "sport_specific" | "compliance" | 
 export type TrainingStatus = "draft" | "published" | "archived";
 export type TrainingAssignmentStatus = "assigned" | "in_progress" | "completed" | "overdue";
 
+// Centre onboarding
+export type OnboardingStatus = "in_progress" | "completed" | "stalled";
+export type OnboardingStepType = "manual" | "auto_email" | "auto_triggered";
+export type OnboardingStepStatus = "pending" | "in_progress" | "completed" | "skipped";
+
 // Sports offered
 export const SPORTS = [
   "Soccer",

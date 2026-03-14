@@ -231,6 +231,131 @@ export function dailyDigestEmail(
   };
 }
 
+// ========================
+// Onboarding email templates
+// ========================
+
+export function onboardingWelcomeEmail(
+  centreName: string,
+  contactName: string
+): { subject: string; html: string } {
+  return {
+    subject: `Welcome to Build Alpha Kids — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Welcome to <strong>Build Alpha Kids</strong>! We're thrilled to be partnering with <strong>${centreName}</strong> to deliver fun, high-quality multi-sport coaching sessions for your children.</p>
+      <p>Here's what to expect next:</p>
+      <ol style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">We'll reach out to collect a list of enrolled children so we can prepare attendance rolls.</li>
+        <li style="margin-bottom:8px;">We'll coordinate the schedule for your first sessions.</li>
+        <li style="margin-bottom:8px;">You'll receive access to your <strong>Client Portal</strong> where you can view schedules, reports, and child progress.</li>
+      </ol>
+      <p>If you have any questions in the meantime, just reply to this email — we're here to help!</p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingChildListRequestEmail(
+  centreName: string,
+  contactName: string
+): { subject: string; html: string } {
+  return {
+    subject: `Action Required: Child Enrolment List — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>We're getting everything ready for <strong>${centreName}</strong>'s coaching sessions!</p>
+      <p>To set up attendance rolls and skill tracking, we need a list of enrolled children. Could you please send us:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">Child's first name and last name</li>
+        <li style="margin-bottom:8px;">Date of birth or age group</li>
+        <li style="margin-bottom:8px;">Any medical or allergy notes (if applicable)</li>
+      </ul>
+      <p>A spreadsheet (CSV or Excel) works perfectly — just reply to this email with it attached.</p>
+      <p style="padding:12px;background:#FFF3E0;border-radius:6px;border-left:3px solid ${BRAND_ORANGE};">
+        <strong>Tip:</strong> If you don't have a formal list yet, just send what you have and we can add children as they enrol.
+      </p>
+      <p style="margin-top:24px;">Thanks,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingPortalInviteEmail(
+  centreName: string,
+  contactName: string,
+  portalUrl: string
+): { subject: string; html: string } {
+  return {
+    subject: `Your Client Portal is Ready — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Great news! Your <strong>Client Portal</strong> for <strong>${centreName}</strong> is now set up and ready to use.</p>
+      <p>Through the portal you can:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">View your upcoming session schedule</li>
+        <li style="margin-bottom:8px;">Track attendance and child participation</li>
+        <li style="margin-bottom:8px;">Access skill assessment reports</li>
+        <li style="margin-bottom:8px;">View and download invoices</li>
+        <li style="margin-bottom:8px;">Message the Build Alpha Kids team</li>
+      </ul>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${portalUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Access Your Portal</a>
+      </div>
+      <p style="color:${BRAND_GREY};font-size:13px;">You'll receive a magic link each time you log in — no password needed.</p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingSessionPrepEmail(
+  centreName: string,
+  contactName: string,
+  sessionDate: string,
+  coachName: string,
+  sport: string
+): { subject: string; html: string } {
+  return {
+    subject: `Your First Session is Coming Up! — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Exciting news — your first coaching session at <strong>${centreName}</strong> is just around the corner!</p>
+      <table role="presentation" style="margin:16px 0;width:100%;">
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};width:100px;">Date</td><td style="padding:4px 8px;font-weight:600;">${sessionDate}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Coach</td><td style="padding:4px 8px;font-weight:600;">${coachName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Sport</td><td style="padding:4px 8px;font-weight:600;">${sport}</td></tr>
+      </table>
+      <p>Here's how to prepare:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">Ensure children have appropriate footwear and clothing</li>
+        <li style="margin-bottom:8px;">Let us know about any last-minute changes to the child list</li>
+        <li style="margin-bottom:8px;">Our coach will arrive 10 minutes early to set up</li>
+      </ul>
+      <p>We can't wait to get started!</p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingFollowUpEmail(
+  centreName: string,
+  contactName: string,
+  feedbackUrl: string
+): { subject: string; html: string } {
+  return {
+    subject: `How Did the First Session Go? — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>We hope the first coaching session at <strong>${centreName}</strong> went brilliantly!</p>
+      <p>We'd love to hear your thoughts — your feedback helps us tailor future sessions to your centre's needs.</p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${feedbackUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Share Your Feedback</a>
+      </div>
+      <p>If you have any questions or want to discuss the program, just reply to this email.</p>
+      <p style="margin-top:24px;">Thanks,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
 export function feedbackRequestEmail(
   centreName: string,
   coachName: string,
