@@ -1,4 +1,4 @@
-"use client";
+import { ReloadButton } from "@/components/shared/reload-button";
 
 export default function OfflinePage() {
   return (
@@ -35,12 +35,7 @@ export default function OfflinePage() {
           worry — your pending work is saved and will sync automatically when you
           reconnect.
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 min-h-[44px]"
-        >
-          Try Again
-        </button>
+        <ReloadButton />
       </div>
     </div>
   );
