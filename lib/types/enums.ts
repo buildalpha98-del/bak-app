@@ -138,7 +138,12 @@ export type NotificationEventType =
   | "rerostering_expired"
   | "rerostering_escalation"
   | "roster_generated"
-  | "roster_published";
+  | "roster_published"
+  | "badge_earned"
+  | "performance_review_ready"
+  | "training_assigned"
+  | "training_completed"
+  | "training_overdue";
 
 // Children & attendance
 export type AgeGroup = "3-5" | "5-8" | "8-12";
@@ -208,6 +213,12 @@ export type RerosteringOfferStatus =
   | "declined"
   | "expired"
   | "no_replacement";
+
+// Training LMS
+export type TrainingModuleType = "video" | "document" | "quiz" | "checklist";
+export type TrainingCategory = "onboarding" | "sport_specific" | "compliance" | "professional_development";
+export type TrainingStatus = "draft" | "published" | "archived";
+export type TrainingAssignmentStatus = "assigned" | "in_progress" | "completed" | "overdue";
 
 // Sports offered
 export const SPORTS = [

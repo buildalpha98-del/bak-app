@@ -37,6 +37,10 @@ import type {
   LeadStage,
   LeadActivityType,
   EmailSendStatus,
+  TrainingModuleType,
+  TrainingCategory,
+  TrainingStatus,
+  TrainingAssignmentStatus,
 } from "./enums";
 
 // ========================
@@ -915,6 +919,158 @@ export interface EmailSend {
 }
 
 // ========================
+// 53. coach_performance_snapshots
+// ========================
+export interface CoachPerformanceSnapshot {
+  id: string;
+  coach_id: string;
+  period_start: string;
+  period_end: string;
+  metrics_json: CoachMetrics;
+  overall_score: number;
+  created_at: string;
+}
+
+export interface CoachMetrics {
+  session_volume: { count: number; trend: number; previous_count: number };
+  feedback_rating: { average: number; team_average: number; trend: number; count: number };
+  attendance_consistency: { average_per_session: number; trend: "growing" | "stable" | "declining" };
+  form_completion: { rate: number; expected: number; actual: number };
+  punctuality: { average_minutes: number; late_count: number; total_tracked: number };
+  shift_reliability: { rate: number; completed: number; total: number; cancellations: number };
+  assessment_thoroughness: { std_dev: number; avg_rating: number; total_ratings: number; flagged: boolean };
+  equipment_responsibility: { issue_rate: number; issues: number; checkins: number };
+}
+
+// ========================
+// 54. coach_badges
+// ========================
+export interface CoachBadge {
+  id: string;
+  coach_id: string;
+  badge_key: string;
+  earned_at: string;
+  metadata: Record<string, unknown>;
+}
+
+// ========================
+// 55. training_modules
+// ========================
+export interface TrainingModule {
+  id: string;
+  title: string;
+  description: string | null;
+  type: TrainingModuleType;
+  category: TrainingCategory;
+  content_json: VideoContent | DocumentContent | QuizContent | ChecklistContent;
+  estimated_minutes: number | null;
+  is_mandatory: boolean;
+  required_for_sports: string[] | null;
+  status: TrainingStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VideoContent {
+  video_url: string;
+  video_type: "upload" | "youtube" | "vimeo";
+  duration_seconds: number;
+  require_full_watch: boolean;
+}
+
+export interface DocumentContent {
+  file_url: string;
+  file_name: string;
+  file_type: "pdf" | "docx";
+  require_acknowledgement: boolean;
+}
+
+export interface QuizContent {
+  pass_mark: number;
+  allow_retries: boolean;
+  max_retries: number;
+  randomise_order: boolean;
+  questions: QuizQuestion[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct_answer_index: number;
+  explanation: string;
+}
+
+export interface ChecklistContent {
+  items: ChecklistItem[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  description: string;
+  requires_note: boolean;
+}
+
+// ========================
+// 56. training_pathways
+// ========================
+export interface TrainingPathway {
+  id: string;
+  title: string;
+  description: string | null;
+  category: TrainingCategory;
+  is_mandatory_onboarding: boolean;
+  status: TrainingStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 57. training_pathway_modules
+// ========================
+export interface TrainingPathwayModule {
+  id: string;
+  pathway_id: string;
+  module_id: string;
+  order_index: number;
+  created_at: string;
+}
+
+// ========================
+// 58. training_assignments
+// ========================
+export interface TrainingAssignment {
+  id: string;
+  coach_id: string;
+  module_id: string | null;
+  pathway_id: string | null;
+  assigned_by: string | null;
+  due_date: string | null;
+  status: TrainingAssignmentStatus;
+  assigned_at: string;
+  completed_at: string | null;
+}
+
+// ========================
+// 59. training_completions
+// ========================
+export interface TrainingCompletion {
+  id: string;
+  coach_id: string;
+  module_id: string;
+  assignment_id: string | null;
+  score: number | null;
+  passed: boolean | null;
+  attempt_number: number;
+  completion_data: Record<string, unknown>;
+  completed_at: string;
+  created_at: string;
+}
+
+// ========================
 // Database type map (for generic helpers)
 // ========================
 export interface Database {
@@ -971,6 +1127,13 @@ export interface Database {
   scheduling_preferences: SchedulingPreference;
   scheduling_runs: SchedulingRun;
   rerostering_events: RerosteringEvent;
+  coach_performance_snapshots: CoachPerformanceSnapshot;
+  coach_badges: CoachBadge;
+  training_modules: TrainingModule;
+  training_pathways: TrainingPathway;
+  training_pathway_modules: TrainingPathwayModule;
+  training_assignments: TrainingAssignment;
+  training_completions: TrainingCompletion;
 }
 
 // ========================

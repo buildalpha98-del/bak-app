@@ -69,4 +69,13 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   // Roster
   roster_generated: "important",
   roster_published: "urgent",
+
+  // Performance
+  badge_earned: "informational",
+  performance_review_ready: "informational",
+
+  // Training
+  training_assigned: "important",
+  training_completed: "informational",
+  training_overdue: "important",
 };
