@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { SessionStatusBadge } from "./session-status-badge";
 import { SmartCoachSelect } from "./smart-coach-select";
+import { ReplacementPanel } from "./replacement-panel";
 import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
 import {
@@ -72,6 +73,7 @@ const STATUS_ACTIONS: Record<
   in_progress: { label: "Complete Session", nextStatus: "completed" },
   completed: null,
   cancelled: null,
+  needs_replacement: null,
 };
 
 // ============================================================
@@ -120,6 +122,25 @@ export function SessionDetailSheet({
   const [assigningProgram, setAssigningProgram] = useState(false);
   const [sportPrograms, setSportPrograms] = useState<ProgramListItem[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(false);
+
+  // Rerostering event (for needs_replacement sessions)
+  const [rerosteringEvent, setRerosteringEvent] = useState<Record<string, unknown> | null>(null);
+  const [loadingRerostering, setLoadingRerostering] = useState(false);
+
+  useEffect(() => {
+    if (session?.status === "needs_replacement" && open) {
+      setLoadingRerostering(true);
+      import("@/lib/rerostering/actions").then(({ getActiveRerosteringEvents }) => {
+        getActiveRerosteringEvents().then((events) => {
+          const match = events.find(
+            (e: Record<string, unknown>) => e.session_id === session.id
+          );
+          setRerosteringEvent(match ?? null);
+          setLoadingRerostering(false);
+        });
+      });
+    }
+  }, [session?.id, session?.status, open]);
 
   if (!session) return null;
 
@@ -625,6 +646,35 @@ export function SessionDetailSheet({
                 {session.cancellation_reason}
               </p>
             </div>
+          )}
+
+          {/* Replacement panel for needs_replacement sessions */}
+          {session.status === "needs_replacement" && (
+            <>
+              <Separator />
+              {loadingRerostering ? (
+                <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" />
+                  Loading replacement options...
+                </div>
+              ) : rerosteringEvent ? (
+                <ReplacementPanel
+                  event={rerosteringEvent as any}
+                  originalCoachName={
+                    (rerosteringEvent.original_coach as any)?.name ?? undefined
+                  }
+                  sessionDate={session.date}
+                  sessionTime={session.time}
+                />
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-sm text-amber-700">
+                    This session needs a replacement coach. No rerostering event
+                    found.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </SheetContent>
