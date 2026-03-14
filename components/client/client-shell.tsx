@@ -15,6 +15,11 @@ import {
   LogOut,
   Menu,
   X,
+  BarChart3,
+  UserCheck,
+  Shield,
+  Star,
+  Layers,
 } from "lucide-react";
 import { AppLogo } from "@/components/shared/app-logo";
 import { signOut } from "@/lib/auth/actions";
@@ -29,12 +34,17 @@ interface ClientShellProps {
 function getNavItems(centreId: string) {
   return [
     { label: "Dashboard", href: `/client/${centreId}`, icon: Home, mobileOrder: 1 },
-    { label: "Schedule", href: `/client/${centreId}/schedule`, icon: Calendar, mobileOrder: 2 },
-    { label: "Children", href: `/client/${centreId}/children`, icon: Users, mobileOrder: 3 },
+    { label: "Impact", href: `/client/${centreId}/impact`, icon: BarChart3, mobileOrder: 2 },
+    { label: "Schedule", href: `/client/${centreId}/schedule`, icon: Calendar },
+    { label: "Curriculum", href: `/client/${centreId}/curriculum`, icon: BookOpen, mobileOrder: 3 },
+    { label: "Children", href: `/client/${centreId}/children`, icon: Users },
+    { label: "Our Coaches", href: `/client/${centreId}/staff`, icon: UserCheck },
+    { label: "Resources", href: `/client/${centreId}/resources`, icon: Shield },
+    { label: "Feedback", href: `/client/${centreId}/feedback`, icon: Star, mobileOrder: 4 },
     { label: "Reports", href: `/client/${centreId}/reports`, icon: FileText },
-    { label: "Programs", href: `/client/${centreId}/programs`, icon: BookOpen },
-    { label: "Messages", href: `/client/${centreId}/messages`, icon: MessageSquare, mobileOrder: 4 },
-    { label: "Invoices", href: `/client/${centreId}/invoices`, icon: Receipt, mobileOrder: 5 },
+    { label: "Programs", href: `/client/${centreId}/programs`, icon: Layers },
+    { label: "Messages", href: `/client/${centreId}/messages`, icon: MessageSquare, mobileOrder: 5 },
+    { label: "Invoices", href: `/client/${centreId}/invoices`, icon: Receipt },
   ] as const;
 }
 
