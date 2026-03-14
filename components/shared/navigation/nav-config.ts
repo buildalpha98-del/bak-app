@@ -15,6 +15,8 @@ import {
   Home,
   User,
   MessageSquare,
+  TrendingUp,
+  GraduationCap,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types/enums";
 
@@ -31,7 +33,9 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Centres & Schools", href: "/admin/centres", icon: Building2, mobileOrder: 2 },
     { label: "Roster", href: "/admin/roster", icon: Calendar, mobileOrder: 3 },
     { label: "Staff", href: "/admin/staff", icon: Users },
+    { label: "Performance", href: "/admin/performance", icon: TrendingUp },
     { label: "Programs", href: "/admin/programs", icon: BookOpen },
+    { label: "Training", href: "/admin/training", icon: GraduationCap },
     { label: "Equipment", href: "/admin/equipment", icon: Package },
     { label: "Documents", href: "/admin/documents", icon: FileText },
     { label: "Forms", href: "/admin/forms", icon: ClipboardList, mobileOrder: 4 },
@@ -46,7 +50,9 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Centres & Schools", href: "/ops/centres", icon: Building2, mobileOrder: 2 },
     { label: "Roster", href: "/ops/roster", icon: Calendar, mobileOrder: 3 },
     { label: "Staff", href: "/ops/staff", icon: Users },
+    { label: "Performance", href: "/ops/performance", icon: TrendingUp },
     { label: "Programs", href: "/ops/programs", icon: BookOpen },
+    { label: "Training", href: "/ops/training", icon: GraduationCap },
     { label: "Equipment", href: "/ops/equipment", icon: Package },
     { label: "Documents", href: "/ops/documents", icon: FileText },
     { label: "Forms", href: "/ops/forms", icon: ClipboardList, mobileOrder: 4 },
@@ -62,6 +68,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Messages", href: "/coach/messages", icon: MessageSquare, mobileOrder: 4 },
     { label: "Invoicing", href: "/coach/invoicing", icon: Receipt },
     { label: "Docs", href: "/coach/docs", icon: FileText },
+    { label: "Performance", href: "/coach/performance", icon: TrendingUp },
     { label: "Profile", href: "/coach/profile", icon: User, mobileOrder: 5 },
   ],
 };

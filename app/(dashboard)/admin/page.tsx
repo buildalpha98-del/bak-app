@@ -1,4 +1,5 @@
 import { FeedbackSummaryWidget } from "@/components/feedback/feedback-summary-widget";
+import { PerformanceWidget } from "@/components/admin/performance-widget";
 import { StatsCards } from "@/components/admin/stats-cards";
 import { getAdminDashboardStats } from "@/lib/admin/dashboard-stats";
 
@@ -26,6 +27,7 @@ export default async function AdminDashboard() {
       {/* Widgets grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <FeedbackSummaryWidget />
+        <PerformanceWidget />
       </div>
     </div>
   );
