@@ -7,6 +7,8 @@ import { TopBar } from "./navigation/top-bar";
 import { BottomTabs } from "./navigation/bottom-tabs";
 import { SyncStatusIndicator } from "./sync-status-indicator";
 import { InstallPrompt } from "./install-prompt";
+import { SessionTimeoutWarning } from "./session-timeout-warning";
+import { useEphemeralSession } from "@/lib/hooks/useEphemeralSession";
 
 interface DashboardShellProps {
   profile: Profile;
@@ -14,6 +16,8 @@ interface DashboardShellProps {
 }
 
 export function DashboardShell({ profile, children }: DashboardShellProps) {
+  useEphemeralSession();
+
   return (
     <SidebarProvider>
       <div className="grain-overlay flex min-h-screen bg-background">
@@ -27,6 +31,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
         </div>
         <BottomTabs role={profile.role} />
         <InstallPrompt />
+        <SessionTimeoutWarning />
       </div>
     </SidebarProvider>
   );
