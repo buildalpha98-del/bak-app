@@ -1,13 +1,15 @@
 import {
   SkeletonPageHeader,
-  SkeletonTable,
+  SkeletonStatsRow,
+  SkeletonCardGrid,
 } from "@/components/shared/skeleton-patterns";
 
-export default function StaffLoading() {
+export default function Loading() {
   return (
     <div className="space-y-6">
       <SkeletonPageHeader />
-      <SkeletonTable />
+      <SkeletonStatsRow count={3} />
+      <SkeletonCardGrid />
     </div>
   );
 }
