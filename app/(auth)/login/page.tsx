@@ -13,12 +13,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [rememberMe, setRememberMe] = useState(true);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!formRef.current || loading) return;
 
     setError(null);
     setLoading(true);
+
+    // Store preference before signIn (which redirects on success)
+    if (!rememberMe) {
+      localStorage.setItem("bak-session-ephemeral", "true");
+    } else {
+      localStorage.removeItem("bak-session-ephemeral");
+    }
 
     const formData = new FormData(formRef.current);
     const result = await signIn(formData);
@@ -68,6 +77,19 @@ export default function LoginPage() {
             className="h-12 rounded-xl bg-background/50 border-border/60 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
           />
         </div>
+
+        <label className="flex items-center gap-2.5 cursor-pointer select-none group py-1">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            disabled={loading}
+            className="h-4 w-4 rounded accent-primary cursor-pointer"
+          />
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+            Keep me signed in
+          </span>
+        </label>
 
         <button
           type="submit"
