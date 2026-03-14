@@ -547,14 +547,14 @@ export function SessionDetailView({
                 <Star
                   key={i}
                   className={`size-5 ${
-                    i < feedback.rating
+                    i < (feedback.rating ?? 0)
                       ? "fill-amber-400 text-amber-400"
                       : "text-muted-foreground/30"
                   }`}
                 />
               ))}
               <span className="ml-2 text-sm font-medium text-foreground">
-                {feedback.rating}/5
+                {feedback.rating ?? 0}/5
               </span>
             </div>
 

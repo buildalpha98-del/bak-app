@@ -303,7 +303,7 @@ export function SessionDetailSheet({
                 ) : (
                   <Select
                     value={session.program_id ?? "none"}
-                    onValueChange={handleAssignProgram}
+                    onValueChange={(v) => v && handleAssignProgram(v)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a programme…" />

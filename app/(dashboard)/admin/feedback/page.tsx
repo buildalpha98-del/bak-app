@@ -1,10 +1,10 @@
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getFeedbackList, getFeedbackAggregation } from "@/lib/feedback/actions";
 import { AdminFeedbackClient } from "./client";
 
 export default async function AdminFeedbackPage() {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

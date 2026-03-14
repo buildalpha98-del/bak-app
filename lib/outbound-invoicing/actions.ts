@@ -74,7 +74,7 @@ export async function getOutboundInvoices(filters?: {
         centre_name: centre?.name ?? "Unknown",
         centre_primary_contact_email: centre?.primary_contact_email ?? null,
         centres: undefined,
-      } as OutboundInvoiceWithCentre;
+      } as unknown as OutboundInvoiceWithCentre;
     });
 
     return { data: invoices, error: null };

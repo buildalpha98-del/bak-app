@@ -196,7 +196,7 @@ export function KitFormDialog({
                 <Label>Assigned Coach</Label>
                 <Select
                   value={locationId ?? ""}
-                  onValueChange={setLocationId}
+                  onValueChange={(v) => setLocationId(v ?? "")}
                   disabled={loadingLookups}
                 >
                   <SelectTrigger>
@@ -218,7 +218,7 @@ export function KitFormDialog({
                 <Label>Assigned Centre</Label>
                 <Select
                   value={locationId ?? ""}
-                  onValueChange={setLocationId}
+                  onValueChange={(v) => setLocationId(v ?? "")}
                   disabled={loadingLookups}
                 >
                   <SelectTrigger>

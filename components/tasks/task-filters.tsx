@@ -97,7 +97,7 @@ export function TaskFilters({
       {/* Dropdowns */}
       <Select
         value={filters.priority}
-        onValueChange={(v) => update({ priority: v === "all" ? "" : v })}
+        onValueChange={(v) => update({ priority: v === "all" ? "" : (v ?? "") })}
       >
         <SelectTrigger className="w-[130px] h-8 text-xs">
           <SelectValue placeholder="All Priorities" />
@@ -113,7 +113,7 @@ export function TaskFilters({
 
       <Select
         value={filters.assigneeId}
-        onValueChange={(v) => update({ assigneeId: v === "all" ? "" : v })}
+        onValueChange={(v) => update({ assigneeId: v === "all" ? "" : (v ?? "") })}
       >
         <SelectTrigger className="w-[140px] h-8 text-xs">
           <SelectValue placeholder="All Assignees" />

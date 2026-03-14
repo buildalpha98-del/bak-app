@@ -549,7 +549,7 @@ function FieldPropertiesPanel({
                       onUpdate({
                         conditional_logic: {
                           ...field.conditional_logic!,
-                          field_id: v,
+                          field_id: v ?? "",
                         },
                       })
                     }

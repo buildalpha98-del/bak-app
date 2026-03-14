@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { TaskColumn } from "@/lib/types/database";
 
 // ============================================================
@@ -10,7 +10,7 @@ import type { TaskColumn } from "@/lib/types/database";
 export async function createColumn(
   name: string
 ): Promise<{ data: TaskColumn | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -73,7 +73,7 @@ export async function renameColumn(
   columnId: string,
   name: string
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -101,7 +101,7 @@ export async function renameColumn(
 export async function reorderColumns(
   orderedColumnIds: string[]
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -147,7 +147,7 @@ export async function reorderColumns(
 export async function deleteColumn(
   columnId: string
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

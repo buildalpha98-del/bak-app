@@ -366,7 +366,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
                   Object.keys(centre.session_preferences).length > 0 && (
                     <div className="mt-2">
                       <p className="text-muted-foreground">Preferences</p>
-                      {(centre.session_preferences as Record<string, unknown>).preferred_sports && (
+                      {!!(centre.session_preferences as Record<string, unknown>).preferred_sports && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(
                             (centre.session_preferences as Record<string, unknown>)

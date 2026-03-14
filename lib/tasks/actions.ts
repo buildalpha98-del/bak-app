@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { triggerNotification } from "@/lib/notifications/send";
 import type {
@@ -32,7 +32,7 @@ export async function getTaskColumns(): Promise<{
   data: TaskColumn[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("task_columns")
     .select("*")
@@ -45,7 +45,7 @@ export async function getTaskColumns(): Promise<{
 export async function getTasks(
   filters?: TaskFilters
 ): Promise<{ data: TaskWithRelations[] | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -87,7 +87,7 @@ export async function getTasks(
 }
 
 async function enrichLinkedEntityNames(
-  supabase: Awaited<ReturnType<typeof createSupabaseServer>>,
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   tasks: TaskWithRelations[]
 ): Promise<TaskWithRelations[]> {
   const entityGroups: Record<string, string[]> = {};
@@ -139,8 +139,8 @@ async function enrichLinkedEntityNames(
       .in("id", uniqueIds);
 
     if (data) {
-      for (const row of data) {
-        nameMap[row.id] = (row as Record<string, string>)[nameField] ?? row.id;
+      for (const row of data as unknown as Record<string, string>[]) {
+        nameMap[row.id] = row[nameField] ?? row.id;
       }
     }
   }
@@ -155,7 +155,7 @@ async function enrichLinkedEntityNames(
 export async function getTaskDetail(
   taskId: string
 ): Promise<{ data: TaskDetail | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data: task, error: taskError } = await supabase
     .from("tasks")
@@ -210,7 +210,7 @@ interface CreateTaskInput {
 export async function createTask(
   input: CreateTaskInput
 ): Promise<{ data: Task | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -324,7 +324,7 @@ export async function updateTask(
   taskId: string,
   changes: UpdateTaskInput
 ): Promise<{ data: Task | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -435,7 +435,7 @@ export async function moveTask(
   columnId: string,
   newOrder: number
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -462,13 +462,13 @@ export async function moveTask(
   const newCol = columns?.find((c) => c.id === columnId);
 
   // Shift tasks in target column to make room
-  await supabase.rpc("increment_column_order", {
-    target_column_id: columnId,
-    from_order: newOrder,
-  }).then(() => {
-    // If RPC doesn't exist, fall back to manual update
-  }).catch(async () => {
-    // Fallback: shift tasks manually
+  try {
+    await supabase.rpc("increment_column_order", {
+      target_column_id: columnId,
+      from_order: newOrder,
+    });
+  } catch {
+    // Fallback: shift tasks manually if RPC doesn't exist
     const { data: tasksToShift } = await supabase
       .from("tasks")
       .select("id, column_order")
@@ -485,7 +485,7 @@ export async function moveTask(
           .eq("id", t.id);
       }
     }
-  });
+  }
 
   // Move the task
   const { error } = await supabase
@@ -563,7 +563,7 @@ export async function moveTask(
 export async function deleteTask(
   taskId: string
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -593,7 +593,7 @@ export async function addComment(
   taskId: string,
   content: string
 ): Promise<{ data: TaskActivity | null; error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -617,7 +617,7 @@ export async function addComment(
 export async function markComplete(
   taskId: string
 ): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
 
   const { data: finalCol } = await supabase
     .from("task_columns")
@@ -635,7 +635,7 @@ export async function getTeamMembers(): Promise<{
   data: { id: string; name: string; role: string; photo_url: string | null }[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
     .select("id, name, role, photo_url")

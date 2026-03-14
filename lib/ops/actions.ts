@@ -117,8 +117,8 @@ export async function getTodaysSessions(): Promise<{
   }
 
   const sessions: TodaySession[] = data.map((r: Record<string, unknown>) => {
-    const centre = r.centres as Record<string, unknown> | null;
-    const profile = r.profiles as Record<string, unknown> | null;
+    const centre = r.centres as unknown as Record<string, unknown> | null;
+    const profile = r.profiles as unknown as Record<string, unknown> | null;
     return {
       id: r.id as string,
       date: r.date as string,
@@ -182,8 +182,8 @@ export async function getUpcomingUnconfirmedShifts(): Promise<{
     const nowMs = Date.now();
     const mapped: UnconfirmedShiftItem[] = (data ?? []).map(
       (r: Record<string, unknown>) => {
-        const centre = r.centres as Record<string, unknown> | null;
-        const profile = r.profiles as Record<string, unknown> | null;
+        const centre = r.centres as unknown as Record<string, unknown> | null;
+        const profile = r.profiles as unknown as Record<string, unknown> | null;
         const updatedAt = r.updated_at as string;
         const hoursP = Math.floor(
           (nowMs - new Date(updatedAt).getTime()) / (60 * 60 * 1000)
@@ -252,7 +252,7 @@ export async function getComplianceAlerts(): Promise<{
       r: Record<string, unknown>,
       isExpired: boolean
     ): ComplianceAlert => {
-      const profile = r.profiles as Record<string, unknown> | null;
+      const profile = r.profiles as unknown as Record<string, unknown> | null;
       const expiryDate = r.expiry_date as string | null;
       let daysRemaining: number | null = null;
       let severity: ComplianceAlert["severity"] = "warning";
@@ -281,8 +281,8 @@ export async function getComplianceAlerts(): Promise<{
     };
 
     const alerts: ComplianceAlert[] = [
-      ...(expired ?? []).map((r) => mapDoc(r as Record<string, unknown>, true)),
-      ...(expiring ?? []).map((r) => mapDoc(r as Record<string, unknown>, false)),
+      ...(expired ?? []).map((r) => mapDoc(r as unknown as Record<string, unknown>, true)),
+      ...(expiring ?? []).map((r) => mapDoc(r as unknown as Record<string, unknown>, false)),
     ];
 
     // Sort: expired first, then by days_remaining ascending
@@ -324,7 +324,7 @@ export async function getEquipmentIssues(): Promise<{
     if (!logs || logs.length === 0) return { data: [], error: null };
 
     // Get kit IDs to check for resolved tasks
-    const kitIds = [...new Set((logs as Record<string, unknown>[]).map((l) => l.kit_id as string))];
+    const kitIds = [...new Set((logs as unknown as Record<string, unknown>[]).map((l) => l.kit_id as string))];
 
     // Find tasks linked to these kits that are in final columns (resolved)
     const { data: resolvedTasks } = await supabase
@@ -337,18 +337,18 @@ export async function getEquipmentIssues(): Promise<{
     const resolvedKitIds = new Set(
       (resolvedTasks ?? [])
         .filter((t: Record<string, unknown>) => {
-          const col = t.column as Record<string, unknown> | null;
+          const col = t.column as unknown as Record<string, unknown> | null;
           return col?.is_final === true;
         })
         .map((t: Record<string, unknown>) => t.linked_entity_id as string)
     );
 
-    const issues: EquipmentIssue[] = (logs as Record<string, unknown>[])
+    const issues: EquipmentIssue[] = (logs as unknown as Record<string, unknown>[])
       .filter((l) => !resolvedKitIds.has(l.kit_id as string))
       .slice(0, 10)
       .map((l) => {
-        const kit = l.equipment_kits as Record<string, unknown> | null;
-        const profile = l.profiles as Record<string, unknown> | null;
+        const kit = l.equipment_kits as unknown as Record<string, unknown> | null;
+        const profile = l.profiles as unknown as Record<string, unknown> | null;
         return {
           log_id: l.id as string,
           kit_id: l.kit_id as string,
@@ -400,7 +400,7 @@ export async function getCommandCentreData(
   };
   const activeTasks = (tasksResult.data ?? [])
     .filter((t) => {
-      const col = t.column as Record<string, unknown> | null;
+      const col = t.column as unknown as Record<string, unknown> | null;
       return !col?.is_final;
     })
     .sort((a, b) => {

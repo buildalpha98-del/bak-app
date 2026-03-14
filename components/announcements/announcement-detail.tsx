@@ -133,8 +133,8 @@ export function AnnouncementDetail({
             </SheetHeader>
 
             {/* Body */}
-            <div className="px-4 pb-4">
-              <ReactMarkdown className="prose prose-sm max-w-none text-foreground">
+            <div className="px-4 pb-4 prose prose-sm max-w-none text-foreground">
+              <ReactMarkdown>
                 {announcement.body}
               </ReactMarkdown>
             </div>

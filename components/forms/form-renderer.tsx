@@ -488,9 +488,9 @@ function FieldRenderer({
               />
             </button>
           ))}
-          {value && (
+          {!!value && (
             <span className="ml-2 text-sm text-muted-foreground self-center">
-              {value}/5
+              {String(value)}/5
             </span>
           )}
         </div>

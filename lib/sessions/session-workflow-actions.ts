@@ -450,7 +450,7 @@ export async function getActiveSessionData(
         program = {
           id: prog.id,
           name: prog.name,
-          content_json: prog.content_json as Record<string, unknown>,
+          content_json: prog.content_json as unknown as Record<string, unknown>,
           equipment_used: (prog.equipment_used as string[]) ?? [],
         };
       }

@@ -348,7 +348,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
               {coLocType === "coach" && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Coach</Label>
-                  <Select value={coLocId ?? ""} onValueChange={setCoLocId}>
+                  <Select value={coLocId ?? ""} onValueChange={(v) => setCoLocId(v ?? "")}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
@@ -366,7 +366,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
               {coLocType === "centre" && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Centre</Label>
-                  <Select value={coLocId ?? ""} onValueChange={setCoLocId}>
+                  <Select value={coLocId ?? ""} onValueChange={(v) => setCoLocId(v ?? "")}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>

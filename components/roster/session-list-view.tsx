@@ -221,7 +221,7 @@ export function SessionListView({
     <div className="space-y-3">
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={centreFilter} onValueChange={setCentreFilter}>
+        <Select value={centreFilter} onValueChange={(v) => setCentreFilter(v ?? "")}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Centres" />
           </SelectTrigger>
@@ -235,7 +235,7 @@ export function SessionListView({
           </SelectContent>
         </Select>
 
-        <Select value={coachFilter} onValueChange={setCoachFilter}>
+        <Select value={coachFilter} onValueChange={(v) => setCoachFilter(v ?? "")}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Coaches" />
           </SelectTrigger>
@@ -249,7 +249,7 @@ export function SessionListView({
           </SelectContent>
         </Select>
 
-        <Select value={sportFilter} onValueChange={setSportFilter}>
+        <Select value={sportFilter} onValueChange={(v) => setSportFilter(v ?? "")}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="All Sports" />
           </SelectTrigger>
@@ -321,7 +321,7 @@ export function SessionListView({
           <div className="flex items-center gap-1">
             <Select
               value={reassignCoachId}
-              onValueChange={setReassignCoachId}
+              onValueChange={(v) => setReassignCoachId(v ?? "")}
             >
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Select coach" />

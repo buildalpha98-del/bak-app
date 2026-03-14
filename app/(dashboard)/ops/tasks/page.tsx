@@ -1,10 +1,10 @@
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTaskColumns, getTasks, getTeamMembers } from "@/lib/tasks/actions";
 import { OpsTasksClient } from "./client";
 
 export default async function OpsTasksPage() {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

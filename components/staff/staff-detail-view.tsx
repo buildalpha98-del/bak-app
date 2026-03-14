@@ -1029,7 +1029,7 @@ function AddAvailabilityDialog({
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="space-y-1">
             <Label>Day</Label>
-            <Select value={dayOfWeek} onValueChange={setDayOfWeek}>
+            <Select value={dayOfWeek} onValueChange={(v) => setDayOfWeek(v ?? "")}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>

@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
-declare const self: ServiceWorkerGlobalScope;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _self = self as any as ServiceWorkerGlobalScope;
 
 // ============================================================
 // Offline navigation fallback
@@ -9,7 +10,7 @@ declare const self: ServiceWorkerGlobalScope;
 const OFFLINE_URL = "/offline";
 
 // Pre-cache the offline page on install
-self.addEventListener("install", (event: ExtendableEvent) => {
+_self.addEventListener("install", (event: ExtendableEvent) => {
   event.waitUntil(
     caches.open("offline-fallback-v1").then((cache) => {
       return cache.add(OFFLINE_URL);
@@ -18,7 +19,7 @@ self.addEventListener("install", (event: ExtendableEvent) => {
 });
 
 // Clean up old caches on activate
-self.addEventListener("activate", (event: ExtendableEvent) => {
+_self.addEventListener("activate", (event: ExtendableEvent) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -35,7 +36,7 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 });
 
 // Intercept navigation requests — serve offline page if network fails
-self.addEventListener("fetch", (event: FetchEvent) => {
+_self.addEventListener("fetch", (event: FetchEvent) => {
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -51,7 +52,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 // Push notification handlers for next-pwa custom worker
 // ============================================================
 
-self.addEventListener("push", (event: PushEvent) => {
+_self.addEventListener("push", (event: PushEvent) => {
   if (!event.data) return;
 
   try {
@@ -71,12 +72,12 @@ self.addEventListener("push", (event: PushEvent) => {
       data: { url: payload.url ?? "/" },
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(_self.registration.showNotification(title, options));
   } catch {
     // Fallback for non-JSON payloads
     const text = event.data.text();
     event.waitUntil(
-      self.registration.showNotification("Build Alpha Kids", {
+      _self.registration.showNotification("Build Alpha Kids", {
         body: text,
         icon: "/icons/icon-192x192.png",
       })
@@ -84,13 +85,13 @@ self.addEventListener("push", (event: PushEvent) => {
   }
 });
 
-self.addEventListener("notificationclick", (event: NotificationEvent) => {
+_self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
 
   const url = (event.notification.data as { url?: string })?.url ?? "/";
 
   event.waitUntil(
-    self.clients
+    _self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         // If an existing window is open, focus it
@@ -102,7 +103,7 @@ self.addEventListener("notificationclick", (event: NotificationEvent) => {
           }
         }
         // Otherwise open a new window
-        return self.clients.openWindow(url);
+        return _self.clients.openWindow(url);
       })
   );
 });

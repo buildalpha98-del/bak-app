@@ -128,7 +128,7 @@ export function CreateTaskDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Assignee</Label>
-              <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <Select value={assigneeId} onValueChange={(v) => setAssigneeId(v ?? "")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Unassigned" />
                 </SelectTrigger>
@@ -176,7 +176,7 @@ export function CreateTaskDialog({
 
             <div>
               <Label>Column</Label>
-              <Select value={columnId} onValueChange={setColumnId}>
+              <Select value={columnId} onValueChange={(v) => setColumnId(v ?? "")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
