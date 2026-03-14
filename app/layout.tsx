@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { PWAProvider } from "@/components/shared/pwa-provider";
+import { ThemeProvider } from "next-themes";
 
 const heading = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -48,11 +49,14 @@ export default function RootLayout({
     <html
       lang="en-AU"
       className={cn("font-sans", heading.variable, body.variable)}
+      suppressHydrationWarning
     >
       <body className="antialiased">
         <PWAProvider>
-          <TooltipProvider delay={300}>{children}</TooltipProvider>
-          <Toaster position="top-right" richColors closeButton />
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+            <TooltipProvider delay={300}>{children}</TooltipProvider>
+            <Toaster position="top-right" richColors closeButton />
+          </ThemeProvider>
         </PWAProvider>
       </body>
     </html>

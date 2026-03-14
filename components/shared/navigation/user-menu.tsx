@@ -14,6 +14,7 @@ import {
 import { LogOut, User } from "lucide-react";
 import { ROLE_LABELS } from "./nav-config";
 import type { Profile } from "@/lib/types/database";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface UserMenuProps {
   profile: Profile;
@@ -75,6 +76,10 @@ export function UserMenu({ profile }: UserMenuProps) {
           My Profile
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <div className="px-1">
+          <ThemeToggle />
+        </div>
+        <div className="h-px bg-border my-1" />
         <DropdownMenuItem
           className="cursor-pointer text-destructive"
           onSelect={() => {
