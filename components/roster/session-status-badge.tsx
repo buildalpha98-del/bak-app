@@ -35,6 +35,10 @@ const STATUS_CONFIG: Record<
     label: "Cancelled",
     className: "bg-red-100 text-red-700 border-red-200",
   },
+  needs_replacement: {
+    label: "Needs Replacement",
+    className: "bg-red-100 text-red-700 border-red-200",
+  },
 };
 
 /** Status dot colours for compact display (e.g. on session cards) */
@@ -46,6 +50,7 @@ export const STATUS_DOT_COLOURS: Record<SessionStatus, string> = {
   in_progress: "#F97316",
   completed: "#10B981",
   cancelled: "#EF4444",
+  needs_replacement: "#DC2626",
 };
 
 interface SessionStatusBadgeProps {

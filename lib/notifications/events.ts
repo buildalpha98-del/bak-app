@@ -58,4 +58,15 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   // Assessments
   assessment_ready: "important",
   assessment_reminder: "important",
+
+  // Rerostering
+  rerostering_offer: "urgent",
+  rerostering_accepted: "important",
+  rerostering_declined: "important",
+  rerostering_expired: "important",
+  rerostering_escalation: "urgent",
+
+  // Roster
+  roster_generated: "important",
+  roster_published: "urgent",
 };

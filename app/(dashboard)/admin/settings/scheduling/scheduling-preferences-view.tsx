@@ -60,8 +60,8 @@ interface SchedulingPreference {
   learned: boolean;
   created_by: string;
   created_at: string;
-  coach: { name: string } | null;
-  centre: { name: string } | null;
+  coach: { name: string } | { name: string }[] | null;
+  centre: { name: string } | { name: string }[] | null;
 }
 
 interface SchedulingPreferencesViewProps {
@@ -216,9 +216,15 @@ export function SchedulingPreferencesView({
               {initialPreferences.map((pref) => (
                 <TableRow key={pref.id}>
                   <TableCell className="font-medium">
-                    {pref.coach?.name ?? "Unknown"}
+                    {Array.isArray(pref.coach)
+                      ? pref.coach[0]?.name ?? "Unknown"
+                      : pref.coach?.name ?? "Unknown"}
                   </TableCell>
-                  <TableCell>{pref.centre?.name ?? "Unknown"}</TableCell>
+                  <TableCell>
+                    {Array.isArray(pref.centre)
+                      ? pref.centre[0]?.name ?? "Unknown"
+                      : pref.centre?.name ?? "Unknown"}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -295,7 +301,7 @@ export function SchedulingPreferencesView({
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="coach-select">Coach</Label>
-              <Select value={coachId} onValueChange={setCoachId}>
+              <Select value={coachId} onValueChange={(v) => v && setCoachId(v)}>
                 <SelectTrigger id="coach-select">
                   <SelectValue placeholder="Select a coach..." />
                 </SelectTrigger>
@@ -311,7 +317,7 @@ export function SchedulingPreferencesView({
 
             <div className="space-y-2">
               <Label htmlFor="centre-select">Centre</Label>
-              <Select value={centreId} onValueChange={setCentreId}>
+              <Select value={centreId} onValueChange={(v) => v && setCentreId(v)}>
                 <SelectTrigger id="centre-select">
                   <SelectValue placeholder="Select a centre..." />
                 </SelectTrigger>
