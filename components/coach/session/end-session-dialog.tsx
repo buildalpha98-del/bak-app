@@ -22,7 +22,7 @@ import {
   completeSession,
   uploadIncidentPhoto,
 } from "@/lib/sessions/session-workflow-actions";
-import type { CompleteSessionData } from "@/lib/sessions/session-workflow-actions";
+import type { CompleteSessionData, AttendanceEntry } from "@/lib/sessions/session-workflow-actions";
 import { toast } from "sonner";
 
 // ============================================================
@@ -32,6 +32,7 @@ import { toast } from "sonner";
 interface EndSessionDialogProps {
   sessionId: string;
   headcount: number;
+  attendanceEntries?: AttendanceEntry[];
   programActivities?: string;
 }
 
@@ -42,6 +43,7 @@ interface EndSessionDialogProps {
 export function EndSessionDialog({
   sessionId,
   headcount,
+  attendanceEntries,
   programActivities,
 }: EndSessionDialogProps) {
   const router = useRouter();
@@ -121,6 +123,7 @@ export function EndSessionDialog({
         engagement_rating: engagement,
         observations: observations.trim(),
         has_incident: hasIncident,
+        attendance_entries: attendanceEntries,
       };
 
       if (hasIncident) {

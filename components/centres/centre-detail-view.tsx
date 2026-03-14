@@ -64,6 +64,9 @@ import {
 } from "@/components/ui/table";
 import { updateCentre, addCentreNote } from "@/lib/centres/actions";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
+import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
+import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
+import { PortalAccessTab } from "@/components/centres/portal-access-tab";
 import type { CentreDetail, CentreNoteWithAuthor, UpdateCentreData } from "@/lib/centres/actions";
 import type {
   CentreType,
@@ -246,6 +249,9 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
             Invoices ({data.outbound_invoices.length})
           </TabsTrigger>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
+          <TabsTrigger value="children">Children</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="portal">Portal Access</TabsTrigger>
         </TabsList>
 
         {/* ==================== Overview Tab ==================== */}
@@ -542,6 +548,25 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
               </Table>
             </div>
           )}
+        </TabsContent>
+
+        {/* ==================== Children Tab ==================== */}
+        <TabsContent value="children">
+          <CentreChildrenTab centreId={centre.id} basePath={basePath} />
+        </TabsContent>
+
+        {/* ==================== Reports Tab ==================== */}
+        <TabsContent value="reports">
+          <CentreReportsTab centreId={centre.id} centreName={centre.name} />
+        </TabsContent>
+
+        {/* ==================== Portal Access Tab ==================== */}
+        <TabsContent value="portal">
+          <PortalAccessTab
+            centreId={centre.id}
+            centreName={centre.name}
+            contactEmail={centre.primary_contact_email}
+          />
         </TabsContent>
       </Tabs>
 

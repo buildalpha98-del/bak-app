@@ -128,7 +128,57 @@ export type NotificationEventType =
   | "feedback_received"
   | "low_session_rating"
   | "dm_received"
-  | "shift_thread_message";
+  | "shift_thread_message"
+  | "assessment_ready"
+  | "assessment_reminder";
+
+// Children & attendance
+export type AgeGroup = "3-5" | "5-8" | "8-12";
+
+export type Gender = "male" | "female" | "other" | "prefer_not_to_say";
+
+export type ChildStatus = "active" | "inactive";
+
+export type EnrolmentStatus = "active" | "withdrawn";
+
+// Report status
+export type ReportStatus = "draft" | "sent";
+
+// Centre branding mode
+export type BrandingMode = "bak_branded" | "white_label";
+
+// Health status
+export type HealthStatus = "green" | "amber" | "red";
+
+// CRM
+export type LeadSource = "manual" | "csv_import" | "web_form" | "referral";
+
+export type LeadStage =
+  | "cold_lead"
+  | "contacted"
+  | "interested"
+  | "free_trial"
+  | "proposal_sent"
+  | "won"
+  | "lost"
+  | "churned";
+
+export type LeadActivityType =
+  | "note"
+  | "email_sent"
+  | "email_opened"
+  | "email_clicked"
+  | "call"
+  | "meeting"
+  | "stage_change"
+  | "task_created"
+  | "system";
+
+// Email sequence
+export type EmailSendStatus = "scheduled" | "sent" | "opened" | "clicked" | "failed" | "skipped";
+
+// Forecast period type
+export type ForecastPeriodType = "monthly" | "quarterly";
 
 // Session types used for pay rate lookup
 export type SessionType =

@@ -9,6 +9,11 @@ import { triggerNotificationForOps } from "@/lib/notifications/send";
 // Types
 // ============================================================
 
+export interface AttendanceEntry {
+  child_id: string;
+  present: boolean;
+}
+
 export interface CompleteSessionData {
   headcount: number;
   activities_delivered: string;
@@ -16,6 +21,7 @@ export interface CompleteSessionData {
   observations: string;
   has_incident: boolean;
   incident?: IncidentData;
+  attendance_entries?: AttendanceEntry[];
 }
 
 export interface IncidentData {
@@ -43,8 +49,15 @@ export interface ActiveSessionData {
     coach_notes: string | null;
     actual_duration_minutes: number | null;
     needs_ops_review: boolean;
+    centre_id: string;
   };
   centre_name: string;
+  centre_children: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    age_group: string;
+  }[];
   program: {
     id: string;
     name: string;
@@ -307,6 +320,19 @@ export async function completeSession(
       }
     }
 
+    // Save named attendance records (if provided)
+    if (data.attendance_entries && data.attendance_entries.length > 0) {
+      const attendanceRecords = data.attendance_entries.map((e) => ({
+        session_id: sessionId,
+        child_id: e.child_id,
+        present: e.present,
+      }));
+
+      await supabase
+        .from("session_attendances")
+        .upsert(attendanceRecords, { onConflict: "session_id,child_id" });
+    }
+
     // Activity log
     await supabase.from("activity_log").insert({
       user_id: user.id,
@@ -321,6 +347,7 @@ export async function completeSession(
         headcount: data.headcount,
         has_incident: data.has_incident,
         needs_ops_review: needsReview,
+        named_attendance: (data.attendance_entries?.length ?? 0) > 0,
       },
     });
 
@@ -438,6 +465,31 @@ export async function getActiveSessionData(
       .eq("id", session.centre_id)
       .single();
 
+    // Children linked to this centre (for named attendance)
+    let centreChildren: ActiveSessionData["centre_children"] = [];
+    const { data: childLinks } = await supabase
+      .from("centre_children")
+      .select("child_id")
+      .eq("centre_id", session.centre_id)
+      .eq("status", "active");
+
+    if (childLinks && childLinks.length > 0) {
+      const childIds = childLinks.map((l) => l.child_id);
+      const { data: children } = await supabase
+        .from("children")
+        .select("id, first_name, last_name, age_group")
+        .in("id", childIds)
+        .eq("status", "active")
+        .order("first_name");
+
+      centreChildren = (children ?? []).map((c) => ({
+        id: c.id,
+        first_name: c.first_name,
+        last_name: c.last_name,
+        age_group: c.age_group,
+      }));
+    }
+
     // Program (if linked)
     let program: ActiveSessionData["program"] = null;
     if (session.program_id) {
@@ -471,8 +523,10 @@ export async function getActiveSessionData(
           coach_notes: session.coach_notes,
           actual_duration_minutes: session.actual_duration_minutes,
           needs_ops_review: session.needs_ops_review,
+          centre_id: session.centre_id,
         },
         centre_name: centre?.name ?? "Unknown",
+        centre_children: centreChildren,
         program,
       },
       error: null,

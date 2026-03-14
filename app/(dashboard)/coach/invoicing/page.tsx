@@ -1,0 +1,73 @@
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getCoachInvoiceForPeriod,
+  getUninvoicedSessions,
+  getCoachInvoiceHistory,
+} from "@/lib/invoicing/actions";
+import { getFortnightlyPeriodForOffset } from "@/lib/utils/invoicing";
+import { InvoicingDashboard } from "@/components/invoicing/invoicing-dashboard";
+
+interface Props {
+  searchParams: Promise<{ period?: string }>;
+}
+
+export default async function CoachInvoicingPage({ searchParams }: Props) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const params = await searchParams;
+  const periodOffset = parseInt(params.period ?? "0", 10) || 0;
+  const { start, end } = getFortnightlyPeriodForOffset(periodOffset);
+
+  const periodStart = start.toISOString().split("T")[0];
+  const periodEnd = end.toISOString().split("T")[0];
+
+  // Parallel fetches
+  const [invoiceResult, sessionsResult, historyResult, profileResult] =
+    await Promise.all([
+      getCoachInvoiceForPeriod(periodStart, periodEnd),
+      getUninvoicedSessions(periodStart, periodEnd),
+      getCoachInvoiceHistory(),
+      supabase
+        .from("profiles")
+        .select("name, email, phone, address, abn, gst_registered")
+        .eq("id", user.id)
+        .single(),
+    ]);
+
+  const firstError = invoiceResult.error || sessionsResult.error || historyResult.error || profileResult.error;
+  if (firstError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Failed to load page data. Please try refreshing.
+      </div>
+    );
+  }
+
+  const coachProfile = profileResult.data ?? {
+    name: "",
+    email: user.email ?? "",
+    phone: null,
+    address: null,
+    abn: null,
+    gst_registered: false,
+  };
+
+  return (
+    <InvoicingDashboard
+      periodOffset={periodOffset}
+      periodStart={periodStart}
+      periodEnd={periodEnd}
+      existingInvoice={invoiceResult.data}
+      uninvoicedSessions={sessionsResult.data}
+      invoiceHistory={historyResult.data}
+      gstRegistered={coachProfile.gst_registered}
+      coachProfile={coachProfile}
+    />
+  );
+}

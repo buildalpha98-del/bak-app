@@ -23,6 +23,7 @@ export interface TodaySession {
   centre_name: string;
   coach_id: string | null;
   coach_name: string | null;
+  expected_attendance: number;
 }
 
 export interface TodaySessionStats {
@@ -74,6 +75,16 @@ export interface RecentRating {
   submitted_at: string;
 }
 
+export interface PendingAssessmentItem {
+  template_id: string;
+  sport: string;
+  age_group: string;
+  centre_name: string;
+  total_children: number;
+  rated_children: number;
+  coach_name: string | null;
+}
+
 export interface CommandCentreData {
   todaySessions: TodaySession[];
   todayStats: TodaySessionStats;
@@ -83,6 +94,7 @@ export interface CommandCentreData {
   equipmentIssues: EquipmentIssue[];
   tasks: TaskWithRelations[];
   recentRatings: RecentRating[];
+  pendingAssessments: PendingAssessmentItem[];
 }
 
 // ============================================================
@@ -116,9 +128,31 @@ export async function getTodaysSessions(): Promise<{
     };
   }
 
+  // Gather unique centre IDs to fetch expected attendance counts
+  const centreIds = [...new Set(data.map((r: Record<string, unknown>) => r.centre_id as string))];
+
+  // Count active children per centre
+  const centreChildCounts: Record<string, number> = {};
+  if (centreIds.length > 0) {
+    const { data: ccData } = await supabase
+      .from("centre_children")
+      .select("centre_id", { count: "exact", head: false })
+      .eq("status", "active")
+      .in("centre_id", centreIds);
+
+    // Group counts by centre_id
+    if (ccData) {
+      for (const row of ccData as unknown as Record<string, unknown>[]) {
+        const cid = row.centre_id as string;
+        centreChildCounts[cid] = (centreChildCounts[cid] ?? 0) + 1;
+      }
+    }
+  }
+
   const sessions: TodaySession[] = data.map((r: Record<string, unknown>) => {
     const centre = r.centres as unknown as Record<string, unknown> | null;
     const profile = r.profiles as unknown as Record<string, unknown> | null;
+    const centreId = r.centre_id as string;
     return {
       id: r.id as string,
       date: r.date as string,
@@ -126,10 +160,11 @@ export async function getTodaysSessions(): Promise<{
       duration_minutes: r.duration_minutes as number,
       sport: r.sport as string,
       status: r.status as SessionStatus,
-      centre_id: r.centre_id as string,
+      centre_id: centreId,
       centre_name: (centre?.name as string) ?? "Unknown",
       coach_id: (r.coach_id as string) ?? null,
       coach_name: (profile?.name as string) ?? null,
+      expected_attendance: centreChildCounts[centreId] ?? 0,
     };
   });
 
@@ -367,7 +402,156 @@ export async function getEquipmentIssues(): Promise<{
 }
 
 // ============================================================
-// 5. getCommandCentreData
+// 5. getPendingAssessments
+// ============================================================
+
+export async function getPendingAssessments(): Promise<{
+  data: PendingAssessmentItem[] | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    // Find the active term
+    const { data: activeTerm, error: termErr } = await supabase
+      .from("terms")
+      .select("id")
+      .eq("status", "active")
+      .limit(1)
+      .single();
+
+    if (termErr || !activeTerm) {
+      return { data: [], error: null };
+    }
+
+    const termId = activeTerm.id as string;
+
+    // Get assessment templates for the active term
+    const { data: templates, error: tplErr } = await supabase
+      .from("assessment_templates")
+      .select(
+        "id, sport, age_group, centre_id, centres:centre_id(name)"
+      )
+      .eq("term_id", termId);
+
+    if (tplErr) throw tplErr;
+    if (!templates || templates.length === 0) {
+      return { data: [], error: null };
+    }
+
+    // Gather unique centre IDs and their age groups
+    const centreIds = [
+      ...new Set(
+        (templates as unknown as Record<string, unknown>[])
+          .map((t) => t.centre_id as string)
+          .filter(Boolean)
+      ),
+    ];
+
+    // Count active children per centre+age_group
+    const centreChildCounts: Record<string, number> = {};
+    if (centreIds.length > 0) {
+      const { data: ccData } = await supabase
+        .from("centre_children")
+        .select("centre_id, children:child_id(age_group)")
+        .eq("status", "active")
+        .in("centre_id", centreIds);
+
+      if (ccData) {
+        for (const row of ccData as unknown as Record<string, unknown>[]) {
+          const cid = row.centre_id as string;
+          const child = row.children as unknown as Record<string, unknown> | null;
+          const ageGroup = child?.age_group as string | null;
+          if (cid && ageGroup) {
+            const key = `${cid}::${ageGroup}`;
+            centreChildCounts[key] = (centreChildCounts[key] ?? 0) + 1;
+          }
+        }
+      }
+    }
+
+    // Count skill_ratings already submitted per template in the active term
+    const templateIds = (templates as unknown as Record<string, unknown>[]).map(
+      (t) => t.id as string
+    );
+    const ratedCounts: Record<string, number> = {};
+    if (templateIds.length > 0) {
+      const { data: ratings } = await supabase
+        .from("skill_ratings")
+        .select("assessment_template_id")
+        .eq("term_id", termId)
+        .in("assessment_template_id", templateIds);
+
+      if (ratings) {
+        for (const r of ratings as unknown as Record<string, unknown>[]) {
+          const tid = r.assessment_template_id as string;
+          ratedCounts[tid] = (ratedCounts[tid] ?? 0) + 1;
+        }
+      }
+    }
+
+    // Find the latest coach assigned at each centre (from sessions in this term)
+    const coachBycentre: Record<string, string> = {};
+    if (centreIds.length > 0) {
+      const { data: sessionCoaches } = await supabase
+        .from("sessions")
+        .select("centre_id, profiles:coach_id(name)")
+        .not("coach_id", "is", null)
+        .in("centre_id", centreIds)
+        .order("date", { ascending: false })
+        .limit(100);
+
+      if (sessionCoaches) {
+        for (const sc of sessionCoaches as unknown as Record<string, unknown>[]) {
+          const cid = sc.centre_id as string;
+          if (!coachBycentre[cid]) {
+            const profile = sc.profiles as unknown as Record<string, unknown> | null;
+            coachBycentre[cid] = (profile?.name as string) ?? "Unknown";
+          }
+        }
+      }
+    }
+
+    // Build results — only include templates where not all children are rated
+    const items: PendingAssessmentItem[] = [];
+    for (const t of templates as unknown as Record<string, unknown>[]) {
+      const tId = t.id as string;
+      const centreId = t.centre_id as string;
+      const ageGroup = t.age_group as string;
+      const centre = t.centres as unknown as Record<string, unknown> | null;
+
+      const totalChildren = centreChildCounts[`${centreId}::${ageGroup}`] ?? 0;
+      const ratedChildren = ratedCounts[tId] ?? 0;
+
+      if (totalChildren === 0 || ratedChildren >= totalChildren) continue;
+
+      items.push({
+        template_id: tId,
+        sport: t.sport as string,
+        age_group: ageGroup,
+        centre_name: (centre?.name as string) ?? "Unknown",
+        total_children: totalChildren,
+        rated_children: ratedChildren,
+        coach_name: coachBycentre[centreId] ?? null,
+      });
+    }
+
+    // Sort by completion percentage ascending (least complete first)
+    items.sort((a, b) => {
+      const pctA = a.total_children > 0 ? a.rated_children / a.total_children : 0;
+      const pctB = b.total_children > 0 ? b.rated_children / b.total_children : 0;
+      return pctA - pctB;
+    });
+
+    return { data: items.slice(0, 10), error: null };
+  } catch (err) {
+    console.error("getPendingAssessments error:", err);
+    return { data: null, error: "Failed to fetch pending assessments." };
+  }
+}
+
+// ============================================================
+// 6. getCommandCentreData
 // ============================================================
 
 export async function getCommandCentreData(
@@ -381,6 +565,7 @@ export async function getCommandCentreData(
     equipmentResult,
     tasksResult,
     feedbackResult,
+    assessmentsResult,
   ] = await Promise.all([
     getTodaysSessions(),
     getUpcomingUnconfirmedShifts(),
@@ -389,6 +574,7 @@ export async function getCommandCentreData(
     getEquipmentIssues(),
     getTasks({ assigneeId: userId }),
     getRecentFeedback(5),
+    getPendingAssessments(),
   ]);
 
   // Filter tasks to non-final columns only, limit 8, sort by priority
@@ -436,5 +622,6 @@ export async function getCommandCentreData(
     equipmentIssues: equipmentResult.data ?? [],
     tasks: activeTasks,
     recentRatings,
+    pendingAssessments: assessmentsResult.data ?? [],
   };
 }

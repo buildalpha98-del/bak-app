@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatTime12 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
+import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import type { ActiveSessionData } from "@/lib/sessions/session-workflow-actions";
 
 interface CompletedSessionSummaryProps {
@@ -89,6 +90,12 @@ export function CompletedSessionSummary({
           )}
         </CardContent>
       </Card>
+
+      {/* Attendance */}
+      <SessionAttendanceList
+        sessionId={session.id}
+        headcount={session.headcount}
+      />
 
       {/* Back button */}
       <Button

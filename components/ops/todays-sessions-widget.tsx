@@ -88,6 +88,12 @@ export function TodaysSessionsWidget({ sessions, stats }: TodaysSessionsWidgetPr
                   {session.sport}
                 </span>
 
+                {session.expected_attendance > 0 && (
+                  <span className="hidden shrink-0 text-xs text-muted-foreground md:inline">
+                    Expected: {session.expected_attendance} children
+                  </span>
+                )}
+
                 {session.coach_name ? (
                   <span className="w-28 shrink-0 truncate text-right text-sm text-muted-foreground">
                     {session.coach_name}

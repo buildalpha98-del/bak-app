@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { SessionStatusBadge } from "./session-status-badge";
 import { SmartCoachSelect } from "./smart-coach-select";
+import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
 import {
   updateSessionStatus,
@@ -538,6 +539,17 @@ export function SessionDetailSheet({
               </div>
             )}
           </div>
+
+          {/* Attendance (completed sessions only) */}
+          {session.status === "completed" && (
+            <>
+              <Separator />
+              <SessionAttendanceList
+                sessionId={session.id}
+                headcount={session.headcount}
+              />
+            </>
+          )}
 
           <Separator />
 

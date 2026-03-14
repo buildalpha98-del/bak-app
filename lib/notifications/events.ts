@@ -54,4 +54,8 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   low_session_rating: "important",
   dm_received: "important",
   shift_thread_message: "informational",
+
+  // Assessments
+  assessment_ready: "important",
+  assessment_reminder: "important",
 };

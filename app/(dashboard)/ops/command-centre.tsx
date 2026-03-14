@@ -12,6 +12,7 @@ import { PendingSwapsWidget } from "@/components/ops/pending-swaps-widget";
 import { ComplianceAlertsWidget } from "@/components/ops/compliance-alerts-widget";
 import { EquipmentIssuesWidget } from "@/components/ops/equipment-issues-widget";
 import { MyTasksWidget } from "@/components/ops/my-tasks-widget";
+import { PendingAssessmentsWidget } from "@/components/ops/pending-assessments-widget";
 import { RecentRatingsWidget } from "@/components/ops/recent-ratings-widget";
 
 // ============================================================
@@ -52,6 +53,7 @@ export function CommandCentre(props: CommandCentreProps) {
     equipmentIssues: props.equipmentIssues,
     tasks: props.tasks,
     recentRatings: props.recentRatings,
+    pendingAssessments: props.pendingAssessments,
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -187,6 +189,11 @@ export function CommandCentre(props: CommandCentreProps) {
             <MyTasksWidget tasks={data.tasks} onRefresh={refreshAll} />
           </div>
           <div className="animate-fade-up stagger-4">
+            <PendingAssessmentsWidget
+              assessments={data.pendingAssessments}
+            />
+          </div>
+          <div className="animate-fade-up stagger-5">
             <RecentRatingsWidget
               ratings={data.recentRatings}
               onRefresh={refreshAll}

@@ -26,6 +26,17 @@ import type {
   DocumentVisibility,
   TaskPriority,
   NotificationChannel,
+  AgeGroup,
+  Gender,
+  ChildStatus,
+  EnrolmentStatus,
+  ReportStatus,
+  BrandingMode,
+  HealthStatus,
+  LeadSource,
+  LeadStage,
+  LeadActivityType,
+  EmailSendStatus,
 } from "./enums";
 
 // ========================
@@ -121,6 +132,14 @@ export interface Centre {
   updated_at: string;
   qb_customer_id: string | null;
   send_feedback_emails: boolean;
+  logo_url: string | null;
+  branding_mode: BrandingMode;
+  health_score: number | null;
+  health_status: HealthStatus | null;
+  health_score_updated_at: string | null;
+  churn_risk: boolean;
+  profile_checklist_complete: boolean;
+  converted_from_lead_id: string | null;
 }
 
 // ========================
@@ -188,6 +207,7 @@ export interface Session {
   headcount: number | null;
   coach_notes: string | null;
   needs_ops_review: boolean;
+  is_trial: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -612,6 +632,289 @@ export interface TaskDetail extends TaskWithRelations {
 }
 
 // ========================
+// 32. children
+// ========================
+export interface Child {
+  id: string;
+  first_name: string;
+  last_name: string;
+  date_of_birth: string | null;
+  age_group: AgeGroup;
+  gender: Gender | null;
+  medical_notes: string | null;
+  parent_name: string | null;
+  parent_phone: string | null;
+  parent_email: string | null;
+  photo_url: string | null;
+  status: ChildStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 33. centre_children
+// ========================
+export interface CentreChild {
+  id: string;
+  child_id: string;
+  centre_id: string;
+  enrolled_at: string;
+  status: EnrolmentStatus;
+  created_at: string;
+}
+
+// ========================
+// 34. session_attendances
+// ========================
+export interface SessionAttendance {
+  id: string;
+  session_id: string;
+  child_id: string;
+  present: boolean;
+  created_at: string;
+}
+
+// ========================
+// 35. assessment_templates
+// ========================
+export interface AssessmentSkill {
+  name: string;
+  description: string;
+}
+
+export interface AssessmentTemplate {
+  id: string;
+  sport: string;
+  age_group: AgeGroup;
+  skills_json: AssessmentSkill[];
+  term_id: string | null;
+  centre_id: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+// ========================
+// 36. skill_ratings
+// ========================
+export interface SkillRatingEntry {
+  skill_name: string;
+  rating: number;
+}
+
+export interface SkillRating {
+  id: string;
+  assessment_template_id: string;
+  child_id: string;
+  coach_id: string;
+  term_id: string;
+  ratings_json: SkillRatingEntry[];
+  notes: string | null;
+  assessed_at: string;
+  created_at: string;
+}
+
+// ========================
+// 37. centre_reports
+// ========================
+export interface ReportContentJson {
+  summary?: string;
+  sessions_delivered?: number;
+  total_children?: number;
+  sports_covered?: string[];
+  average_rating?: number;
+  highlights?: string[];
+  coach_notes?: string[];
+  attendance_summary?: {
+    total_attendances: number;
+    average_per_session: number;
+  };
+  assessment_summary?: {
+    children_assessed: number;
+    average_improvement: number;
+  };
+  photos?: string[];
+}
+
+export interface CentreReport {
+  id: string;
+  centre_id: string;
+  term_id: string;
+  title: string;
+  content_json: ReportContentJson;
+  cover_image_url: string | null;
+  status: ReportStatus;
+  generated_by: string;
+  pdf_url: string | null;
+  sent_at: string | null;
+  sent_to: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 38. client_users
+// ========================
+export interface ClientUser {
+  id: string;
+  user_id: string;
+  centre_id: string;
+  name: string;
+  email: string;
+  role: string;
+  is_primary: boolean;
+  last_login: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 39. shared_links
+// ========================
+export interface SharedLink {
+  id: string;
+  centre_id: string;
+  created_by: string;
+  token: string;
+  expires_at: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+// ========================
+// 40. health_scores
+// ========================
+export interface HealthScoreBreakdown {
+  signal_name: string;
+  weight: number;
+  raw_value: number | null;
+  signal_score: number;
+  status: HealthStatus;
+}
+
+export interface HealthScore {
+  id: string;
+  centre_id: string;
+  score: number;
+  status: HealthStatus;
+  breakdown_json: HealthScoreBreakdown[];
+  calculated_at: string;
+}
+
+// ========================
+// 41. health_score_config
+// ========================
+export interface HealthScoreConfig {
+  id: string;
+  signal_name: string;
+  weight: number;
+  green_threshold: number;
+  amber_threshold: number;
+  description: string | null;
+  updated_by: string | null;
+  updated_at: string;
+}
+
+// ========================
+// 42. leads
+// ========================
+export interface Lead {
+  id: string;
+  centre_name: string;
+  type: import("./enums").CentreType | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  source: LeadSource;
+  stage: LeadStage;
+  stage_changed_at: string;
+  owner_id: string | null;
+  estimated_value: number | null;
+  notes: string | null;
+  lost_reason: string | null;
+  churn_reason: string | null;
+  centre_id: string | null;
+  trial_start_date: string | null;
+  trial_end_date: string | null;
+  trial_sessions_count: number;
+  trial_report_url: string | null;
+  active_sequence_id: string | null;
+  sequence_paused: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 43. lead_activities
+// ========================
+export interface LeadActivity {
+  id: string;
+  lead_id: string;
+  type: LeadActivityType;
+  content: string | null;
+  metadata: Record<string, unknown> | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ========================
+// 44. centre_messages
+// ========================
+export interface CentreMessage {
+  id: string;
+  centre_id: string;
+  sender_type: "client" | "staff";
+  sender_client_id: string | null;
+  sender_staff_id: string | null;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 45. email_sequences
+// ========================
+export interface EmailSequence {
+  id: string;
+  name: string;
+  description: string | null;
+  trigger_stage: LeadStage;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 46. email_sequence_steps
+// ========================
+export interface EmailSequenceStep {
+  id: string;
+  sequence_id: string;
+  step_number: number;
+  delay_days: number;
+  subject: string;
+  body: string;
+  created_at: string;
+}
+
+// ========================
+// 47. email_sends
+// ========================
+export interface EmailSend {
+  id: string;
+  lead_id: string;
+  sequence_id: string;
+  step_id: string;
+  status: EmailSendStatus;
+  scheduled_for: string;
+  sent_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  created_at: string;
+}
+
+// ========================
 // Database type map (for generic helpers)
 // ========================
 export interface Database {
@@ -647,6 +950,53 @@ export interface Database {
   integration_tokens: IntegrationToken;
   task_columns: TaskColumn;
   task_activity: TaskActivity;
+  children: Child;
+  centre_children: CentreChild;
+  session_attendances: SessionAttendance;
+  assessment_templates: AssessmentTemplate;
+  skill_ratings: SkillRating;
+  centre_reports: CentreReport;
+  client_users: ClientUser;
+  shared_links: SharedLink;
+  centre_messages: CentreMessage;
+  health_scores: HealthScore;
+  health_score_config: HealthScoreConfig;
+  leads: Lead;
+  lead_activities: LeadActivity;
+  email_sequences: EmailSequence;
+  email_sequence_steps: EmailSequenceStep;
+  email_sends: EmailSend;
+  revenue_forecasts: RevenueForecast;
+  forecast_config: ForecastConfig;
+}
+
+// ========================
+// 48. revenue_forecasts
+// ========================
+export interface RevenueForecast {
+  id: string;
+  forecast_date: string;
+  period_type: import("./enums").ForecastPeriodType;
+  period_start: string;
+  period_end: string;
+  committed_revenue: number;
+  pipeline_revenue: number;
+  total_projected_revenue: number;
+  projected_coach_costs: number;
+  projected_profit: number;
+  breakdown_json: Record<string, unknown>;
+  created_at: string;
+}
+
+// ========================
+// 49. forecast_config
+// ========================
+export interface ForecastConfig {
+  id: string;
+  key: string;
+  value: Record<string, unknown>;
+  updated_by: string | null;
+  updated_at: string;
 }
 
 // ========================
