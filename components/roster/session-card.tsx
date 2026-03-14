@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ShieldAlert } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import { sportColour } from "@/lib/utils/sport-colours";
@@ -10,12 +11,15 @@ interface SessionCardProps {
   onClick: () => void;
   /** True when the assigned coach has a compliance issue */
   hasComplianceWarning?: boolean;
+  /** Optional confidence badge overlay (used during AI review mode) */
+  confidenceBadge?: ReactNode;
 }
 
 export function SessionCard({
   session,
   onClick,
   hasComplianceWarning,
+  confidenceBadge,
 }: SessionCardProps) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -34,6 +38,13 @@ export function SessionCard({
         style={{ backgroundColor: dotColour }}
         title={session.status}
       />
+
+      {/* AI confidence badge */}
+      {confidenceBadge && (
+        <span className="absolute right-5 top-1">
+          {confidenceBadge}
+        </span>
+      )}
 
       <span className="truncate pr-3 text-xs font-medium text-foreground">
         {session.centre_name}

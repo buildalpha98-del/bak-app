@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import {
   SLOT_TIMES,
@@ -25,6 +25,8 @@ interface SessionCalendarViewProps {
   onEmptySlotClick: (date: string, time: string) => void;
   /** Compliance warnings keyed by coach_id */
   complianceWarnings?: Record<string, ComplianceCheckResult>;
+  /** Optional renderer for confidence badge overlay on each session card */
+  renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
 }
 
 // ============================================================
@@ -37,6 +39,7 @@ export function SessionCalendarView({
   onSessionClick,
   onEmptySlotClick,
   complianceWarnings,
+  renderConfidenceBadge,
 }: SessionCalendarViewProps) {
   const weekDates = getWeekDates(weekStart);
 
@@ -140,6 +143,7 @@ export function SessionCalendarView({
                   !!complianceWarnings &&
                   !!complianceWarnings[s.coach_id]
                 }
+                confidenceBadge={renderConfidenceBadge?.(s.id)}
               />
             </div>
           );

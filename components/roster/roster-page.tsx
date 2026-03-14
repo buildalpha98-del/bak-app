@@ -8,6 +8,7 @@ import {
   List,
   Plus,
   Zap,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
@@ -19,6 +20,10 @@ import { SessionListView } from "./session-list-view";
 import { SessionDetailSheet } from "./session-detail-sheet";
 import { CreateSessionDialog } from "./create-session-dialog";
 import { GenerateSessionsDialog } from "./generate-sessions-dialog";
+import { AIGenerateDialog } from "./ai-generate-dialog";
+import { AISummaryBar } from "./ai-summary-bar";
+import { ConfidenceBadge } from "./confidence-badge";
+import { CoachSwapPanel } from "./coach-swap-panel";
 import { ClashDetectionDialog } from "./clash-detection-dialog";
 import { useSessionsRealtime } from "@/lib/hooks/useSessionsRealtime";
 import {
@@ -29,8 +34,9 @@ import {
   bulkUpdateSessionStatus,
   bulkReassignCoach,
 } from "@/lib/sessions/actions";
+import { getSchedulingRun, publishSchedulingRun } from "@/lib/scheduling/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
-import type { Centre, Profile, Term } from "@/lib/types/database";
+import type { Centre, Profile, Term, SchedulingAssignment, SchedulingRunOutputSummary } from "@/lib/types/database";
 import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
 import type { UnconfirmedShift } from "@/lib/sessions/shift-actions";
 import { UnconfirmedShiftsBanner } from "./unconfirmed-shifts-banner";
@@ -86,6 +92,20 @@ export function RosterPage({
 
   // Generate sessions dialog
   const [genOpen, setGenOpen] = useState(false);
+
+  // AI generate dialog
+  const [aiGenOpen, setAiGenOpen] = useState(false);
+
+  // AI review mode state
+  const [reviewRunId, setReviewRunId] = useState<string | null>(null);
+  const [reviewAssignments, setReviewAssignments] = useState<SchedulingAssignment[]>([]);
+  const [reviewSummary, setReviewSummary] = useState<SchedulingRunOutputSummary | null>(null);
+  const [filterNeedsAttention, setFilterNeedsAttention] = useState(false);
+
+  // Coach swap panel
+  const [swapAssignment, setSwapAssignment] = useState<SchedulingAssignment | null>(null);
+  const [swapSessionLabel, setSwapSessionLabel] = useState("");
+  const [swapOpen, setSwapOpen] = useState(false);
 
   // Clash detection dialog
   const [clashOpen, setClashOpen] = useState(false);
@@ -146,6 +166,61 @@ export function RosterPage({
 
   function handleRefresh() {
     router.refresh();
+  }
+
+  // ---- AI scheduling ----
+
+  async function handleAIGenerated(runId: string) {
+    setReviewRunId(runId);
+    // Fetch the run to get assignments and summary
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 4);
+    const weekEndStr = weekEnd.toISOString().split("T")[0];
+
+    const run = await getSchedulingRun(initialWeekStart, weekEndStr);
+    if (run) {
+      setReviewAssignments(run.assignments_json as SchedulingAssignment[]);
+      setReviewSummary(run.output_summary as SchedulingRunOutputSummary);
+    }
+    router.refresh();
+  }
+
+  async function handlePublishRun() {
+    if (!reviewRunId) return;
+    const result = await publishSchedulingRun(reviewRunId);
+    if (!result?.error) {
+      setReviewRunId(null);
+      setReviewAssignments([]);
+      setReviewSummary(null);
+      setFilterNeedsAttention(false);
+      router.refresh();
+    }
+  }
+
+  function handleSessionClickWithReview(session: SessionWithRelations) {
+    if (reviewRunId) {
+      const assignment = reviewAssignments.find(
+        (a) => a.session_id === session.id
+      );
+      if (assignment) {
+        setSwapAssignment(assignment);
+        setSwapSessionLabel(`${session.sport} at ${session.centre_name}`);
+        setSwapOpen(true);
+        return;
+      }
+    }
+    handleSessionClick(session);
+  }
+
+  function handleSwapComplete() {
+    // Re-fetch run data after swap
+    if (reviewRunId) {
+      handleAIGenerated(reviewRunId);
+    }
+  }
+
+  function getAssignmentForSession(sessionId: string): SchedulingAssignment | undefined {
+    return reviewAssignments.find((a) => a.session_id === sessionId);
   }
 
   // ---- Bulk actions ----
@@ -262,12 +337,29 @@ export function RosterPage({
         </Button>
 
         {activeTerm && (
-          <Button size="sm" onClick={() => setGenOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setGenOpen(true)}>
             <Zap className="size-4" />
             Generate Week
           </Button>
         )}
+
+        {activeTerm && (
+          <Button size="sm" onClick={() => setAiGenOpen(true)}>
+            <Sparkles className="size-4" />
+            AI Assign
+          </Button>
+        )}
       </div>
+
+      {/* AI Review Summary Bar */}
+      {reviewRunId && reviewSummary && (
+        <AISummaryBar
+          summary={reviewSummary}
+          onPublish={handlePublishRun}
+          onFilterNeedsAttention={setFilterNeedsAttention}
+          filterActive={filterNeedsAttention}
+        />
+      )}
 
       {/* Content */}
       {initialSessions.length === 0 ? (
@@ -284,16 +376,21 @@ export function RosterPage({
         <SessionCalendarView
           sessions={initialSessions}
           weekStart={weekStart}
-          onSessionClick={handleSessionClick}
+          onSessionClick={handleSessionClickWithReview}
           onEmptySlotClick={handleEmptySlotClick}
           complianceWarnings={complianceWarnings}
+          renderConfidenceBadge={reviewRunId ? (sessionId) => {
+            const a = getAssignmentForSession(sessionId);
+            if (!a) return undefined;
+            return <ConfidenceBadge confidence={a.confidence} reasoning={a.reasoning} />;
+          } : undefined}
         />
       ) : (
         <SessionListView
           sessions={initialSessions}
           centres={centres}
           coaches={coaches}
-          onSessionClick={handleSessionClick}
+          onSessionClick={handleSessionClickWithReview}
           onBulkPublish={handleBulkPublish}
           onBulkCancel={handleBulkCancel}
           onBulkReassign={handleBulkReassign}
@@ -337,6 +434,28 @@ export function RosterPage({
           term={activeTerm}
           templateCount={0}
           onSuccess={handleRefresh}
+        />
+      )}
+
+      {/* AI Generate Dialog */}
+      {activeTerm && (
+        <AIGenerateDialog
+          open={aiGenOpen}
+          onOpenChange={setAiGenOpen}
+          termId={activeTerm.id}
+          onGenerated={handleAIGenerated}
+        />
+      )}
+
+      {/* Coach Swap Panel */}
+      {reviewRunId && swapAssignment && (
+        <CoachSwapPanel
+          open={swapOpen}
+          onOpenChange={setSwapOpen}
+          runId={reviewRunId}
+          assignment={swapAssignment}
+          sessionLabel={swapSessionLabel}
+          onSwapped={handleSwapComplete}
         />
       )}
 
