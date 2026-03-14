@@ -14,6 +14,7 @@ import { EquipmentIssuesWidget } from "@/components/ops/equipment-issues-widget"
 import { MyTasksWidget } from "@/components/ops/my-tasks-widget";
 import { PendingAssessmentsWidget } from "@/components/ops/pending-assessments-widget";
 import { RecentRatingsWidget } from "@/components/ops/recent-ratings-widget";
+import { ActiveRerosteringWidget } from "@/components/ops/active-rerostering-widget";
 
 // ============================================================
 // Command Centre — ops dashboard orchestrator
@@ -54,6 +55,7 @@ export function CommandCentre(props: CommandCentreProps) {
     tasks: props.tasks,
     recentRatings: props.recentRatings,
     pendingAssessments: props.pendingAssessments,
+    activeRerosteringEvents: props.activeRerosteringEvents,
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -107,6 +109,11 @@ export function CommandCentre(props: CommandCentreProps) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "feedback_ratings" },
+        () => refreshAll()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rerostering_events" },
         () => refreshAll()
       )
       .subscribe();
@@ -173,6 +180,11 @@ export function CommandCentre(props: CommandCentreProps) {
             />
           </div>
           <div className="animate-fade-up stagger-4">
+            <ActiveRerosteringWidget
+              events={data.activeRerosteringEvents as any}
+            />
+          </div>
+          <div className="animate-fade-up stagger-5">
             <ComplianceAlertsWidget
               alerts={data.complianceAlerts}
               onRefresh={refreshAll}

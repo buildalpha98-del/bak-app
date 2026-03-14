@@ -95,6 +95,7 @@ export interface CommandCentreData {
   tasks: TaskWithRelations[];
   recentRatings: RecentRating[];
   pendingAssessments: PendingAssessmentItem[];
+  activeRerosteringEvents: Awaited<ReturnType<typeof import("@/lib/rerostering/actions").getActiveRerosteringEvents>>;
 }
 
 // ============================================================
@@ -557,6 +558,8 @@ export async function getPendingAssessments(): Promise<{
 export async function getCommandCentreData(
   userId: string
 ): Promise<CommandCentreData> {
+  const { getActiveRerosteringEvents } = await import("@/lib/rerostering/actions");
+
   const [
     todayResult,
     unconfirmedResult,
@@ -566,6 +569,7 @@ export async function getCommandCentreData(
     tasksResult,
     feedbackResult,
     assessmentsResult,
+    rerosteringEvents,
   ] = await Promise.all([
     getTodaysSessions(),
     getUpcomingUnconfirmedShifts(),
@@ -575,6 +579,7 @@ export async function getCommandCentreData(
     getTasks({ assigneeId: userId }),
     getRecentFeedback(5),
     getPendingAssessments(),
+    getActiveRerosteringEvents(),
   ]);
 
   // Filter tasks to non-final columns only, limit 8, sort by priority
@@ -623,5 +628,6 @@ export async function getCommandCentreData(
     tasks: activeTasks,
     recentRatings,
     pendingAssessments: assessmentsResult.data ?? [],
+    activeRerosteringEvents: rerosteringEvents,
   };
 }
