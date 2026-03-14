@@ -17,6 +17,7 @@ export interface GenerateProgramRequest {
   durationMinutes: SessionDuration;
   skillFocus?: string;
   availableEquipment: string[];
+  centreType?: "childcare_centre" | "school";
   centreContext?: {
     centreName: string;
     recentPrograms: {
@@ -61,6 +62,14 @@ export interface CoolDownSection {
   description: string;
 }
 
+/** A single curriculum outcome aligned to the session */
+export interface CurriculumOutcome {
+  framework: "eylf" | "pdhpe";
+  code: string;
+  title: string;
+  description: string;
+}
+
 /** Full structured programme content as returned by Claude */
 export interface ProgramContentJson {
   title: string;
@@ -73,6 +82,8 @@ export interface ProgramContentJson {
   skillDevelopment: SkillDrill[];
   modifiedGame: ModifiedGameSection;
   coolDown: CoolDownSection;
+  curriculumOutcomes?: CurriculumOutcome[];
+  reflectionPrompt?: string;
 }
 
 // ============================================================
