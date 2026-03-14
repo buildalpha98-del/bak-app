@@ -64,6 +64,66 @@ const ICON_MAP: Record<string, LucideIcon> = {
 // Time formatting
 // ============================================================
 
+// ============================================================
+// Notification grouping
+// ============================================================
+
+interface GroupedNotification {
+  key: string;
+  notifications: Notification[];
+  type: string;
+  title: string;
+  body: string;
+  created_at: string;
+  read: boolean;
+}
+
+function groupNotifications(
+  notifications: Notification[]
+): GroupedNotification[] {
+  const ONE_HOUR = 60 * 60 * 1000;
+  const groups: GroupedNotification[] = [];
+
+  for (const notification of notifications) {
+    const lastGroup = groups[groups.length - 1];
+
+    // Check if this notification can be merged into the previous group:
+    // same type and within 1 hour of the group's most recent notification
+    if (
+      lastGroup &&
+      lastGroup.type === notification.type &&
+      Math.abs(
+        new Date(lastGroup.notifications[lastGroup.notifications.length - 1].created_at).getTime() -
+          new Date(notification.created_at).getTime()
+      ) <= ONE_HOUR
+    ) {
+      lastGroup.notifications.push(notification);
+      // Update group display fields
+      const count = lastGroup.notifications.length;
+      lastGroup.title = `${count} ${notification.title}`;
+      lastGroup.body = `${count} similar notifications`;
+      // read only if ALL in the group are read
+      lastGroup.read = lastGroup.notifications.every((n) => n.read);
+    } else {
+      groups.push({
+        key: notification.id,
+        notifications: [notification],
+        type: notification.type,
+        title: notification.title,
+        body: notification.body,
+        created_at: notification.created_at,
+        read: notification.read,
+      });
+    }
+  }
+
+  return groups;
+}
+
+// ============================================================
+// Time formatting
+// ============================================================
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const seconds = Math.floor(diff / 1000);
@@ -115,19 +175,25 @@ export function NotificationBell({
 
   useNotificationsRealtime(userId, handleNewNotification);
 
-  // Click notification
-  async function handleNotificationClick(notification: Notification) {
-    if (!notification.read) {
-      await markNotificationRead(notification.id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+  // Click grouped notification — marks ALL contained notifications as read
+  async function handleGroupedClick(group: GroupedNotification) {
+    const unreadInGroup = group.notifications.filter((n) => !n.read);
+    if (unreadInGroup.length > 0) {
+      await Promise.all(
+        unreadInGroup.map((n) => markNotificationRead(n.id))
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      const unreadIds = new Set(unreadInGroup.map((n) => n.id));
+      setNotifications((prev) =>
+        prev.map((n) => (unreadIds.has(n.id) ? { ...n, read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - unreadInGroup.length));
     }
 
+    // Navigate to the first notification's URL
+    const first = group.notifications[0];
     const url = getNotificationUrl(
-      notification.entity_type,
-      notification.entity_id,
+      first.entity_type,
+      first.entity_id,
       userRole
     );
     setOpen(false);
@@ -177,32 +243,37 @@ export function NotificationBell({
               <p className="mt-2 text-sm text-muted-foreground">No notifications yet</p>
             </div>
           ) : (
-            notifications.map((notification) => {
-              const Icon = ICON_MAP[notification.type] ?? Bell;
+            groupNotifications(notifications).map((group) => {
+              const Icon = ICON_MAP[group.type] ?? Bell;
               return (
                 <button
-                  key={notification.id}
+                  key={group.key}
                   type="button"
-                  onClick={() => handleNotificationClick(notification)}
+                  onClick={() => handleGroupedClick(group)}
                   className="flex w-full gap-3 border-b border-border/50 last:border-b-0 px-4 py-3 hover:bg-secondary/50 transition-colors duration-200 text-left"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)]">
+                  <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)]">
                     <Icon className="h-4 w-4 text-primary" />
+                    {group.notifications.length > 1 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-white">
+                        {group.notifications.length}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {notification.title}
+                        {group.title}
                       </p>
-                      {!notification.read && (
+                      {!group.read && (
                         <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse-warm" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {notification.body}
+                      {group.body}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-1">
-                      {timeAgo(notification.created_at)}
+                      {timeAgo(group.created_at)}
                     </p>
                   </div>
                 </button>
