@@ -31,7 +31,7 @@ export default async function OpsTrainingPage() {
         </TabsList>
 
         <TabsContent value="modules" className="mt-4">
-          <ModuleListView initialModules={modules} />
+          <ModuleListView initialModules={modules} basePath="/ops/training" />
         </TabsContent>
 
         <TabsContent value="pathways" className="mt-4">

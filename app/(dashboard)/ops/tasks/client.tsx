@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { TaskBoard } from "@/components/tasks/task-board";
 import { TaskFilters, type TaskFilterState } from "@/components/tasks/task-filters";
 import { TaskListView } from "@/components/tasks/task-list-view";
@@ -34,6 +34,7 @@ export function OpsTasksClient({
     columnId: "",
   });
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
   // Client-side filtering
   const filteredTasks = initialTasks.filter((task) => {
@@ -51,9 +52,13 @@ export function OpsTasksClient({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold font-heading text-foreground">Tasks</h1>
-        </div>
+        <h1 className="text-2xl font-bold font-heading text-foreground">Tasks</h1>
+        <Button
+          size="sm"
+          onClick={() => setCreateTaskOpen(true)}
+        >
+          <Plus className="w-4 h-4 mr-1" /> New Task
+        </Button>
       </div>
 
       <TaskFilters
@@ -71,6 +76,8 @@ export function OpsTasksClient({
           columns={columns}
           userRole={userRole}
           currentUserId={currentUserId}
+          externalCreateOpen={createTaskOpen}
+          onExternalCreateOpenChange={setCreateTaskOpen}
         />
       ) : (
         <>

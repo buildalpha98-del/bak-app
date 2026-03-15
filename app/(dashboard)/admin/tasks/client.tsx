@@ -7,7 +7,7 @@ import { TaskListView } from "@/components/tasks/task-list-view";
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { ColumnSettingsDialog } from "@/components/tasks/column-settings-dialog";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Plus } from "lucide-react";
 import type { TaskColumn } from "@/lib/types/database";
 import type { TaskWithRelations } from "@/lib/types/database";
 
@@ -34,6 +34,7 @@ export function AdminTasksClient({
   });
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
   const filteredTasks = initialTasks.filter((task) => {
     if (filters.myTasksOnly && task.assignee_id !== currentUserId) return false;
@@ -51,13 +52,21 @@ export function AdminTasksClient({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold font-heading text-foreground">Tasks</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setColumnSettingsOpen(true)}
-        >
-          <Settings className="w-4 h-4 mr-1" /> Columns
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setCreateTaskOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-1" /> New Task
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setColumnSettingsOpen(true)}
+          >
+            <Settings className="w-4 h-4 mr-1" /> Columns
+          </Button>
+        </div>
       </div>
 
       <TaskFilters
@@ -75,6 +84,8 @@ export function AdminTasksClient({
           columns={columns}
           userRole="admin"
           currentUserId={currentUserId}
+          externalCreateOpen={createTaskOpen}
+          onExternalCreateOpenChange={setCreateTaskOpen}
         />
       ) : (
         <>

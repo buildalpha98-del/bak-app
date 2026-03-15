@@ -18,7 +18,7 @@ export default async function TrainingModulesPage() {
         </p>
       </div>
 
-      <ModuleListView initialModules={modules} />
+      <ModuleListView initialModules={modules} basePath="/admin/training" />
     </div>
   );
 }

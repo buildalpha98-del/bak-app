@@ -27,6 +27,7 @@ import type { TrainingModuleType, TrainingCategory, TrainingStatus } from "@/lib
 
 interface ModuleListViewProps {
   initialModules: TrainingModule[];
+  basePath: string;
 }
 
 const TYPE_BADGE: Record<TrainingModuleType, { label: string; className: string }> = {
@@ -57,7 +58,7 @@ function formatDate(iso: string) {
   });
 }
 
-export function ModuleListView({ initialModules }: ModuleListViewProps) {
+export function ModuleListView({ initialModules, basePath }: ModuleListViewProps) {
   const router = useRouter();
 
   const [typeFilter, setTypeFilter]       = useState<TrainingModuleType | "all">("all");
@@ -138,7 +139,7 @@ export function ModuleListView({ initialModules }: ModuleListViewProps) {
         </div>
 
         <div className="ml-auto">
-          <Button onClick={() => router.push("/admin/training/modules/new")}>
+          <Button onClick={() => router.push(`${basePath}/modules/new`)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Module
           </Button>
@@ -176,7 +177,7 @@ export function ModuleListView({ initialModules }: ModuleListViewProps) {
                     key={module.id}
                     className="cursor-pointer hover:bg-secondary/50 transition-colors"
                     onClick={() =>
-                      router.push(`/admin/training/modules/${module.id}/edit`)
+                      router.push(`${basePath}/modules/${module.id}/edit`)
                     }
                   >
                     <TableCell className="font-medium">{module.title}</TableCell>

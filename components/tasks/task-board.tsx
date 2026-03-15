@@ -28,6 +28,8 @@ interface TaskBoardProps {
   columns: TaskColumnType[];
   userRole: string;
   currentUserId: string;
+  externalCreateOpen?: boolean;
+  onExternalCreateOpenChange?: (open: boolean) => void;
 }
 
 export function TaskBoard({
@@ -35,11 +37,21 @@ export function TaskBoard({
   columns,
   userRole,
   currentUserId,
+  externalCreateOpen,
+  onExternalCreateOpenChange,
 }: TaskBoardProps) {
   const [tasks, setTasks] = useState<TaskWithRelations[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+
+  // Sync external open state into internal state
+  useEffect(() => {
+    if (externalCreateOpen) {
+      setCreateOpen(true);
+      onExternalCreateOpenChange?.(false);
+    }
+  }, [externalCreateOpen, onExternalCreateOpenChange]);
 
   // Update tasks when initialTasks changes (e.g. after filter or refresh)
   useEffect(() => {
