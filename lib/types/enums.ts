@@ -2,7 +2,7 @@
 // Enums — mirrors PostgreSQL custom types
 // ============================================================
 
-export type UserRole = "admin" | "ops" | "coach";
+export type UserRole = "admin" | "ops" | "coach" | "parent";
 
 export type UserStatus = "active" | "inactive" | "onboarding";
 
@@ -79,7 +79,12 @@ export type OutboundInvoiceStatus =
   | "pending_approval"
   | "approved"
   | "sent"
-  | "paid";
+  | "partially_paid"
+  | "paid"
+  | "overdue"
+  | "void";
+
+export type InvoicePaymentMethod = "bank_transfer" | "square_online" | "other";
 
 export type AnnouncementAudience =
   | "all"
@@ -143,7 +148,14 @@ export type NotificationEventType =
   | "performance_review_ready"
   | "training_assigned"
   | "training_completed"
-  | "training_overdue";
+  | "training_overdue"
+  | "waitlist_offer"
+  | "waitlist_expired"
+  | "booking_confirmed"
+  | "booking_cancelled"
+  | "booking_reminder"
+  | "package_purchased"
+  | "invoice_overdue";
 
 // Children & attendance
 export type AgeGroup = "3-5" | "5-8" | "8-12";
@@ -219,6 +231,52 @@ export type TrainingModuleType = "video" | "document" | "quiz" | "checklist";
 export type TrainingCategory = "onboarding" | "sport_specific" | "compliance" | "professional_development";
 export type TrainingStatus = "draft" | "published" | "archived";
 export type TrainingAssignmentStatus = "assigned" | "in_progress" | "completed" | "overdue";
+
+// Parent
+export type ParentRelationship = "parent" | "guardian" | "carer";
+
+// Bookable sessions
+export type BookableSessionType = "holiday_clinic" | "after_school" | "weekend" | "specialist" | "other";
+export type BookableSessionStatus = "draft" | "open" | "closed" | "cancelled" | "completed";
+export type WaitlistStatus = "waiting" | "offered" | "accepted" | "expired" | "cancelled";
+
+// Packages & Bookings
+export type PackageStatus = "active" | "inactive";
+export type PackageBalanceStatus = "active" | "expired" | "used_up";
+export type BookingStatus = "pending_payment" | "confirmed" | "cancelled" | "refunded" | "no_show";
+export type BookingPaymentType = "single_payment" | "package_redemption";
+export type PaymentType = "session_booking" | "package_purchase";
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
+
+// Testimonials (marketing)
+export type TestimonialStatus = "pending" | "approved" | "rejected";
+
+// Referrals (Wave 6)
+export type ReferralOwnerType = "parent" | "centre";
+export type ReferralStatus = "pending" | "registered" | "converted" | "expired";
+export type ReferralRewardType = "instant_discount" | "milestone_free_session" | "invoice_credit" | "badge";
+export type ReferralRewardStatus = "pending" | "awarded" | "redeemed" | "expired";
+export type ReferralCodeStatus = "active" | "inactive";
+
+// Re-engagement (Wave 6)
+export type ReengagementAudienceType = "dormant_parents" | "declining_centres" | "cold_leads" | "untrained_coaches";
+export type ReengagementCampaignStatus = "active" | "paused" | "inactive";
+export type ReengagementSendStatus = "triggered" | "email_sent" | "engaged" | "unsubscribed";
+export type ReengagementRecipientType = "parent" | "centre" | "lead" | "coach";
+export type DiscountCodeType = "flat_amount";
+
+// Sales proposals
+export type ProposalStatus = "draft" | "final" | "sent";
+
+// Regions
+export type RegionStatus = "active" | "planned" | "inactive";
+
+// Child insights
+export type InsightType = "term_end" | "on_demand";
+
+// Churn
+export type ChurnEventType = "churned" | "recovered" | "at_risk";
+export type RiskLevel = "low" | "medium" | "high" | "critical";
 
 // Centre onboarding
 export type OnboardingStatus = "in_progress" | "completed" | "stalled";

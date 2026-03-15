@@ -1,10 +1,19 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getOutboundInvoices } from "@/lib/outbound-invoicing/actions";
-import { isQuickBooksConnected } from "@/lib/quickbooks/client";
+import {
+  getOutboundInvoices,
+  getInvoiceSummary,
+} from "@/lib/outbound-invoicing/actions";
 import { OutboundInvoiceList } from "@/components/outbound-invoicing/invoice-list";
 import { ApprovalQueue } from "@/components/outbound-invoicing/approval-queue";
-import { PaymentSyncButton } from "@/components/outbound-invoicing/payment-sync-button";
+import { Card, CardContent } from "@/components/ui/card";
+
+function formatCurrency(cents: number): string {
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+  }).format(cents / 100);
+}
 
 export default async function AdminOutboundInvoicingPage() {
   const supabase = await createSupabaseServerClient();
@@ -18,6 +27,7 @@ export default async function AdminOutboundInvoicingPage() {
   const pendingResult = await getOutboundInvoices({
     status: ["pending_approval"],
   });
+  const summaryResult = await getInvoiceSummary();
 
   const firstError = allResult.error || pendingResult.error;
   if (firstError) {
@@ -30,7 +40,7 @@ export default async function AdminOutboundInvoicingPage() {
 
   const allInvoices = allResult.data;
   const pendingInvoices = pendingResult.data;
-  const qbConnected = await isQuickBooksConnected();
+  const summary = summaryResult.data;
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -43,8 +53,45 @@ export default async function AdminOutboundInvoicingPage() {
             Review, approve, and manage invoices to centres and schools.
           </p>
         </div>
-        {qbConnected && <PaymentSyncButton />}
       </div>
+
+      {/* Summary stats */}
+      {summary && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Total Invoiced</p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(summary.totalInvoicedThisMonth)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Total Paid</p>
+              <p className="text-lg font-semibold text-green-700">
+                {formatCurrency(summary.totalPaidThisMonth)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Outstanding</p>
+              <p className="text-lg font-semibold text-amber-700">
+                {formatCurrency(summary.totalOutstanding)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground">Overdue</p>
+              <p className="text-lg font-semibold text-red-700">
+                {formatCurrency(summary.totalOverdue)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <ApprovalQueue invoices={pendingInvoices ?? []} />
 

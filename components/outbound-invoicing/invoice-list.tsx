@@ -9,7 +9,10 @@ const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   pending_approval: { label: "Pending Approval", className: "bg-amber-100 text-amber-800" },
   approved: { label: "Approved", className: "bg-blue-100 text-blue-800" },
   sent: { label: "Sent", className: "bg-purple-100 text-purple-800" },
+  partially_paid: { label: "Partially Paid", className: "bg-orange-100 text-orange-800" },
   paid: { label: "Paid", className: "bg-green-100 text-green-800" },
+  overdue: { label: "Overdue", className: "bg-red-100 text-red-800" },
+  void: { label: "Void", className: "bg-gray-100 text-gray-500" },
 };
 
 interface Props {

@@ -356,6 +356,153 @@ export function onboardingFollowUpEmail(
   };
 }
 
+// ========================
+// Outbound invoice email templates
+// ========================
+
+export function outboundInvoiceEmail(
+  contactName: string,
+  invoiceNumber: string,
+  periodStart: string,
+  periodEnd: string,
+  totalAmount: string,
+  dueDate: string,
+  bankDetails: {
+    bankName: string;
+    bsb: string;
+    accountNumber: string;
+    accountName: string;
+  } | null,
+  payOnlineUrl: string | null
+): { subject: string; html: string } {
+  const bankSection = bankDetails
+    ? `
+      <p style="margin-top:16px;font-weight:600;">Bank Transfer Details:</p>
+      <table role="presentation" style="margin:8px 0;width:100%;">
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};width:120px;">Bank</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.bankName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">BSB</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.bsb}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Account Number</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.accountNumber}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Account Name</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.accountName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Reference</td><td style="padding:4px 8px;font-weight:600;">${invoiceNumber}</td></tr>
+      </table>`
+    : "";
+
+  const payOnlineButton = payOnlineUrl
+    ? `
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${payOnlineUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Pay Online</a>
+      </div>`
+    : "";
+
+  return {
+    subject: `Invoice ${invoiceNumber} — Build Alpha Kids`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Please find attached your invoice for the period <strong>${periodStart} – ${periodEnd}</strong>.</p>
+      <table role="presentation" style="margin:16px 0;width:100%;border:1px solid #E5E5E5;border-radius:6px;overflow:hidden;">
+        <tr style="background:#F9F9F9;">
+          <td style="padding:10px 12px;color:${BRAND_GREY};font-size:12px;font-weight:600;">Invoice Number</td>
+          <td style="padding:10px 12px;color:${BRAND_GREY};font-size:12px;font-weight:600;">Amount Due</td>
+          <td style="padding:10px 12px;color:${BRAND_GREY};font-size:12px;font-weight:600;">Due Date</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;font-weight:600;">${invoiceNumber}</td>
+          <td style="padding:10px 12px;font-weight:600;color:${BRAND_ORANGE};">${totalAmount}</td>
+          <td style="padding:10px 12px;font-weight:600;">${dueDate}</td>
+        </tr>
+      </table>
+      ${bankSection}
+      ${payOnlineButton}
+      <p style="color:${BRAND_GREY};font-size:13px;">The PDF invoice is attached to this email.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
+    `),
+  };
+}
+
+export function invoiceReminderEmail(
+  contactName: string,
+  invoiceNumber: string,
+  totalAmount: string,
+  dueDate: string,
+  daysOverdue: number,
+  bankDetails: {
+    bankName: string;
+    bsb: string;
+    accountNumber: string;
+    accountName: string;
+  } | null,
+  payOnlineUrl: string | null
+): { subject: string; html: string } {
+  const isOverdue = daysOverdue > 0;
+  const subjectLine = isOverdue
+    ? `Overdue: Invoice ${invoiceNumber} — ${daysOverdue} day${daysOverdue !== 1 ? "s" : ""} past due`
+    : `Payment Reminder: Invoice ${invoiceNumber} — Due ${dueDate}`;
+
+  const openingLine = isOverdue
+    ? `<p>Your invoice <strong>${invoiceNumber}</strong> for <strong>${totalAmount}</strong> is now <strong>${daysOverdue} day${daysOverdue !== 1 ? "s" : ""} overdue</strong>. The due date was <strong>${dueDate}</strong>.</p>
+       <p>We kindly request that payment be made at your earliest convenience to avoid any disruption to services.</p>`
+    : `<p>This is a friendly reminder that invoice <strong>${invoiceNumber}</strong> for <strong>${totalAmount}</strong> is due on <strong>${dueDate}</strong>.</p>`;
+
+  const bankSection = bankDetails
+    ? `
+      <p style="margin-top:16px;font-weight:600;">Bank Transfer Details:</p>
+      <table role="presentation" style="margin:8px 0;width:100%;">
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};width:120px;">Bank</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.bankName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">BSB</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.bsb}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Account Number</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.accountNumber}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Account Name</td><td style="padding:4px 8px;font-weight:600;">${bankDetails.accountName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Reference</td><td style="padding:4px 8px;font-weight:600;">${invoiceNumber}</td></tr>
+      </table>`
+    : "";
+
+  const payOnlineButton = payOnlineUrl
+    ? `
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${payOnlineUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Pay Online</a>
+      </div>`
+    : "";
+
+  return {
+    subject: subjectLine,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      ${openingLine}
+      ${bankSection}
+      ${payOnlineButton}
+      <p>If payment has already been made, please disregard this reminder. Otherwise, feel free to contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a> if you have any questions.</p>
+      <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
+    `),
+  };
+}
+
+export function invoicePaymentConfirmationEmail(
+  contactName: string,
+  invoiceNumber: string,
+  amountPaid: string
+): { subject: string; html: string } {
+  return {
+    subject: `Payment Received — Invoice ${invoiceNumber}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Thank you! We've received your payment of <strong>${amountPaid}</strong> for invoice <strong>${invoiceNumber}</strong>.</p>
+      <table role="presentation" style="margin:16px 0;width:100%;border:1px solid #E5E5E5;border-radius:6px;overflow:hidden;">
+        <tr style="background:#F9F9F9;">
+          <td style="padding:10px 12px;color:${BRAND_GREY};font-size:12px;font-weight:600;">Invoice Number</td>
+          <td style="padding:10px 12px;color:${BRAND_GREY};font-size:12px;font-weight:600;">Amount Paid</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;font-weight:600;">${invoiceNumber}</td>
+          <td style="padding:10px 12px;font-weight:600;color:${BRAND_ORANGE};">${amountPaid}</td>
+        </tr>
+      </table>
+      <p>No further action is required. We appreciate your prompt payment and look forward to continuing our partnership.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
+    `),
+  };
+}
+
 export function feedbackRequestEmail(
   centreName: string,
   coachName: string,

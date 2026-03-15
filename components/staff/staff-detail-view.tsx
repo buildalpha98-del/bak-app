@@ -79,6 +79,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Admin",
   ops: "Ops",
   coach: "Coach",
+  parent: "Parent",
 };
 
 const DOC_TYPE_LABELS: Record<ComplianceDocType, string> = {

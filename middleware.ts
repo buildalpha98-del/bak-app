@@ -5,17 +5,20 @@ import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 const PUBLIC_ROUTES = [
   "/login",
   "/client-login",
+  "/parent-login",
   "/reset-password",
   "/update-password",
   "/feedback",
+  "/refer", // public referral landing pages
   "/client/shared", // shared read-only links (token-based, no auth)
 ];
 
-// Role → allowed route prefixes (staff roles only)
+// Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
   admin: ["/admin", "/ops", "/coach"], // admin can access all portals
   ops: ["/ops"],
   coach: ["/coach"],
+  parent: ["/parent"],
 };
 
 // Role → default portal
@@ -23,6 +26,7 @@ const ROLE_PORTAL: Record<string, string> = {
   admin: "/admin",
   ops: "/ops",
   coach: "/coach",
+  parent: "/parent",
 };
 
 export async function middleware(request: NextRequest) {
@@ -100,6 +104,61 @@ export async function middleware(request: NextRequest) {
     }
 
     return response;
+  }
+
+  // ---- Parent portal route handling ----
+  const isParentRoute =
+    pathname.startsWith("/parent/") || pathname === "/parent";
+
+  if (isParentRoute) {
+    if (!user) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/parent-login";
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check if parent has completed registration
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!parentProfile && !pathname.startsWith("/parent/register")) {
+      const registerUrl = request.nextUrl.clone();
+      registerUrl.pathname = "/parent/register";
+      return NextResponse.redirect(registerUrl);
+    }
+
+    return response;
+  }
+
+  // Authenticated user on parent-login page → redirect to portal
+  if (user && pathname === "/parent-login") {
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (parentProfile) {
+      const parentUrl = request.nextUrl.clone();
+      parentUrl.pathname = "/parent";
+      return NextResponse.redirect(parentUrl);
+    }
+
+    // Check if they're actually staff
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile && profile.role !== "parent") {
+      const portalUrl = request.nextUrl.clone();
+      portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
+      return NextResponse.redirect(portalUrl);
+    }
   }
 
   // ---- Standard staff auth flow ----

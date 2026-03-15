@@ -39,6 +39,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Admin",
   ops: "Ops",
   coach: "Coach",
+  parent: "Parent",
 };
 
 function getInitials(name: string): string {

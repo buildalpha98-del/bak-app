@@ -74,24 +74,25 @@ async function calcInvoicePayment(
 ): Promise<{ raw_value: number | null; signal_score: number }> {
   const supabase = createSupabaseAdmin();
 
-  // Get last 3 paid invoices
+  // Get last 3 paid invoices with actual payment_date
   const { data: invoices } = await supabase
     .from("outbound_invoices")
-    .select("sent_at, updated_at, status")
+    .select("sent_at, payment_date, status")
     .eq("centre_id", centreId)
     .eq("status", "paid")
     .not("sent_at", "is", null)
-    .order("updated_at", { ascending: false })
+    .not("payment_date", "is", null)
+    .order("payment_date", { ascending: false })
     .limit(3);
 
   if (!invoices || invoices.length === 0) {
     return { raw_value: null, signal_score: 70 }; // Neutral
   }
 
-  // Calculate average days to pay (sent_at to updated_at as proxy for paid date)
+  // Calculate average days from sent_at to payment_date
   const daysToPay = invoices.map((inv) => {
     const sent = new Date(inv.sent_at!);
-    const paid = new Date(inv.updated_at);
+    const paid = new Date(inv.payment_date!);
     return Math.max(0, Math.floor((paid.getTime() - sent.getTime()) / (1000 * 60 * 60 * 24)));
   });
 

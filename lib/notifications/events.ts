@@ -78,4 +78,15 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   training_assigned: "important",
   training_completed: "informational",
   training_overdue: "important",
+
+  // Waitlist
+  waitlist_offer: "urgent",
+  waitlist_expired: "informational",
+  booking_confirmed: "important",
+  booking_cancelled: "important",
+  booking_reminder: "important",
+  package_purchased: "informational",
+
+  // Invoicing
+  invoice_overdue: "important",
 };

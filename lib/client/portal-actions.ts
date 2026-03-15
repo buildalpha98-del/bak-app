@@ -111,6 +111,8 @@ export interface ClientInvoice {
   status: string;
   sent_at: string | null;
   created_at: string;
+  pdf_url: string | null;
+  total_cents: number | null;
 }
 
 export interface CentreMessageWithSender extends CentreMessage {
@@ -783,9 +785,9 @@ export async function getClientInvoices(
 
     const { data, error } = await supabase
       .from("outbound_invoices")
-      .select("id, invoice_number, period_start, period_end, amount, status, sent_at, created_at")
+      .select("id, invoice_number, period_start, period_end, amount, status, sent_at, created_at, pdf_url, total_cents")
       .eq("centre_id", centreId)
-      .in("status", ["sent", "paid"])
+      .in("status", ["sent", "partially_paid", "paid", "overdue"])
       .order("period_start", { ascending: false });
 
     if (error) return { data: [], error: error.message };
@@ -800,6 +802,8 @@ export async function getClientInvoices(
         status: inv.status,
         sent_at: inv.sent_at,
         created_at: inv.created_at,
+        pdf_url: inv.pdf_url ?? null,
+        total_cents: inv.total_cents ?? null,
       })),
       error: null,
     };

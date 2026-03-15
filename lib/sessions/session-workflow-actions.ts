@@ -420,6 +420,18 @@ export async function completeSession(
       console.error("Feedback request creation failed:", feedbackErr);
     }
 
+    // Link attendance to parent bookings (fire-and-forget)
+    try {
+      const { linkAttendanceToBookings } = await import(
+        "@/lib/bookings/attendance-linking"
+      );
+      linkAttendanceToBookings(sessionId).catch((err) =>
+        console.error("Attendance linking failed:", err)
+      );
+    } catch (linkErr) {
+      console.error("Attendance linking import failed:", linkErr);
+    }
+
     revalidatePath("/coach");
     revalidatePath(`/coach/schedule/${sessionId}`);
     return { error: null };

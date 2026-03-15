@@ -10,6 +10,7 @@ interface ForecastBreakdown {
   byCentre: { centreId: string; centreName: string; revenue: number; cost: number }[];
   pipelineByStage: { stage: string; count: number; weightedRevenue: number }[];
   byCoach: { coachId: string; coachName: string; sessions: number; cost: number }[];
+  directToParent?: { actual: number; projected: number; packageRevenue: number };
 }
 
 interface ForecastPeriod {
@@ -216,6 +217,61 @@ async function calculatePipelineRevenue(
 }
 
 // ============================================================
+// Calculate direct-to-parent revenue from bookings + packages
+// ============================================================
+
+async function calculateParentRevenue(
+  periodStart: Date,
+  periodEnd: Date
+): Promise<{ actual: number; projected: number; packageRevenue: number }> {
+  const supabase = createSupabaseAdmin();
+  const startStr = periodStart.toISOString().split("T")[0];
+  const endStr = periodEnd.toISOString().split("T")[0];
+
+  // Actual revenue from confirmed bookings in this period
+  const { data: bookings } = await supabase
+    .from("bookings")
+    .select("total_cents, bookable_sessions!inner(date)")
+    .eq("status", "confirmed")
+    .gte("bookable_sessions.date", startStr)
+    .lte("bookable_sessions.date", endStr);
+
+  const actual = (bookings ?? []).reduce(
+    (sum, b) => sum + (b.total_cents ?? 0),
+    0
+  ) / 100;
+
+  // Package purchase revenue in this period
+  const { data: packagePayments } = await supabase
+    .from("payments")
+    .select("amount_cents")
+    .eq("payment_type", "package_purchase")
+    .eq("status", "completed")
+    .gte("created_at", periodStart.toISOString())
+    .lte("created_at", periodEnd.toISOString());
+
+  const packageRevenue = (packagePayments ?? []).reduce(
+    (sum, p) => sum + (p.amount_cents ?? 0),
+    0
+  ) / 100;
+
+  // Projected: upcoming bookings not yet completed
+  const { data: upcoming } = await supabase
+    .from("bookings")
+    .select("total_cents, bookable_sessions!inner(date)")
+    .in("status", ["confirmed", "pending_payment"])
+    .gte("bookable_sessions.date", new Date().toISOString().split("T")[0])
+    .lte("bookable_sessions.date", endStr);
+
+  const projected = (upcoming ?? []).reduce(
+    (sum, b) => sum + (b.total_cents ?? 0),
+    0
+  ) / 100;
+
+  return { actual, projected, packageRevenue };
+}
+
+// ============================================================
 // Generate forecasts for all periods
 // ============================================================
 
@@ -235,13 +291,16 @@ export async function generateForecasts(): Promise<{
       const start = new Date(now.getFullYear(), now.getMonth() + i, 1);
       const end = new Date(now.getFullYear(), now.getMonth() + i + 1, 0);
 
-      const committed = await calculateCommittedRevenue(start, end, config);
-      const pipeline = await calculatePipelineRevenue(config);
+      const [committed, pipeline, parentRevenue] = await Promise.all([
+        calculateCommittedRevenue(start, end, config),
+        calculatePipelineRevenue(config),
+        calculateParentRevenue(start, end),
+      ]);
 
       // Scale pipeline to monthly (pipeline is annual estimate)
       const monthlyPipeline = pipeline.total / 12;
 
-      const totalRevenue = committed.total + monthlyPipeline;
+      const totalRevenue = committed.total + monthlyPipeline + parentRevenue.actual + parentRevenue.packageRevenue;
       const profit = totalRevenue - committed.totalCoachCost;
 
       const breakdown: ForecastBreakdown = {
@@ -256,6 +315,7 @@ export async function generateForecasts(): Promise<{
         byCoach: Array.from(committed.byCoach.entries()).map(([coachId, data]) => ({
           coachId, coachName: data.name, sessions: data.sessions, cost: data.cost,
         })),
+        directToParent: parentRevenue,
       };
 
       const period: ForecastPeriod = {
@@ -293,11 +353,14 @@ export async function generateForecasts(): Promise<{
       const start = new Date(now.getFullYear(), qMonth, 1);
       const end = new Date(now.getFullYear(), qMonth + 3, 0);
 
-      const committed = await calculateCommittedRevenue(start, end, config);
-      const pipeline = await calculatePipelineRevenue(config);
+      const [committed, pipeline, parentRevenue] = await Promise.all([
+        calculateCommittedRevenue(start, end, config),
+        calculatePipelineRevenue(config),
+        calculateParentRevenue(start, end),
+      ]);
       const quarterlyPipeline = pipeline.total / 4;
 
-      const totalRevenue = committed.total + quarterlyPipeline;
+      const totalRevenue = committed.total + quarterlyPipeline + parentRevenue.actual + parentRevenue.packageRevenue;
       const profit = totalRevenue - committed.totalCoachCost;
 
       const breakdown: ForecastBreakdown = {
@@ -312,6 +375,7 @@ export async function generateForecasts(): Promise<{
         byCoach: Array.from(committed.byCoach.entries()).map(([coachId, data]) => ({
           coachId, coachName: data.name, sessions: data.sessions, cost: data.cost,
         })),
+        directToParent: parentRevenue,
       };
 
       const period: ForecastPeriod = {

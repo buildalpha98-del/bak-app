@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getOutboundInvoiceDetail } from "@/lib/outbound-invoicing/actions";
-import { isQuickBooksConnected } from "@/lib/quickbooks/client";
 import { InvoiceDetail } from "@/components/outbound-invoicing/invoice-detail";
 
 interface Props {
@@ -28,14 +27,11 @@ export default async function OpsInvoiceDetailPage({ params }: Props) {
 
   if (error || !invoice) notFound();
 
-  const qbConnected = await isQuickBooksConnected();
-
   return (
     <div className="space-y-6">
       <InvoiceDetail
         invoice={invoice}
         userRole={profile?.role as "admin" | "ops"}
-        qbConnected={qbConnected}
       />
     </div>
   );

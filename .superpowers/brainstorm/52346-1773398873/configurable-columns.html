@@ -1,0 +1,40 @@
+<h2>Configurable Kanban Columns</h2>
+<p class="subtitle">Your DB currently has a fixed enum (todo, in_progress, done). How should we handle admin-configurable columns?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Flexible Columns Table (Recommended)</h3>
+      <p>Create a <code>task_columns</code> table with id, name, position, is_final, colour. Change <code>tasks.status</code> from enum to a foreign key. Admins can add real columns like "Blocked", "Review", "Waiting on Client". The "Done" column is permanent (is_final = true).</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Truly configurable — unlimited custom columns</li><li>Clean relational model</li><li>Supports colour-coded columns</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Migration needed to drop enum + add FK</li><li>Slightly more complex queries</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Keep Fixed 3-Status Enum</h3>
+      <p>Keep the existing <code>todo | in_progress | done</code> enum. Admin can only rename the display labels in the UI — not add real new statuses. Simplest approach but limited.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>No migration needed</li><li>Simplest implementation</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Can't add "Blocked", "Review", etc.</li><li>Doesn't deliver true configurability</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Soft Enum with Varchar</h3>
+      <p>Change <code>tasks.status</code> from enum to <code>varchar</code>. Store valid statuses in a <code>task_columns</code> config table. No FK constraint — validation happens at the app layer.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Flexible without FK overhead</li><li>Easier migration (just alter column type)</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>No DB-level integrity (orphan statuses possible)</li><li>App-layer validation required</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -22,7 +22,9 @@ interface AutoCreateTaskInput {
     | "shift_declined"
     | "invoice_flagged"
     | "low_session_rating"
-    | "rerostering";
+    | "rerostering"
+    | "churn_risk"
+    | "invoice_overdue";
 }
 
 /**

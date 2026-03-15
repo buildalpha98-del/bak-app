@@ -11,7 +11,7 @@ ALTER TABLE sessions
   ADD COLUMN IF NOT EXISTS needs_ops_review boolean NOT NULL DEFAULT false;
 
 -- 2. Seed default form templates (is_default = true, centre_id = null)
--- Uses a system UUID for created_by since these are system-generated
+-- Uses the admin user UUID for created_by since these are system-generated
 INSERT INTO form_templates (id, name, form_type, fields_json, is_default, centre_id, created_by)
 VALUES
   (
@@ -26,7 +26,7 @@ VALUES
     ]'::jsonb,
     true,
     null,
-    '00000000-0000-0000-0000-000000000000'
+    '11111111-1111-1111-1111-111111111111'
   ),
   (
     gen_random_uuid(),
@@ -39,7 +39,7 @@ VALUES
     ]'::jsonb,
     true,
     null,
-    '00000000-0000-0000-0000-000000000000'
+    '11111111-1111-1111-1111-111111111111'
   ),
   (
     gen_random_uuid(),
@@ -57,42 +57,36 @@ VALUES
     ]'::jsonb,
     true,
     null,
-    '00000000-0000-0000-0000-000000000000'
+    '11111111-1111-1111-1111-111111111111'
   )
 ON CONFLICT DO NOTHING;
 
 -- 3. RLS policies for form_submissions (coaches)
--- Coaches can insert their own submissions
-CREATE POLICY IF NOT EXISTS "Coaches can insert own submissions"
-  ON form_submissions
-  FOR INSERT
-  WITH CHECK (submitted_by = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Coaches can insert own submissions' AND tablename = 'form_submissions') THEN
+    CREATE POLICY "Coaches can insert own submissions" ON form_submissions FOR INSERT WITH CHECK (submitted_by = auth.uid());
+  END IF;
+END $$;
 
--- Coaches can read their own submissions
-CREATE POLICY IF NOT EXISTS "Coaches can read own submissions"
-  ON form_submissions
-  FOR SELECT
-  USING (submitted_by = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Coaches can read own submissions' AND tablename = 'form_submissions') THEN
+    CREATE POLICY "Coaches can read own submissions" ON form_submissions FOR SELECT USING (submitted_by = auth.uid());
+  END IF;
+END $$;
 
 -- 4. Create incident-photos storage bucket (if not exists)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('incident-photos', 'incident-photos', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage policy: coaches can upload to incident-photos
-CREATE POLICY IF NOT EXISTS "Coaches can upload incident photos"
-  ON storage.objects
-  FOR INSERT
-  WITH CHECK (
-    bucket_id = 'incident-photos'
-    AND auth.role() = 'authenticated'
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Coaches can upload incident photos' AND tablename = 'objects') THEN
+    CREATE POLICY "Coaches can upload incident photos" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'incident-photos' AND auth.role() = 'authenticated');
+  END IF;
+END $$;
 
--- Coaches can read their own incident photos
-CREATE POLICY IF NOT EXISTS "Coaches can read incident photos"
-  ON storage.objects
-  FOR SELECT
-  USING (
-    bucket_id = 'incident-photos'
-    AND auth.role() = 'authenticated'
-  );
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Coaches can read incident photos' AND tablename = 'objects') THEN
+    CREATE POLICY "Coaches can read incident photos" ON storage.objects FOR SELECT USING (bucket_id = 'incident-photos' AND auth.role() = 'authenticated');
+  END IF;
+END $$;

@@ -21,6 +21,7 @@ import type {
   EquipmentAction,
   CoachInvoiceStatus,
   OutboundInvoiceStatus,
+  InvoicePaymentMethod,
   AnnouncementAudience,
   DocumentCategory,
   DocumentVisibility,
@@ -44,6 +45,10 @@ import type {
   OnboardingStatus,
   OnboardingStepType,
   OnboardingStepStatus,
+  ParentRelationship,
+  BookableSessionType,
+  BookableSessionStatus,
+  WaitlistStatus,
 } from "./enums";
 
 // ========================
@@ -137,7 +142,6 @@ export interface Centre {
   status_changed_at: string | null;
   created_at: string;
   updated_at: string;
-  qb_customer_id: string | null;
   send_feedback_emails: boolean;
   logo_url: string | null;
   branding_mode: BrandingMode;
@@ -396,13 +400,44 @@ export interface OutboundInvoice {
   line_items_json: OutboundLineItem[];
   amount: number;
   status: OutboundInvoiceStatus;
-  qb_invoice_id: string | null;
   invoice_number: string | null;
   created_by: string | null;
   approved_by: string | null;
   approved_at: string | null;
   sent_at: string | null;
+  due_date: string | null;
+  payment_method: InvoicePaymentMethod | null;
+  payment_reference: string | null;
+  payment_date: string | null;
+  paid_amount_cents: number | null;
+  pdf_url: string | null;
+  email_sent_at: string | null;
+  email_opened_at: string | null;
+  reminder_sent_at: string | null;
+  notes: string | null;
+  gst_amount_cents: number | null;
+  subtotal_cents: number | null;
+  total_cents: number | null;
+  payment_history: InvoicePaymentRecord[];
   created_at: string;
+  updated_at: string;
+}
+
+export interface InvoicePaymentRecord {
+  date: string;
+  amount_cents: number;
+  method: InvoicePaymentMethod;
+  reference: string | null;
+  notes: string | null;
+  recorded_by: string;
+  recorded_at: string;
+}
+
+export interface BusinessSettings {
+  id: string;
+  key: string;
+  value: unknown;
+  updated_by: string | null;
   updated_at: string;
 }
 
@@ -1181,7 +1216,7 @@ export interface Database {
   notification_preferences: NotificationPreference;
   notifications: Notification;
   push_subscriptions: PushSubscription;
-  integration_tokens: IntegrationToken;
+  business_settings: BusinessSettings;
   task_columns: TaskColumn;
   task_activity: TaskActivity;
   children: Child;
@@ -1218,6 +1253,166 @@ export interface Database {
   ai_assistant_conversations: AiAssistantConversation;
   ai_assistant_cache: AiAssistantCache;
   ai_assistant_usage: AiAssistantUsage;
+  parent_profiles: ParentProfile;
+  parent_children: ParentChild;
+  bookable_sessions: BookableSession;
+  waitlist: WaitlistEntry;
+  referral_codes: ReferralCode;
+  referrals: Referral;
+  referral_rewards: ReferralReward;
+  referral_config: ReferralConfig;
+  reengagement_campaigns: ReengagementCampaign;
+  reengagement_sends: ReengagementSend;
+  discount_codes: DiscountCode;
+}
+
+// ========================
+// 66. parent_profiles
+// ========================
+export interface ParentProfile {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  suburb: string | null;
+  marketing_opt_in: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 67. parent_children
+// ========================
+export interface ParentChild {
+  id: string;
+  parent_id: string;
+  child_id: string;
+  relationship: ParentRelationship;
+  created_at: string;
+}
+
+// ========================
+// 68. bookable_sessions
+// ========================
+export interface BookableSession {
+  id: string;
+  session_id: string | null;
+  title: string;
+  description: string | null;
+  session_type: BookableSessionType;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location_name: string | null;
+  location_address: string;
+  suburb: string;
+  sport: string | null;
+  age_group_min: number | null;
+  age_group_max: number | null;
+  max_capacity: number;
+  current_bookings: number;
+  price_cents: number;
+  package_eligible: boolean;
+  coach_id: string | null;
+  status: BookableSessionStatus;
+  booking_opens_at: string | null;
+  booking_closes_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 69. waitlist
+// ========================
+export interface WaitlistEntry {
+  id: string;
+  bookable_session_id: string;
+  parent_id: string;
+  child_id: string;
+  position: number;
+  status: WaitlistStatus;
+  offered_at: string | null;
+  offer_expires_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 70. packages
+// ========================
+export interface Package {
+  id: string;
+  name: string;
+  description: string | null;
+  session_count: number;
+  price_cents: number;
+  savings_cents: number;
+  valid_days: number;
+  applicable_session_types: import("./enums").BookableSessionType[] | null;
+  status: import("./enums").PackageStatus;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ========================
+// 71. payments
+// ========================
+export interface Payment {
+  id: string;
+  parent_id: string;
+  booking_id: string | null;
+  package_id: string | null;
+  amount_cents: number;
+  payment_type: import("./enums").PaymentType;
+  square_payment_id: string | null;
+  square_order_id: string | null;
+  status: import("./enums").PaymentStatus;
+  refund_amount_cents: number | null;
+  refunded_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 72. bookings
+// ========================
+export interface BookingChildEntry {
+  child_id: string;
+  child_name: string;
+  age_group: string;
+}
+
+export interface Booking {
+  id: string;
+  bookable_session_id: string;
+  parent_id: string;
+  children_json: BookingChildEntry[];
+  payment_type: import("./enums").BookingPaymentType;
+  payment_id: string | null;
+  package_balance_id: string | null;
+  total_cents: number;
+  status: import("./enums").BookingStatus;
+  booked_at: string;
+  cancelled_at: string | null;
+  cancellation_reason: string | null;
+  created_at: string;
+}
+
+// ========================
+// 73. package_balances
+// ========================
+export interface PackageBalance {
+  id: string;
+  parent_id: string;
+  package_id: string;
+  purchased_at: string;
+  expires_at: string;
+  total_sessions: number;
+  remaining_sessions: number;
+  payment_id: string | null;
+  status: import("./enums").PackageBalanceStatus;
+  created_at: string;
 }
 
 // ========================
@@ -1350,15 +1545,226 @@ export interface RerosteringEvent {
 }
 
 // ========================
-// Integration Tokens
+// 55. approved_testimonials
 // ========================
-export interface IntegrationToken {
+export interface ApprovedTestimonial {
   id: string;
-  provider: string;
-  realm_id: string | null;
-  token_expiry: string;
-  company_name: string | null;
-  connected_by: string | null;
-  connected_at: string;
+  feedback_rating_id: string | null;
+  centre_name: string;
+  comment: string;
+  rating: number;
+  display_name: string;
+  status: import("./enums").TestimonialStatus;
+  approved_by: string | null;
+  approved_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 56. public_stats_cache
+// ========================
+export interface PublicStatsCache {
+  id: string;
+  stat_key: string;
+  stat_value: Record<string, unknown>;
+  calculated_at: string;
+  expires_at: string;
+}
+
+// ========================
+// 57. referral_codes (Wave 6)
+// ========================
+export interface ReferralCode {
+  id: string;
+  code: string;
+  owner_type: import("./enums").ReferralOwnerType;
+  owner_id: string;
+  status: import("./enums").ReferralCodeStatus;
+  total_referrals: number;
+  total_conversions: number;
+  created_at: string;
+}
+
+// ========================
+// 58. referrals
+// ========================
+export interface Referral {
+  id: string;
+  referral_code_id: string;
+  referrer_type: import("./enums").ReferralOwnerType;
+  referrer_id: string;
+  referred_type: import("./enums").ReferralOwnerType;
+  referred_id: string | null;
+  referred_email: string;
+  status: import("./enums").ReferralStatus;
+  conversion_type: string | null;
+  converted_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 59. referral_rewards
+// ========================
+export interface ReferralReward {
+  id: string;
+  referral_id: string;
+  recipient_type: import("./enums").ReferralOwnerType;
+  recipient_id: string;
+  reward_type: import("./enums").ReferralRewardType;
+  reward_value_cents: number | null;
+  reward_description: string;
+  status: import("./enums").ReferralRewardStatus;
+  awarded_at: string;
+  redeemed_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 60. referral_config
+// ========================
+export interface ReferralConfig {
+  id: string;
+  config_key: string;
+  config_value: Record<string, unknown>;
+  updated_by: string | null;
   updated_at: string;
+}
+
+// ========================
+// 61. reengagement_campaigns (Wave 6)
+// ========================
+export interface ReengagementCampaign {
+  id: string;
+  name: string;
+  audience_type: import("./enums").ReengagementAudienceType;
+  trigger_condition: Record<string, unknown>;
+  email_sequence_id: string | null;
+  status: import("./enums").ReengagementCampaignStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 62. reengagement_sends
+// ========================
+export interface ReengagementSend {
+  id: string;
+  campaign_id: string;
+  recipient_type: import("./enums").ReengagementRecipientType;
+  recipient_id: string;
+  trigger_reason: string;
+  triggered_at: string;
+  email_send_id: string | null;
+  status: import("./enums").ReengagementSendStatus;
+  engaged_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 63. discount_codes
+// ========================
+export interface DiscountCode {
+  id: string;
+  code: string;
+  type: import("./enums").DiscountCodeType;
+  value_cents: number;
+  parent_id: string | null;
+  used: boolean;
+  used_at: string | null;
+  expires_at: string | null;
+  campaign_id: string | null;
+  created_at: string;
+}
+
+// ========================
+// 64. sales_proposals
+// ========================
+export interface SalesProposal {
+  id: string;
+  lead_id: string;
+  title: string;
+  content_json: Record<string, unknown>;
+  pdf_url: string | null;
+  status: import("./enums").ProposalStatus;
+  generated_at: string;
+  sent_at: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ========================
+// 65. regions
+// ========================
+export interface Region {
+  id: string;
+  name: string;
+  code: string;
+  suburbs: string[];
+  state: string;
+  status: import("./enums").RegionStatus;
+  regional_manager_id: string | null;
+  target_centres: number | null;
+  is_franchise: boolean;
+  data_isolation_level: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// 66. child_insights
+// ========================
+export interface ChildInsight {
+  id: string;
+  child_id: string;
+  term_id: string | null;
+  centre_id: string | null;
+  insight_type: import("./enums").InsightType;
+  content_json: Record<string, unknown>;
+  summary: string | null;
+  strengths: string[];
+  areas_for_growth: string[];
+  recommendations: string[];
+  generated_by: string;
+  created_at: string;
+}
+
+// ========================
+// 67. churn_events
+// ========================
+export interface ChurnEvent {
+  id: string;
+  centre_id: string;
+  event_type: import("./enums").ChurnEventType;
+  risk_score: number | null;
+  risk_level: import("./enums").RiskLevel | null;
+  indicators: Record<string, unknown>;
+  notes: string | null;
+  detected_at: string;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+// ========================
+// 68. churn_risk_indicators
+// ========================
+export interface ChurnRiskIndicator {
+  id: string;
+  centre_id: string;
+  snapshot_date: string;
+  risk_score: number;
+  risk_level: import("./enums").RiskLevel;
+  health_score: number | null;
+  health_trend: string | null;
+  engagement_score: number | null;
+  communication_score: number | null;
+  payment_score: number | null;
+  cancellation_rate: number | null;
+  session_trend: string | null;
+  days_since_last_feedback: number | null;
+  days_since_last_communication: number | null;
+  indicators_json: Record<string, unknown>;
+  created_at: string;
 }

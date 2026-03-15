@@ -2,235 +2,154 @@
 
 ## Project Context
 
-This is a Progressive Web App (PWA) for **Build Alpha Kids**, a multi-sport coaching business in South-West Sydney (Bankstown/Liverpool LGAs). The app manages workforce operations, client engagement, sales, and revenue intelligence for ~40 childcare centres and 6–8 schools.
+Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in South-West Sydney. Manages operations, client engagement, sales, revenue intelligence, AI scheduling, training, coaching support, direct-to-parent bookings, referral growth, business intelligence, and predictive analytics for ~40 childcare centres and 6–8 schools.
 
-**Current status:** MVP deployed. Building Waves 1 & 2 (client growth and revenue intelligence features).
+**Current status:** MVP + Waves 1–5 deployed. Building Waves 6–8 (growth, intelligence, hardening).
 
 ## Tech Stack
 
 - **Frontend:** Next.js 14+ (App Router, TypeScript)
-- **UI:** Tailwind CSS + shadcn/ui (default theme) + Lucide React icons
+- **UI:** Tailwind CSS + shadcn/ui + Lucide React icons
 - **Backend:** Supabase (PostgreSQL, Auth, Realtime, Storage)
-- **AI:** Anthropic Claude API (program generation, skill framework generation)
-- **Email:** Resend (notifications, coach invoices, CRM sequences, feedback links, client portal invites)
-- **Invoicing:** QuickBooks Online API (outbound to centres/schools)
-- **PDF:** React-PDF (@react-pdf/renderer) for reports, invoices, trial reports
-- **Hosting:** Vercel
+- **AI:** Anthropic Claude API (programs, skills, coach assistant, child insights, sales proposals)
+- **Email:** Resend
+- **Invoicing:** Built-in native invoicing (PDF generation, email delivery, payment tracking, automated reminders, optional Square online payment, CSV export for accountants)
+- **Payments:** Square Web Payments SDK (parent bookings)
+- **PDF:** React-PDF (@react-pdf/renderer)
+- **Hosting:** Vercel (with cron jobs)
 - **PWA:** next-pwa + custom service worker
+- **Charts:** recharts
+- **Drag & Drop:** @dnd-kit/core
+- **Testing:** vitest (unit/integration), Playwright (E2E), @testing-library/react
+- **Monitoring:** Sentry (error tracking), Vercel Analytics (performance)
+- **Validation:** Zod (API input validation)
+- **Caching:** React Query / SWR (client-side), Next.js fetch cache (server-side)
 
 ## Branding
 
-- **Name:** Build Alpha Kids (never abbreviated in UI)
-- **Primary colour:** #E8712A (orange)
-- **Dark text:** #1A1A1A
-- **Secondary text:** #666666
-- **Backgrounds:** white (#FFFFFF), light grey (#F5F5F5)
-- **Client portal accent:** softer teal/blue (visually distinct from staff portals)
-- **Language:** Australian English (centre, organisation, programme)
-
-## Folder Structure
-
-```
-/app
-  /(auth)              — Staff login, password reset, set password
-    /client-login      — Centre client magic link login
-  /(dashboard)
-    /admin             — Admin portal pages
-    /ops               — Operations portal pages (Abdul)
-    /coach             — Coach portal pages
-    /client/[centreId] — Centre client portal pages
-  /api                 — API routes
-    /crm               — CRM endpoints (enquiry form, sequences)
-    /assessments       — Skill generation
-    /health-scores     — Health score calculation
-    /forecasts         — Revenue forecast generation
-  /feedback/[token]    — Public session feedback page (no auth)
-  /client/shared/[token] — Shared read-only client portal link
-/components
-  /ui                  — shadcn components
-  /centres             — Centre-related components
-  /forms               — Form engine components
-  /programs            — Program display components
-  /roster              — Roster/session components
-  /crm                 — CRM pipeline and lead components
-  /reports             — Centre report components
-  /charts              — Recharts-based analytics components
-  /shared              — Shared/layout components
-/lib
-  /supabase            — Supabase client (browser, server, middleware)
-  /types               — TypeScript types and enums
-  /hooks               — Custom React hooks
-  /utils               — Helper functions (scheduling, pay rates, health scores, forecasting)
-  /ai                  — AI program generator, skill framework generator
-  /email               — Email client, templates, sequence engine
-  /offline             — Offline queue and sync utilities
-  /notifications       — Notification sending logic
-/public                — PWA manifest, icons, service worker
-/supabase
-  /migrations          — Database migration SQL files
-  /seed.sql            — Seed data
-```
+- **Name:** Build Alpha Kids (never abbreviated)
+- **Primary:** #E8712A (orange). Dark text: #1A1A1A. Secondary: #666666
+- **Client portal:** teal/blue accent. Parent portal: warmer consumer design
+- **Language:** Australian English
 
 ## User Roles
 
-| Role | Auth | Portal Route | Access |
-|------|------|-------------|--------|
-| Admin | Email + password | /admin | Full access, approvals, reporting, CRM, analytics |
-| Operations (Abdul) | Email + password | /ops | Rostering, programs, equipment, forms, coach management, CRM |
-| Coach (subcontractors) | Email + password | /coach | Own shifts, programs, forms, hours, invoicing, assessments, profile |
-| Client (centre contact) | Magic link | /client/[centreId] | Read-only: schedule, summaries, reports, children, skills, invoices + messaging |
-| Parent (Phase 4) | Magic link | /parent | Holiday clinic booking |
+| Role | Auth | Route | Access |
+|------|------|-------|--------|
+| Admin | Email + password | /admin | Full platform access |
+| Operations | Email + password | /ops | Rostering, scheduling, programs, CRM, onboarding |
+| Coach | Email + password | /coach | Own shifts, programs, forms, invoicing, training, AI assistant, performance |
+| Client | Magic link | /client/[centreId] | Read-only centre data + messaging |
+| Parent | Magic link | /parent | Browse, book, pay, manage children |
 
-## Core Entities (Database)
+## All Entities (Database)
 
-### MVP Entities
-- **profiles** — extends auth.users. Role, status, default_pay_rate, ABN, WWCC
-- **pay_rates** — per-coach, per-session-type. Hierarchy: override → type rate → default
-- **compliance_docs** — WWCC, First Aid, police check, insurance, certs, policies
-- **availability_slots** — coach weekly windows + location preferences
-- **centres** — centres/schools. Type, address, lat/lng, contacts, pricing, contract_status, logo_url, branding_mode, health_score, health_status, churn_risk
-- **centre_notes** — operational notes per centre (general, access, safety, relationship)
-- **terms** — school terms (8–10 weeks)
-- **term_templates** — recurring weekly session patterns
-- **sessions** — individual sessions. Status: draft → published → pending_confirmation → confirmed → in_progress → completed/cancelled. is_trial flag for CRM trial sessions
-- **swap_requests** — coach shift swap requests
-- **programs** — session plans (AI-generated or manual). Versioned
-- **equipment_kits** / **equipment_items** / **equipment_logs** — dual-level equipment tracking
-- **form_templates** / **form_submissions** — flexible forms engine
-- **coach_invoices** — fortnightly auto-generated from completed sessions
-- **outbound_invoices** — to centres via QuickBooks
-- **announcements** / **announcement_reads** — operational announcements
-- **shift_threads** / **direct_messages** — operational comms
-- **documents** — centralised document storage
-- **tasks** — Kanban tasks with entity linking
-- **feedback_ratings** — session ratings from centres (1–5 via public link)
-- **notifications** / **notification_preferences** — tiered notification system
-- **activity_log** — system-wide audit trail
+### Core Operations (MVP)
+profiles, pay_rates, compliance_docs, availability_slots, centres, centre_notes, terms, term_templates, sessions, swap_requests, programs, equipment_kits, equipment_items, equipment_logs, form_templates, form_submissions, coach_invoices, outbound_invoices, announcements, announcement_reads, shift_threads, direct_messages, documents, tasks, feedback_ratings, notifications, notification_preferences, activity_log
 
-### Wave 1+2 Entities
-- **children** — global child records (name, DOB, age_group, medical notes, parent details)
-- **centre_children** — many-to-many link (child ↔ centre). Status: active/withdrawn
-- **session_attendances** — named attendance per session (child + present/absent)
-- **assessment_templates** — AI-generated skill frameworks per sport + age group
-- **skill_ratings** — per-child, per-term skill assessments (1–5 per skill)
-- **centre_reports** — generated term-end PDF reports per centre
-- **client_users** — centre portal access (linked to centres)
-- **shared_links** — read-only shareable portal links with expiry
-- **health_scores** — historical health score snapshots per centre
-- **health_score_config** — configurable signal weights and thresholds
-- **leads** — CRM lead records (pipeline: cold → contacted → interested → trial → proposal → won/lost/churned)
-- **lead_activities** — CRM activity log per lead (notes, emails, calls, meetings, stage changes)
-- **email_sequences** / **email_sequence_steps** — automated email templates
-- **email_sends** — track sent CRM emails (status, opens, clicks)
-- **revenue_forecasts** — cached forecast calculations
-- **forecast_config** — conversion rates, seasonal factors, session frequency assumptions
+### Client Growth (Waves 1–2)
+children, centre_children, session_attendances, assessment_templates, skill_ratings, centre_reports, client_users, shared_links, health_scores, health_score_config, leads, lead_activities, email_sequences, email_sequence_steps, email_sends, revenue_forecasts, forecast_config
+
+### Operational Intelligence (Waves 3–4)
+scheduling_preferences, scheduling_runs, rerostering_events, coach_performance_snapshots, training_modules, training_pathways, training_pathway_modules, training_assignments, training_completions, ai_assistant_conversations, ai_assistant_cache, centre_onboarding_checklists, centre_onboarding_steps, centre_onboarding_emails
+
+### Direct to Parent (Wave 5)
+parent_profiles, parent_children, bookable_sessions, waitlist, packages, package_balances, bookings, payments, approved_testimonials, public_stats_cache
+
+### Growth & Intelligence (Waves 6–8)
+referral_codes, referrals, referral_rewards, referral_config, reengagement_campaigns, reengagement_sends, discount_codes, sales_proposals, regions, child_insights, churn_events, churn_risk_indicators
 
 ## Key Business Rules
 
-### Pay Rates
-- Three-tier hierarchy: session override → session-type rate → coach default rate
-- Coaches set own rates. Admin/ops can override per session
-- Rate unit: per_session or per_hour
+### Scheduling
+- AI constraint solver: hard (availability, travel ≥30min, no overlaps) + soft (familiarity +3, utilisation +2, location +1, preferences +5/-10, compliance -3, training -2/-1)
+- Abdul reviews and publishes. Adjustments auto-learn as preferences
+- Rerostering: semi-auto replacement suggestions, 30-min offer timeout, escalation at 4hr/2hr
 
-### Pricing to Centres/Schools
-- Centre-funded: $160–$180/session
-- Parent-funded: $10/child/session
-- School per-head: $5/child/session
+### Child Tracking
+- Global child records linked to multiple centres. Named attendance with headcount fallback
+- Per-term skill assessments: AI-generated 5–8 skills per sport+age. Coach rates 1–5
+- AI child development insights: auto at term end + on-demand. Visible to centres and parents
 
-### Compliance
-- Soft gate: warns on assignment of coaches with expired docs, doesn't block
-- Expiry alerts at 30 and 7 days. Admin verification required
+### Centre Health & Churn
+- Health score 0–100: feedback (30%), payment (25%), cancellations (20%), communication (15%), attendance (10%)
+- Risk score: enhanced with engagement trends, communication patterns, relationship factors
+- Daily snapshots stored for ML training. Rules-based risk engine now, ML model when 20+ churn events
 
-### Rostering
-- Term template + weekly tweaks. Confirm/decline shifts. Swap requests
-- Clash detection, availability matching, replacement suggestions
+### CRM & Sales
+- Pipeline: cold → contacted → interested → trial → proposal → won/lost/churned
+- Email sequences with merge fields and tracking. Trial reports auto-generated
+- AI sales proposals: Claude generates data-backed PDFs using nearby centre success metrics
+- Won → auto-create centre → triggers onboarding wizard (10 steps, 5 automated emails)
 
-### Guided Session Workflow
-1. Start → 2. Named attendance (tap present/absent, quick-add child) → 3. Deliver → 4. End → 5. Feedback → 5a. Incident (if needed) → 6. Complete
-Target: under 90 seconds standard flow
+### Referrals
+- Parent: auto-generated codes, shareable links, instant $5 credit + free session after 3 conversions
+- Centre: $50 invoice credit + Featured Partner badge per conversion
+- Tracked from referral through registration to conversion
 
-### Child Attendance
-- Global child records linked to multiple centres
-- Named attendance with headcount fallback (tap-to-toggle, quick-add inline)
-- CSV import or coach-built lists
-- Attendance is immutable after coach submission; only ops/admin can override with audit log entry
-- Withdrawn children (centre_children.status = 'withdrawn') excluded from attendance lists
-- Multi-centre children tracked independently per centre
-- Offline: child lists cached per centre in IndexedDB, attendance queued for sync
+### Re-engagement
+- 4 audiences: dormant parents (60+ days), declining centres, cold leads (30+ days), untrained coaches
+- Automated email sequences with personalised merge fields. Discount codes for parent re-engagement
+- 60-day re-trigger cooldown
 
-### Skill Assessments
-- Per-term, AI-generated skills per sport + age group (5–8 skills)
-- Ops creates templates, optionally edits AI-generated skills, assigns to coach
-- Coach rates each child 1–5 per skill via mobile-optimised tap-to-rate flow
-- Save & exit with partial progress support
-- Term-over-term progression tracking with per-skill change indicators
-- Assessment ready notification (important tier) sent to assigned coach
-- Reminder notification after 7 days if incomplete
+### Payments (Parent)
+- Square: card, Apple Pay, Google Pay. Packages: multi-session at discount
+- Cancellation: >24hr full refund, <24hr no refund. Waitlist with 24hr offer window
+- Revenue integrated into forecasting
 
-### Centre Reports
-- Auto-generated term-end PDFs
-- Content: sessions, attendance, skills, feedback, photos, programs
-- BAK branded or co-branded (per centre toggle)
-- Ops reviews before sending
+### Regions
+- Regions defined by suburb lists. Auto-assignment on centre/lead creation
+- Global region filter across all admin views. Regional dashboard for expansion tracking
+- Franchise-ready schema (is_franchise, data_isolation_level columns reserved)
 
-### Centre Health Score
-- Weighted signals: feedback (30%), payment speed (25%), cancellations (20%), communication (15%), attendance (10%)
-- Score 0–100: green (≥75), amber (50–74), red (<50)
-- Auto-notify on status change, auto-task on red, churn risk flag at 30 days red
+### Performance
+- 8 metrics: feedback (25%), reliability (20%), forms (15%), punctuality (15%), volume (10%), attendance (10%), equipment (5%)
+- Badges: 50 Sessions, Century Coach, Five Star, Perfect Punctuality, Form Champion, Reliability Rock, Multi-Sport Master
+- Coaches see own data + team benchmarks
 
-### CRM Pipeline
-- Stages: cold_lead → contacted → interested → free_trial → proposal_sent → won / lost / churned
-- Lead entry: manual, CSV import, web form
-- Email sequences: automated with merge fields, tracking (opens/clicks)
-- Trial tracking: tagged sessions, auto-report at trial end, conversion prompt
-- Won → auto-create centre record with data carried over
+### Training LMS
+- 4 types: video, document, quiz, checklist. Pathways with auto-advance
+- Soft-gated rostering. Auto-assign mandatory on new coach. Certificates on completion
 
-### Revenue Forecasting
-- Monthly (3 months) + quarterly (12 months)
-- Committed (active centres) + pipeline (weighted by stage conversion probability)
-- Breakdowns: centre type, individual centre, pricing model, coach costs, profit margin
-- Configurable: conversion rates, seasonal factors, session frequency defaults
+### AI Coach Assistant
+- Context-aware: sport, age, equipment, centre, program, group size
+- Quick prompts + free chat. Cached 7 days. 20/day limit
 
 ### Notifications (Tiered)
-- **Urgent** (push + email): shift assignment, cancellation, WWCC expiry, swap request, web form enquiry
-- **Important** (push + email fallback): shift reminder, form reminder, announcement, task, assessment ready, health score change
-- **Informational** (in-app only): document added, equipment changed, invoice status, feedback received
+- **Urgent:** shifts, WWCC expiry, rerostering, waitlist offers, web enquiries
+- **Important:** reminders, announcements, tasks, training, health/risk changes, booking confirmations
+- **Informational:** documents, equipment, invoices, badges, re-engagement
 
-### Invoicing
-- **Inbound (coaches → BAK):** Fortnightly auto-generated from completed sessions. Coach previews, can flag disputes, then sends as PDF email
-- **Outbound (BAK → centres):** Generated from session data + pricing. Ops drafts → Admin approves → pushes to QuickBooks
+## Scheduled Tasks (Vercel Cron)
 
-### Equipment
-- Two-level tracking: kits (bags) containing itemised inventory
-- Linked to roster via smart defaults (sport → suggested kit)
-- Simplified check-in: "All good" (one tap) or "Report Issue"
-- Issues auto-create Kanban tasks
-
-### Offline (PWA)
-- Coach schedule, programs, centre notes: cached for offline viewing
-- Forms: fillable offline, queue in IndexedDB, background sync on reconnect
-- Named attendance: child lists cached per centre, attendance entries queued in session queue
-- Quick-add children offline: child creation + attendance queued together for sync
-- Sync indicator: synced (green) / pending (amber) / offline (amber with label)
+- Health scores: daily 6am
+- Risk indicator snapshots: daily 6am
+- Revenue forecasts: weekly Monday 5am
+- Email sequences: every 6 hours
+- Training overdue check: daily 7am
+- Onboarding emails: daily 8am
+- Performance snapshots: monthly 1st
+- Stats cache: daily 5am
+- Waitlist expiry: hourly
+- Booking reminders: daily 6pm
+- Re-engagement detection: daily 7am
+- Churn risk alerts: daily (part of risk snapshot)
 
 ## Conventions
 
-- Australian English in all UI text
-- shadcn/ui components consistently
-- Mobile-first for coach and client portals
-- RLS on all tables — never bypass on client side
-- Server actions for all mutations
-- Log significant actions to activity_log
-- Supabase Realtime for live updates
-- React-PDF for all PDF generation (reports, invoices, trial reports)
-- Resend for all transactional email
-- recharts for all charts/analytics
+- Australian English. shadcn/ui. Mobile-first (coach, client, parent). 44px touch targets
+- RLS on all tables. Zod validation on all API routes. Server actions for mutations
+- activity_log for significant actions. Supabase Realtime for live updates
+- React-PDF for PDFs. Resend for email. recharts for charts. Sentry for errors
+- Tests: vitest unit 80%+ on /lib/utils, integration on critical flows, Playwright E2E top 5 journeys
 
 ## Sports List
+
 Soccer, Basketball, Athletics, Yoga, Pilates, Boot Camp, Swimming, Pickleball, Golf, Hockey, Lacrosse, Motor Skills, Multi-Sport, Cricket, Netball, Tennis, Volleyball, Dance, Gymnastics
 
 ## Team
-- **Owner:** Founder / strategy (Admin role)
-- **Abdul:** Coordinator / ops manager (Ops role)
+
+- **Owner:** Founder / strategy (Admin)
+- **Abdul:** Coordinator / ops manager (Operations)
 - **Daniel:** Invoicing support
-- **Coaches:** 8–10 active subcontractors
+- **Coaches:** 8–10 active, bench of 15–20

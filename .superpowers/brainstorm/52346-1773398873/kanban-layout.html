@@ -1,0 +1,185 @@
+<h2>Kanban Board Layout</h2>
+<p class="subtitle">Desktop: horizontal columns with drag-and-drop. Mobile: tabbed view switching between columns.</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Desktop — Horizontal Columns</div>
+    <div class="mockup-body" style="padding:12px; background:#f5f5f5;">
+      <!-- Top bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="font-weight:700; font-size:18px; color:#1a1a1a;">Tasks</div>
+          <div style="display:flex; gap:4px;">
+            <div style="padding:4px 10px; background:#E8712A; color:white; border-radius:6px; font-size:11px; font-weight:600;">Board</div>
+            <div style="padding:4px 10px; background:#e5e5e5; color:#666; border-radius:6px; font-size:11px;">List</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="padding:4px 10px; background:#f0f0f0; border-radius:6px; font-size:11px; color:#666;">My Tasks</div>
+          <div style="padding:4px 10px; background:#f0f0f0; border-radius:6px; font-size:11px; color:#666;">Overdue</div>
+          <select style="padding:4px 8px; border:1px solid #ddd; border-radius:6px; font-size:11px; color:#666;">
+            <option>All Priorities</option>
+          </select>
+          <select style="padding:4px 8px; border:1px solid #ddd; border-radius:6px; font-size:11px; color:#666;">
+            <option>All Assignees</option>
+          </select>
+          <div style="padding:4px 12px; background:#E8712A; color:white; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">+ Add Task</div>
+        </div>
+      </div>
+      <!-- Columns -->
+      <div style="display:flex; gap:10px; min-height:320px;">
+        <!-- To Do -->
+        <div style="flex:1; background:white; border-radius:8px; padding:10px; border:1px solid #e5e5e5;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-weight:600; font-size:13px; color:#1a1a1a;">To Do <span style="color:#999; font-weight:400; font-size:11px;">4</span></div>
+          </div>
+          <!-- Card 1 -->
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; margin-bottom:8px; cursor:grab;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="font-size:12px; font-weight:600; color:#1a1a1a;">Resolve equipment issue: Kit B-07</span>
+            </div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#fef3c7; color:#d97706; border-radius:4px; font-size:10px; font-weight:600;">HIGH</span>
+              <span style="padding:2px 6px; background:#e0f2fe; color:#0284c7; border-radius:4px; font-size:10px;">KIT-B07</span>
+              <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:18px; height:18px; border-radius:50%; background:#E8712A; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">A</div>
+                <span style="font-size:10px; color:#666;">Abdul</span>
+              </div>
+              <span style="font-size:10px; color:#ef4444; font-weight:500;">Overdue: 10 Mar</span>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; margin-bottom:8px; cursor:grab;">
+            <div style="font-size:12px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">Renew First Aid: James P.</div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#dbeafe; color:#2563eb; border-radius:4px; font-size:10px; font-weight:600;">MEDIUM</span>
+              <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:18px; height:18px; border-radius:50%; background:#3b82f6; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">J</div>
+                <span style="font-size:10px; color:#666;">James P.</span>
+              </div>
+              <span style="font-size:10px; color:#666;">Due: 28 Mar</span>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; cursor:grab;">
+            <div style="font-size:12px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">Find replacement: Al-Faisal 18 Mar 9am</div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#fef3c7; color:#d97706; border-radius:4px; font-size:10px; font-weight:600;">HIGH</span>
+              <span style="padding:2px 6px; background:#dcfce7; color:#16a34a; border-radius:4px; font-size:10px;">Al-Faisal College</span>
+              <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="width:18px; height:18px; border-radius:50%; background:#E8712A; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">A</div>
+              <span style="font-size:10px; color:#666;">Abdul</span>
+            </div>
+          </div>
+        </div>
+        <!-- In Progress -->
+        <div style="flex:1; background:white; border-radius:8px; padding:10px; border:1px solid #e5e5e5;">
+          <div style="font-weight:600; font-size:13px; color:#1a1a1a; margin-bottom:10px;">In Progress <span style="color:#999; font-weight:400; font-size:11px;">2</span></div>
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; margin-bottom:8px; cursor:grab;">
+            <div style="font-size:12px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">Order new soccer balls (x20)</div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#dbeafe; color:#2563eb; border-radius:4px; font-size:10px; font-weight:600;">MEDIUM</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:4px;">
+                <div style="width:18px; height:18px; border-radius:50%; background:#E8712A; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">A</div>
+                <span style="font-size:10px; color:#666;">Abdul</span>
+              </div>
+              <span style="font-size:10px; color:#666;">Due: 20 Mar</span>
+            </div>
+          </div>
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; cursor:grab;">
+            <div style="font-size:12px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">Review invoice flags: Sarah M.</div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#dbeafe; color:#2563eb; border-radius:4px; font-size:10px; font-weight:600;">MEDIUM</span>
+              <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="width:18px; height:18px; border-radius:50%; background:#E8712A; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">A</div>
+              <span style="font-size:10px; color:#666;">Abdul</span>
+            </div>
+          </div>
+        </div>
+        <!-- Done -->
+        <div style="flex:1; background:white; border-radius:8px; padding:10px; border:1px solid #e5e5e5; opacity:0.7;">
+          <div style="font-weight:600; font-size:13px; color:#1a1a1a; margin-bottom:10px;">Done <span style="color:#999; font-weight:400; font-size:11px;">1</span></div>
+          <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; cursor:grab;">
+            <div style="font-size:12px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">Update centre contact: Tiny Tots</div>
+            <div style="display:flex; gap:4px; margin-bottom:6px;">
+              <span style="padding:2px 6px; background:#e5e5e5; color:#666; border-radius:4px; font-size:10px; font-weight:600;">LOW</span>
+              <span style="padding:2px 6px; background:#dcfce7; color:#16a34a; border-radius:4px; font-size:10px;">Tiny Tots CC</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="width:18px; height:18px; border-radius:50%; background:#E8712A; color:white; font-size:9px; display:flex; align-items:center; justify-content:center;">A</div>
+              <span style="font-size:10px; color:#666;">Abdul</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Mobile — Tabbed Columns</div>
+    <div class="mockup-body" style="padding:0; background:#f5f5f5; max-width:375px; margin:0 auto;">
+      <!-- Mobile top bar -->
+      <div style="padding:12px; background:white; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-weight:700; font-size:16px; color:#1a1a1a;">Tasks</div>
+          <div style="padding:6px 14px; background:#E8712A; color:white; border-radius:8px; font-size:13px; font-weight:600;">+ Add</div>
+        </div>
+        <div style="display:flex; gap:4px; margin-bottom:8px;">
+          <div style="padding:4px 10px; background:#E8712A; color:white; border-radius:6px; font-size:11px; font-weight:600;">My Tasks</div>
+          <div style="padding:4px 10px; background:#f0f0f0; color:#666; border-radius:6px; font-size:11px;">Overdue</div>
+          <div style="padding:4px 10px; background:#f0f0f0; color:#666; border-radius:6px; font-size:11px;">Filters</div>
+        </div>
+        <!-- Tabs -->
+        <div style="display:flex; border-bottom:2px solid #eee;">
+          <div style="flex:1; padding:8px; text-align:center; font-size:12px; font-weight:600; color:#E8712A; border-bottom:2px solid #E8712A; margin-bottom:-2px;">To Do (4)</div>
+          <div style="flex:1; padding:8px; text-align:center; font-size:12px; color:#999;">In Progress (2)</div>
+          <div style="flex:1; padding:8px; text-align:center; font-size:12px; color:#999;">Done (1)</div>
+        </div>
+      </div>
+      <!-- Cards -->
+      <div style="padding:10px;">
+        <div style="background:white; border:1px solid #eee; border-radius:8px; padding:12px; margin-bottom:8px;">
+          <div style="font-size:13px; font-weight:600; color:#1a1a1a; margin-bottom:8px;">Resolve equipment issue: Kit B-07</div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;">
+            <span style="padding:2px 6px; background:#fef3c7; color:#d97706; border-radius:4px; font-size:10px; font-weight:600;">HIGH</span>
+            <span style="padding:2px 6px; background:#e0f2fe; color:#0284c7; border-radius:4px; font-size:10px;">KIT-B07</span>
+            <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="width:20px; height:20px; border-radius:50%; background:#E8712A; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">A</div>
+              <span style="font-size:11px; color:#666;">Abdul</span>
+            </div>
+            <span style="font-size:11px; color:#ef4444; font-weight:500;">Overdue: 10 Mar</span>
+          </div>
+        </div>
+        <div style="background:white; border:1px solid #eee; border-radius:8px; padding:12px; margin-bottom:8px;">
+          <div style="font-size:13px; font-weight:600; color:#1a1a1a; margin-bottom:8px;">Renew First Aid: James P.</div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;">
+            <span style="padding:2px 6px; background:#dbeafe; color:#2563eb; border-radius:4px; font-size:10px; font-weight:600;">MEDIUM</span>
+            <span style="padding:2px 6px; background:#f3e8ff; color:#7c3aed; border-radius:4px; font-size:10px;">Auto</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="width:20px; height:20px; border-radius:50%; background:#3b82f6; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">J</div>
+              <span style="font-size:11px; color:#666;">James P.</span>
+            </div>
+            <span style="font-size:11px; color:#666;">Due: 28 Mar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

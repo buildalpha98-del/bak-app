@@ -1,12 +1,13 @@
 "use client";
 
-import { Receipt } from "lucide-react";
+import { Receipt, FileDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { ClientInvoice } from "@/lib/client/portal-actions";
 
 interface ClientInvoicesProps {
-  invoices: ClientInvoice[];
+  invoices: (ClientInvoice & { pdf_url?: string | null })[];
 }
 
 function formatDate(dateStr: string): string {
@@ -49,15 +50,33 @@ function statusBadge(status: string) {
   switch (status) {
     case "paid":
       return (
-        <Badge className="bg-green-50 text-green-700 border-green-200">Paid</Badge>
+        <Badge className="bg-green-50 text-green-700 border-green-200">
+          Paid
+        </Badge>
       );
     case "sent":
       return (
-        <Badge className="bg-blue-50 text-blue-700 border-blue-200">Sent</Badge>
+        <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+          Sent
+        </Badge>
       );
     case "overdue":
       return (
-        <Badge className="bg-red-50 text-red-700 border-red-200">Overdue</Badge>
+        <Badge className="bg-red-50 text-red-700 border-red-200">
+          Overdue
+        </Badge>
+      );
+    case "partially_paid":
+      return (
+        <Badge className="bg-orange-50 text-orange-700 border-orange-200">
+          Partially Paid
+        </Badge>
+      );
+    case "void":
+      return (
+        <Badge className="bg-gray-50 text-gray-500 border-gray-200">
+          Void
+        </Badge>
       );
     default:
       return <Badge variant="outline">{status}</Badge>;
@@ -68,15 +87,19 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
   if (invoices.length === 0) {
     return (
       <div className="animate-fade-up">
-        <h1 className="text-2xl font-bold font-heading text-foreground">Invoices</h1>
+        <h1 className="text-2xl font-bold font-heading text-foreground">
+          Invoices
+        </h1>
         <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
             <Receipt className="h-6 w-6 text-cyan-600" />
           </div>
-          <h3 className="mt-4 text-sm font-medium text-gray-900">No invoices yet</h3>
+          <h3 className="mt-4 text-sm font-medium text-gray-900">
+            No invoices yet
+          </h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
-            Invoices for coaching sessions at your centre will appear here once they
-            have been sent.
+            Invoices for coaching sessions at your centre will appear here once
+            they have been sent.
           </p>
         </div>
       </div>
@@ -85,7 +108,9 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
 
   return (
     <div className="animate-fade-up">
-      <h1 className="text-2xl font-bold font-heading text-foreground">Invoices</h1>
+      <h1 className="text-2xl font-bold font-heading text-foreground">
+        Invoices
+      </h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Invoice history for your centre.
       </p>
@@ -100,6 +125,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
               <th className="px-4 py-3 text-right">Amount</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">PDF</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -112,13 +138,28 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
                   {formatPeriod(invoice.period_start, invoice.period_end)}
                 </td>
                 <td className="px-4 py-3 text-right font-medium text-gray-900">
-                  {formatCurrency(invoice.amount)}
+                  {formatCurrency(invoice.total_cents != null ? invoice.total_cents / 100 : invoice.amount)}
                 </td>
                 <td className="px-4 py-3">{statusBadge(invoice.status)}</td>
                 <td className="px-4 py-3 text-gray-500">
                   {invoice.sent_at
                     ? formatDate(invoice.sent_at.split("T")[0])
                     : formatDate(invoice.created_at.split("T")[0])}
+                </td>
+                <td className="px-4 py-3">
+                  {invoice.pdf_url ? (
+                    <a
+                      href={invoice.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="ghost" size="sm" className="h-8 px-2">
+                        <FileDown className="h-4 w-4 text-[#E8712A]" />
+                      </Button>
+                    </a>
+                  ) : (
+                    <span className="text-gray-300">—</span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -146,7 +187,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Amount</span>
                 <span className="font-semibold text-gray-900">
-                  {formatCurrency(invoice.amount)}
+                  {formatCurrency(invoice.total_cents != null ? invoice.total_cents / 100 : invoice.amount)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -157,6 +198,19 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
                     : formatDate(invoice.created_at.split("T")[0])}
                 </span>
               </div>
+              {invoice.pdf_url && (
+                <div className="pt-1">
+                  <a
+                    href={invoice.pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-[#E8712A] hover:underline"
+                  >
+                    <FileDown className="h-3.5 w-3.5" />
+                    Download PDF
+                  </a>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

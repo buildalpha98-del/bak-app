@@ -23,6 +23,21 @@ export default async function DashboardLayout({
     .single();
 
   if (!profile) {
+    // No staff profile — check if this is a parent user.
+    // Parent portal users have parent_profiles, not profiles.
+    // The parent layout (parent/layout.tsx) handles its own auth and shell.
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (parentProfile) {
+      // Parent user — skip DashboardShell, the nested parent layout provides ParentShell
+      return <>{children}</>;
+    }
+
+    // Not a staff user and not a parent — redirect to login
     redirect("/login");
   }
 
