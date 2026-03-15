@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "@/lib/auth/actions";
+import { useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Loader2, User } from "lucide-react";
 import { ROLE_LABELS } from "./nav-config";
 import type { Profile } from "@/lib/types/database";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -42,6 +43,8 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function UserMenu({ profile }: UserMenuProps) {
+  const [signingOut, startTransition] = useTransition();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-secondary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" aria-label="User menu">
@@ -82,12 +85,20 @@ export function UserMenu({ profile }: UserMenuProps) {
         <div className="h-px bg-border my-1" />
         <DropdownMenuItem
           className="cursor-pointer text-destructive"
-          onSelect={() => {
-            signOut();
+          disabled={signingOut}
+          onSelect={(e) => {
+            e.preventDefault();
+            startTransition(() => {
+              signOut();
+            });
           }}
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          {signingOut ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="mr-2 h-4 w-4" />
+          )}
+          {signingOut ? "Signing out…" : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
