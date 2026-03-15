@@ -1,6 +1,17 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useCallback } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  useDraggable,
+  useDroppable,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +25,7 @@ import {
   ChevronDown,
   ChevronRight,
   TrendingUp,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -126,6 +138,26 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
     newStage: LeadStage;
   }>({ open: false, leadId: "", leadName: "", newStage: "won" });
   const [reason, setReason] = useState("");
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  }, []);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const leadId = active.id as string;
+    const newStage = over.id as LeadStage;
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead || lead.stage === newStage) return;
+    handleStageChange(lead, newStage);
+  }, [leads]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return leads;
@@ -137,6 +169,8 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
         (l.owner_name && l.owner_name.toLowerCase().includes(q))
     );
   }, [leads, search]);
+
+  const draggedLead = activeDragId ? filtered.find((l) => l.id === activeDragId) : null;
 
   // Pipeline value (active stages only)
   const pipelineValue = useMemo(() => {
@@ -204,10 +238,16 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
             Manage leads and track your sales pipeline.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" />
-          Add Lead
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" render={<Link href={`${basePath}/sequences`} />}>
+            <Mail className="size-4" />
+            Email Sequences
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            Add Lead
+          </Button>
+        </div>
       </div>
 
       {/* Summary bar */}
@@ -260,55 +300,67 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
       </div>
 
       {/* Pipeline columns */}
-      <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-        {PIPELINE_STAGES.map((stage) => {
-          const stageLeads = filtered.filter((l) => l.stage === stage.key);
-          const stageStats = summary.stages.find((s) => s.stage === stage.key);
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          {PIPELINE_STAGES.map((stage) => {
+            const stageLeads = filtered.filter((l) => l.stage === stage.key);
+            const stageStats = summary.stages.find((s) => s.stage === stage.key);
 
-          return (
-            <div
-              key={stage.key}
-              className="flex-shrink-0 w-72 sm:w-64 lg:w-72"
-            >
-              {/* Column header */}
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${stage.colour}`}>
-                    {stage.label}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {stageStats?.count ?? 0}
-                  </span>
+            return (
+              <DroppableColumn key={stage.key} stageKey={stage.key} isOver={false}>
+                {/* Column header */}
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${stage.colour}`}>
+                      {stage.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {stageStats?.count ?? 0}
+                    </span>
+                  </div>
+                  {(stageStats?.totalValue ?? 0) > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {formatCurrency(stageStats!.totalValue)}
+                    </span>
+                  )}
                 </div>
-                {(stageStats?.totalValue ?? 0) > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {formatCurrency(stageStats!.totalValue)}
-                  </span>
-                )}
-              </div>
 
-              {/* Cards */}
-              <div className="space-y-2 min-h-[120px] rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-2">
-                {stageLeads.length === 0 ? (
-                  <p className="py-8 text-center text-xs text-muted-foreground/60">
-                    No leads
-                  </p>
-                ) : (
-                  stageLeads.map((lead) => (
-                    <LeadCard
-                      key={lead.id}
-                      lead={lead}
-                      basePath={basePath}
-                      onStageChange={handleStageChange}
-                      isPending={isPending}
-                    />
-                  ))
-                )}
-              </div>
+                {/* Cards */}
+                <div className="space-y-2 min-h-[120px] rounded-lg border border-dashed border-muted-foreground/20 bg-muted/30 p-2">
+                  {stageLeads.length === 0 ? (
+                    <p className="py-8 text-center text-xs text-muted-foreground/60">
+                      No leads
+                    </p>
+                  ) : (
+                    stageLeads.map((lead) => (
+                      <DraggableLeadCard
+                        key={lead.id}
+                        lead={lead}
+                        basePath={basePath}
+                        onStageChange={handleStageChange}
+                        isPending={isPending}
+                      />
+                    ))
+                  )}
+                </div>
+              </DroppableColumn>
+            );
+          })}
+        </div>
+
+        <DragOverlay>
+          {draggedLead ? (
+            <div className="opacity-80 rotate-2 shadow-xl">
+              <LeadCard
+                lead={draggedLead}
+                basePath={basePath}
+                onStageChange={handleStageChange}
+                isPending={false}
+              />
             </div>
-          );
-        })}
-      </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Closed stages */}
       <div className="space-y-3">
@@ -404,6 +456,65 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// ============================================================
+// Droppable Column Wrapper
+// ============================================================
+
+function DroppableColumn({
+  stageKey,
+  children,
+}: {
+  stageKey: string;
+  isOver: boolean;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver: droppableIsOver } = useDroppable({ id: stageKey });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex-shrink-0 w-72 sm:w-64 lg:w-72 transition-colors rounded-lg ${
+        droppableIsOver ? "bg-primary/5 ring-2 ring-primary/30" : ""
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ============================================================
+// Draggable Lead Card Wrapper
+// ============================================================
+
+function DraggableLeadCard(props: {
+  lead: LeadWithOwner;
+  basePath: string;
+  onStageChange: (lead: LeadWithOwner, newStage: LeadStage) => void;
+  isPending: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: props.lead.id,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`touch-none ${isDragging ? "opacity-30" : ""}`}
+    >
+      <LeadCard {...props} />
     </div>
   );
 }

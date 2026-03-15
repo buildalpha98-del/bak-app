@@ -54,6 +54,7 @@ import {
   deleteLead,
   getCrmStaffMembers,
 } from "@/lib/crm/actions";
+import { sendLeadEmail } from "@/lib/crm/email-actions";
 import type { LeadWithOwner, LeadActivityWithUser } from "@/lib/crm/actions";
 import type { LeadStage } from "@/lib/types/enums";
 
@@ -163,10 +164,11 @@ export function LeadDetailView({
   const [stageReason, setStageReason] = useState("");
 
   // Activity creation
-  const [activityType, setActivityType] = useState<"note" | "call" | "meeting">("note");
+  const [activityType, setActivityType] = useState<"note" | "call" | "meeting" | "email">("note");
   const [activityContent, setActivityContent] = useState("");
   const [callDuration, setCallDuration] = useState("");
   const [meetingAttendees, setMeetingAttendees] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
 
   // Delete confirmation
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -293,6 +295,37 @@ export function LeadDetailView({
 
     if (!activityContent.trim()) {
       toast.error("Please enter some content.");
+      return;
+    }
+
+    // Handle email type separately
+    if (activityType === "email") {
+      if (!emailSubject.trim()) {
+        toast.error("Please enter an email subject.");
+        return;
+      }
+      if (!lead.contact_email) {
+        toast.error("This lead has no email address.");
+        return;
+      }
+
+      startTransition(async () => {
+        const { error } = await sendLeadEmail({
+          leadId: lead.id,
+          to: lead.contact_email!,
+          subject: emailSubject.trim(),
+          body: activityContent.trim(),
+        });
+
+        if (error) {
+          toast.error(error);
+        } else {
+          toast.success("Email sent");
+          setActivityContent("");
+          setEmailSubject("");
+          router.refresh();
+        }
+      });
       return;
     }
 
@@ -627,9 +660,41 @@ export function LeadDetailView({
                 <Users className="size-3.5" />
                 Meeting
               </Button>
+              <Button
+                variant={activityType === "email" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setActivityType("email")}
+              >
+                <Mail className="size-3.5" />
+                Email
+              </Button>
             </div>
 
             <form onSubmit={handleAddActivity} className="space-y-3">
+              {activityType === "email" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="email-to" className="text-xs">
+                    To
+                  </Label>
+                  <Input
+                    id="email-to"
+                    value={lead.contact_email || ""}
+                    disabled
+                    className="h-8 text-sm bg-muted"
+                  />
+                  <Label htmlFor="email-subject" className="text-xs">
+                    Subject
+                  </Label>
+                  <Input
+                    id="email-subject"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    placeholder="e.g. Following up on our conversation"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+
               {activityType === "call" && (
                 <div className="space-y-1.5">
                   <Label htmlFor="call-duration" className="text-xs">
@@ -670,13 +735,17 @@ export function LeadDetailView({
                     ? "Add a note about this lead..."
                     : activityType === "call"
                     ? "Summarise the call..."
+                    : activityType === "email"
+                    ? "Write your email body..."
                     : "Summarise the meeting..."
                 }
                 rows={3}
               />
 
               <Button type="submit" size="sm" disabled={isPending}>
-                {isPending ? "Saving..." : "Add Activity"}
+                {isPending
+                  ? activityType === "email" ? "Sending..." : "Saving..."
+                  : activityType === "email" ? "Send Email" : "Add Activity"}
               </Button>
             </form>
           </Card>

@@ -22,7 +22,7 @@ export function Sidebar({ role }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col sticky top-0 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-out z-50 relative overflow-hidden",
+        "hidden md:flex flex-col sticky top-0 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-out z-50 relative",
         isCollapsed ? "w-16" : "w-60"
       )}
     >

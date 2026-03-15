@@ -220,7 +220,7 @@ export function SessionDetailView({
               <div className="mt-0.5 h-5 w-5 shrink-0" />
               <div>
                 <dt className="text-sm font-medium text-[#666666]">Coach</dt>
-                <dd className="text-[#1A1A1A]">{session.coach_id}</dd>
+                <dd className="text-[#1A1A1A]">{(session as any).coach_name || session.coach_id}</dd>
               </div>
             </div>
           )}
@@ -362,8 +362,8 @@ export function SessionDetailView({
               <TableHeader>
                 <TableRow>
                   <TableHead>Position</TableHead>
-                  <TableHead>Child ID</TableHead>
-                  <TableHead>Parent ID</TableHead>
+                  <TableHead>Child</TableHead>
+                  <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Offered At</TableHead>
                   <TableHead>Expires At</TableHead>
@@ -373,11 +373,11 @@ export function SessionDetailView({
                 {waitlist.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell>{entry.position}</TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {entry.child_id}
+                    <TableCell className="text-sm">
+                      {(entry as any).child_name || entry.child_id}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {entry.parent_id}
+                    <TableCell className="text-sm">
+                      {(entry as any).parent_name || entry.parent_id}
                     </TableCell>
                     <TableCell>
                       <Badge

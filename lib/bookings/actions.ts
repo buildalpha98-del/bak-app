@@ -152,12 +152,16 @@ export async function getBookableSession(
 
     const { data, error } = await supabase
       .from("bookable_sessions")
-      .select("*")
+      .select("*, profiles:coach_id(name)")
       .eq("id", id)
       .single();
 
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+
+    // Flatten coach name
+    const coach_name = (data as any)?.profiles?.name ?? null;
+    const { profiles: _, ...rest } = data as any;
+    return { data: { ...rest, coach_name } as any, error: null };
   } catch (err) {
     console.error("getBookableSession error:", err);
     return { data: null, error: "Failed to load session." };
@@ -516,12 +520,23 @@ export async function getSessionWaitlist(
 
     const { data, error } = await supabase
       .from("waitlist")
-      .select("*")
+      .select("*, children:child_id(first_name, last_name), parent_profiles:parent_id(first_name, last_name)")
       .eq("bookable_session_id", bookableSessionId)
       .order("position", { ascending: true });
 
     if (error) return { data: [], error: error.message };
-    return { data: data ?? [], error: null };
+
+    // Flatten names
+    const enriched = (data ?? []).map((entry: any) => ({
+      ...entry,
+      child_name: entry.children
+        ? `${entry.children.first_name} ${entry.children.last_name}`
+        : null,
+      parent_name: entry.parent_profiles
+        ? `${entry.parent_profiles.first_name} ${entry.parent_profiles.last_name}`
+        : null,
+    }));
+    return { data: enriched as any, error: null };
   } catch (err) {
     console.error("getSessionWaitlist error:", err);
     return { data: [], error: "Failed to load waitlist." };
