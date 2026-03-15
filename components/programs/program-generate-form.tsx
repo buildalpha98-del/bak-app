@@ -89,7 +89,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
   // Load centre equipment when centre changes
   useEffect(() => {
-    if (!centreId) {
+    if (!centreId || centreId === "none") {
       setCentreEquipmentItems([]);
       return;
     }
@@ -107,7 +107,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
   // Load recent programmes when centre + sport change
   useEffect(() => {
-    if (!centreId || !sport) {
+    if (!centreId || centreId === "none" || !sport) {
       setRecentPrograms([]);
       return;
     }
@@ -117,7 +117,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   }, [centreId, sport]);
 
   // Equipment list to display
-  const equipmentItems = centreId
+  const equipmentItems = centreId && centreId !== "none"
     ? [...new Set([...STANDARD_EQUIPMENT, ...centreEquipmentItems])]
     : [...STANDARD_EQUIPMENT];
 
@@ -139,7 +139,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
     startCooldown();
 
     try {
-      const centreData = centreId
+      const centreData = centreId && centreId !== "none"
         ? {
             centreName:
               centres.find((c) => c.id === centreId)?.name ?? "Unknown",

@@ -227,7 +227,7 @@ function CreateAssessmentDialog({
       }
 
       const data = await res.json();
-      setSkills(data.skills ?? []);
+      setSkills(data.data ?? []);
       toast.success("Skills generated successfully.");
     } catch (err) {
       toast.error(

@@ -27,6 +27,7 @@ import type { UserRole, UserStatus } from "@/lib/types/enums";
 
 interface StaffListViewProps {
   initialData: StaffListItem[];
+  basePath?: string;
 }
 
 const STATUS_STYLES: Record<UserStatus, { label: string; className: string }> = {
@@ -51,7 +52,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function StaffListView({ initialData }: StaffListViewProps) {
+export function StaffListView({ initialData, basePath = "/admin/staff" }: StaffListViewProps) {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "all">("all");
@@ -85,7 +86,7 @@ export function StaffListView({ initialData }: StaffListViewProps) {
             {initialData.length} team member{initialData.length !== 1 && "s"}
           </p>
         </div>
-        <Button render={<Link href="/admin/staff/new" />} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button render={<Link href={`${basePath}/new`} />} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" />
           Add Staff
         </Button>
@@ -193,7 +194,7 @@ export function StaffListView({ initialData }: StaffListViewProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        render={<Link href={`/admin/staff/${member.id}`} />}
+                        render={<Link href={`${basePath}/${member.id}`} />}
                       >
                         View
                       </Button>

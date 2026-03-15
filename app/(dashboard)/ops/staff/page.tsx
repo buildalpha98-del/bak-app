@@ -13,5 +13,5 @@ export default async function OpsStaffPage() {
     );
   }
 
-  return <StaffListView initialData={data ?? []} />;
+  return <StaffListView initialData={data ?? []} basePath="/ops/staff" />;
 }
