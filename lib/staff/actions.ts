@@ -197,7 +197,7 @@ export async function getStaffMember(
 
 export async function createStaffMember(
   data: CreateStaffData
-): Promise<{ data: { id: string } | null; error: string | null }> {
+): Promise<{ data: { id: string; tempPassword: string } | null; error: string | null }> {
   const admin = createSupabaseAdmin();
 
   // Create auth user with a temporary password
@@ -230,7 +230,50 @@ export async function createStaffMember(
     return { data: null, error: profileError.message };
   }
 
-  return { data: { id: authUser.user.id }, error: null };
+  return { data: { id: authUser.user.id, tempPassword }, error: null };
+}
+
+// ============================================================
+// Admin: reset staff password
+// ============================================================
+
+export async function adminResetStaffPassword(
+  userId: string,
+  newPassword?: string
+): Promise<{ data: { tempPassword: string } | null; error: string | null }> {
+  const admin = createSupabaseAdmin();
+
+  const tempPassword = newPassword || `BAK-${crypto.randomUUID().slice(0, 8)}`;
+
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    password: tempPassword,
+  });
+
+  if (error) return { data: null, error: error.message };
+
+  return { data: { tempPassword }, error: null };
+}
+
+// ============================================================
+// Admin: send password reset email to staff
+// ============================================================
+
+export async function sendStaffPasswordResetEmail(
+  email: string
+): Promise<{ error: string | null }> {
+  const admin = createSupabaseAdmin();
+
+  const { error } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://bak-app.vercel.app"}/update-password`,
+    },
+  });
+
+  if (error) return { error: error.message };
+
+  return { error: null };
 }
 
 // ============================================================

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle, Copy, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,13 @@ export function AddStaffForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("coach");
+  const [created, setCreated] = useState<{
+    name: string;
+    email: string;
+    tempPassword: string;
+    id: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,7 +62,88 @@ export function AddStaffForm() {
       return;
     }
 
-    router.push("/admin/staff");
+    if (result.data) {
+      setCreated({
+        name,
+        email,
+        tempPassword: result.data.tempPassword,
+        id: result.data.id,
+      });
+    }
+
+    setLoading(false);
+  }
+
+  // Success state — show credentials
+  if (created) {
+    return (
+      <div className="mx-auto max-w-lg space-y-6">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" render={<Link href="/admin/staff" />} aria-label="Go back">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold text-foreground">Staff Member Created</h1>
+        </div>
+
+        <div className="rounded-lg border bg-card p-6 space-y-4">
+          <div className="flex items-center gap-3 text-green-600">
+            <CheckCircle className="h-5 w-5" />
+            <p className="font-medium">{created.name} has been added successfully.</p>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            Share these login credentials with {created.name.split(" ")[0]}. They&apos;ll be prompted to set a new password on first login.
+          </p>
+
+          <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Email</Label>
+              <p className="font-mono text-sm">{created.email}</p>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Temporary Password</Label>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-sm select-all flex-1">{created.tempPassword}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(created.tempPassword);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Login URL</Label>
+              <p className="font-mono text-sm">bak-app.vercel.app/login</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => router.push(`/admin/staff/${created.id}`)}
+            >
+              View Profile
+            </Button>
+            <Button variant="outline" onClick={() => {
+              setCreated(null);
+              setError(null);
+            }}>
+              Add Another
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -127,6 +215,7 @@ export function AddStaffForm() {
             disabled={loading}
             className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
           >
+            <KeyRound className="h-4 w-4" />
             {loading ? "Creating..." : "Create Staff Member"}
           </Button>
           <Button variant="outline" render={<Link href="/admin/staff" />}>
