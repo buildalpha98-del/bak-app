@@ -20,9 +20,16 @@ const DAILY_LIMIT = 20;
 
 const SYSTEM_PROMPT = `You are an AI coaching assistant for Build Alpha Kids, a multi-sport coaching business. Help coaches with session planning, activity ideas, behaviour management, and adaptation strategies. Keep responses practical, concise, and actionable. Use Australian English.`;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropicClient() {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Please add it to your environment variables."
+    );
+  }
+  return new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
+}
 
 function generateCacheKey(message: string, context: string): string {
   // Simple hash: combine message + context into a deterministic key
@@ -121,6 +128,7 @@ export async function POST(request: Request) {
       { role: "user" as const, content: message },
     ];
 
+    const anthropic = getAnthropicClient();
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
@@ -162,15 +170,36 @@ export async function POST(request: Request) {
       cached: false,
     });
   } catch (err) {
-    console.error("AI Assistant error:", err);
-
-    const message =
+    const errorMessage =
       err instanceof Error ? err.message : "An unexpected error occurred.";
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    console.error("AI Assistant error:", errorMessage);
+    if (errorStack) {
+      console.error("Stack trace:", errorStack);
+    }
 
-    if (message.includes("authentication") || message.includes("api_key")) {
+    if (errorMessage.includes("ANTHROPIC_API_KEY")) {
       return NextResponse.json(
-        { error: "AI service configuration error. Please contact support." },
+        { error: "AI service is not configured. Please contact support." },
+        { status: 503 }
+      );
+    }
+
+    if (
+      errorMessage.includes("authentication") ||
+      errorMessage.includes("api_key") ||
+      errorMessage.includes("invalid x-api-key")
+    ) {
+      return NextResponse.json(
+        { error: "AI service authentication failed. Please contact support." },
         { status: 502 }
+      );
+    }
+
+    if (errorMessage.includes("rate_limit") || errorMessage.includes("429")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily busy. Please try again in a minute." },
+        { status: 429 }
       );
     }
 

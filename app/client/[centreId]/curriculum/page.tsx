@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { BookOpen, CalendarDays } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getScopeAndSequence } from "@/lib/client/curriculum-actions";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { ScopeSequenceView } from "@/components/client/scope-sequence";
 
 export default async function CurriculumPage({
@@ -17,8 +17,8 @@ export default async function CurriculumPage({
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
   // Fetch centre type
-  const supabase = await createSupabaseServerClient();
-  const { data: centre } = await supabase
+  const admin = createSupabaseAdmin();
+  const { data: centre } = await admin
     .from("centres")
     .select("type")
     .eq("id", centreId)

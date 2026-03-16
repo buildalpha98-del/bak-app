@@ -8,9 +8,16 @@ export const dynamic = "force-dynamic";
 // Cron: Auto-generate child insights at term end
 // ============================================================
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropicClient() {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Please add it to your environment variables."
+    );
+  }
+  return new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
+}
 
 const SYSTEM_PROMPT = `You are a child development specialist for Build Alpha Kids, an Australian children's multi-sport program. Generate a developmental insight report for a child based on their participation data. Write in Australian English. Be encouraging and constructive. Focus on observable development patterns.
 
@@ -240,6 +247,7 @@ ${
 Total sessions this term: ${termAttendances.length}
 Sessions attended: ${termAttendances.filter((a) => a.present).length}`;
 
+      const anthropic = getAnthropicClient();
       const message = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1500,

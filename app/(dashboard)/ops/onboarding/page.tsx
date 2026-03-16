@@ -1,15 +1,15 @@
 import { ActiveOnboardingsWidget } from "@/components/onboarding/active-onboardings-widget";
 import { StartOnboardingButton } from "@/components/onboarding/start-onboarding-button";
 import { getActiveOnboardings } from "@/lib/onboarding/actions";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export default async function OpsOnboardingPage() {
-  const supabase = await createSupabaseServerClient();
+  const admin = createSupabaseAdmin();
 
   const [onboardings, centresRes, activeCentreIds] = await Promise.all([
     getActiveOnboardings(),
-    supabase.from("centres").select("id, name").order("name", { ascending: true }),
-    supabase
+    admin.from("centres").select("id, name").order("name", { ascending: true }),
+    admin
       .from("centre_onboarding_checklists")
       .select("centre_id")
       .eq("status", "in_progress"),

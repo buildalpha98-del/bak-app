@@ -83,15 +83,65 @@ export async function POST(request: Request) {
       existing: existing && existing.length > 0 ? existing[0] : null,
     });
   } catch (err) {
-    console.error("Skill generation error:", err);
-
-    const message =
+    const errorMessage =
       err instanceof Error ? err.message : "An unexpected error occurred.";
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    console.error("Skill generation error:", errorMessage);
+    if (errorStack) {
+      console.error("Stack trace:", errorStack);
+    }
 
-    if (message.includes("Failed to parse")) {
+    if (errorMessage.includes("ANTHROPIC_API_KEY")) {
+      return NextResponse.json(
+        { error: "AI service is not configured. Please contact support." },
+        { status: 503 }
+      );
+    }
+
+    if (
+      errorMessage.includes("authentication") ||
+      errorMessage.includes("api_key") ||
+      errorMessage.includes("invalid x-api-key")
+    ) {
+      return NextResponse.json(
+        { error: "AI service authentication failed. Please contact support." },
+        { status: 502 }
+      );
+    }
+
+    if (errorMessage.includes("rate_limit") || errorMessage.includes("429")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily busy. Please try again in a minute." },
+        { status: 429 }
+      );
+    }
+
+    if (
+      errorMessage.includes("overloaded") ||
+      errorMessage.includes("529") ||
+      errorMessage.includes("503")
+    ) {
+      return NextResponse.json(
+        { error: "AI service is temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
+
+    if (errorMessage.includes("Failed to parse")) {
       return NextResponse.json(
         { error: "The AI returned an invalid response. Please try again." },
         { status: 422 }
+      );
+    }
+
+    if (
+      errorMessage.includes("fetch failed") ||
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("network")
+    ) {
+      return NextResponse.json(
+        { error: "Could not connect to AI service. Please check your network and try again." },
+        { status: 502 }
       );
     }
 

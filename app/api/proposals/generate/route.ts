@@ -107,8 +107,14 @@ ${
       ? `\nUse this template as a structural guide, but personalise the content for this specific lead:\n${JSON.stringify(templateContent, null, 2)}`
       : "";
 
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error(
+        "ANTHROPIC_API_KEY is not set. Please add it to your environment variables."
+      );
+    }
+
     const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY!,
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
     const message = await anthropic.messages.create({
@@ -165,7 +171,40 @@ ${
 
     return NextResponse.json({ data: savedProposal });
   } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "An unexpected error occurred.";
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    console.error("Proposal generation error:", errorMessage);
+    if (errorStack) {
+      console.error("Stack trace:", errorStack);
+    }
     captureError(err, { action: "proposal_generation" });
+
+    if (errorMessage.includes("ANTHROPIC_API_KEY")) {
+      return NextResponse.json(
+        { error: "AI service is not configured. Please contact support." },
+        { status: 503 }
+      );
+    }
+
+    if (
+      errorMessage.includes("authentication") ||
+      errorMessage.includes("api_key") ||
+      errorMessage.includes("invalid x-api-key")
+    ) {
+      return NextResponse.json(
+        { error: "AI service authentication failed. Please contact support." },
+        { status: 502 }
+      );
+    }
+
+    if (errorMessage.includes("rate_limit") || errorMessage.includes("429")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily busy. Please try again in a minute." },
+        { status: 429 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to generate proposal. Please try again." },
       { status: 500 }

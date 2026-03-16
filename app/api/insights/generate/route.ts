@@ -11,9 +11,16 @@ export const dynamic = "force-dynamic";
 // AI Child Development Insight Generator
 // ============================================================
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropicClient() {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Please add it to your environment variables."
+    );
+  }
+  return new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
+}
 
 const SYSTEM_PROMPT = `You are a child development specialist for Build Alpha Kids, an Australian children's multi-sport program. Generate a developmental insight report for a child based on their participation data. Write in Australian English. Be encouraging and constructive. Focus on observable development patterns.
 
@@ -211,6 +218,7 @@ Total sessions recorded: ${attendances?.length ?? 0}
 Sessions attended: ${attendances?.filter((a) => a.present).length ?? 0}`;
 
     // 7. Call Claude API
+    const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1500,
@@ -255,9 +263,49 @@ Sessions attended: ${attendances?.filter((a) => a.present).length ?? 0}`;
 
     return NextResponse.json({ data: savedInsight });
   } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : "An unexpected error occurred.";
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    console.error("Insight generation error:", errorMessage);
+    if (errorStack) {
+      console.error("Stack trace:", errorStack);
+    }
     captureError(err, { action: "insight_generation" });
+
+    if (errorMessage.includes("ANTHROPIC_API_KEY")) {
+      return NextResponse.json(
+        { error: "AI service is not configured. Please contact support." },
+        { status: 503 }
+      );
+    }
+
+    if (
+      errorMessage.includes("authentication") ||
+      errorMessage.includes("api_key") ||
+      errorMessage.includes("invalid x-api-key")
+    ) {
+      return NextResponse.json(
+        { error: "AI service authentication failed. Please contact support." },
+        { status: 502 }
+      );
+    }
+
+    if (errorMessage.includes("rate_limit") || errorMessage.includes("429")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily busy. Please try again in a minute." },
+        { status: 429 }
+      );
+    }
+
+    if (errorMessage.includes("Failed to parse")) {
+      return NextResponse.json(
+        { error: "The AI returned an invalid response. Please try again." },
+        { status: 422 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to generate insight" },
+      { error: "Failed to generate insight. Please try again." },
       { status: 500 }
     );
   }

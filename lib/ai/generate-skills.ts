@@ -68,6 +68,12 @@ export async function generateSkills(
   sport: string,
   ageGroup: string
 ): Promise<AssessmentSkill[]> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not set. Please add it to your environment variables."
+    );
+  }
+
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 1500,

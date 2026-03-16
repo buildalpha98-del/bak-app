@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getAssessmentTemplates } from "@/lib/assessments/actions";
 import { AssessmentListView } from "@/components/assessments/assessment-list-view";
 
@@ -11,10 +12,11 @@ export default async function OpsAssessmentsPage() {
 
   if (!user) redirect("/login");
 
+  const admin = createSupabaseAdmin();
   const [templatesResult, centresResult, termsResult] = await Promise.all([
     getAssessmentTemplates(),
-    supabase.from("centres").select("id, name").order("name"),
-    supabase
+    admin.from("centres").select("id, name").order("name"),
+    admin
       .from("terms")
       .select("id, name")
       .order("start_date", { ascending: false }),
