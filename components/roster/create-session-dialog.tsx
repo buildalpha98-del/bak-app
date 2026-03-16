@@ -36,6 +36,7 @@ interface CreateSessionDialogProps {
   coaches: Pick<Profile, "id" | "name">[];
   defaultDate?: string;
   defaultTime?: string;
+  defaultCoachId?: string;
   editSession?: SessionWithRelations;
   onSuccess: () => void;
 }
@@ -63,6 +64,7 @@ export function CreateSessionDialog({
   coaches,
   defaultDate,
   defaultTime,
+  defaultCoachId,
   editSession,
   onSuccess,
 }: CreateSessionDialogProps) {
@@ -98,13 +100,13 @@ export function CreateSessionDialog({
         setDuration("45");
         setCentreId("");
         setSport("");
-        setCoachId("");
+        setCoachId(defaultCoachId ?? "");
         setPayRateOverride("");
       }
       setError(null);
       setConfirmDelete(false);
     }
-  }, [open, editSession, defaultDate, defaultTime]);
+  }, [open, editSession, defaultDate, defaultTime, defaultCoachId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

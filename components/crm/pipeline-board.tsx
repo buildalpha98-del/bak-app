@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo, useTransition, useCallback } from "react";
+import { useState, useMemo, useTransition, useCallback, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
   useDraggable,
   useDroppable,
   PointerSensor,
+  KeyboardSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -141,23 +143,14 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor)
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveDragId(event.active.id as string);
   }, []);
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    setActiveDragId(null);
-    const { active, over } = event;
-    if (!over) return;
-    const leadId = active.id as string;
-    const newStage = over.id as LeadStage;
-    const lead = leads.find((l) => l.id === leadId);
-    if (!lead || lead.stage === newStage) return;
-    handleStageChange(lead, newStage);
-  }, [leads]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return leads;
@@ -225,6 +218,21 @@ export function PipelineBoard({ leads, summary, basePath }: PipelineBoardProps) 
       }
     });
   }
+
+  // Keep a stable ref so the drag callback always calls the latest handleStageChange
+  const stageChangeRef = useRef(handleStageChange);
+  stageChangeRef.current = handleStageChange;
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const leadId = active.id as string;
+    const newStage = over.id as LeadStage;
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead || lead.stage === newStage) return;
+    stageChangeRef.current(lead, newStage);
+  }, [leads]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -503,6 +511,7 @@ function DraggableLeadCard(props: {
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: 50,
       }
     : undefined;
 
@@ -510,11 +519,12 @@ function DraggableLeadCard(props: {
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
       className={`touch-none ${isDragging ? "opacity-30" : ""}`}
     >
-      <LeadCard {...props} />
+      {/* Drag handle area — covers the card info but not the stage select */}
+      <div {...listeners} {...attributes}>
+        <LeadCard {...props} />
+      </div>
     </div>
   );
 }
@@ -591,8 +601,12 @@ function LeadCard({
         )}
       </Link>
 
-      {/* Stage change dropdown */}
-      <div className="mt-2 pt-2 border-t">
+      {/* Stage change dropdown — stop pointer events from triggering drag */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div
+        className="mt-2 pt-2 border-t"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <Select
           value={lead.stage}
           onValueChange={(v) => onStageChange(lead, (v ?? "") as LeadStage)}

@@ -173,6 +173,49 @@ export async function createAssessmentTemplate(input: {
 }
 
 // ============================================================
+// deleteAssessmentTemplate
+// ============================================================
+
+export async function deleteAssessmentTemplate(
+  templateId: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // Check if there are existing ratings — prevent deletion if so
+    const { count } = await supabase
+      .from("skill_ratings")
+      .select("id", { count: "exact", head: true })
+      .eq("assessment_template_id", templateId);
+
+    if (count && count > 0) {
+      return {
+        error: `Cannot delete: ${count} rating${count !== 1 ? "s" : ""} exist for this template. Remove ratings first.`,
+      };
+    }
+
+    const { error } = await supabase
+      .from("assessment_templates")
+      .delete()
+      .eq("id", templateId);
+
+    if (error) throw error;
+
+    revalidatePath("/ops/assessments");
+    revalidatePath("/admin/assessments");
+
+    return { error: null };
+  } catch (err) {
+    console.error("deleteAssessmentTemplate error:", err);
+    return { error: "Failed to delete assessment template." };
+  }
+}
+
+// ============================================================
 // getAssessmentTemplateDetail
 // ============================================================
 

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getKits } from "@/lib/equipment/actions";
-import { EquipmentList } from "@/components/equipment/equipment-list";
+import { getKits, getInventoryItems } from "@/lib/equipment/actions";
+import { EquipmentPageTabs } from "@/components/equipment/equipment-page-tabs";
 
 export default async function OpsEquipmentPage() {
   const supabase = await createSupabaseServerClient();
@@ -11,19 +11,23 @@ export default async function OpsEquipmentPage() {
 
   if (!user) redirect("/login");
 
-  const { data, error } = await getKits();
+  const [kitsResult, inventoryResult] = await Promise.all([
+    getKits(),
+    getInventoryItems(),
+  ]);
 
-  if (error) {
+  if (kitsResult.error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+        {kitsResult.error}
       </div>
     );
   }
 
   return (
-    <EquipmentList
-      initialKits={data ?? []}
+    <EquipmentPageTabs
+      initialKits={kitsResult.data ?? []}
+      initialInventory={inventoryResult.data ?? []}
       userRole="ops"
       basePath="/ops/equipment"
     />

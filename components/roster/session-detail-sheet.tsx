@@ -27,6 +27,7 @@ import {
   Star,
   BookOpen,
   X,
+  Trash2,
 } from "lucide-react";
 import {
   Select,
@@ -43,6 +44,7 @@ import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
 import {
   updateSessionStatus,
   updateSession,
+  deleteSession,
 } from "@/lib/sessions/actions";
 import { getReplacementSuggestions } from "@/lib/sessions/scheduling-actions";
 import {
@@ -106,6 +108,7 @@ export function SessionDetailSheet({
   const [saving, setSaving] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Coach reassignment
   const [reassigning, setReassigning] = useState(false);
@@ -175,6 +178,17 @@ export function SessionDetailSheet({
     if (!error) {
       setShowCancel(false);
       setCancelReason("");
+      onUpdate();
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    const { error } = await deleteSession(session!.id);
+    setSaving(false);
+    if (!error) {
+      setShowDeleteConfirm(false);
+      onOpenChange(false);
       onUpdate();
     }
   }
@@ -631,6 +645,47 @@ export function SessionDetailSheet({
                       </Button>
                     </div>
                   </div>
+                )}
+
+                {/* Delete — draft sessions only */}
+                {session.status === "draft" && (
+                  <>
+                    {!showDeleteConfirm ? (
+                      <Button
+                        variant="outline"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setShowDeleteConfirm(true)}
+                        disabled={saving}
+                      >
+                        <Trash2 className="mr-1.5 size-4" />
+                        Delete Session
+                      </Button>
+                    ) : (
+                      <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                        <p className="text-sm font-medium text-red-700">
+                          Are you sure? This cannot be undone.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={saving}
+                            onClick={handleDelete}
+                          >
+                            <Trash2 className="mr-1.5 size-4" />
+                            Delete Permanently
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowDeleteConfirm(false)}
+                          >
+                            Go Back
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

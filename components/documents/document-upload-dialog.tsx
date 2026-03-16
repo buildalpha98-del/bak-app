@@ -41,6 +41,7 @@ interface DocumentUploadDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   defaultCategory?: DocumentCategory;
+  userRole?: "admin" | "ops" | "coach";
 }
 
 const VISIBILITY_LABELS: Record<DocumentVisibility, string> = {
@@ -64,13 +65,17 @@ export function DocumentUploadDialog({
   onOpenChange,
   onSuccess,
   defaultCategory,
+  userRole,
 }: DocumentUploadDialogProps) {
+  const isCoach = userRole === "coach";
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<DocumentCategory>(
-    defaultCategory ?? "other"
+    isCoach ? "compliance" : (defaultCategory ?? "other")
   );
-  const [visibility, setVisibility] = useState<DocumentVisibility>("all");
+  const [visibility, setVisibility] = useState<DocumentVisibility>(
+    isCoach ? "admin_ops" : "all"
+  );
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -80,8 +85,8 @@ export function DocumentUploadDialog({
   function reset() {
     setFile(null);
     setTitle("");
-    setCategory(defaultCategory ?? "other");
-    setVisibility("all");
+    setCategory(isCoach ? "compliance" : (defaultCategory ?? "other"));
+    setVisibility(isCoach ? "admin_ops" : "all");
     setTags([]);
     setTagInput("");
   }
@@ -131,9 +136,9 @@ export function DocumentUploadDialog({
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", title.trim());
-    formData.append("category", category);
+    formData.append("category", isCoach ? "compliance" : category);
     formData.append("tags", JSON.stringify(tags));
-    formData.append("visibility", visibility);
+    formData.append("visibility", isCoach ? "admin_ops" : visibility);
 
     const { error } = await uploadDocument(formData);
     setUploading(false);
@@ -228,47 +233,55 @@ export function DocumentUploadDialog({
           {/* Category */}
           <div className="space-y-1.5">
             <Label>Category</Label>
-            <Select
-              value={category}
-              onValueChange={(v) => setCategory(v as DocumentCategory)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORY_ORDER.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {CATEGORY_LABELS[cat]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isCoach ? (
+              <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                {CATEGORY_LABELS["compliance"]}
+              </div>
+            ) : (
+              <Select
+                value={category}
+                onValueChange={(v) => setCategory(v as DocumentCategory)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_ORDER.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
-          {/* Visibility */}
-          <div className="space-y-1.5">
-            <Label>Visibility</Label>
-            <Select
-              value={visibility}
-              onValueChange={(v) => setVisibility(v as DocumentVisibility)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(
-                  Object.entries(VISIBILITY_LABELS) as [
-                    DocumentVisibility,
-                    string,
-                  ][]
-                ).map(([val, label]) => (
-                  <SelectItem key={val} value={val}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Visibility — hidden for coaches (auto-set to admin_ops) */}
+          {!isCoach && (
+            <div className="space-y-1.5">
+              <Label>Visibility</Label>
+              <Select
+                value={visibility}
+                onValueChange={(v) => setVisibility(v as DocumentVisibility)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(
+                    Object.entries(VISIBILITY_LABELS) as [
+                      DocumentVisibility,
+                      string,
+                    ][]
+                  ).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Tags */}
           <div className="space-y-1.5">

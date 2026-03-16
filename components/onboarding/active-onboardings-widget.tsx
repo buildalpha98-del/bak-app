@@ -26,6 +26,7 @@ interface ActiveOnboarding {
 
 interface ActiveOnboardingsWidgetProps {
   onboardings: ActiveOnboarding[];
+  basePath?: string;
 }
 
 // ============================================================
@@ -34,6 +35,7 @@ interface ActiveOnboardingsWidgetProps {
 
 export function ActiveOnboardingsWidget({
   onboardings,
+  basePath = "/admin",
 }: ActiveOnboardingsWidgetProps) {
   if (onboardings.length === 0) {
     return (
@@ -79,7 +81,7 @@ export function ActiveOnboardingsWidget({
             return (
               <Link
                 key={item.checklist.id}
-                href={`/admin/centres/${item.centre.id}/onboarding`}
+                href={`${basePath}/centres/${item.centre.id}/onboarding`}
                 className="block rounded-lg border p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-start justify-between gap-2">

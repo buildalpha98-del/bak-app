@@ -38,7 +38,7 @@ export default async function OpsOnboardingPage() {
       </div>
 
       {/* Widget */}
-      <ActiveOnboardingsWidget onboardings={onboardings} />
+      <ActiveOnboardingsWidget onboardings={onboardings} basePath="/ops" />
     </div>
   );
 }

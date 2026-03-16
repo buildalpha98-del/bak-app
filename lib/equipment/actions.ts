@@ -21,6 +21,9 @@ import type {
   UpdateItemInput,
   ReportIssueInput,
   KitFilters,
+  InventoryItem,
+  CreateInventoryItemInput,
+  UpdateInventoryItemInput,
 } from "@/lib/equipment/types";
 
 // ============================================================
@@ -767,4 +770,124 @@ export async function getKitLogs(
   }
 
   return { data: logs, error: null };
+}
+
+// ============================================================
+// Inventory CRUD
+// ============================================================
+
+export async function getInventoryItems(): Promise<{
+  data: InventoryItem[] | null;
+  error: string | null;
+}> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: "Not authenticated" };
+
+  const { data, error } = await supabase
+    .from("equipment_inventory")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (error) return { data: null, error: error.message };
+  return { data: data as InventoryItem[], error: null };
+}
+
+export async function createInventoryItem(
+  input: CreateInventoryItemInput
+): Promise<{ data: InventoryItem | null; error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: "Not authenticated" };
+
+  const { data, error } = await supabase
+    .from("equipment_inventory")
+    .insert({
+      name: input.name.trim(),
+      sport: input.sport,
+      quantity: input.quantity,
+      condition: input.condition,
+      location: input.location,
+      notes: input.notes,
+    })
+    .select()
+    .single();
+
+  if (error) return { data: null, error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "inventory_item_created",
+    entity_type: "equipment_inventory",
+    entity_id: data.id,
+    metadata: { name: input.name },
+  });
+
+  return { data: data as InventoryItem, error: null };
+}
+
+export async function updateInventoryItem(
+  id: string,
+  input: UpdateInventoryItemInput
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (input.name !== undefined) updates.name = input.name.trim();
+  if (input.sport !== undefined) updates.sport = input.sport;
+  if (input.quantity !== undefined) updates.quantity = input.quantity;
+  if (input.condition !== undefined) updates.condition = input.condition;
+  if (input.location !== undefined) updates.location = input.location;
+  if (input.notes !== undefined) updates.notes = input.notes;
+
+  const { error } = await supabase
+    .from("equipment_inventory")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "inventory_item_updated",
+    entity_type: "equipment_inventory",
+    entity_id: id,
+    metadata: updates,
+  });
+
+  return { error: null };
+}
+
+export async function deleteInventoryItem(
+  id: string
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("equipment_inventory")
+    .delete()
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "inventory_item_deleted",
+    entity_type: "equipment_inventory",
+    entity_id: id,
+  });
+
+  return { error: null };
 }

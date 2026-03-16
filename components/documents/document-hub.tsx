@@ -61,7 +61,7 @@ export function DocumentHub({
   const [uploadOpen, setUploadOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const canUpload = userRole === "admin" || userRole === "ops";
+  const canUpload = userRole === "admin" || userRole === "ops" || userRole === "coach";
 
   // Filter documents by category
   const filteredDocuments =
@@ -189,6 +189,7 @@ export function DocumentHub({
         defaultCategory={
           selectedCategory !== "all" ? selectedCategory : undefined
         }
+        userRole={userRole}
       />
     </div>
   );

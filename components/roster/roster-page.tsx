@@ -12,10 +12,12 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SessionCalendarView } from "./session-calendar-view";
+import { StaffRosterView } from "./staff-roster-view";
 import { SessionListView } from "./session-list-view";
 import { SessionDetailSheet } from "./session-detail-sheet";
 import { CreateSessionDialog } from "./create-session-dialog";
@@ -75,8 +77,8 @@ export function RosterPage({
   const router = useRouter();
   const weekStart = new Date(initialWeekStart + "T00:00:00");
 
-  // View toggle
-  const [view, setView] = useState<"calendar" | "list">("calendar");
+  // View toggle — default to staff view (Connecteam-style)
+  const [view, setView] = useState<"staff" | "calendar" | "list">("staff");
 
   // Session detail sheet
   const [selectedSession, setSelectedSession] =
@@ -88,6 +90,7 @@ export function RosterPage({
   const [createDefaults, setCreateDefaults] = useState<{
     date?: string;
     time?: string;
+    coachId?: string;
   }>({});
 
   // Generate sessions dialog
@@ -154,8 +157,8 @@ export function RosterPage({
     setDetailOpen(true);
   }
 
-  function handleEmptySlotClick(date: string, time: string) {
-    setCreateDefaults({ date, time });
+  function handleEmptySlotClick(date: string, time: string, coachId?: string) {
+    setCreateDefaults({ date, time, coachId });
     setCreateOpen(true);
   }
 
@@ -299,6 +302,16 @@ export function RosterPage({
         {/* View toggle */}
         <div className="flex rounded-lg border">
           <Button
+            variant={view === "staff" ? "default" : "ghost"}
+            size="icon-sm"
+            className="min-h-[44px] min-w-[44px]"
+            onClick={() => setView("staff")}
+            title="Staff view"
+            aria-label="Staff view"
+          >
+            <Users className="size-4" />
+          </Button>
+          <Button
             variant={view === "calendar" ? "default" : "ghost"}
             size="icon-sm"
             className="min-h-[44px] min-w-[44px]"
@@ -362,7 +375,7 @@ export function RosterPage({
       )}
 
       {/* Content */}
-      {initialSessions.length === 0 ? (
+      {initialSessions.length === 0 && view !== "staff" ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
           <CalendarDays className="mb-3 size-10 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">
@@ -372,6 +385,20 @@ export function RosterPage({
             Add a session or generate from a term template
           </p>
         </div>
+      ) : view === "staff" ? (
+        <StaffRosterView
+          sessions={initialSessions}
+          weekStart={weekStart}
+          coaches={coaches}
+          onSessionClick={handleSessionClickWithReview}
+          onEmptySlotClick={handleEmptySlotClick}
+          complianceWarnings={complianceWarnings}
+          renderConfidenceBadge={reviewRunId ? (sessionId) => {
+            const a = getAssignmentForSession(sessionId);
+            if (!a) return undefined;
+            return <ConfidenceBadge confidence={a.confidence} reasoning={a.reasoning} />;
+          } : undefined}
+        />
       ) : view === "calendar" ? (
         <SessionCalendarView
           sessions={initialSessions}
@@ -423,6 +450,7 @@ export function RosterPage({
         coaches={coaches}
         defaultDate={createDefaults.date}
         defaultTime={createDefaults.time}
+        defaultCoachId={createDefaults.coachId}
         onSuccess={handleRefresh}
       />
 

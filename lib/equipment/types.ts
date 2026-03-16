@@ -74,6 +74,42 @@ export interface KitFilters {
   condition?: EquipmentCondition | "all";
 }
 
+// ============================================================
+// Inventory types
+// ============================================================
+
+export type InventoryCondition = "new" | "good" | "fair" | "poor" | "retired";
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  sport: string[];
+  quantity: number;
+  condition: InventoryCondition;
+  location: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateInventoryItemInput {
+  name: string;
+  sport: string[];
+  quantity: number;
+  condition: InventoryCondition;
+  location: string;
+  notes: string | null;
+}
+
+export interface UpdateInventoryItemInput {
+  name?: string;
+  sport?: string[];
+  quantity?: number;
+  condition?: InventoryCondition;
+  location?: string;
+  notes?: string | null;
+}
+
 // Standard equipment items for the picker
 export const STANDARD_EQUIPMENT = [
   "Cones",

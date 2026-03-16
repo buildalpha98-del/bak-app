@@ -8,7 +8,6 @@ import {
   ClipboardList,
   Loader2,
   Sparkles,
-  X,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -126,7 +125,11 @@ export function AssessmentListView({
             </TableHeader>
             <TableBody>
               {filtered.map((template) => (
-                <TableRow key={template.id}>
+                <TableRow
+                  key={template.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`${basePath}/${template.id}`)}
+                >
                   <TableCell className="font-medium">
                     {template.sport}
                   </TableCell>
@@ -458,7 +461,7 @@ function CreateAssessmentDialog({
                       className="mt-1 min-h-[44px] min-w-[44px] shrink-0 text-muted-foreground hover:text-destructive"
                       onClick={() => handleRemoveSkill(index)}
                     >
-                      <X className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Remove skill</span>
                     </Button>
                   </div>

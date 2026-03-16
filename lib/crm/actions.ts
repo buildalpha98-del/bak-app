@@ -40,7 +40,7 @@ export async function getLeads(filters?: {
 
     let query = supabase
       .from("leads")
-      .select("*, profiles!leads_owner_id_fkey(name)");
+      .select("*");
 
     if (filters?.stage) query = query.eq("stage", filters.stage);
     if (filters?.source) query = query.eq("source", filters.source);
@@ -69,15 +69,24 @@ export async function getLeads(filters?: {
 
     if (error) return { data: [], error: error.message };
 
+    // Batch-fetch owner names to avoid N+1 and FK hint issues
+    const ownerIds = [...new Set((data ?? []).map((l) => l.owner_id).filter(Boolean))] as string[];
+    const ownerMap = new Map<string, string>();
+    if (ownerIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", ownerIds);
+      for (const p of profiles ?? []) {
+        ownerMap.set(p.id, p.name);
+      }
+    }
+
     return {
-      data: (data ?? []).map((lead) => {
-        const owner = lead.profiles as unknown as { name: string } | null;
-        return {
-          ...lead,
-          owner_name: owner?.name ?? null,
-          profiles: undefined,
-        } as LeadWithOwner;
-      }),
+      data: (data ?? []).map((lead) => ({
+        ...lead,
+        owner_name: lead.owner_id ? (ownerMap.get(lead.owner_id) ?? null) : null,
+      } as LeadWithOwner)),
       error: null,
     };
   } catch (err) {
@@ -99,7 +108,7 @@ export async function getLeadDetail(leadId: string): Promise<{
 
     const { data: lead, error } = await supabase
       .from("leads")
-      .select("*, profiles!leads_owner_id_fkey(name)")
+      .select("*")
       .eq("id", leadId)
       .single();
 
@@ -107,19 +116,41 @@ export async function getLeadDetail(leadId: string): Promise<{
 
     const { data: activities } = await supabase
       .from("lead_activities")
-      .select("*, profiles(name)")
+      .select("*")
       .eq("lead_id", leadId)
       .order("created_at", { ascending: false });
 
-    const owner = lead.profiles as unknown as { name: string } | null;
+    // Fetch owner name
+    let ownerName: string | null = null;
+    if (lead.owner_id) {
+      const { data: ownerProfile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", lead.owner_id)
+        .single();
+      ownerName = ownerProfile?.name ?? null;
+    }
+
+    // Fetch activity user names
+    const activityUserIds = [...new Set((activities ?? []).map((a) => a.created_by).filter(Boolean))] as string[];
+    const userMap = new Map<string, string>();
+    if (activityUserIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", activityUserIds);
+      for (const p of profiles ?? []) {
+        userMap.set(p.id, p.name);
+      }
+    }
 
     return {
       data: {
-        lead: { ...lead, owner_name: owner?.name ?? null, profiles: undefined } as LeadWithOwner,
-        activities: (activities ?? []).map((a) => {
-          const user = a.profiles as unknown as { name: string } | null;
-          return { ...a, user_name: user?.name ?? null, profiles: undefined } as LeadActivityWithUser;
-        }),
+        lead: { ...lead, owner_name: ownerName } as LeadWithOwner,
+        activities: (activities ?? []).map((a) => ({
+          ...a,
+          user_name: a.created_by ? (userMap.get(a.created_by) ?? null) : null,
+        } as LeadActivityWithUser)),
       },
       error: null,
     };

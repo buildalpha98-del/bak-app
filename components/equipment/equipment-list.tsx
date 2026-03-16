@@ -26,12 +26,14 @@ interface EquipmentListProps {
   initialKits: KitListItem[];
   userRole: "admin" | "ops";
   basePath: string;
+  hideHeader?: boolean;
 }
 
 export function EquipmentList({
   initialKits,
   userRole,
   basePath,
+  hideHeader = false,
 }: EquipmentListProps) {
   const router = useRouter();
   const [kits, setKits] = useState(initialKits);
@@ -76,23 +78,25 @@ export function EquipmentList({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
+    <div className={hideHeader ? "" : "mx-auto max-w-6xl px-4 py-6"}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Equipment</h1>
-          <p className="text-sm text-muted-foreground">
-            Track and manage equipment kits across coaches and centres.
-          </p>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">Equipment</h1>
+            <p className="text-sm text-muted-foreground">
+              Track and manage equipment kits across coaches and centres.
+            </p>
+          </div>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add Kit
+          </Button>
         </div>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          Add Kit
-        </Button>
-      </div>
+      )}
 
       {/* Filters */}
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className={`${hideHeader ? "" : "mt-4"} flex flex-col gap-3 sm:flex-row sm:items-center`}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
           <Input
@@ -102,6 +106,12 @@ export function EquipmentList({
             className="pl-9"
           />
         </div>
+        {hideHeader && (
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add Kit
+          </Button>
+        )}
         <Select
           value={locationFilter}
           onValueChange={(v) =>

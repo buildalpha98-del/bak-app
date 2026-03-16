@@ -121,18 +121,19 @@ export function SubmissionList({
   }
 
   function exportCsv() {
-    if (submissions.length === 0) {
-      toast.error("No submissions to export.");
+    const exportData = displayed.length > 0 ? displayed : submissions;
+    if (exportData.length === 0) {
+      toast.error("No submissions to export. Coaches submit forms from the coach portal.");
       return;
     }
 
     // Build CSV
     const headers = ["Submitted", "Form Type", "Coach", "Centre", "Session Date"];
     // Add data field keys from first submission
-    const dataKeys = Object.keys(submissions[0].data_json ?? {});
+    const dataKeys = Object.keys(exportData[0].data_json ?? {});
     headers.push(...dataKeys);
 
-    const rows = submissions.map((s) => {
+    const rows = exportData.map((s) => {
       const base = [
         formatDateTime(s.submitted_at),
         FORM_TYPE_LABELS[s.form_type] ?? s.form_type,
@@ -292,9 +293,21 @@ export function SubmissionList({
             <h3 className="mt-3 text-sm font-medium text-foreground">
               No submissions found
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Form submissions will appear here as coaches submit forms.
+            <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+              Form submissions appear here when coaches submit them from their
+              coach portal. Coaches can access their forms under{" "}
+              <span className="font-medium text-foreground">Coach Portal &rarr; Forms</span>.
             </p>
+            {typeFilter !== "all" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => { setTypeFilter("all"); applyFilters(); }}
+              >
+                Clear filters
+              </Button>
+            )}
           </div>
         )}
       </div>

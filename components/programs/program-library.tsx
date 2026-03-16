@@ -12,6 +12,8 @@ import {
   SlidersHorizontal,
   User,
   GitBranch,
+  LayoutGrid,
+  FolderOpen,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,6 +53,8 @@ function formatDate(dateStr: string): string {
   });
 }
 
+type ViewMode = "folder" | "grid";
+
 export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -58,6 +62,8 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
   const [ageFilter, setAgeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("folder");
+  const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
 
   // Derive unique sports and creators from the data
   const availableSports = useMemo(() => {
@@ -116,6 +122,31 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     return result;
   }, [programs, search, sportFilter, ageFilter, sortBy]);
 
+  // Group filtered programs by sport for folder view
+  const groupedBySport = useMemo(() => {
+    const groups: Record<string, ProgramListItem[]> = {};
+    for (const program of filtered) {
+      const sport = program.sport || "Other";
+      if (!groups[sport]) groups[sport] = [];
+      groups[sport].push(program);
+    }
+    // Sort sport keys alphabetically
+    const sorted = Object.keys(groups).sort();
+    return sorted.map((sport) => ({ sport, programs: groups[sport] }));
+  }, [filtered]);
+
+  function toggleFolder(sport: string) {
+    setOpenFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(sport)) {
+        next.delete(sport);
+      } else {
+        next.add(sport);
+      }
+      return next;
+    });
+  }
+
   if (programs.length === 0) {
     return (
       <Card>
@@ -143,6 +174,27 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
           />
         </div>
         <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          <div className="flex items-center rounded-md border border-border">
+            <Button
+              variant={viewMode === "folder" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-r-none h-8 px-2.5"
+              onClick={() => setViewMode("folder")}
+              title="Folder View"
+            >
+              <FolderOpen className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-l-none h-8 px-2.5"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -233,93 +285,166 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             </p>
           </CardContent>
         </Card>
-      ) : (
+      ) : viewMode === "folder" ? (
+        /* ── Folder View ── */
         <div className="space-y-3">
-          {filtered.map((program) => {
-            const isExpanded = expandedId === program.id;
-
+          {groupedBySport.map(({ sport, programs: sportPrograms }) => {
+            const isOpen = openFolders.has(sport);
             return (
-              <Card key={program.id} className="card-hover">
-                <CardContent className="py-3">
-                  <div className="flex items-start gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedId(isExpanded ? null : program.id)
-                      }
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)]"
-                    >
-                      {isExpanded ? (
-                        <ChevronDown className="h-4 w-4 text-primary" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-primary" />
-                      )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <Link
-                          href={`${basePath}/${program.id}`}
-                          className="text-sm font-medium text-foreground truncate hover:text-primary transition-colors"
-                        >
-                          {program.title}
-                        </Link>
-                        {program.version_number > 1 && (
-                          <Badge
-                            variant="outline"
-                            className="shrink-0 text-[10px] gap-0.5"
-                          >
-                            <GitBranch className="h-2.5 w-2.5" />v
-                            {program.version_number}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {program.sport}
-                        </Badge>
-                        {program.age_group && (
-                          <Badge variant="secondary" className="text-xs">
-                            Ages {program.age_group}
-                          </Badge>
-                        )}
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
-                          <Clock className="h-3 w-3" />
-                          {program.duration_minutes} min
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(program.created_at)}
-                        </span>
-                        {program.created_by_name && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
-                            <User className="h-3 w-3" />
-                            {program.created_by_name}
-                          </span>
-                        )}
-                      </div>
-                      {program.skill_focus && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          Focus: {program.skill_focus}
-                        </p>
-                      )}
+              <Card key={sport} className="card-hover">
+                <button
+                  type="button"
+                  onClick={() => toggleFolder(sport)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-orange-light)]">
+                    <FolderOpen className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-foreground">
+                      {sport}
+                    </span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {sportPrograms.length} programme
+                      {sportPrograms.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  {isOpen ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="border-t border-border px-4 pb-3">
+                    <div className="space-y-2 pt-3">
+                      {sportPrograms.map((program) => (
+                        <ProgramCard
+                          key={program.id}
+                          program={program}
+                          basePath={basePath}
+                          expandedId={expandedId}
+                          onToggleExpand={(id) =>
+                            setExpandedId(expandedId === id ? null : id)
+                          }
+                        />
+                      ))}
                     </div>
                   </div>
-
-                  {isExpanded && (
-                    <div className="mt-4 border-t border-border pt-4">
-                      <ExpandedProgram
-                        programId={program.id}
-                        basePath={basePath}
-                      />
-                    </div>
-                  )}
-                </CardContent>
+                )}
               </Card>
             );
           })}
         </div>
+      ) : (
+        /* ── Grid View (original flat list) ── */
+        <div className="space-y-3">
+          {filtered.map((program) => (
+            <ProgramCard
+              key={program.id}
+              program={program}
+              basePath={basePath}
+              expandedId={expandedId}
+              onToggleExpand={(id) =>
+                setExpandedId(expandedId === id ? null : id)
+              }
+            />
+          ))}
+        </div>
       )}
     </div>
+  );
+}
+
+// ============================================================
+// Programme Card — shared between grid and folder views
+// ============================================================
+
+function ProgramCard({
+  program,
+  basePath,
+  expandedId,
+  onToggleExpand,
+}: {
+  program: ProgramListItem;
+  basePath: string;
+  expandedId: string | null;
+  onToggleExpand: (id: string) => void;
+}) {
+  const isExpanded = expandedId === program.id;
+
+  return (
+    <Card className="card-hover">
+      <CardContent className="py-3">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={() => onToggleExpand(program.id)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)]"
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 text-primary" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-primary" />
+            )}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <Link
+                href={`${basePath}/${program.id}`}
+                className="text-sm font-medium text-foreground truncate hover:text-primary transition-colors"
+              >
+                {program.title}
+              </Link>
+              {program.version_number > 1 && (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-[10px] gap-0.5"
+                >
+                  <GitBranch className="h-2.5 w-2.5" />v
+                  {program.version_number}
+                </Badge>
+              )}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                {program.sport}
+              </Badge>
+              {program.age_group && (
+                <Badge variant="secondary" className="text-xs">
+                  Ages {program.age_group}
+                </Badge>
+              )}
+              <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
+                <Clock className="h-3 w-3" />
+                {program.duration_minutes} min
+              </span>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
+                <Calendar className="h-3 w-3" />
+                {formatDate(program.created_at)}
+              </span>
+              {program.created_by_name && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
+                  <User className="h-3 w-3" />
+                  {program.created_by_name}
+                </span>
+              )}
+            </div>
+            {program.skill_focus && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Focus: {program.skill_focus}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div className="mt-4 border-t border-border pt-4">
+            <ExpandedProgram programId={program.id} basePath={basePath} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

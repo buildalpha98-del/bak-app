@@ -88,10 +88,10 @@ export async function getFormTemplates(): Promise<{
     let createdByName: string | null = null;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("name")
       .eq("id", t.created_by)
       .single();
-    createdByName = profile?.full_name ?? null;
+    createdByName = profile?.name ?? null;
 
     const fields = (t.fields_json as FormField[]) ?? [];
 
@@ -366,7 +366,7 @@ export async function getFormSubmissions(
     // Get coach name
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("name")
       .eq("id", s.submitted_by)
       .single();
 
@@ -398,7 +398,7 @@ export async function getFormSubmissions(
       ...s,
       template_name: template?.name ?? "Unknown",
       form_type: template?.form_type ?? "unknown",
-      coach_name: profile?.full_name ?? "Unknown",
+      coach_name: profile?.name ?? "Unknown",
       centre_name: centreName,
       session_date: sessionDate,
     });
@@ -444,7 +444,7 @@ export async function getSubmissionById(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name")
+    .select("name")
     .eq("id", s.submitted_by)
     .single();
 
@@ -472,7 +472,7 @@ export async function getSubmissionById(
       ...s,
       template_name: template?.name ?? "Unknown",
       form_type: template?.form_type ?? "unknown",
-      coach_name: profile?.full_name ?? "Unknown",
+      coach_name: profile?.name ?? "Unknown",
       centre_name: centreName,
       session_date: sessionDate,
     },
@@ -615,13 +615,13 @@ export async function getCoachesForFilter(): Promise<{
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name")
+    .select("id, name")
     .eq("role", "coach")
-    .order("full_name", { ascending: true });
+    .order("name", { ascending: true });
 
   if (error) return { data: null, error: error.message };
   return {
-    data: (data ?? []).map((p) => ({ id: p.id, name: p.full_name ?? "Unknown" })),
+    data: (data ?? []).map((p) => ({ id: p.id, name: p.name ?? "Unknown" })),
     error: null,
   };
 }
