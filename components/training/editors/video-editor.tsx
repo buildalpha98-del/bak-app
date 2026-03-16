@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import type { VideoContent } from "@/lib/types/database";
 
 interface VideoEditorProps {
@@ -63,20 +61,15 @@ export function VideoEditor({ value, onChange }: VideoEditorProps) {
           onChange={(e) => setUrlInput(e.target.value)}
           placeholder="https://www.youtube.com/watch?v=… or Vimeo link"
         />
+        <p className="text-xs text-muted-foreground">
+          Paste a YouTube, Vimeo, or direct video URL
+        </p>
         {value.video_url && (
           <p className="text-xs text-muted-foreground">
             Detected type:{" "}
             <span className="font-medium capitalize">{value.video_type}</span>
           </p>
         )}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">— or —</span>
-        <Button type="button" variant="outline" size="sm" disabled>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload File (coming soon)
-        </Button>
       </div>
 
       <div className="space-y-1.5">

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { History, ChevronLeft, ArrowRight, Loader2 } from "lucide-react";
-import { getSchedulingRunHistory } from "@/lib/scheduling/actions";
+import { getSchedulingRunHistory, resolveAdjustmentNames } from "@/lib/scheduling/actions";
 import type {
   SchedulingRunOutputSummary,
   SchedulingAdjustment,
@@ -239,6 +239,21 @@ function RunDetail({
   const summary = run.output_summary;
   const adjustments = run.adjustments_json ?? [];
 
+  const [coachNames, setCoachNames] = useState<Record<string, string>>({});
+  const [sessionLabels, setSessionLabels] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (adjustments.length === 0) return;
+    const coachIds = adjustments
+      .flatMap((a) => [a.original_coach_id, a.replacement_coach_id])
+      .filter((id): id is string => !!id);
+    const sessionIds = adjustments.map((a) => a.session_id);
+    resolveAdjustmentNames(coachIds, sessionIds).then(({ coachNames: cn, sessionLabels: sl }) => {
+      setCoachNames(cn);
+      setSessionLabels(sl);
+    });
+  }, [adjustments]);
+
   return (
     <>
       <SheetHeader>
@@ -327,19 +342,19 @@ function RunDetail({
                         Session
                       </Badge>
                       <span className="text-xs text-muted-foreground truncate">
-                        {adj.session_id.slice(0, 8)}...
+                        {sessionLabels[adj.session_id] ?? adj.session_id.slice(0, 8) + "..."}
                       </span>
                     </div>
 
                     <div className="mt-2 flex items-center gap-2 text-sm">
                       <span className="text-muted-foreground">
                         {adj.original_coach_id
-                          ? adj.original_coach_id.slice(0, 8) + "..."
+                          ? coachNames[adj.original_coach_id] ?? "Unknown Coach"
                           : "Unassigned"}
                       </span>
                       <ArrowRight className="size-3.5 text-muted-foreground" />
                       <span className="font-medium text-foreground">
-                        {adj.replacement_coach_id.slice(0, 8)}...
+                        {coachNames[adj.replacement_coach_id] ?? "Unknown Coach"}
                       </span>
                     </div>
 

@@ -140,6 +140,9 @@ export default function AdminReferralsPage() {
         });
         setParentReferrals(d.recentParentReferrals as unknown as ParentReferral[]);
         setCentreReferrals(d.recentCentreReferrals as unknown as CentreReferral[]);
+        if ((d as any).recentRewards) {
+          setRewards((d as any).recentRewards as unknown as Reward[]);
+        }
       }
 
       if (configResult.data) {

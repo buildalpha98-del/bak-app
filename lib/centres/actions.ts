@@ -389,6 +389,59 @@ export async function updateCentre(
 }
 
 // ============================================================
+// archiveCentre — soft delete by setting contract_status to 'churned'
+// ============================================================
+
+export async function archiveCentre(
+  id: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // Check for active sessions
+    const { count: activeSessions } = await supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("centre_id", id)
+      .in("status", ["confirmed", "in_progress"]);
+
+    if (activeSessions && activeSessions > 0) {
+      return {
+        error: `This centre has ${activeSessions} active session${activeSessions !== 1 ? "s" : ""}. Please cancel or complete them before archiving.`,
+      };
+    }
+
+    const { error } = await supabase
+      .from("centres")
+      .update({
+        contract_status: "churned",
+        status_changed_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    // Activity log
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "centre_archived",
+      entity_type: "centre",
+      entity_id: id,
+    });
+
+    return { error: null };
+  } catch (err) {
+    console.error("archiveCentre error:", err);
+    return { error: "Failed to archive centre." };
+  }
+}
+
+// ============================================================
 // addCentreNote
 // ============================================================
 

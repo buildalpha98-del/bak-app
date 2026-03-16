@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCoachPayRates } from "@/lib/pay-rates/actions";
 import { CoachPayRates } from "@/components/pay-rates/coach-pay-rates";
 import { GSTToggle } from "@/components/invoicing/gst-toggle";
+import { EditProfileDialog } from "@/components/coach/edit-profile-dialog";
 
 export default async function CoachProfilePage() {
   const supabase = await createSupabaseServerClient();
@@ -28,9 +29,15 @@ export default async function CoachProfilePage() {
 
       {/* Basic info */}
       <div className="rounded-lg border border-border bg-card p-4 space-y-3 stagger-1">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Personal Details
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            Personal Details
+          </h2>
+          <EditProfileDialog
+            currentPhone={profile?.phone ?? null}
+            currentAbn={profile?.abn ?? null}
+          />
+        </div>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Name</span>

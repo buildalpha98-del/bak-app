@@ -294,6 +294,9 @@ export default function ParentBookingsPage() {
                 You don&apos;t have any upcoming sessions. Browse available
                 sessions to book.
               </p>
+              <Link href="/parent/book">
+                <Button className="mt-3 bg-[#E8712A] hover:bg-[#d4650f] text-white">Browse & Book</Button>
+              </Link>
             </div>
           ) : (
             upcomingBookings.map((booking) => {

@@ -90,6 +90,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Reports", href: "/ops/reports", icon: FileBarChart },
     { label: "Tasks", href: "/ops/tasks", icon: CheckSquare, mobileOrder: 5 },
     { label: "Feedback", href: "/ops/feedback", icon: MessageSquare },
+    { label: "Bookings", href: "/ops/bookings/sessions", icon: ShoppingBag },
     { label: "Announcements", href: "/ops/announcements", icon: Megaphone },
     { label: "Messages", href: "/ops/messages", icon: MessageSquare },
   ],
@@ -102,6 +103,9 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Invoicing", href: "/coach/invoicing", icon: Receipt },
     { label: "Docs", href: "/coach/docs", icon: FileText },
     { label: "Performance", href: "/coach/performance", icon: TrendingUp },
+    { label: "Tasks", href: "/coach/tasks", icon: CheckSquare },
+    { label: "Assessments", href: "/coach/assessments", icon: Star },
+    { label: "Announcements", href: "/coach/announcements", icon: Megaphone },
     { label: "Profile", href: "/coach/profile", icon: User, mobileOrder: 5 },
   ],
   parent: [

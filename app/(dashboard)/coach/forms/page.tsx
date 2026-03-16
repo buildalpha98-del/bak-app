@@ -17,11 +17,11 @@ export default async function CoachFormsPage() {
   // Get coach display name
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name")
+    .select("name")
     .eq("id", user.id)
     .single();
 
-  const coachName = profile?.full_name ?? user.email ?? "Coach";
+  const coachName = profile?.name ?? user.email ?? "Coach";
 
   const [templatesResult, submissionsResult] = await Promise.all([
     getCoachAvailableTemplates(),

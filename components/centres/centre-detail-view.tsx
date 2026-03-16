@@ -62,7 +62,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { updateCentre, addCentreNote } from "@/lib/centres/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { updateCentre, addCentreNote, archiveCentre } from "@/lib/centres/actions";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
 import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
@@ -200,6 +211,21 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
   const [notes, setNotes] = useState<CentreNoteWithAuthor[]>(data.notes);
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+
+  async function handleArchive() {
+    setArchiving(true);
+    setArchiveError(null);
+    const { error } = await archiveCentre(centre.id);
+    setArchiving(false);
+    if (error) {
+      setArchiveError(error);
+      return;
+    }
+    router.push(basePath);
+    router.refresh();
+  }
 
   const TypeIcon =
     centre.type === "childcare_centre" ? Building2 : GraduationCap;
@@ -229,9 +255,43 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
             </div>
           </div>
         </div>
-        <Button variant="outline" onClick={() => setEditOpen(true)}>
-          Edit Centre
-        </Button>
+        <div className="flex items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={<Button variant="outline" className="text-red-600 hover:bg-red-50 hover:text-red-700" />}
+            >
+              Archive Centre
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Archive Centre</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will set the centre status to &quot;Churned&quot; and effectively archive it.
+                  Associated sessions, notes, and invoices will be preserved. This action can be
+                  reversed by changing the contract status back.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {archiveError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {archiveError}
+                </div>
+              )}
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleArchive}
+                  disabled={archiving}
+                  className="bg-red-600 text-white hover:bg-red-700"
+                >
+                  {archiving ? "Archiving..." : "Archive Centre"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button variant="outline" onClick={() => setEditOpen(true)}>
+            Edit Centre
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}

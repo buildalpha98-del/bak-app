@@ -525,3 +525,33 @@ export async function getRateCard(): Promise<{
 
   return { data: entries, error: null };
 }
+
+// ============================================================
+// Coach self-update (phone & ABN only)
+// ============================================================
+
+export async function updateCoachProfile(data: {
+  phone?: string | null;
+  abn?: string | null;
+}): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated" };
+
+  // Only allow updating phone and abn
+  const updatePayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (data.phone !== undefined) updatePayload.phone = data.phone || null;
+  if (data.abn !== undefined) updatePayload.abn = data.abn || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(updatePayload)
+    .eq("id", user.id);
+
+  return { error: error?.message ?? null };
+}

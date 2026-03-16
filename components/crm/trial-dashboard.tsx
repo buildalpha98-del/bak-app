@@ -352,9 +352,8 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                toast.info("Report generation coming soon")
-              }
+              disabled
+              title="Report generation coming soon"
             >
               <FileText className="size-3.5" />
               Generate Report

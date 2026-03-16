@@ -84,7 +84,7 @@ export default async function AdminReportsPage() {
                     <TableCell>{formatDate(report.created_at)}</TableCell>
                     <TableCell>
                       <Link
-                        href={`/ops/reports/${report.id}`}
+                        href={`/admin/reports/${report.id}`}
                         className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Eye className="h-4 w-4" />

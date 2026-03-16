@@ -215,6 +215,41 @@ export async function submitPublicFeedback(
 }
 
 // ============================================================
+// deleteFeedback — hard delete a feedback record
+// ============================================================
+
+export async function deleteFeedback(
+  feedbackId: string
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  // Verify role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { error: "Insufficient permissions." };
+  }
+
+  const { error } = await supabase
+    .from("feedback_ratings")
+    .delete()
+    .eq("id", feedbackId);
+
+  if (error) return { error: error.message };
+
+  return { error: null };
+}
+
+// ============================================================
 // Dashboard & list query actions
 // ============================================================
 

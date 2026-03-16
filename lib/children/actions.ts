@@ -448,6 +448,71 @@ export async function withdrawChildFromCentre(
 }
 
 // ============================================================
+// deleteChild
+// ============================================================
+
+export async function deleteChild(
+  childId: string
+): Promise<{ error: string | null; warnings?: string[] }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // Check for existing skill ratings
+    const { count: ratingCount } = await supabase
+      .from("skill_ratings")
+      .select("*", { count: "exact", head: true })
+      .eq("child_id", childId);
+
+    // Check for existing session attendances
+    const { count: attendanceCount } = await supabase
+      .from("session_attendances")
+      .select("*", { count: "exact", head: true })
+      .eq("child_id", childId);
+
+    const warnings: string[] = [];
+    if (ratingCount && ratingCount > 0) {
+      warnings.push(`${ratingCount} skill rating${ratingCount !== 1 ? "s" : ""} will be deleted.`);
+    }
+    if (attendanceCount && attendanceCount > 0) {
+      warnings.push(`${attendanceCount} attendance record${attendanceCount !== 1 ? "s" : ""} will be deleted.`);
+    }
+
+    // Delete related records first
+    await supabase.from("skill_ratings").delete().eq("child_id", childId);
+    await supabase.from("session_attendances").delete().eq("child_id", childId);
+    await supabase.from("centre_children").delete().eq("child_id", childId);
+
+    // Delete the child record
+    const { error } = await supabase
+      .from("children")
+      .delete()
+      .eq("id", childId);
+
+    if (error) throw error;
+
+    // Activity log
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "child_deleted",
+      entity_type: "child",
+      entity_id: childId,
+    });
+
+    revalidatePath("/ops/children");
+    revalidatePath("/admin/children");
+    return { error: null, warnings };
+  } catch (err) {
+    console.error("deleteChild error:", err);
+    return { error: "Failed to delete child." };
+  }
+}
+
+// ============================================================
 // getCentreChildren — children at a specific centre with stats
 // ============================================================
 

@@ -377,7 +377,7 @@ export function SessionDetailSheet({
                       : "italic text-muted-foreground"
                   }`}
                 >
-                  {session.program_id ? "Programme assigned" : "No programme assigned"}
+                  {session.program_id ? (session.program_title ?? "Programme assigned") : "No programme assigned"}
                 </span>
               </div>
             )}

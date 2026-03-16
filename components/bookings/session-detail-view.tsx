@@ -220,7 +220,7 @@ export function SessionDetailView({
               <div className="mt-0.5 h-5 w-5 shrink-0" />
               <div>
                 <dt className="text-sm font-medium text-[#666666]">Coach</dt>
-                <dd className="text-[#1A1A1A]">{(session as any).coach_name || session.coach_id}</dd>
+                <dd className="text-[#1A1A1A]">{(session as any).coach_name || "Unassigned"}</dd>
               </div>
             </div>
           )}
@@ -374,10 +374,10 @@ export function SessionDetailView({
                   <TableRow key={entry.id}>
                     <TableCell>{entry.position}</TableCell>
                     <TableCell className="text-sm">
-                      {(entry as any).child_name || entry.child_id}
+                      {(entry as any).child_name || "Unknown"}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {(entry as any).parent_name || entry.parent_id}
+                      {(entry as any).parent_name || "Unknown"}
                     </TableCell>
                     <TableCell>
                       <Badge

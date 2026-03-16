@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CheckCircle, BookOpen } from "lucide-react";
+import { Plus, CheckCircle, BookOpen, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +23,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteTrainingModule } from "@/lib/training/actions";
 import type { TrainingModule } from "@/lib/types/database";
 import type { TrainingModuleType, TrainingCategory, TrainingStatus } from "@/lib/types/enums";
 
@@ -166,6 +179,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
                 <TableHead className="text-center">Mandatory</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -203,6 +217,50 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {formatDate(module.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Archive Module</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to archive &quot;{module.title}&quot;? This will
+                              set the module status to archived. Existing assignments and completions
+                              will be preserved.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 text-white hover:bg-red-700"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const result = await deleteTrainingModule(module.id);
+                                if ("error" in result) {
+                                  toast.error(result.error);
+                                } else {
+                                  toast.success("Module archived.");
+                                  router.refresh();
+                                }
+                              }}
+                            >
+                              Archive Module
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 );

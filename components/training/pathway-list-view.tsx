@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Plus, GitMerge, CheckCircle } from "lucide-react";
+import { Plus, GitMerge, CheckCircle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +23,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteTrainingPathway } from "@/lib/training/actions";
 import type { TrainingPathway } from "@/lib/types/database";
 import type { TrainingCategory, TrainingStatus } from "@/lib/types/enums";
 
@@ -142,6 +155,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                 <TableHead className="text-center">Mandatory</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,6 +199,50 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {formatDate(pathway.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Archive Pathway</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to archive &quot;{pathway.title}&quot;? This will
+                              set the pathway status to archived. Existing assignments will be
+                              preserved.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 text-white hover:bg-red-700"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const result = await deleteTrainingPathway(pathway.id);
+                                if ("error" in result) {
+                                  toast.error(result.error);
+                                } else {
+                                  toast.success("Pathway archived.");
+                                  router.refresh();
+                                }
+                              }}
+                            >
+                              Archive Pathway
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 );

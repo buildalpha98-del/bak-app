@@ -1,13 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Megaphone, Plus, Loader2 } from "lucide-react";
+import { Megaphone, Plus, Loader2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AnnouncementCard } from "@/components/announcements/announcement-card";
 import { AnnouncementDetail } from "@/components/announcements/announcement-detail";
 import { CreateAnnouncementForm } from "@/components/announcements/create-announcement-form";
-import { getAnnouncements } from "@/lib/announcements/actions";
+import { getAnnouncements, deleteAnnouncement } from "@/lib/announcements/actions";
 import type { EnrichedAnnouncement } from "@/lib/announcements/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { UserRole } from "@/lib/types/enums";
 
 interface AnnouncementListProps {
@@ -30,6 +43,20 @@ export function AnnouncementList({
     string | null
   >(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleDelete(announcementId: string) {
+    setDeletingId(announcementId);
+    const { error } = await deleteAnnouncement(announcementId);
+    setDeletingId(null);
+    if (error) {
+      toast.error(error);
+    } else {
+      setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
+      toast.success("Announcement deleted.");
+    }
+  }
 
   async function loadMore() {
     setLoading(true);
@@ -75,12 +102,53 @@ export function AnnouncementList({
       {announcements.length > 0 ? (
         <div className="space-y-3">
           {announcements.map((announcement) => (
-            <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              role={role}
-              onClick={() => setSelectedAnnouncementId(announcement.id)}
-            />
+            <div key={announcement.id} className="relative group">
+              <AnnouncementCard
+                announcement={announcement}
+                role={role}
+                onClick={() => setSelectedAnnouncementId(announcement.id)}
+              />
+              {canCreate && (
+                <div className="absolute top-3 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      render={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete &quot;{announcement.title}&quot;? This
+                          will also remove all read receipts. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 text-white hover:bg-red-700"
+                          disabled={deletingId === announcement.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(announcement.id);
+                          }}
+                        >
+                          {deletingId === announcement.id ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       ) : (

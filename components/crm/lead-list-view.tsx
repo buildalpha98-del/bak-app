@@ -41,6 +41,7 @@ import {
   bulkDeleteLeads,
   getCrmStaffMembers,
 } from "@/lib/crm/actions";
+import { LeadCreateDialog } from "@/components/crm/lead-create-dialog";
 import type { LeadWithOwner } from "@/lib/crm/actions";
 import type { LeadStage, LeadSource } from "@/lib/types/enums";
 
@@ -122,6 +123,9 @@ export function LeadListView({ leads }: LeadListViewProps) {
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Add Lead dialog
+  const [createLeadOpen, setCreateLeadOpen] = useState(false);
 
   // Bulk selection
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -305,6 +309,10 @@ export function LeadListView({ leads }: LeadListViewProps) {
           >
             <LayoutGrid className="size-4" />
             Pipeline Board
+          </Button>
+          <Button onClick={() => setCreateLeadOpen(true)}>
+            <UserPlus className="size-4" />
+            Add Lead
           </Button>
         </div>
       </div>
@@ -676,6 +684,13 @@ export function LeadListView({ leads }: LeadListViewProps) {
           </Table>
         </div>
       )}
+
+      {/* Add Lead Dialog */}
+      <LeadCreateDialog
+        open={createLeadOpen}
+        onOpenChange={setCreateLeadOpen}
+        basePath="/admin/crm"
+      />
     </div>
   );
 }

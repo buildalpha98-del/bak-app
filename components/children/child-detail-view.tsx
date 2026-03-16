@@ -8,6 +8,7 @@ import {
   Users,
   CalendarDays,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,7 +35,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { updateChild, withdrawChildFromCentre } from "@/lib/children/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { updateChild, withdrawChildFromCentre, deleteChild } from "@/lib/children/actions";
 import type { ChildDetail } from "@/lib/children/actions";
 import type { AgeGroup, Gender } from "@/lib/types/enums";
 import { ChildAssessmentDisplay } from "@/components/assessments/child-assessment-display";
@@ -68,6 +80,7 @@ export default function ChildDetailView({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isWithdrawing, startWithdrawTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const [form, setForm] = useState({
     first_name: data.first_name,
@@ -104,6 +117,19 @@ export default function ChildDetailView({
         toast.error(error);
       } else {
         toast.success("Child updated successfully.");
+        router.refresh();
+      }
+    });
+  }
+
+  function handleDelete() {
+    startDeleteTransition(async () => {
+      const { error } = await deleteChild(data.id);
+      if (error) {
+        toast.error(error);
+      } else {
+        toast.success("Child deleted successfully.");
+        router.push(basePath);
         router.refresh();
       }
     });
@@ -148,14 +174,49 @@ export default function ChildDetailView({
             </div>
           </div>
         </div>
-        <Button
-          className="min-h-[44px]"
-          onClick={handleSave}
-          disabled={isPending}
-        >
-          <Save className="mr-2 h-4 w-4" />
-          {isPending ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="min-h-[44px] text-red-600 hover:bg-red-50 hover:text-red-700"
+                />
+              }
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Child</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete {data.first_name} {data.last_name}? This will also
+                  remove all associated skill ratings, attendance records, and centre enrolments.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="bg-red-600 text-white hover:bg-red-700"
+                >
+                  {isDeleting ? "Deleting..." : "Delete Child"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button
+            className="min-h-[44px]"
+            onClick={handleSave}
+            disabled={isPending}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {isPending ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </div>
 
       {/* Editable fields */}

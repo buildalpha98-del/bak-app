@@ -283,13 +283,21 @@ export default function AdminBookingsDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">
-          Booking Dashboard
-        </h1>
-        <p className="text-[#666666] mt-1">
-          Manage parent bookings, sessions, packages, and revenue
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+            Booking Dashboard
+          </h1>
+          <p className="text-[#666666] mt-1">
+            Manage parent bookings, sessions, packages, and revenue
+          </p>
+        </div>
+        <Link href="/admin/bookings/sessions/new">
+          <Button className="bg-[#E8712A] hover:bg-[#D4641F] text-white">
+            <CalendarDays className="h-4 w-4 mr-2" />
+            Create Session
+          </Button>
+        </Link>
       </div>
 
       {/* Error */}

@@ -12,9 +12,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Star, Filter, ChevronLeft, ChevronRight } from "lucide-react";
-import { getFeedbackList } from "@/lib/feedback/actions";
+import { Star, Filter, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { getFeedbackList, deleteFeedback } from "@/lib/feedback/actions";
 import type { FeedbackListItem, FeedbackListFilters } from "@/lib/feedback/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface FeedbackListViewProps {
   initialData: FeedbackListItem[];
@@ -131,6 +143,21 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
       )
     : data;
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDeleteFeedback(feedbackId: string) {
+    setDeletingId(feedbackId);
+    const { error } = await deleteFeedback(feedbackId);
+    setDeletingId(null);
+    if (error) {
+      toast.error(error);
+    } else {
+      setData((prev) => prev.filter((item) => item.id !== feedbackId));
+      setTotal((prev) => prev - 1);
+      toast.success("Feedback deleted.");
+    }
+  }
+
   const hasActiveFilters = ratingFilter > 0 || dateFrom || dateTo || searchText;
 
   const formatDate = (dateStr: string) => {
@@ -219,12 +246,13 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
                 <TableHead>Sport</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead className="min-w-[200px]">Comment</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No feedback found.
                   </TableCell>
                 </TableRow>
@@ -262,6 +290,41 @@ export function FeedbackListView({ initialData, totalCount }: FeedbackListViewPr
                       <p className="text-muted-foreground truncate max-w-[300px]">
                         {item.comment ?? "—"}
                       </p>
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            />
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this feedback from {item.centre.name}
+                              {item.coach ? ` (coach: ${item.coach.name})` : ""}? This action cannot
+                              be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 text-white hover:bg-red-700"
+                              disabled={deletingId === item.id}
+                              onClick={() => handleDeleteFeedback(item.id)}
+                            >
+                              {deletingId === item.id ? "Deleting..." : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))

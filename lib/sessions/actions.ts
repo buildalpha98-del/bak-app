@@ -14,6 +14,7 @@ export interface SessionWithRelations extends Session {
   coach_name: string | null;
   coach_phone: string | null;
   term_name: string;
+  program_title: string | null;
 }
 
 export interface CreateSessionData {
@@ -80,7 +81,7 @@ export async function getSessionsForWeek(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(title)"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -125,6 +126,8 @@ export async function getSessionsForWeek(
         (s.profiles as unknown as { phone: string } | null)?.phone ?? null,
       term_name:
         (s.terms as unknown as { name: string } | null)?.name ?? "Unknown",
+      program_title:
+        (s.programs as unknown as { title: string } | null)?.title ?? null,
     }));
 
     return { data: sessions, error: null };
@@ -147,7 +150,7 @@ export async function getSessionDetail(
     const { data: s, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(title)"
       )
       .eq("id", id)
       .single();
@@ -190,6 +193,8 @@ export async function getSessionDetail(
         (s.profiles as unknown as { phone: string } | null)?.phone ?? null,
       term_name:
         (s.terms as unknown as { name: string } | null)?.name ?? "Unknown",
+      program_title:
+        (s.programs as unknown as { title: string } | null)?.title ?? null,
     };
 
     return { data: session, error: null };

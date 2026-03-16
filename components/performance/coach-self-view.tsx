@@ -360,7 +360,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
                 />
                 <Line
                   type="monotone"
-                  dataKey="overall_score"
+                  dataKey="score"
                   stroke="#E8712A"
                   strokeWidth={2.5}
                   dot={{ r: 4, fill: "#E8712A", strokeWidth: 0 }}

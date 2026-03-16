@@ -373,7 +373,7 @@ function ProgressionTab({
     return (
       <Card className="flex flex-col items-center justify-center p-8 text-center">
         <TrendingUp className="h-8 w-8 text-muted-foreground" />
-        <h3 className="mt-3 text-sm font-medium text-foreground">Progression data coming soon</h3>
+        <h3 className="mt-3 text-sm font-medium text-foreground">Progression data will appear after assessments across multiple terms.</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Progression data will be available after the next assessment period.
         </p>

@@ -280,6 +280,48 @@ export async function createAnnouncement(data: {
 }
 
 // ============================================================
+// deleteAnnouncement — hard delete with read receipts
+// ============================================================
+
+export async function deleteAnnouncement(
+  announcementId: string
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  // Verify role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { error: "Insufficient permissions" };
+  }
+
+  // Delete read receipts first
+  await supabase
+    .from("announcement_reads")
+    .delete()
+    .eq("announcement_id", announcementId);
+
+  // Delete the announcement
+  const { error } = await supabase
+    .from("announcements")
+    .delete()
+    .eq("id", announcementId);
+
+  if (error) return { error: error.message };
+
+  return { error: null };
+}
+
+// ============================================================
 // markAnnouncementRead — upsert read receipt
 // ============================================================
 

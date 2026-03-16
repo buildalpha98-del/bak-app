@@ -624,6 +624,50 @@ export async function reorderPathwayModules(
   return { success: true };
 }
 
+/**
+ * Soft-delete a training pathway by archiving it.
+ * Sets status to 'archived' rather than deleting the record.
+ */
+export async function deleteTrainingPathway(
+  id: string
+): Promise<{ success: true } | { error: string }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { error: "Not authenticated." };
+  }
+
+  const { error } = await supabase
+    .from("training_pathways")
+    .update({
+      status: "archived",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error archiving training pathway:", error);
+    return { error: error.message };
+  }
+
+  // Log archival to activity log
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "training_pathway_archived",
+    entity_type: "training_pathway",
+    entity_id: id,
+  });
+
+  revalidatePath("/admin/training");
+
+  return { success: true };
+}
+
 // ─────────────────────────────────────────────
 // PATHWAY PUBLISHING
 // ─────────────────────────────────────────────

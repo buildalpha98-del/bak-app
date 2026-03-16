@@ -712,6 +712,7 @@ export async function getAdminReferralDashboard(): Promise<{
     totalRewardsAwarded: number;
     recentParentReferrals: Referral[];
     recentCentreReferrals: Referral[];
+    recentRewards: ReferralReward[];
   } | null;
   error: string | null;
 }> {
@@ -772,6 +773,13 @@ export async function getAdminReferralDashboard(): Promise<{
       .order("created_at", { ascending: false })
       .limit(20);
 
+    // Recent rewards
+    const { data: recentRewards } = await admin
+      .from("referral_rewards")
+      .select("*")
+      .order("awarded_at", { ascending: false })
+      .limit(50);
+
     const refCount = totalReferrals ?? 0;
     const convCount = totalConversions ?? 0;
     const conversionRate = refCount > 0 ? (convCount / refCount) * 100 : 0;
@@ -785,6 +793,7 @@ export async function getAdminReferralDashboard(): Promise<{
         totalRewardsAwarded: totalRewardsAwarded ?? 0,
         recentParentReferrals: recentParent ?? [],
         recentCentreReferrals: recentCentre ?? [],
+        recentRewards: (recentRewards ?? []) as ReferralReward[],
       },
       error: null,
     };

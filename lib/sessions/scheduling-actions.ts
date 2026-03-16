@@ -181,7 +181,7 @@ export async function checkWeekClashes(
     const { data: raw, error: sessError } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(title)"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -227,6 +227,8 @@ export async function checkWeekClashes(
         (s.profiles as unknown as { phone: string } | null)?.phone ?? null,
       term_name:
         (s.terms as unknown as { name: string } | null)?.name ?? "Unknown",
+      program_title:
+        (s.programs as unknown as { title: string } | null)?.title ?? null,
     }));
 
     // Get unique coach IDs

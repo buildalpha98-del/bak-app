@@ -256,6 +256,47 @@ export async function getSchedulingRunHistory(limit = 20) {
 }
 
 /**
+ * Resolve adjustment UUIDs to human-readable names.
+ * Returns maps: coachNames (id -> name), sessionLabels (id -> "Centre - Sport").
+ */
+export async function resolveAdjustmentNames(
+  coachIds: string[],
+  sessionIds: string[]
+): Promise<{
+  coachNames: Record<string, string>;
+  sessionLabels: Record<string, string>;
+}> {
+  const supabase = await createSupabaseServerClient();
+  const coachNames: Record<string, string> = {};
+  const sessionLabels: Record<string, string> = {};
+
+  if (coachIds.length > 0) {
+    const uniqueCoachIds = [...new Set(coachIds)];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .in("id", uniqueCoachIds);
+    for (const p of profiles ?? []) {
+      coachNames[p.id] = p.name ?? "Unknown Coach";
+    }
+  }
+
+  if (sessionIds.length > 0) {
+    const uniqueSessionIds = [...new Set(sessionIds)];
+    const { data: sessions } = await supabase
+      .from("sessions")
+      .select("id, sport, centres:centre_id(name)")
+      .in("id", uniqueSessionIds);
+    for (const s of sessions ?? []) {
+      const centreName = (s.centres as unknown as { name: string } | null)?.name ?? "Unknown";
+      sessionLabels[s.id] = `${centreName} - ${s.sport}`;
+    }
+  }
+
+  return { coachNames, sessionLabels };
+}
+
+/**
  * Get all scheduling preferences.
  */
 export async function getSchedulingPreferences() {
