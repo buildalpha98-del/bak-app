@@ -6,6 +6,7 @@ import {
   MapPin,
   Link2,
   Receipt,
+  Bell,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -51,6 +52,13 @@ const settingsSections = [
     href: "/admin/settings/invoicing",
     icon: Receipt,
     colour: "text-amber-500 bg-amber-50",
+  },
+  {
+    label: "Session Reminders",
+    description: "Automated 24-hour reminders for parents and coaches",
+    href: "/admin/settings/reminders",
+    icon: Bell,
+    colour: "text-orange-500 bg-orange-50",
   },
 ];
 
