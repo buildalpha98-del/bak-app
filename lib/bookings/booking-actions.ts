@@ -17,6 +17,14 @@ import type {
   PackageStatus,
 } from "@/lib/types/enums";
 import { processWaitlistForSession } from "@/lib/bookings/actions";
+import { sendEmail } from "@/lib/launch/email";
+import { createNotification } from "@/lib/launch/notifications";
+import {
+  bookingConfirmation,
+  bookingCancellation,
+  paymentReceipt,
+  packageConfirmation,
+} from "@/lib/launch/email-templates";
 
 // ============================================================
 // 1. Get parent bookings
@@ -214,6 +222,15 @@ export async function createBooking(
         .update({ current_bookings: session.current_bookings + input.children.length })
         .eq("id", input.bookable_session_id);
 
+      // Send booking confirmation email + notification (fire-and-forget)
+      void sendBookingConfirmationNotifications(
+        supabase,
+        parentProfile.id,
+        booking,
+        session,
+        input.children
+      ).catch(console.error);
+
       return { data: booking, error: null };
     }
 
@@ -283,6 +300,40 @@ export async function confirmBookingPayment(
       .from("bookable_sessions")
       .update({ current_bookings: session.current_bookings + childCount })
       .eq("id", booking.bookable_session_id);
+
+    // Send booking confirmation email + notification (fire-and-forget)
+    void sendBookingConfirmationNotifications(
+      supabase,
+      booking.parent_id,
+      booking,
+      session,
+      booking.children_json as BookingChildEntry[]
+    ).catch(console.error);
+
+    // Send payment receipt email (await — payment receipts are important)
+    const totalDollars = `$${((booking.total_cents as number) / 100).toFixed(2)}`;
+    const { data: parentForReceipt } = await supabase
+      .from("parent_profiles")
+      .select("email, first_name, user_id")
+      .eq("id", booking.parent_id)
+      .single();
+
+    if (parentForReceipt?.email) {
+      const receiptEmail = paymentReceipt({
+        parentName: parentForReceipt.first_name,
+        amount: totalDollars,
+        description: session.title || "Session Booking",
+        date: new Date().toISOString().split("T")[0],
+      });
+      await sendEmail({
+        to: parentForReceipt.email,
+        subject: receiptEmail.subject,
+        html: receiptEmail.html,
+        recipientId: parentForReceipt.user_id,
+        emailType: "payment_receipt",
+        metadata: { booking_id: bookingId, payment_id: paymentId },
+      }).catch(console.error);
+    }
 
     return { error: null };
   } catch (err) {
@@ -371,6 +422,45 @@ export async function cancelBooking(
 
     // Process waitlist for the session
     await processWaitlistForSession(booking.bookable_session_id);
+
+    // Send cancellation email + notification (fire-and-forget)
+    void (async () => {
+      const { data: parent } = await supabase
+        .from("parent_profiles")
+        .select("email, first_name, user_id")
+        .eq("id", booking.parent_id)
+        .single();
+
+      if (!parent?.email) return;
+
+      const children = booking.children_json as BookingChildEntry[];
+      const childNames = children.map((c) => c.child_name || "your child").join(", ");
+
+      const cancelEmail = bookingCancellation({
+        parentName: parent.first_name,
+        childName: childNames,
+        sessionName: session.title || "Session",
+        date: session.date,
+      });
+
+      void sendEmail({
+        to: parent.email,
+        subject: cancelEmail.subject,
+        html: cancelEmail.html,
+        recipientId: parent.user_id,
+        emailType: "booking_cancellation",
+        metadata: { booking_id: bookingId },
+      }).catch(console.error);
+
+      void createNotification({
+        userId: parent.user_id,
+        type: "booking_confirmed",
+        title: "Booking Cancelled",
+        message: `Your booking for ${childNames} at ${session.title || "a session"} on ${session.date} has been cancelled.`,
+        actionUrl: "/parent/bookings",
+        metadata: { booking_id: bookingId },
+      }).catch(console.error);
+    })().catch(console.error);
 
     return { refundEligible, error: null };
   } catch (err) {
@@ -664,9 +754,99 @@ export async function purchasePackage(
       .single();
 
     if (balanceError) return { data: null, error: balanceError.message };
+
+    // Send package confirmation email + notification (fire-and-forget)
+    void (async () => {
+      const { data: parent } = await supabase
+        .from("parent_profiles")
+        .select("email, first_name, user_id")
+        .eq("id", parentProfile.id)
+        .single();
+
+      if (!parent?.email) return;
+
+      const totalDollars = `$${(pkg.price_cents / 100).toFixed(2)}`;
+
+      const pkgEmail = packageConfirmation({
+        parentName: parent.first_name,
+        packageName: pkg.name,
+        sessions: pkg.session_count,
+        amount: totalDollars,
+      });
+
+      void sendEmail({
+        to: parent.email,
+        subject: pkgEmail.subject,
+        html: pkgEmail.html,
+        recipientId: parent.user_id,
+        emailType: "package_confirmation",
+        metadata: { package_id: packageId, payment_id: paymentId },
+      }).catch(console.error);
+
+      void createNotification({
+        userId: parent.user_id,
+        type: "payment_received",
+        title: "Session Pack Purchased",
+        message: `Your ${pkg.name} pack with ${pkg.session_count} sessions is now active.`,
+        actionUrl: "/parent/bookings",
+        metadata: { package_balance_id: balance.id },
+      }).catch(console.error);
+    })().catch(console.error);
+
     return { data: balance, error: null };
   } catch (err) {
     console.error("purchasePackage error:", err);
     return { data: null, error: "Failed to purchase package." };
   }
+}
+
+// ============================================================
+// Helper: send booking confirmation email + notification
+// ============================================================
+
+async function sendBookingConfirmationNotifications(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  parentId: string,
+  booking: Booking,
+  session: BookableSession,
+  children: BookingChildEntry[]
+) {
+  const { data: parent } = await supabase
+    .from("parent_profiles")
+    .select("email, first_name, user_id")
+    .eq("id", parentId)
+    .single();
+
+  if (!parent?.email) return;
+
+  const childNames = children
+    .map((c) => c.child_name || "your child")
+    .join(", ");
+
+  const confirmEmail = bookingConfirmation({
+    parentName: parent.first_name,
+    childName: childNames,
+    sessionName: session.title || "Session",
+    date: session.date,
+    time: `${session.start_time} – ${session.end_time}`,
+    location: session.location_name || session.location_address || "",
+  });
+
+  void sendEmail({
+    to: parent.email,
+    subject: confirmEmail.subject,
+    html: confirmEmail.html,
+    recipientId: parent.user_id,
+    emailType: "booking_confirmation",
+    metadata: { booking_id: booking.id, session_id: session.id },
+  }).catch(console.error);
+
+  void createNotification({
+    userId: parent.user_id,
+    type: "booking_confirmed",
+    title: "Booking Confirmed",
+    message: `${childNames}'s session on ${session.date} is confirmed.`,
+    actionUrl: `/parent/bookings`,
+    metadata: { booking_id: booking.id },
+  }).catch(console.error);
 }

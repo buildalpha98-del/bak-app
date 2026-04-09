@@ -3,6 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { triggerNotification } from "@/lib/notifications/send";
+import { sendEmail } from "@/lib/launch/email";
+import { rosterAssignment } from "@/lib/launch/email-templates";
 import type { SchedulingAdjustment } from "@/lib/types/database";
 
 /**
@@ -208,6 +210,16 @@ export async function publishSchedulingRun(runId: string) {
     .select("id, email, name, role")
     .in("id", coachIds);
 
+  // Fetch session details for email templates
+  const { data: sessionDetails } = await supabase
+    .from("sessions")
+    .select("id, sport, session_date, start_time, end_time, centre_id, centres:centre_id(name, address)")
+    .in("id", sessionIds);
+
+  const sessionMap = new Map(
+    (sessionDetails || []).map((s: any) => [s.id, s])
+  );
+
   for (const [coachId, sessions] of coachSessionMap) {
     const coach = coachProfiles?.find((c) => c.id === coachId);
     if (!coach) continue;
@@ -222,6 +234,35 @@ export async function publishSchedulingRun(runId: string) {
       },
       [{ userId: coach.id, email: coach.email, name: coach.name, role: coach.role }]
     );
+
+    // Send individual roster assignment emails (fire-and-forget)
+    if (coach.email) {
+      for (const sid of sessions) {
+        const s = sessionMap.get(sid) as any;
+        if (!s) continue;
+
+        const centreName = s.centres?.name || "TBC";
+        const centreAddress = s.centres?.address || "";
+
+        const assignEmail = rosterAssignment({
+          coachName: coach.name || "Coach",
+          sessionName: s.sport || "Coaching Session",
+          centreName,
+          date: s.session_date,
+          time: `${s.start_time} – ${s.end_time}`,
+          address: centreAddress,
+        });
+
+        void sendEmail({
+          to: coach.email,
+          subject: assignEmail.subject,
+          html: assignEmail.html,
+          recipientId: coach.id,
+          emailType: "roster_assignment",
+          metadata: { session_id: sid, scheduling_run_id: runId },
+        }).catch(console.error);
+      }
+    }
   }
 
   // Log
