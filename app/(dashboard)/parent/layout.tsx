@@ -28,5 +28,9 @@ export default async function ParentLayout({
     ? `${parentProfile.first_name} ${parentProfile.last_name}`
     : "New Parent";
 
-  return <ParentShell parentName={parentName}>{children}</ParentShell>;
+  return (
+    <ParentShell parentName={parentName} userId={user.id}>
+      {children}
+    </ParentShell>
+  );
 }

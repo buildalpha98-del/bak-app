@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_CONFIG, isNavItemActive, getMobileItems } from "@/components/shared/navigation/nav-config";
 import { AppLogo } from "@/components/shared/app-logo";
+import { NotificationBell } from "@/components/shared/navigation/notification-bell";
 import { cn } from "@/lib/utils";
 
 interface ParentShellProps {
   parentName: string;
+  userId?: string;
   children: React.ReactNode;
 }
 
-export function ParentShell({ parentName, children }: ParentShellProps) {
+export function ParentShell({ parentName, userId, children }: ParentShellProps) {
   const pathname = usePathname();
   const navItems = NAV_CONFIG.parent;
   const mobileItems = getMobileItems("parent");
@@ -56,9 +58,12 @@ export function ParentShell({ parentName, children }: ParentShellProps) {
             <AppLogo size="sm" />
           </div>
           <div className="hidden md:block" />
-          <span className="text-sm font-medium text-muted-foreground">
-            Hi, {parentName.split(" ")[0]}
-          </span>
+          <div className="flex items-center gap-2">
+            {userId && <NotificationBell userId={userId} userRole="parent" />}
+            <span className="text-sm font-medium text-muted-foreground">
+              Hi, {parentName.split(" ")[0]}
+            </span>
+          </div>
         </header>
 
         {/* Content */}

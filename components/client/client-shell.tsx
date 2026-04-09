@@ -22,6 +22,7 @@ import {
   Layers,
 } from "lucide-react";
 import { AppLogo } from "@/components/shared/app-logo";
+import { NotificationBell } from "@/components/shared/navigation/notification-bell";
 import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 import type { ClientUserWithCentre } from "@/lib/client/actions";
@@ -91,8 +92,10 @@ export function ClientShell({ clientUser, children }: ClientShellProps) {
           </span>
         </div>
 
-        {/* User menu */}
-        <div className="relative">
+        {/* Notification bell + User menu */}
+        <div className="flex items-center gap-1">
+          <NotificationBell userId={clientUser.user_id} userRole="client" />
+          <div className="relative">
           <button
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 text-sm font-medium text-cyan-700 hover:bg-cyan-200 transition-colors"
@@ -139,6 +142,7 @@ export function ClientShell({ clientUser, children }: ClientShellProps) {
               </div>
             </>
           )}
+        </div>
         </div>
       </header>
 
