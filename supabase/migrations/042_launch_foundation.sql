@@ -84,6 +84,8 @@ CREATE TABLE child_observations (
 
 -- ========================
 -- 7. invitations — bulk and individual user invites
+-- Note: school_id is unconstrained — schools table doesn't exist yet;
+-- schools are currently stored as centres WHERE type='school'.
 -- ========================
 CREATE TABLE invitations (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -91,7 +93,7 @@ CREATE TABLE invitations (
   email       text NOT NULL,
   role        text NOT NULL CHECK (role IN ('parent', 'centre_director', 'coach')),
   centre_id   uuid REFERENCES centres(id),
-  school_id   uuid REFERENCES schools(id),
+  school_id   uuid,
   status      text NOT NULL DEFAULT 'pending'
               CHECK (status IN ('pending', 'accepted', 'expired', 'failed')),
   invited_by  uuid NOT NULL REFERENCES profiles(id),
@@ -102,12 +104,13 @@ CREATE TABLE invitations (
 
 -- ========================
 -- 8. invoices
+-- Note: school_id is unconstrained — see note on invitations above.
 -- ========================
 CREATE TABLE invoices (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   invoice_number   text NOT NULL UNIQUE,
   centre_id        uuid REFERENCES centres(id),
-  school_id        uuid REFERENCES schools(id),
+  school_id        uuid,
   issue_date       date NOT NULL DEFAULT CURRENT_DATE,
   due_date         date NOT NULL DEFAULT (CURRENT_DATE + 14),
   subtotal         numeric NOT NULL DEFAULT 0,
@@ -221,7 +224,7 @@ CREATE POLICY "Centre directors read their sessions attendance" ON attendance
       SELECT 1 FROM sessions s
       JOIN centres c ON s.centre_id = c.id
       WHERE s.id = attendance.session_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
@@ -242,7 +245,7 @@ CREATE POLICY "Centre directors read their session notes" ON session_notes
       SELECT 1 FROM sessions s
       JOIN centres c ON s.centre_id = c.id
       WHERE s.id = session_notes.session_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
@@ -263,7 +266,7 @@ CREATE POLICY "Centre directors read their session photos" ON session_photos
       SELECT 1 FROM sessions s
       JOIN centres c ON s.centre_id = c.id
       WHERE s.id = session_photos.session_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
@@ -284,7 +287,7 @@ CREATE POLICY "Centre directors read their child observations" ON child_observat
       SELECT 1 FROM sessions s
       JOIN centres c ON s.centre_id = c.id
       WHERE s.id = child_observations.session_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
@@ -322,7 +325,7 @@ CREATE POLICY "Centre directors read own invoices" ON invoices
     EXISTS (
       SELECT 1 FROM centres c
       WHERE c.id = invoices.centre_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
@@ -342,7 +345,7 @@ CREATE POLICY "Centre directors read own line items" ON invoice_line_items
       SELECT 1 FROM invoices i
       JOIN centres c ON i.centre_id = c.id
       WHERE i.id = invoice_line_items.invoice_id
-      AND c.contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
+      AND c.primary_contact_email = (SELECT email FROM profiles WHERE id = auth.uid())
     )
   );
 
