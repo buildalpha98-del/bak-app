@@ -220,17 +220,29 @@ export function LaunchDashboard({
                     outerRadius={85}
                     paddingAngle={2}
                     dataKey="value"
-                    label={(entry: { name: string; value: number }) =>
-                      `${entry.name}: ${fmtCurrency(entry.value)}`
-                    }
-                    labelLine={false}
                   >
                     <Cell fill={COLOURS.childcare} />
                     <Cell fill={COLOURS.school} />
                   </Pie>
-                  <Tooltip formatter={(v: number) => fmtCurrencyFull(v)} />
+                  <Tooltip formatter={(v: number) => fmtCurrencyFull(v)} contentStyle={{ fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+            {/* Breakdown below the chart for quick reading */}
+            <div className="mt-2 flex justify-around text-sm">
+              <div className="text-center">
+                <p className="text-muted-foreground text-xs">Childcare</p>
+                <p className="font-bold" style={{ color: COLOURS.childcare }}>
+                  {fmtCurrencyFull(metrics.revenue.childcareRevenue)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-muted-foreground text-xs">School</p>
+                <p className="font-bold" style={{ color: COLOURS.school }}>
+                  {fmtCurrencyFull(metrics.revenue.schoolRevenue)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -245,28 +257,30 @@ export function LaunchDashboard({
                 No revenue data for this term yet.
               </p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-2 font-medium">Name</th>
-                    <th className="text-left pb-2 font-medium">Type</th>
-                    <th className="text-right pb-2 font-medium">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.topEntities.map((e) => (
-                    <tr key={e.id} className="border-b last:border-0">
-                      <td className="py-2 font-medium truncate max-w-[180px]">{e.name || "—"}</td>
-                      <td className="py-2">
-                        <Badge variant="outline" className="text-xs">
-                          {e.type === "school" ? "School" : "Centre"}
-                        </Badge>
-                      </td>
-                      <td className="py-2 text-right font-medium">{fmtCurrencyFull(e.revenue)}</td>
+              <div className="overflow-x-auto -mx-2 px-2">
+                <table className="w-full text-sm min-w-[320px]">
+                  <thead>
+                    <tr className="border-b text-xs text-muted-foreground">
+                      <th className="text-left pb-2 font-medium">Name</th>
+                      <th className="text-left pb-2 font-medium">Type</th>
+                      <th className="text-right pb-2 font-medium">Revenue</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {metrics.topEntities.map((e) => (
+                      <tr key={e.id} className="border-b last:border-0">
+                        <td className="py-2 font-medium truncate max-w-[180px]">{e.name || "—"}</td>
+                        <td className="py-2">
+                          <Badge variant="outline" className="text-xs">
+                            {e.type === "school" ? "School" : "Centre"}
+                          </Badge>
+                        </td>
+                        <td className="py-2 text-right font-medium whitespace-nowrap">{fmtCurrencyFull(e.revenue)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -283,28 +297,28 @@ export function LaunchDashboard({
               No coaches yet.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto -mx-2 px-2">
+              <table className="w-full text-sm min-w-[360px]">
                 <thead>
                   <tr className="border-b text-xs text-muted-foreground">
                     <th className="text-left pb-2 font-medium">Coach</th>
-                    <th className="text-right pb-2 font-medium">Sessions This Week</th>
+                    <th className="text-right pb-2 font-medium whitespace-nowrap">Sessions</th>
                     <th className="text-center pb-2 font-medium">Compliance</th>
                   </tr>
                 </thead>
                 <tbody>
                   {metrics.coaches.list.slice(0, 10).map((c) => (
                     <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30">
-                      <td className="py-2.5">
+                      <td className="py-3">
                         <Link
                           href={`/admin/staff/${c.id}`}
-                          className="font-medium hover:text-primary hover:underline"
+                          className="font-medium hover:text-primary hover:underline flex items-center min-h-[44px]"
                         >
                           {c.name}
                         </Link>
                       </td>
-                      <td className="py-2.5 text-right">{c.sessionsThisWeek}</td>
-                      <td className="py-2.5 text-center">
+                      <td className="py-3 text-right">{c.sessionsThisWeek}</td>
+                      <td className="py-3 text-center">
                         <ComplianceIcon status={c.complianceStatus} />
                       </td>
                     </tr>

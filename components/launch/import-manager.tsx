@@ -518,12 +518,12 @@ function PreviewTable({
 }) {
   return (
     <div className="border rounded-lg overflow-x-auto max-h-[400px] overflow-y-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 sticky top-0">
+      <table className="w-full text-sm min-w-[680px]">
+        <thead className="bg-muted/50 sticky top-0 z-10">
           <tr>
             <th className="px-3 py-2 text-left font-medium w-8"></th>
             {headers.map((h: string) => (
-              <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
+              <th key={h} className="px-3 py-2 text-left font-medium whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>

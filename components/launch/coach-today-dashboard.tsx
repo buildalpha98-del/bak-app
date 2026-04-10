@@ -110,12 +110,12 @@ export function CoachTodayDashboard({
                 <div className="space-y-2">
                   {day.sessions.map((s) => (
                     <Card key={s.sessionId} className="border-muted">
-                      <CardContent className="py-3 px-4 flex items-center justify-between">
+                      <CardContent className="py-3 px-4 flex items-center justify-between min-h-[60px]">
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">
                             {formatTime(s.startTime)} — {formatTime(s.endTime)}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-sm text-muted-foreground truncate">
                             {s.centreName} &bull; {s.sport}
                           </p>
                         </div>

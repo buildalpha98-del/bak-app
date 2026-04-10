@@ -561,13 +561,13 @@ function InvoiceList({
 
       {/* Table */}
       <div className="border rounded-lg overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-muted/50">
             <tr>
-              <th className="px-3 py-2 text-left font-medium">Invoice #</th>
+              <th className="px-3 py-2 text-left font-medium whitespace-nowrap">Invoice #</th>
               <th className="px-3 py-2 text-left font-medium">Centre/School</th>
-              <th className="px-3 py-2 text-left font-medium">Issue Date</th>
-              <th className="px-3 py-2 text-left font-medium">Due Date</th>
+              <th className="px-3 py-2 text-left font-medium whitespace-nowrap">Issue Date</th>
+              <th className="px-3 py-2 text-left font-medium whitespace-nowrap">Due Date</th>
               <th className="px-3 py-2 text-right font-medium">Amount</th>
               <th className="px-3 py-2 text-center font-medium">Status</th>
               <th className="px-3 py-2 text-right font-medium">Actions</th>
@@ -585,15 +585,15 @@ function InvoiceList({
                 const badge = STATUS_BADGE[inv.status] || STATUS_BADGE.draft;
                 return (
                   <tr key={inv.id} className="hover:bg-muted/30">
-                    <td className="px-3 py-2 font-mono text-xs">{inv.invoice_number}</td>
-                    <td className="px-3 py-2">{inv.entity_name || "—"}</td>
-                    <td className="px-3 py-2">{formatDate(inv.issue_date)}</td>
-                    <td className="px-3 py-2">{formatDate(inv.due_date)}</td>
-                    <td className="px-3 py-2 text-right font-medium">{fmt(Number(inv.total))}</td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-3 py-3 font-mono text-sm whitespace-nowrap">{inv.invoice_number}</td>
+                    <td className="px-3 py-3">{inv.entity_name || "—"}</td>
+                    <td className="px-3 py-3 whitespace-nowrap">{formatDate(inv.issue_date)}</td>
+                    <td className="px-3 py-3 whitespace-nowrap">{formatDate(inv.due_date)}</td>
+                    <td className="px-3 py-3 text-right font-medium whitespace-nowrap">{fmt(Number(inv.total))}</td>
+                    <td className="px-3 py-3 text-center">
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
