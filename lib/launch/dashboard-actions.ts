@@ -10,9 +10,9 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 // Constants (Year 1 growth targets)
 // ========================
 
-export const YEAR_1_CENTRE_TARGET = 40;
-export const YEAR_1_SCHOOL_TARGET = 10;
-export const YEAR_1_REVENUE_TARGET = 400_000;
+const YEAR_1_CENTRE_TARGET = 40;
+const YEAR_1_SCHOOL_TARGET = 10;
+const YEAR_1_REVENUE_TARGET = 400_000;
 
 const DEFAULT_SESSION_RATE = 165;
 const SCHOOL_RATE_PER_CHILD = 5;
