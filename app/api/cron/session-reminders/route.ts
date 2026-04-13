@@ -302,13 +302,15 @@ export async function GET(request: Request) {
       metadata: { session_count: coachSessions.length },
     });
 
-    // Log all sessions for dedup
+    // Log all sessions for dedup. Supabase returns errors in the response
+    // object rather than throwing, so duplicate-key errors are silently
+    // ignored here (which is the desired behaviour for re-runs of the cron).
     for (const s of coachSessions) {
       await supabase.from("reminder_log").insert({
         session_id: s.id,
         reminder_type: "coach_24hr",
         recipient_id: coachId,
-      }).then(() => {}).catch(() => {}); // Ignore duplicate constraint errors
+      });
     }
 
     coachReminders++;
