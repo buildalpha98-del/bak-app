@@ -36,6 +36,7 @@ import type { LucideIcon } from "lucide-react";
 // ============================================================
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  // Staff/Coach types
   shift_assigned: CalendarCheck,
   shift_confirmed: CalendarCheck,
   shift_declined: CalendarCheck,
@@ -58,6 +59,18 @@ const ICON_MAP: Record<string, LucideIcon> = {
   equipment_changed: Package,
   invoice_status_changed: FileText,
   feedback_received: Star,
+  // Launch notification types (parent, centre, general)
+  booking_confirmed: CalendarCheck,
+  payment_received: CheckCircle2,
+  session_completed: ClipboardList,
+  session_reminder: CalendarCheck,
+  roster_assigned: CalendarCheck,
+  roster_changed: ArrowRightLeft,
+  child_update: Star,
+  invoice_ready: FileText,
+  general: Bell,
+  waitlist_offer: Star,
+  roster_published: CalendarCheck,
 };
 
 // ============================================================
@@ -189,9 +202,10 @@ export function NotificationBell({
       setUnreadCount((prev) => Math.max(0, prev - unreadInGroup.length));
     }
 
-    // Navigate to the first notification's URL
+    // Navigate: prefer action_url (from launch system), fall back to entity-based URL
     const first = group.notifications[0];
-    const url = getNotificationUrl(
+    const actionUrl = (first as unknown as Record<string, unknown>).action_url as string | null;
+    const url = actionUrl || getNotificationUrl(
       first.entity_type,
       first.entity_id,
       userRole

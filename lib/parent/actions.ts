@@ -2,8 +2,9 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email/send";
-import { parentWelcomeEmail } from "@/lib/parent/email-templates";
+import { sendEmail } from "@/lib/launch/email";
+import { welcomeParent } from "@/lib/launch/email-templates";
+import { createNotification } from "@/lib/launch/notifications";
 import { calculateAgeGroup } from "@/lib/utils/ageGroup";
 import type { ParentProfile, ParentChild, Child } from "@/lib/types/database";
 import type { AgeGroup, Gender, ParentRelationship } from "@/lib/types/enums";
@@ -251,12 +252,25 @@ export async function completeParentRegistration(
       }
     }
 
-    // 6. Send welcome email
-    if (user.email && childNames.length > 0) {
-      const { subject, html } = parentWelcomeEmail(data.first_name, childNames);
-      await sendEmail(user.email, subject, html).catch((err) =>
-        console.error("Welcome email error:", err)
-      );
+    // 6. Send welcome email (via launch email utility — logged to email_log)
+    if (user.email) {
+      const welcome = welcomeParent({ name: data.first_name });
+      void sendEmail({
+        to: user.email,
+        subject: welcome.subject,
+        html: welcome.html,
+        recipientId: user.id,
+        emailType: "welcome",
+        metadata: { role: "parent" },
+      }).catch((err) => console.error("Welcome email error:", err));
+
+      void createNotification({
+        userId: user.id,
+        type: "general",
+        title: "Welcome to Build Alpha Kids!",
+        message: "Your account is set up. Browse sessions and book your first activity.",
+        actionUrl: "/parent/book",
+      }).catch(console.error);
     }
 
     return { error: null };

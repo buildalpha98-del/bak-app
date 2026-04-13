@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { BookableSession, WaitlistEntry } from "@/lib/types/database";
 import type { BookableSessionType, BookableSessionStatus } from "@/lib/types/enums";
+import { sendEmail } from "@/lib/launch/email";
 
 // ============================================================
 // Types
@@ -489,16 +490,32 @@ export async function processWaitlistForSession(
       .single();
 
     if (parent && session) {
+      const formattedDate = new Date(session.date).toLocaleDateString("en-AU");
+
       await adminClient.from("notifications").insert({
         user_id: parent.user_id,
         type: "waitlist_offer",
         title: "A spot has opened!",
-        body: `A spot has opened for ${session.title} on ${new Date(session.date).toLocaleDateString("en-AU")}. You have 24 hours to confirm.`,
+        body: `A spot has opened for ${session.title} on ${formattedDate}. You have 24 hours to confirm.`,
         tier: "urgent",
         entity_type: "waitlist",
         entity_id: nextEntry.id,
-        data: { bookable_session_id: bookableSessionId },
+        action_url: "/parent/bookings",
+        metadata: { bookable_session_id: bookableSessionId },
       });
+
+      // Send waitlist offer email (fire-and-forget)
+      if (parent.email) {
+        const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
+        void sendEmail({
+          to: parent.email,
+          subject: `A spot has opened — ${session.title}`,
+          html: `<p>Hi ${parent.first_name},</p><p>Great news! A spot has opened for <strong>${session.title}</strong> on <strong>${formattedDate}</strong>.</p><p>You have <strong>24 hours</strong> to confirm your booking before the spot is offered to the next person on the waitlist.</p><p><a href="${APP_URL}/parent/bookings" style="display:inline-block;padding:12px 24px;background:#E8712A;color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Confirm Booking</a></p>`,
+          recipientId: parent.user_id,
+          emailType: "waitlist_offer",
+          metadata: { waitlist_id: nextEntry.id, bookable_session_id: bookableSessionId },
+        }).catch(console.error);
+      }
     }
 
     return { offered: true, error: null };
