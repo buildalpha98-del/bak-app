@@ -150,7 +150,7 @@ export function LaunchDashboard({
                   <XAxis dataKey="month" fontSize={11} />
                   <YAxis fontSize={11} tickFormatter={(v: number) => fmtCurrency(v)} />
                   <Tooltip
-                    formatter={(v: number) => fmtCurrencyFull(v)}
+                    formatter={(v) => fmtCurrencyFull(Number(v))}
                     contentStyle={{ fontSize: 12, borderRadius: 6 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -224,7 +224,7 @@ export function LaunchDashboard({
                     <Cell fill={COLOURS.childcare} />
                     <Cell fill={COLOURS.school} />
                   </Pie>
-                  <Tooltip formatter={(v: number) => fmtCurrencyFull(v)} contentStyle={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v) => fmtCurrencyFull(Number(v))} contentStyle={{ fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>

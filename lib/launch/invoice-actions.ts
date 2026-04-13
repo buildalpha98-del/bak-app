@@ -416,9 +416,7 @@ async function generateAndUploadPdf(
       notes: null,
     };
 
-    const buffer = await renderToBuffer(
-      LaunchInvoicePDF(pdfProps) as React.ReactElement
-    );
+    const buffer = await renderToBuffer(LaunchInvoicePDF(pdfProps));
 
     const storagePath = `${centreId || schoolId}/${invoiceNumber}.pdf`;
 
