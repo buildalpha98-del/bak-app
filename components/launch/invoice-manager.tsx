@@ -256,7 +256,7 @@ function CentreInvoiceForm({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="text-sm font-medium mb-1 block">Centre</label>
-          <Select value={centreId} onValueChange={setCentreId}>
+          <Select value={centreId} onValueChange={(v: string | null) => setCentreId(v ?? "")}>
             <SelectTrigger><SelectValue placeholder="Select centre..." /></SelectTrigger>
             <SelectContent>
               {centres.map((c: { id: string; name: string }) => (
@@ -399,7 +399,7 @@ function SchoolInvoiceForm({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="text-sm font-medium mb-1 block">School</label>
-          <Select value={schoolId} onValueChange={setSchoolId}>
+          <Select value={schoolId} onValueChange={(v: string | null) => setSchoolId(v ?? "")}>
             <SelectTrigger><SelectValue placeholder="Select school..." /></SelectTrigger>
             <SelectContent>
               {schools.map((s: { id: string; name: string }) => (
@@ -547,7 +547,7 @@ function InvoiceList({
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v: string | null) => setStatusFilter(v ?? "all")}>
           <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
