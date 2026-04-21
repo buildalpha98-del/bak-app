@@ -53,7 +53,7 @@ export async function detectDormantParents(): Promise<DormantParent[]> {
     // Query all parent profiles
     const { data: allParents, error: fetchError } = await supabase
       .from("parent_profiles")
-      .select("id, full_name, email, user_id");
+      .select("id, first_name, last_name, email, user_id");
 
     if (fetchError || !allParents) return [];
 
@@ -94,7 +94,7 @@ export async function detectDormantParents(): Promise<DormantParent[]> {
 
       dormant.push({
         parentId: parent.id,
-        parentName: parent.full_name,
+        parentName: `${parent.first_name} ${parent.last_name}`,
         email: parent.email,
         lastBookingDate: lastBooking.date,
         daysSinceLastBooking: daysSince,
@@ -289,7 +289,7 @@ export async function detectUntrainedCoaches(): Promise<UntrainedCoach[]> {
       ),
       profiles!training_assignments_coach_id_fkey (
         id,
-        full_name,
+        name,
         email
       )
     `)
@@ -313,7 +313,7 @@ export async function detectUntrainedCoaches(): Promise<UntrainedCoach[]> {
     };
     const profile = assignment.profiles as unknown as {
       id: string;
-      full_name: string;
+      name: string;
       email: string;
     };
 
@@ -327,7 +327,7 @@ export async function detectUntrainedCoaches(): Promise<UntrainedCoach[]> {
       }
     } else {
       coachMap.set(assignment.coach_id, {
-        coachName: profile.full_name,
+        coachName: profile.name,
         coachEmail: profile.email,
         overdueModules: [module.title],
       });

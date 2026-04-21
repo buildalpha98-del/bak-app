@@ -155,7 +155,17 @@ export type NotificationEventType =
   | "booking_cancelled"
   | "booking_reminder"
   | "package_purchased"
-  | "invoice_overdue";
+  | "invoice_overdue"
+  | "demo_scheduled"
+  | "demo_reminder"
+  | "demo_outcome_recorded"
+  | "lead_document_added"
+  | "payment_batch_created"
+  | "payment_batch_approved"
+  | "coach_payment_ready"
+  | "grant_approved"
+  | "grant_expiring"
+  | "grant_application_stale";
 
 // Children & attendance
 export type AgeGroup = "3-5" | "5-8" | "8-12";
@@ -198,6 +208,15 @@ export type LeadActivityType =
   | "stage_change"
   | "task_created"
   | "system";
+
+// Demo sessions
+export type DemoSessionStatus = "scheduled" | "delivered" | "cancelled" | "no_show";
+export type DemoOutcome = "positive" | "neutral" | "negative";
+export type LeadDocumentType = "pitch_deck" | "proposal" | "agreement" | "correspondence" | "other";
+
+// Payment batches (payroll)
+export type PaymentBatchStatus = "calculating" | "calculated" | "approved" | "paid" | "closed";
+export type PaymentMethod = "bank_transfer" | "other";
 
 // Email sequence
 export type EmailSendStatus = "scheduled" | "sent" | "opened" | "clicked" | "failed" | "skipped";

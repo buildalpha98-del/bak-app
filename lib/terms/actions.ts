@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { TermStatus } from "@/lib/types/enums";
 import type { Term, TermTemplate, Session, Centre, Profile } from "@/lib/types/database";
 
@@ -605,7 +606,8 @@ export async function getCentresForSelect(): Promise<{
   error: string | null;
 }> {
   try {
-    const supabase = await createSupabaseServerClient();
+    // Use admin client — reference data all authenticated users should see
+    const supabase = createSupabaseAdmin();
 
     const { data, error } = await supabase
       .from("centres")
@@ -614,8 +616,7 @@ export async function getCentresForSelect(): Promise<{
 
     if (error) throw error;
     return { data: data ?? [], error: null };
-  } catch (err) {
-    console.error("getCentresForSelect error:", err);
+  } catch {
     return { data: null, error: "Failed to load centres." };
   }
 }

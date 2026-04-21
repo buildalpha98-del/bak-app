@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { getParentProfile, updateParentProfile, getParentChildren } from "@/lib/parent/actions";
 import { getParentPackageBalances } from "@/lib/bookings/booking-actions";
 import { getParentPayments } from "@/lib/parent/payment-actions";
@@ -137,10 +138,12 @@ export default function ParentAccountPage() {
 
     if (saveError) {
       setError(saveError);
+      toast.error("Could not save your profile. Please try again.");
       return;
     }
 
     setSuccess(true);
+    toast.success("Profile updated successfully.");
     setTimeout(() => setSuccess(false), 3000);
   }
 
@@ -158,9 +161,11 @@ export default function ParentAccountPage() {
     if (saveError) {
       // Revert on error
       setMarketingOptIn(!checked);
+      toast.error("Could not update your preference. Please try again.");
       return;
     }
 
+    toast.success(checked ? "Marketing emails enabled." : "Marketing emails disabled.");
     setMarketingSaved(true);
     setTimeout(() => setMarketingSaved(false), 3000);
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   getActivePackages,
   getParentPackageBalances,
@@ -54,9 +55,11 @@ export default function ParentPackagesPage() {
     if (purchaseError) {
       setError(purchaseError);
       setSelectedPackage(null);
+      toast.error("Purchase could not be completed. Please try again.");
       return;
     }
 
+    toast.success(`${selectedPackage.name} purchased! Your sessions are ready to use.`);
     setSuccessMessage(
       `Successfully purchased ${selectedPackage.name}! Your sessions are ready to use.`
     );
@@ -70,6 +73,7 @@ export default function ParentPackagesPage() {
   function handlePaymentError(errorMsg: string) {
     setError(errorMsg);
     setSelectedPackage(null);
+    toast.error("Payment failed. Please try again or use a different card.");
   }
 
   if (loading) {

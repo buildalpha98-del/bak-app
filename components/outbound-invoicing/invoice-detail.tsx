@@ -33,6 +33,7 @@ import type {
   InvoicePaymentRecord,
 } from "@/lib/types/database";
 import type { InvoicePaymentMethod } from "@/lib/types/enums";
+import { InvoiceGrantBanner } from "@/components/grants/invoice-grant-banner";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   draft: { label: "Draft", className: "bg-secondary text-foreground" },
@@ -226,6 +227,14 @@ export function InvoiceDetail({ invoice, userRole }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Grant allocation banner (schools only) */}
+      <InvoiceGrantBanner
+        invoiceId={invoice.id}
+        centreId={invoice.centre_id}
+        centreType={invoice.centre.type}
+        invoiceTotal={(invoice.total_cents ?? 0) / 100}
+      />
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

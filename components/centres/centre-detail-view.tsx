@@ -78,6 +78,7 @@ import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
 import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
 import { PortalAccessTab } from "@/components/centres/portal-access-tab";
+import { CentreGrantsTab } from "@/components/centres/centre-grants-tab";
 import type { CentreDetail, CentreNoteWithAuthor, UpdateCentreData } from "@/lib/centres/actions";
 import type {
   CentreType,
@@ -312,6 +313,9 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
           <TabsTrigger value="children">Children</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="portal">Portal Access</TabsTrigger>
+          {centre.type === "school" && (
+            <TabsTrigger value="grants">Grants</TabsTrigger>
+          )}
         </TabsList>
 
         {/* ==================== Overview Tab ==================== */}
@@ -628,6 +632,13 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
             contactEmail={centre.primary_contact_email}
           />
         </TabsContent>
+
+        {/* ==================== Grants Tab (schools only) ==================== */}
+        {centre.type === "school" && (
+          <TabsContent value="grants">
+            <CentreGrantsTab centreId={centre.id} centreName={centre.name} />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Edit Centre Dialog */}

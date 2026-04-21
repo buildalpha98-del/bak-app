@@ -386,7 +386,35 @@ export interface CoachInvoice {
   pdf_url: string | null;
   sent_at: string | null;
   resolved_at: string | null;
+  // Batch payroll fields (migration 044)
+  initiated_by_role: "coach" | "admin";
+  payment_batch_id: string | null;
+  payment_method: "bank_transfer" | "other" | null;
+  payment_reference: string | null;
+  payment_date: string | null;
+  adjustments: number;
+  adjustment_reason: string | null;
+  generated_by: string | null;
   created_at: string;
+}
+
+// ========================
+// 17a. payment_batches
+// ========================
+export interface PaymentBatch {
+  id: string;
+  period_start: string;
+  period_end: string;
+  status: "calculating" | "calculated" | "approved" | "paid" | "closed";
+  created_by: string | null;
+  calculated_at: string | null;
+  approved_at: string | null;
+  paid_at: string | null;
+  total_amount: number;
+  coach_count: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ========================
@@ -866,12 +894,22 @@ export interface Lead {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  contact_role: string | null;
   address: string | null;
+  suburb: string | null;
+  state: string | null;
+  postcode: string | null;
+  student_count: number | null;
   source: LeadSource;
+  source_detail: string | null;
   stage: LeadStage;
   stage_changed_at: string;
   owner_id: string | null;
   estimated_value: number | null;
+  probability: number;
+  expected_close_date: string | null;
+  last_contacted_at: string | null;
+  next_follow_up_date: string | null;
   notes: string | null;
   lost_reason: string | null;
   churn_reason: string | null;
@@ -882,6 +920,9 @@ export interface Lead {
   trial_report_url: string | null;
   active_sequence_id: string | null;
   sequence_paused: boolean;
+  converted_at: string | null;
+  lost_at: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -900,7 +941,40 @@ export interface LeadActivity {
 }
 
 // ========================
-// 44. centre_messages
+// 44. demo_sessions
+// ========================
+export interface DemoSession {
+  id: string;
+  lead_id: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  duration_minutes: number;
+  coach_id: string | null;
+  attendees_expected: number | null;
+  attendees_actual: number | null;
+  status: "scheduled" | "delivered" | "cancelled" | "no_show";
+  outcome: "positive" | "neutral" | "negative" | null;
+  coach_feedback: string | null;
+  decision_maker_feedback: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ========================
+// 45. lead_documents
+// ========================
+export interface LeadDocument {
+  id: string;
+  lead_id: string;
+  document_type: "pitch_deck" | "proposal" | "agreement" | "correspondence" | "other";
+  name: string;
+  storage_path: string;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
+// ========================
+// 46. centre_messages
 // ========================
 export interface CentreMessage {
   id: string;
@@ -1766,5 +1840,57 @@ export interface ChurnRiskIndicator {
   days_since_last_feedback: number | null;
   days_since_last_communication: number | null;
   indicators_json: Record<string, unknown>;
+  created_at: string;
+}
+
+// ========================
+// Grants (migration 045)
+// ========================
+export interface Grant {
+  id: string;
+  name: string;
+  funding_body: string | null;
+  description: string | null;
+  application_url: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export type GrantApplicationStatus =
+  | "planning"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "funded"
+  | "expired";
+
+export interface GrantApplication {
+  id: string;
+  grant_id: string;
+  centre_id: string;
+  application_term: string;
+  application_year: number;
+  status: GrantApplicationStatus;
+  amount_requested: number | null;
+  amount_approved: number | null;
+  amount_used: number;
+  submitted_date: string | null;
+  approved_date: string | null;
+  funding_start_date: string | null;
+  funding_end_date: string | null;
+  bak_is_provider: boolean;
+  application_reference: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GrantInvoiceAllocation {
+  id: string;
+  grant_application_id: string;
+  invoice_id: string;
+  amount_allocated: number;
+  allocated_by: string | null;
   created_at: string;
 }

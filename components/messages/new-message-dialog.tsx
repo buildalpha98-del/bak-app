@@ -56,8 +56,8 @@ export function NewMessageDialog({
       try {
         const data = await getContactsForMessaging();
         if (!cancelled) setContacts(data);
-      } catch (err) {
-        console.error("Failed to fetch contacts:", err);
+      } catch {
+        // Silently fail — dialog shows empty state
       } finally {
         if (!cancelled) setLoading(false);
       }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   getBookableSession,
   updateBookableSession,
@@ -38,8 +39,12 @@ export default function AdminEditSessionPage() {
     const result = await updateBookableSession(params.id, data);
     setSubmitting(false);
 
-    if (result.error) return { error: result.error };
+    if (result.error) {
+      toast.error("Could not update session. Please try again.");
+      return { error: result.error };
+    }
 
+    toast.success("Session updated.");
     router.push(`/admin/bookings/sessions/${params.id}`);
     return { error: null };
   }

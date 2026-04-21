@@ -56,9 +56,8 @@ export function ConversationThread({
           setHasMore(result.hasMore);
           shouldScrollRef.current = true;
         }
-      } catch (err) {
-        console.error("Failed to fetch messages:", err);
-        toast.error("Failed to load messages");
+      } catch {
+        toast.error("Failed to load messages.");
       } finally {
         if (!cancelled) setLoading(false);
       }

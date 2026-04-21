@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   ShieldAlert,
   AlertTriangle,
@@ -217,7 +218,10 @@ export default function AdminChurnPage() {
   async function handleResolve(eventId: string) {
     setResolvingId(eventId);
     const result = await resolveChurnEvent(eventId, "Resolved via admin dashboard");
-    if (!result.error) {
+    if (result.error) {
+      toast.error("Could not resolve churn event. Please try again.");
+    } else {
+      toast.success("Churn event resolved.");
       await loadData();
     }
     setResolvingId(null);

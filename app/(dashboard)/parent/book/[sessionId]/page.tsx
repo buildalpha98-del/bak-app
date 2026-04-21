@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { getBookableSession } from "@/lib/bookings/actions";
 import { getParentChildren } from "@/lib/parent/actions";
 import {
@@ -38,19 +39,39 @@ function generateICS(
   session: BookableSession,
   children: Child[]
 ): string {
-  const start = new Date(`${session.date}T${session.start_time}`);
-  const end = new Date(`${session.date}T${session.end_time}`);
-  const fmt = (d: Date) =>
-    d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  // Format date/time as local values with TZID — never convert to UTC
+  const startDate = session.date.replace(/-/g, "");
+  const startTime = session.start_time.replace(/:/g, "").slice(0, 4) + "00";
+  const endTime = session.end_time.replace(/:/g, "").slice(0, 4) + "00";
+
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
+    "PRODID:-//Build Alpha Kids//Booking//EN",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VTIMEZONE",
+    "TZID:Australia/Sydney",
+    "BEGIN:STANDARD",
+    "DTSTART:19700405T030000",
+    "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=4",
+    "TZOFFSETFROM:+1100",
+    "TZOFFSETTO:+1000",
+    "TZNAME:AEST",
+    "END:STANDARD",
+    "BEGIN:DAYLIGHT",
+    "DTSTART:19701004T020000",
+    "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=10",
+    "TZOFFSETFROM:+1000",
+    "TZOFFSETTO:+1100",
+    "TZNAME:AEDT",
+    "END:DAYLIGHT",
+    "END:VTIMEZONE",
     "BEGIN:VEVENT",
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
+    `DTSTART;TZID=Australia/Sydney:${startDate}T${startTime}`,
+    `DTEND;TZID=Australia/Sydney:${startDate}T${endTime}`,
     `SUMMARY:${session.title} - Build Alpha Kids`,
-    `LOCATION:${session.location_address}`,
-    `DESCRIPTION:Children: ${children.map((c) => `${c.first_name} ${c.last_name}`).join(", ")}`,
+    `LOCATION:${session.location_address ?? ""}`,
+    `DESCRIPTION:Children: ${children.map((c) => `${c.first_name} ${c.last_name}`).join("\\, ")}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");
@@ -111,8 +132,8 @@ export default function BookingFlowPage() {
         ]);
         if (sessionResult.data) setSession(sessionResult.data);
         if (childrenResult.data) setChildren(childrenResult.data.map((pc) => pc.child));
-      } catch (error) {
-        console.error("Failed to load booking data:", error);
+      } catch {
+        toast.error("Could not load session details. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -199,9 +220,10 @@ export default function BookingFlowPage() {
         payment_type: "package_redemption",
         package_balance_id: packageBalanceId,
       });
+      toast.success("Booking confirmed! Session redeemed from your pack.");
       setStep(4);
-    } catch (error) {
-      console.error("Booking failed:", error);
+    } catch {
+      toast.error("Booking failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -225,8 +247,8 @@ export default function BookingFlowPage() {
       if (result.data) {
         setPendingBookingId(result.data.id);
       }
-    } catch (error) {
-      console.error("Failed to create booking:", error);
+    } catch {
+      toast.error("Could not prepare your booking. Please try again.");
       setPaymentError("Failed to create booking. Please try again.");
     } finally {
       setSubmitting(false);
@@ -242,11 +264,14 @@ export default function BookingFlowPage() {
       const result = await validateDiscountCode(discountCode.trim());
       if (result.error || !result.data?.valid) {
         setDiscountError(result.error || "Invalid or expired discount code.");
+        toast.error("Invalid or expired discount code.");
       } else {
         setDiscountApplied({ codeId: result.data.codeId, valueCents: result.data.valueCents });
+        toast.success("Discount code applied!");
       }
     } catch {
       setDiscountError("Failed to validate code.");
+      toast.error("Could not validate discount code. Please try again.");
     } finally {
       setDiscountLoading(false);
     }
@@ -262,7 +287,7 @@ export default function BookingFlowPage() {
     if (discountApplied) {
       import("@/lib/referrals/discount-actions")
         .then(({ redeemDiscountCode }) => redeemDiscountCode(discountApplied.codeId))
-        .catch(() => {});
+        .catch(() => toast.error("Discount code could not be redeemed. Please contact us."));
     }
     // Redeem referral credit if used
     if (referralCreditApplied) {
@@ -272,14 +297,16 @@ export default function BookingFlowPage() {
       if (creditReward) {
         import("@/lib/referrals/actions")
           .then(({ redeemReferralReward }) => redeemReferralReward(creditReward.id))
-          .catch(() => {});
+          .catch(() => toast.error("Referral credit could not be redeemed. Please contact us."));
       }
     }
+    toast.success("Payment successful! Your booking is confirmed.");
     setStep(4);
   }
 
   function handlePaymentError(error: string) {
     setPaymentError(error);
+    toast.error("Payment failed. Please try again or use a different card.");
   }
 
   function handleDownloadICS() {

@@ -125,7 +125,9 @@ export function SessionDetailView({
     startTransition(async () => {
       const result = await confirmShift(session.id);
       if (result.error) {
-        console.error(result.error);
+        toast.error("Could not confirm shift. Please try again.");
+      } else {
+        toast.success("Shift confirmed.");
       }
       router.refresh();
     });
@@ -140,7 +142,9 @@ export function SessionDetailView({
     startTransition(async () => {
       const result = await declineShift(session.id, declineReason.trim());
       if (result.error) {
-        console.error(result.error);
+        toast.error("Could not decline shift. Please try again.");
+      } else {
+        toast.success("Shift declined.");
       }
       router.refresh();
     });

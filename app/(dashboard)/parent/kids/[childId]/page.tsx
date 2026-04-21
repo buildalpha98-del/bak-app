@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { getParentChildren, updateChild, removeChildLink, type ChildInput } from "@/lib/parent/actions";
 import { calculateAge, calculateAgeGroup } from "@/lib/utils/ageGroup";
 import { Button } from "@/components/ui/button";
@@ -75,10 +76,12 @@ export default function ChildDetailPage() {
 
     if (saveError) {
       setError(saveError);
+      toast.error("Could not save changes. Please try again.");
       return;
     }
 
     setSuccess(true);
+    toast.success("Changes saved successfully.");
     setTimeout(() => setSuccess(false), 3000);
   }
 
@@ -91,9 +94,11 @@ export default function ChildDetailPage() {
 
     if (removeError) {
       setError(removeError);
+      toast.error("Could not remove child. Please try again.");
       return;
     }
 
+    toast.success("Child removed from your profile.");
     router.push("/parent/kids");
   }
 

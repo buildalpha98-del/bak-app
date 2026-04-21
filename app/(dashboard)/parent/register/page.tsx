@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,9 +86,11 @@ export default function ParentRegistrationPage() {
 
     if (regError) {
       setError(regError);
+      toast.error("Registration failed. Please check your details and try again.");
       return;
     }
 
+    toast.success("Welcome to Build Alpha Kids! Your account is ready.");
     router.push("/parent");
     router.refresh();
   }

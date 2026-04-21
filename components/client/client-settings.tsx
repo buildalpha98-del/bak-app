@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   Link2,
   Plus,
@@ -69,12 +70,12 @@ export function ClientSettings({
     startCreateTransition(async () => {
       const { data, error } = await createSharedLink(centreId);
       if (error) {
-        // Could show a toast here, but for now just log
-        console.error("Failed to create link:", error);
+        toast.error("Could not create shared link. Please try again.");
         return;
       }
       if (data) {
         setLinks((prev) => [data, ...prev]);
+        toast.success("Shared link created.");
       }
     });
   }
@@ -84,10 +85,11 @@ export function ClientSettings({
     revokeSharedLink(linkId).then(({ error }) => {
       setRevokingId(null);
       if (error) {
-        console.error("Failed to revoke link:", error);
+        toast.error("Could not revoke link. Please try again.");
         return;
       }
       setLinks((prev) => prev.filter((l) => l.id !== linkId));
+      toast.success("Shared link revoked.");
     });
   }
 

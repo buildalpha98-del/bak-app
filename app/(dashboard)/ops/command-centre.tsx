@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -68,8 +69,8 @@ export function CommandCentre(props: CommandCentreProps) {
       const fresh = await getCommandCentreData(userId);
       setData(fresh);
       setLastRefreshed(new Date());
-    } catch (err) {
-      console.error("Command centre refresh error:", err);
+    } catch {
+      toast.error("Could not refresh command centre data.");
     } finally {
       setRefreshing(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createBookableSession, getCoachesForDropdown } from "@/lib/bookings/actions";
 import type { BookableSessionInput } from "@/lib/bookings/actions";
 import { BookableSessionForm } from "@/components/bookings/session-form";
@@ -24,8 +25,12 @@ export default function AdminNewSessionPage() {
     const result = await createBookableSession(data);
     setSubmitting(false);
 
-    if (result.error) return { error: result.error };
+    if (result.error) {
+      toast.error("Could not create session. Please try again.");
+      return { error: result.error };
+    }
 
+    toast.success("Bookable session created.");
     router.push("/admin/bookings/sessions");
     return { error: null };
   }

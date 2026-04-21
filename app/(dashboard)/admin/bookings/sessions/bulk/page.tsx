@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { bulkCreateBookableSessions, getCoachesForDropdown } from "@/lib/bookings/actions";
 import { BulkCreateForm } from "@/components/bookings/bulk-create-form";
 import { ArrowLeft } from "lucide-react";
@@ -33,7 +34,10 @@ export default function AdminBulkCreatePage() {
         coaches={coaches}
         onSubmit={async (data) => {
           const result = await bulkCreateBookableSessions(data);
-          if (!result.error) {
+          if (result.error) {
+            toast.error("Could not create sessions. Please try again.");
+          } else {
+            toast.success(`${result.data.length} sessions created.`);
             router.push("/admin/bookings/sessions");
           }
           return result;

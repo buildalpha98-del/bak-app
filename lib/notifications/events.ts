@@ -89,4 +89,20 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
 
   // Invoicing
   invoice_overdue: "important",
+
+  // CRM Demos & Documents
+  demo_scheduled: "important",
+  demo_reminder: "urgent",
+  demo_outcome_recorded: "informational",
+  lead_document_added: "informational",
+
+  // Payroll
+  payment_batch_created: "important",
+  payment_batch_approved: "informational",
+  coach_payment_ready: "important",
+
+  // Grants
+  grant_approved: "important",
+  grant_expiring: "important",
+  grant_application_stale: "informational",
 };

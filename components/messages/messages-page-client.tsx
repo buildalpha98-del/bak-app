@@ -37,8 +37,7 @@ export function MessagesPageClient({
       const data = await getConversations();
       setConversations(data);
       return data;
-    } catch (err) {
-      console.error("Failed to refresh conversations:", err);
+    } catch {
       return conversations;
     }
   }, [conversations]);

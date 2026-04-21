@@ -569,7 +569,8 @@ export async function getCoachesForDropdown(): Promise<{
   error: string | null;
 }> {
   try {
-    const supabase = await createSupabaseServerClient();
+    // Use admin client — reference data all authenticated users should see
+    const supabase = createSupabaseAdmin();
 
     const { data, error } = await supabase
       .from("profiles")
@@ -580,8 +581,7 @@ export async function getCoachesForDropdown(): Promise<{
 
     if (error) return { data: [], error: error.message };
     return { data: data ?? [], error: null };
-  } catch (err) {
-    console.error("getCoachesForDropdown error:", err);
+  } catch {
     return { data: [], error: "Failed to load coaches." };
   }
 }

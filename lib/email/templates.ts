@@ -503,6 +503,65 @@ export function invoicePaymentConfirmationEmail(
   };
 }
 
+export function coachPaymentSummaryEmail(
+  coachName: string,
+  periodStart: string,
+  periodEnd: string,
+  totalSessions: number,
+  totalHours: number,
+  subtotal: number,
+  adjustments: number,
+  total: number,
+  adjustmentReason?: string | null
+): { subject: string; html: string } {
+  const periodLabel = `${periodStart} to ${periodEnd}`;
+  return {
+    subject: `Payment Summary — ${periodLabel}`,
+    html: layout(`
+      <p>Hi ${coachName},</p>
+      <p>Your payment summary for <strong>${periodLabel}</strong> is ready:</p>
+      <table role="presentation" style="margin:16px 0;width:100%;">
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};width:180px;">Sessions Delivered</td><td style="padding:4px 8px;font-weight:600;">${totalSessions}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Total Hours</td><td style="padding:4px 8px;font-weight:600;">${totalHours.toFixed(1)}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Subtotal</td><td style="padding:4px 8px;font-weight:600;">$${subtotal.toFixed(2)}</td></tr>
+        ${adjustments !== 0 ? `<tr><td style="padding:4px 8px;color:${BRAND_GREY};">${adjustments > 0 ? "Bonus" : "Deduction"}${adjustmentReason ? ` (${adjustmentReason})` : ""}</td><td style="padding:4px 8px;font-weight:600;">$${adjustments.toFixed(2)}</td></tr>` : ""}
+        <tr style="border-top:2px solid ${BRAND_ORANGE};"><td style="padding:8px 8px;color:${BRAND_DARK};font-weight:700;">Total</td><td style="padding:8px 8px;font-weight:700;color:${BRAND_ORANGE};font-size:15px;">$${total.toFixed(2)}</td></tr>
+      </table>
+      <p>Your full payment summary (including a line-by-line breakdown of each session) is available in your dashboard.</p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://buildalphakids.com.au"}/coach/invoicing" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;">View Payment Summary</a>
+      </div>
+      <p style="color:${BRAND_GREY};font-size:12px;">This is a payment summary, not a tax invoice. You are responsible for issuing your own tax invoices and managing your own GST/tax obligations.</p>
+    `),
+  };
+}
+
+export function demoScheduledEmail(
+  contactName: string,
+  centreName: string,
+  date: string,
+  time: string,
+  coachName: string,
+  durationMinutes: number
+): { subject: string; html: string } {
+  return {
+    subject: `Demo Session Confirmed: ${date} at ${time}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Your demo session with <strong>Build Alpha Kids</strong> has been confirmed:</p>
+      <table role="presentation" style="margin:16px 0;width:100%;">
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};width:120px;">Centre</td><td style="padding:4px 8px;font-weight:600;">${centreName}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Date</td><td style="padding:4px 8px;font-weight:600;">${date}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Time</td><td style="padding:4px 8px;font-weight:600;">${time}</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Duration</td><td style="padding:4px 8px;font-weight:600;">${durationMinutes} minutes</td></tr>
+        <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Coach</td><td style="padding:4px 8px;font-weight:600;">${coachName}</td></tr>
+      </table>
+      <p>We look forward to showing you what Build Alpha Kids can do for your students. If you need to reschedule, please get in touch.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">Questions? Reply to this email or contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+    `),
+  };
+}
+
 export function feedbackRequestEmail(
   centreName: string,
   coachName: string,

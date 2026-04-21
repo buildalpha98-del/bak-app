@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   getParentBookings,
   cancelBooking,
@@ -68,6 +69,24 @@ function generateICS(session: BookableSession): string {
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Build Alpha Kids//Booking//EN",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VTIMEZONE",
+    "TZID:Australia/Sydney",
+    "BEGIN:STANDARD",
+    "DTSTART:19700405T030000",
+    "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=4",
+    "TZOFFSETFROM:+1100",
+    "TZOFFSETTO:+1000",
+    "TZNAME:AEST",
+    "END:STANDARD",
+    "BEGIN:DAYLIGHT",
+    "DTSTART:19701004T020000",
+    "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=10",
+    "TZOFFSETFROM:+1000",
+    "TZOFFSETTO:+1100",
+    "TZNAME:AEDT",
+    "END:DAYLIGHT",
+    "END:VTIMEZONE",
     "BEGIN:VEVENT",
     `DTSTART;TZID=Australia/Sydney:${startDate}T${startTime}`,
     `DTEND;TZID=Australia/Sydney:${startDate}T${endTime}`,
@@ -147,8 +166,8 @@ export default function ParentBookingsPage() {
         setBookings(bookingsResult.data as BookingWithSession[]);
       if (waitlistResult.data)
         setWaitlist(waitlistResult.data);
-    } catch (error) {
-      console.error("Failed to load data:", error);
+    } catch {
+      toast.error("Could not load your bookings. Please refresh and try again.");
     } finally {
       setLoading(false);
     }
@@ -190,7 +209,9 @@ export default function ParentBookingsPage() {
         bookingId,
         cancelReason || "Parent cancelled"
       );
-      if (!result.error) {
+      if (result.error) {
+        toast.error("Could not cancel booking. Please try again.");
+      } else {
         setBookings((prev) =>
           prev.map((b) =>
             b.id === bookingId
@@ -205,9 +226,10 @@ export default function ParentBookingsPage() {
         );
         setShowCancelDialog(null);
         setCancelReason("");
+        toast.success("Booking cancelled successfully.");
       }
-    } catch (error) {
-      console.error("Failed to cancel booking:", error);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setCancellingId(null);
     }
@@ -217,11 +239,14 @@ export default function ParentBookingsPage() {
     setCancellingWaitlistId(waitlistId);
     try {
       const result = await cancelWaitlistEntry(waitlistId);
-      if (!result.error) {
+      if (result.error) {
+        toast.error("Could not remove you from the waitlist. Please try again.");
+      } else {
         setWaitlist((prev) => prev.filter((w) => w.id !== waitlistId));
+        toast.success("Removed from waitlist.");
       }
-    } catch (error) {
-      console.error("Failed to cancel waitlist entry:", error);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setCancellingWaitlistId(null);
     }

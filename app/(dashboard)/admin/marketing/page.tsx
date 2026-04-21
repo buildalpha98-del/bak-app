@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   MessageSquareQuote,
   Code2,
@@ -17,16 +18,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-interface PublicStats {
-  sessions_all_time: number;
-  sessions_this_term: number;
-  centre_count: number;
-  sport_count: number;
-  average_rating: number;
-  children_count: number;
-  last_calculated: string | null;
-}
+import {
+  getPublicStats,
+  refreshPublicStats,
+  type PublicStats,
+} from "@/lib/marketing/actions";
 
 const STAT_CONFIG: {
   key: keyof Omit<PublicStats, "last_calculated">;
@@ -87,13 +83,12 @@ export default function AdminMarketingPage() {
   async function fetchStats() {
     setLoading(true);
     try {
-      const res = await fetch("/api/public/stats");
-      if (res.ok) {
-        const data = await res.json();
+      const { data, error } = await getPublicStats();
+      if (error) {
+        toast.error("Could not load marketing stats.");
+      } else if (data) {
         setStats(data);
       }
-    } catch (err) {
-      console.error("Failed to fetch stats:", err);
     } finally {
       setLoading(false);
     }
@@ -102,17 +97,14 @@ export default function AdminMarketingPage() {
   async function handleRefresh() {
     setRefreshing(true);
     try {
-      const res = await fetch("/api/public/refresh-stats", {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ""}`,
-        },
-      });
-      if (res.ok) {
-        // Re-fetch after refresh
-        await fetchStats();
+      const { success, error } = await refreshPublicStats();
+      if (!success) {
+        toast.error("Could not refresh stats. Please try again.");
+      } else {
+        toast.success("Stats refreshed.");
       }
-    } catch (err) {
-      console.error("Failed to refresh stats:", err);
+      // Re-fetch regardless to show latest cached data
+      await fetchStats();
     } finally {
       setRefreshing(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Link2,
   Users,
@@ -164,7 +165,9 @@ export default function AdminReferralsPage() {
       return;
     }
     const result = await updateReferralConfig(key, parsed);
-    if (!result.error) {
+    if (result.error) {
+      toast.error("Could not save referral config. Please try again.");
+    } else {
       setConfig((prev) =>
         prev.map((c) =>
           c.config_key === key
@@ -173,6 +176,7 @@ export default function AdminReferralsPage() {
         )
       );
       setEditingConfig(null);
+      toast.success("Referral config updated.");
     }
     setSavingConfig(false);
   }
@@ -180,6 +184,12 @@ export default function AdminReferralsPage() {
   async function handleGenerateCodes() {
     setGeneratingCodes(true);
     const result = await generateCentreReferralCodes();
+    if (result.error) {
+      toast.error("Could not generate referral codes. Please try again.");
+      setGeneratingCodes(false);
+      return;
+    }
+    toast.success("Centre referral codes generated.");
     if (result.data) {
       // Reload dashboard data
       const dashResult = await getAdminReferralDashboard();

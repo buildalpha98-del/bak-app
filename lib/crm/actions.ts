@@ -170,10 +170,18 @@ export async function createLead(input: {
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
+  contact_role?: string;
   address?: string;
+  suburb?: string;
+  state?: string;
+  postcode?: string;
+  student_count?: number;
   source?: LeadSource;
+  source_detail?: string;
   stage?: LeadStage;
   estimated_value?: number;
+  expected_close_date?: string;
+  next_follow_up_date?: string;
   notes?: string;
   owner_id?: string;
 }): Promise<{ data: Lead | null; error: string | null }> {
@@ -201,6 +209,12 @@ export async function createLead(input: {
       }
     }
 
+    const stage = input.stage ?? "cold_lead";
+    const STAGE_PROB: Record<string, number> = {
+      cold_lead: 5, contacted: 10, interested: 25, free_trial: 50,
+      proposal_sent: 70, won: 100, lost: 0, churned: 0,
+    };
+
     const { data, error } = await supabase
       .from("leads")
       .insert({
@@ -209,12 +223,22 @@ export async function createLead(input: {
         contact_name: input.contact_name ?? null,
         contact_email: input.contact_email ?? null,
         contact_phone: input.contact_phone ?? null,
+        contact_role: input.contact_role ?? null,
         address: input.address ?? null,
+        suburb: input.suburb ?? null,
+        state: input.state ?? null,
+        postcode: input.postcode ?? null,
+        student_count: input.student_count ?? null,
         source: input.source ?? "manual",
-        stage: input.stage ?? "cold_lead",
+        source_detail: input.source_detail ?? null,
+        stage,
+        probability: STAGE_PROB[stage] ?? 5,
         estimated_value: input.estimated_value ?? null,
+        expected_close_date: input.expected_close_date ?? null,
+        next_follow_up_date: input.next_follow_up_date ?? null,
         notes: input.notes ?? null,
         owner_id: input.owner_id ?? user?.id ?? null,
+        created_by: user?.id ?? null,
       })
       .select()
       .single();
@@ -291,14 +315,27 @@ export async function changeLeadStage(
 
     if (!lead) return { error: "Lead not found." };
 
+    const STAGE_PROBABILITY: Record<string, number> = {
+      cold_lead: 5, contacted: 10, interested: 25, free_trial: 50,
+      proposal_sent: 70, won: 100, lost: 0, churned: 0,
+    };
+
     const updates: Record<string, unknown> = {
       stage: newStage,
       stage_changed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      probability: STAGE_PROBABILITY[newStage] ?? 0,
     };
 
-    if (newStage === "lost" && reason) updates.lost_reason = reason;
-    if (newStage === "churned" && reason) updates.churn_reason = reason;
+    if (newStage === "won") updates.converted_at = new Date().toISOString();
+    if (newStage === "lost") {
+      updates.lost_at = new Date().toISOString();
+      if (reason) updates.lost_reason = reason;
+    }
+    if (newStage === "churned") {
+      updates.lost_at = new Date().toISOString();
+      if (reason) updates.churn_reason = reason;
+    }
 
     const { error } = await supabase
       .from("leads")
@@ -421,6 +458,16 @@ export async function addLeadActivity(input: {
     });
 
     if (error) return { error: error.message };
+
+    // Update last_contacted_at for contact-type activities
+    const contactTypes = ["call", "meeting", "email_sent"];
+    if (contactTypes.includes(input.type)) {
+      await supabase
+        .from("leads")
+        .update({ last_contacted_at: new Date().toISOString() })
+        .eq("id", input.leadId);
+    }
+
     return { error: null };
   } catch (err) {
     console.error("addLeadActivity error:", err);

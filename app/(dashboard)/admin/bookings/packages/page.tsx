@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   getPackagesAdmin,
   createPackage,
@@ -185,16 +186,20 @@ export default function AdminPackagesPage() {
       const { error: updateError } = await updatePackage(editingId, payload);
       if (updateError) {
         setError(updateError);
+        toast.error("Could not update package. Please try again.");
         setSaving(false);
         return;
       }
+      toast.success("Package updated.");
     } else {
       const { error: createError } = await createPackage(payload);
       if (createError) {
         setError(createError);
+        toast.error("Could not create package. Please try again.");
         setSaving(false);
         return;
       }
+      toast.success("Package created.");
     }
 
     setSaving(false);
@@ -209,8 +214,10 @@ export default function AdminPackagesPage() {
     });
     if (toggleError) {
       setError(toggleError);
+      toast.error("Could not update package status.");
       return;
     }
+    toast.success(`Package ${newStatus === "active" ? "activated" : "deactivated"}.`);
     await loadPackages();
   }
 

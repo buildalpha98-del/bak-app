@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { getBookingById, cancelBooking } from "@/lib/bookings/booking-actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,9 +123,9 @@ export default function BookingDetailPage() {
         } else {
           setError("Booking not found.");
         }
-      } catch (err) {
-        console.error("Failed to load booking:", err);
+      } catch {
         setError("Failed to load booking.");
+        toast.error("Could not load booking details. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -140,7 +141,9 @@ export default function BookingDetailPage() {
         booking.id,
         cancelReason || "Parent cancelled"
       );
-      if (!result.error) {
+      if (result.error) {
+        toast.error("Could not cancel this booking. Please try again.");
+      } else {
         setBooking({
           ...booking,
           status: "cancelled" as Booking["status"],
@@ -149,9 +152,10 @@ export default function BookingDetailPage() {
         });
         setShowCancelSection(false);
         setCancelReason("");
+        toast.success("Booking cancelled successfully.");
       }
-    } catch (err) {
-      console.error("Failed to cancel:", err);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setCancelling(false);
     }

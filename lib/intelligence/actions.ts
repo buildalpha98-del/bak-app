@@ -447,7 +447,7 @@ export async function getCoachUtilisation(): Promise<{
     // Coaches
     const { data: coaches, error: coachErr } = await supabase
       .from("profiles")
-      .select("id, full_name, status")
+      .select("id, name, status")
       .eq("role", "coach");
 
     if (coachErr) throw coachErr;
@@ -522,7 +522,7 @@ export async function getCoachUtilisation(): Promise<{
 
       rows.push({
         coachId: coach.id,
-        coachName: coach.full_name ?? "Unknown",
+        coachName: coach.name ?? "Unknown",
         sessionCount,
         revenueGenerated: revenueGenerated / 100,
         utilisationRate: Math.min(utilisationRate, 100),

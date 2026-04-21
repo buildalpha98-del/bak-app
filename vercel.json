@@ -45,6 +45,18 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/demo-reminders",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/lead-followups",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/payment-batch-monday",
+      "schedule": "0 19 * * 1"
+    },
+    {
       "path": "/api/cron/child-insights",
       "schedule": "0 22 * * 0"
     },

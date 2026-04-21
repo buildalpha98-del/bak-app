@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { getChildInsights, generateChildInsight } from "@/lib/insights/actions";
 import { getParentChildren } from "@/lib/parent/actions";
 import type { ChildInsight } from "@/lib/types/database";
@@ -61,11 +62,13 @@ export default function ChildInsightsPage() {
 
     if (genError) {
       setError(genError);
+      toast.error("Could not generate insight. Please try again later.");
       return;
     }
 
     if (data) {
       setInsights((prev) => [data, ...prev]);
+      toast.success("New development insight generated!");
     }
   }
 

@@ -12,6 +12,7 @@ import {
   Trophy,
   Clock,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getParentReferralData } from "@/lib/referrals/actions";
@@ -123,9 +124,10 @@ export default function ParentReferralsPage() {
     try {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
+      toast.success("Referral link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback - do nothing
+      toast.error("Could not copy to clipboard. Please copy the link manually.");
     }
   }
 

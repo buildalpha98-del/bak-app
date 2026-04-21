@@ -31,6 +31,7 @@ import {
   Star,
   FileBarChart,
   Compass,
+  Award,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types/enums";
 
@@ -57,6 +58,8 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Documents", href: "/admin/documents", icon: FileText },
     { label: "Forms", href: "/admin/forms", icon: ClipboardList, mobileOrder: 4 },
     { label: "Invoicing", href: "/admin/invoicing", icon: Receipt },
+    { label: "Grants", href: "/admin/grants", icon: Award },
+    { label: "Payroll", href: "/admin/payroll", icon: Receipt },
     { label: "Reports", href: "/admin/reports", icon: FileBarChart },
     { label: "Analytics", href: "/admin/analytics", icon: LineChart },
     { label: "Tasks", href: "/admin/tasks", icon: CheckSquare },

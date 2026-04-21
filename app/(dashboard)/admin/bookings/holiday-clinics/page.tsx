@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   getBookableSessions,
   bulkCreateBookableSessions,
@@ -321,12 +322,14 @@ export default function HolidayClinicPage() {
 
       if (err) {
         setError(err);
+        toast.error("Failed to create sessions. Please try again.");
         setCreating(false);
         return;
       }
       totalCreated += data.length;
     }
 
+    toast.success(`Created ${totalCreated} sessions across ${suburbs.length} suburb${suburbs.length > 1 ? "s" : ""}.`);
     setSuccess(
       `Created ${totalCreated} sessions across ${suburbs.length} suburb${suburbs.length > 1 ? "s" : ""}.`
     );
@@ -390,12 +393,14 @@ export default function HolidayClinicPage() {
 
       if (err) {
         setError(err);
+        toast.error("Failed to duplicate period. Please try again.");
         setDuplicating(false);
         return;
       }
       totalCreated += data.length;
     }
 
+    toast.success(`Period duplicated — ${totalCreated} sessions created.`);
     setSuccess(`Duplicated period: ${totalCreated} sessions created.`);
     setDuplicateForm(null);
     setDuplicating(false);

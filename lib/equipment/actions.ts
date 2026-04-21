@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type {
   EquipmentLocationType,
   EquipmentCondition,
@@ -90,10 +91,10 @@ export async function getKits(
     if (kit.location_type === "coach" && kit.location_id) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("name")
         .eq("id", kit.location_id)
         .single();
-      assignedCoachName = profile?.full_name ?? null;
+      assignedCoachName = profile?.name ?? null;
     } else if (kit.location_type === "centre" && kit.location_id) {
       const { data: centre } = await supabase
         .from("centres")
@@ -150,10 +151,10 @@ export async function getKitDetail(
   for (const log of rawLogs ?? []) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("name")
       .eq("id", log.user_id)
       .single();
-    logs.push({ ...log, user_name: profile?.full_name ?? "Unknown" });
+    logs.push({ ...log, user_name: profile?.name ?? "Unknown" });
   }
 
   // Location name
@@ -163,10 +164,10 @@ export async function getKitDetail(
   if (kit.location_type === "coach" && kit.location_id) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("name")
       .eq("id", kit.location_id)
       .single();
-    assignedCoachName = profile?.full_name ?? null;
+    assignedCoachName = profile?.name ?? null;
   } else if (kit.location_type === "centre" && kit.location_id) {
     const { data: centre } = await supabase
       .from("centres")
@@ -703,18 +704,19 @@ export async function getCoachesSimple(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServerClient();
+  // Use admin client — reference data all authenticated users should see
+  const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name")
+    .select("id, name")
     .eq("role", "coach")
     .eq("status", "active")
-    .order("full_name", { ascending: true });
+    .order("name", { ascending: true });
 
   if (error) return { data: null, error: error.message };
 
   return {
-    data: (data ?? []).map((p) => ({ id: p.id, name: p.full_name ?? "Unknown" })),
+    data: (data ?? []).map((p) => ({ id: p.id, name: p.name ?? "Unknown" })),
     error: null,
   };
 }
@@ -723,7 +725,8 @@ export async function getCentresSimple(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServerClient();
+  // Use admin client — reference data all authenticated users should see
+  const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("centres")
     .select("id, name")
@@ -763,10 +766,10 @@ export async function getKitLogs(
   for (const log of rawLogs ?? []) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("name")
       .eq("id", log.user_id)
       .single();
-    logs.push({ ...log, user_name: profile?.full_name ?? "Unknown" });
+    logs.push({ ...log, user_name: profile?.name ?? "Unknown" });
   }
 
   return { data: logs, error: null };

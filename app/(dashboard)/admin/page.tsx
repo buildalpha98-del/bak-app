@@ -3,6 +3,8 @@ import {
   getDashboardMetrics,
   getRecentActivity,
 } from "@/lib/launch/dashboard-actions";
+import { PipelineSnapshot } from "@/components/admin/pipeline-snapshot";
+import { PayrollSnapshot } from "@/components/admin/payroll-snapshot";
 
 export default async function AdminDashboard() {
   const [metrics, activity] = await Promise.all([
@@ -11,8 +13,14 @@ export default async function AdminDashboard() {
   ]);
 
   return (
-    <div className="animate-fade-up">
+    <div className="space-y-8 animate-fade-up">
       <LaunchDashboard metrics={metrics} initialActivity={activity} />
+
+      {/* Growth snapshot widgets */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <PipelineSnapshot />
+        <PayrollSnapshot />
+      </div>
     </div>
   );
 }

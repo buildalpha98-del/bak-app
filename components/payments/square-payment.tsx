@@ -99,8 +99,7 @@ export function SquarePayment({
         const card = await payments.card();
         await card.attach("#square-card-container");
         cardRef.current = card;
-      } catch (err) {
-        console.error("Square card init error:", err);
+      } catch {
         setSdkError("Failed to initialise payment form. Please refresh and try again.");
         initializedRef.current = false;
       }
@@ -152,8 +151,7 @@ export function SquarePayment({
       }
 
       onPaymentSuccess(data.paymentId || data.squarePaymentId);
-    } catch (err) {
-      console.error("Payment error:", err);
+    } catch {
       onPaymentError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

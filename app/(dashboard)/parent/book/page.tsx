@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { getOpenBookableSessions } from "@/lib/bookings/actions";
 import { getParentChildren } from "@/lib/parent/actions";
 import { Input } from "@/components/ui/input";
@@ -41,8 +42,8 @@ export default function ParentBookPage() {
         ]);
         if (sessionsResult.data) setSessions(sessionsResult.data);
         if (childrenResult.data) setChildren(childrenResult.data.map((pc) => pc.child));
-      } catch (error) {
-        console.error("Failed to load sessions:", error);
+      } catch {
+        toast.error("Could not load available sessions. Please refresh and try again.");
       } finally {
         setLoading(false);
       }

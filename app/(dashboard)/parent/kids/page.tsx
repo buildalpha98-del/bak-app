@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { getParentChildren, addChild, type ChildInput } from "@/lib/parent/actions";
 import { ChildCard } from "@/components/parent/child-card";
 import { ChildForm } from "@/components/parent/child-form";
@@ -47,9 +48,11 @@ export default function ParentKidsPage() {
 
     if (addError) {
       setError(addError);
+      toast.error("Could not add child. Please check the details and try again.");
       return;
     }
 
+    toast.success(`${newChild.first_name} has been added!`);
     setNewChild({ ...EMPTY_CHILD });
     setShowAdd(false);
     loadChildren();

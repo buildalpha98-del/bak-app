@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { FormField, FormTemplate, FormSubmission } from "@/lib/types/database";
 
 // ============================================================
@@ -612,7 +613,8 @@ export async function getCoachesForFilter(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServerClient();
+  // Use admin client — reference data all authenticated users should see
+  const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("profiles")
     .select("id, name")
@@ -630,7 +632,8 @@ export async function getCentresForFilter(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
-  const supabase = await createSupabaseServerClient();
+  // Use admin client — reference data all authenticated users should see
+  const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
     .from("centres")
     .select("id, name")

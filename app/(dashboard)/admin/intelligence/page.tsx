@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   Brain,
   DollarSign,
@@ -1011,8 +1012,8 @@ export default function IntelligencePage() {
       setFinancialData(financialRes.data);
       setCoachUtil(coachRes.data);
       setGrowthData(growthRes.data);
-    } catch (err) {
-      console.error("Intelligence load error:", err);
+    } catch {
+      toast.error("Could not load intelligence data. Please refresh.");
       setError("Failed to load intelligence data.");
     } finally {
       setLoading(false);

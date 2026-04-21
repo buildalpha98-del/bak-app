@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Bookmark,
@@ -45,8 +46,10 @@ export default function ProposalTemplatesPage() {
     const { error: removeError } = await removeTemplate(proposalId);
     if (removeError) {
       setError(removeError);
+      toast.error("Could not remove template. Please try again.");
       return;
     }
+    toast.success("Template removed.");
     setTemplates((prev) => prev.filter((t) => t.id !== proposalId));
     setSuccessMessage("Template removed");
     setTimeout(() => setSuccessMessage(null), 3000);

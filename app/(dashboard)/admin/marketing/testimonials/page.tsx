@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import { Star, Check, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,8 +103,8 @@ export default function TestimonialsPage() {
         });
 
       setPending(pendingItems);
-    } catch (err) {
-      console.error("Failed to fetch testimonial data:", err);
+    } catch {
+      toast.error("Could not load testimonial data.");
     } finally {
       setLoading(false);
     }
@@ -136,10 +137,11 @@ export default function TestimonialsPage() {
       });
 
       if (error) {
-        console.error("Failed to approve testimonial:", error);
+        toast.error("Could not approve testimonial. Please try again.");
         return;
       }
 
+      toast.success("Testimonial approved and published.");
       setEditingId(null);
       await fetchData();
     } finally {
@@ -153,7 +155,7 @@ export default function TestimonialsPage() {
       const { data: userData } = await supabase.auth.getUser();
 
       // Insert as rejected so it doesn't reappear in pending
-      await supabase.from("approved_testimonials").insert({
+      const { error } = await supabase.from("approved_testimonials").insert({
         feedback_rating_id: feedbackId,
         centre_name: "",
         comment: "",
@@ -163,6 +165,12 @@ export default function TestimonialsPage() {
         approved_by: userData?.user?.id ?? null,
       });
 
+      if (error) {
+        toast.error("Could not reject testimonial. Please try again.");
+        return;
+      }
+
+      toast.success("Testimonial rejected.");
       await fetchData();
     } finally {
       setActionLoading(null);
@@ -178,10 +186,11 @@ export default function TestimonialsPage() {
         .eq("id", testimonialId);
 
       if (error) {
-        console.error("Failed to unpublish:", error);
+        toast.error("Could not unpublish testimonial. Please try again.");
         return;
       }
 
+      toast.success("Testimonial unpublished.");
       await fetchData();
     } finally {
       setActionLoading(null);

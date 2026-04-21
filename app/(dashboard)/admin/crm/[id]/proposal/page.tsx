@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Sparkles,
@@ -122,6 +123,7 @@ export default function ProposalPage() {
       const result = await res.json();
       if (!res.ok) {
         setError(result.error ?? "Failed to generate proposal");
+        toast.error("Could not generate proposal. Please try again.");
         return;
       }
       const newProposal = result.data as SalesProposal;
@@ -131,12 +133,13 @@ export default function ProposalPage() {
         newProposal.content_json as unknown as ProposalContentJson
       );
       setActiveTab("editor");
+      toast.success("Proposal generated successfully.");
       setSuccessMessage("Proposal generated successfully");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate proposal"
-      );
+      const msg = err instanceof Error ? err.message : "Failed to generate proposal";
+      setError(msg);
+      toast.error("Could not generate proposal. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -154,6 +157,7 @@ export default function ProposalPage() {
       );
       if (saveError) {
         setError(saveError);
+        toast.error("Could not save changes. Please try again.");
         return;
       }
       if (data) {
@@ -161,11 +165,13 @@ export default function ProposalPage() {
         setProposals((prev) =>
           prev.map((p) => (p.id === data.id ? data : p))
         );
+        toast.success("Changes saved.");
         setSuccessMessage("Changes saved");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
+      toast.error("Could not save changes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -183,6 +189,7 @@ export default function ProposalPage() {
       );
       if (updateError) {
         setError(updateError);
+        toast.error("Could not finalise proposal. Please try again.");
         return;
       }
       if (data) {
@@ -190,11 +197,13 @@ export default function ProposalPage() {
         setProposals((prev) =>
           prev.map((p) => (p.id === data.id ? data : p))
         );
+        toast.success("Proposal marked as final.");
         setSuccessMessage("Proposal marked as final");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");
+      toast.error("Could not finalise proposal. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -218,6 +227,7 @@ export default function ProposalPage() {
       );
       if (sendError) {
         setError(sendError);
+        toast.error("Could not send proposal. Please try again.");
         return;
       }
       if (data) {
@@ -225,11 +235,13 @@ export default function ProposalPage() {
         setProposals((prev) =>
           prev.map((p) => (p.id === data.id ? data : p))
         );
+        toast.success("Proposal sent to lead.");
         setSuccessMessage("Proposal sent successfully");
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send");
+      toast.error("Could not send proposal. Please try again.");
     } finally {
       setSending(false);
     }
@@ -244,14 +256,17 @@ export default function ProposalPage() {
       );
       if (templateError) {
         setError(templateError);
+        toast.error("Could not save as template. Please try again.");
         return;
       }
+      toast.success("Saved as template.");
       setSuccessMessage("Saved as template");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to save as template"
       );
+      toast.error("Could not save as template. Please try again.");
     }
   };
 

@@ -30,6 +30,10 @@ export interface InvoicePDFProps {
   gstAmount: number | null;
   total: number;
   gstRegistered: boolean;
+  // Payroll extensions (migration 044)
+  isPaymentSummary?: boolean;
+  adjustments?: number;
+  adjustmentReason?: string | null;
 }
 
 // ============================================================
@@ -231,6 +235,9 @@ export function InvoicePDF({
   gstAmount,
   total,
   gstRegistered,
+  isPaymentSummary = false,
+  adjustments = 0,
+  adjustmentReason = null,
 }: InvoicePDFProps) {
   return (
     <Document>
@@ -241,7 +248,7 @@ export function InvoicePDF({
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>TAX INVOICE</Text>
+            <Text style={styles.title}>{isPaymentSummary ? "PAYMENT SUMMARY" : "TAX INVOICE"}</Text>
           </View>
           <View style={styles.invoiceInfo}>
             <Text style={styles.infoLabel}>Invoice Number</Text>
@@ -344,6 +351,15 @@ export function InvoicePDF({
             <Text style={styles.totalLabel}>Subtotal</Text>
             <Text style={styles.totalValue}>{fmtCurrency(subtotal)}</Text>
           </View>
+          {adjustments !== 0 && (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>
+                {adjustments > 0 ? "Bonus" : "Deduction"}
+                {adjustmentReason ? ` (${adjustmentReason})` : ""}
+              </Text>
+              <Text style={styles.totalValue}>{fmtCurrency(adjustments)}</Text>
+            </View>
+          )}
           {gstRegistered && gstAmount != null && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>GST (10%)</Text>
@@ -356,10 +372,19 @@ export function InvoicePDF({
           </View>
         </View>
 
+        {/* Payment summary disclaimer */}
+        {isPaymentSummary && (
+          <View style={{ marginTop: 20, padding: 10, backgroundColor: LIGHT_GREY }}>
+            <Text style={{ fontSize: 8, color: GREY, textAlign: "center" }}>
+              This is a payment summary, not a tax invoice. Coaches are responsible for issuing their own tax invoices and managing their own GST/tax obligations.
+            </Text>
+          </View>
+        )}
+
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Payment Terms: Payment within 14 days
+            {isPaymentSummary ? "Payment Summary" : "Payment Terms: Payment within 14 days"}
           </Text>
           <Text style={styles.footerText}>
             Build Alpha Kids · Multi-sport coaching · South-West Sydney

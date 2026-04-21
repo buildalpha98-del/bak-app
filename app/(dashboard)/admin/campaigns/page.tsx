@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   Megaphone,
   Users,
@@ -228,12 +229,15 @@ export default function AdminCampaignsPage() {
     const newStatus = campaign.status === "active" ? "paused" : "active";
     setTogglingId(campaign.id);
     const { error: err } = await updateCampaignStatus(campaign.id, newStatus);
-    if (!err) {
+    if (err) {
+      toast.error("Could not update campaign status. Please try again.");
+    } else {
       setCampaigns((prev) =>
         prev.map((c) =>
           c.id === campaign.id ? { ...c, status: newStatus } : c
         )
       );
+      toast.success(`Campaign ${newStatus === "active" ? "activated" : "paused"}.`);
     }
     setTogglingId(null);
   }

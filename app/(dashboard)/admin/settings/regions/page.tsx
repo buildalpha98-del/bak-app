@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   MapPin,
   Plus,
@@ -125,7 +126,9 @@ export default function RegionsPage() {
 
     if (err) {
       setError(err);
+      toast.error("Could not create region. Please try again.");
     } else {
+      toast.success("Region created.");
       resetCreate();
       await loadRegions();
     }
@@ -171,7 +174,9 @@ export default function RegionsPage() {
 
     if (err) {
       setError(err);
+      toast.error("Could not update region. Please try again.");
     } else {
+      toast.success("Region updated.");
       setExpandedId(null);
       await loadRegions();
     }
@@ -182,7 +187,9 @@ export default function RegionsPage() {
     const { error: err } = await deleteRegion(id);
     if (err) {
       setError(err);
+      toast.error("Could not delete region. Please try again.");
     } else {
+      toast.success("Region deleted.");
       if (expandedId === id) setExpandedId(null);
       await loadRegions();
     }
@@ -197,7 +204,9 @@ export default function RegionsPage() {
     });
     if (err) {
       setError(err);
+      toast.error("Could not update region status.");
     } else {
+      toast.success(`Region ${newStatus === "active" ? "activated" : "deactivated"}.`);
       await loadRegions();
     }
   }
