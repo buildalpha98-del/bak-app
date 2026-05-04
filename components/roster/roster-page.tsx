@@ -42,6 +42,7 @@ import type { Centre, Profile, Term, SchedulingAssignment, SchedulingRunOutputSu
 import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
 import type { UnconfirmedShift } from "@/lib/sessions/shift-actions";
 import { UnconfirmedShiftsBanner } from "./unconfirmed-shifts-banner";
+import { WeekCostChip } from "./week-cost-chip";
 
 // ============================================================
 // Props
@@ -253,7 +254,10 @@ export function RosterPage({
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Roster</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-semibold text-foreground">Roster</h1>
+            <WeekCostChip weekStart={initialWeekStart} />
+          </div>
           <p className="text-sm text-muted-foreground">
             Manage weekly coaching sessions
           </p>
