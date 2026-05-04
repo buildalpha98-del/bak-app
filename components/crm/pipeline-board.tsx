@@ -549,7 +549,7 @@ function LeadCard({
 
   return (
     <Card className="p-3 hover:shadow-md transition-shadow">
-      <Link href={`${basePath}/${lead.id}`} className="block space-y-2">
+      <Link href={`${basePath}/${lead.id}`} className="block space-y-2" draggable={false} onDragStart={(e) => e.preventDefault()}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <TypeIcon className="size-3.5 text-muted-foreground flex-shrink-0" />

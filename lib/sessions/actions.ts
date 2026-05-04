@@ -3,6 +3,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionStatus, CentreType } from "@/lib/types/enums";
 import type { Session, Profile } from "@/lib/types/database";
+import {
+  checkCoachCertsForSession,
+  checkCoachCertsForSessionDates,
+} from "@/lib/utils/compliance/check-coach-certs";
 
 // ============================================================
 // Types
@@ -222,6 +226,13 @@ export async function createSession(
   try {
     const supabase = await createSupabaseServerClient();
 
+    if (data.coach_id) {
+      const certCheck = await checkCoachCertsForSession(data.coach_id, data.date);
+      if (!certCheck.ok) {
+        return { data: null, error: certCheck.message };
+      }
+    }
+
     const { data: session, error } = await supabase
       .from("sessions")
       .insert({
@@ -256,6 +267,18 @@ export async function updateSession(
 ): Promise<{ error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
+
+    if (data.coach_id) {
+      const { data: existing, error: fetchErr } = await supabase
+        .from("sessions")
+        .select("date")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !existing) return { error: "Session not found." };
+      const sessionDate = (data.date as string | undefined) ?? existing.date;
+      const certCheck = await checkCoachCertsForSession(data.coach_id, sessionDate);
+      if (!certCheck.ok) return { error: certCheck.message };
+    }
 
     const { error } = await supabase
       .from("sessions")
@@ -383,6 +406,19 @@ export async function bulkReassignCoach(
 ): Promise<{ error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
+
+    if (coachId && ids.length > 0) {
+      const { data: targetSessions, error: fetchErr } = await supabase
+        .from("sessions")
+        .select("date")
+        .in("id", ids);
+      if (fetchErr) throw fetchErr;
+      const dates = Array.from(
+        new Set((targetSessions ?? []).map((s) => s.date as string)),
+      );
+      const certCheck = await checkCoachCertsForSessionDates(coachId, dates);
+      if (!certCheck.ok) return { error: certCheck.message };
+    }
 
     const { error } = await supabase
       .from("sessions")

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { suggestReplacements } from "@/lib/utils/scheduling/rerostering";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
 import { autoCreateTask } from "@/lib/tasks/auto-create";
+import { checkCoachCertsForSession } from "@/lib/utils/compliance/check-coach-certs";
 import type { CancellationReasonType } from "@/lib/types/enums";
 
 /**
@@ -208,6 +209,19 @@ export async function respondToReplacementOffer(
   }
 
   if (accept) {
+    // Cert guard: even though the offer was sent, refuse to attach
+    // an expired-cert coach. Race-safe: the session's date is fixed
+    // by the time we get here.
+    const { data: targetSession } = await supabase
+      .from("sessions")
+      .select("date")
+      .eq("id", event.session_id)
+      .single();
+    if (targetSession?.date) {
+      const certCheck = await checkCoachCertsForSession(user.id, targetSession.date);
+      if (!certCheck.ok) return { error: certCheck.message };
+    }
+
     // Update session with new coach
     await supabase
       .from("sessions")

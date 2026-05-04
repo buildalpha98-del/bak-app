@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
+import { checkCoachCertsForSession } from "@/lib/utils/compliance/check-coach-certs";
 import type { SwapStatus } from "@/lib/types/enums";
 
 // ============================================================
@@ -402,6 +403,17 @@ export async function opsApproveSwap(
     if (fetchErr || !swap) return { error: "Swap request not found." };
     if (swap.status !== "pending_ops") {
       return { error: `Cannot approve a swap request with status "${swap.status}".` };
+    }
+
+    // Cert guard: refuse if the proposed coach has expired/rejected
+    // wwcc or first_aid by the session date.
+    const sessionForCheck = swap.sessions as unknown as { date?: string } | null;
+    if (sessionForCheck?.date && swap.proposed_coach_id) {
+      const certCheck = await checkCoachCertsForSession(
+        swap.proposed_coach_id,
+        sessionForCheck.date,
+      );
+      if (!certCheck.ok) return { error: certCheck.message };
     }
 
     const now = new Date().toISOString();
