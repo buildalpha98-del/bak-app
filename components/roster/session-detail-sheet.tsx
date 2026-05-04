@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SessionStatusBadge } from "./session-status-badge";
+import { VarianceBadge } from "./variance-badge";
 import { SmartCoachSelect } from "./smart-coach-select";
 import { ReplacementPanel } from "./replacement-panel";
 import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
@@ -307,6 +308,70 @@ export function SessionDetailSheet({
               </div>
             </div>
           </div>
+
+          {/* Time clock — only shown once a session has been started */}
+          {(session.started_at || session.completed_at) && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-foreground">
+                    Time clock
+                  </h3>
+                  <VarianceBadge
+                    date={session.date}
+                    time={session.time}
+                    durationMinutes={session.duration_minutes}
+                    startedAt={session.started_at}
+                    completedAt={session.completed_at}
+                    size="sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                  <div>
+                    <p className="text-xs">Scheduled</p>
+                    <p>{formatTime12(session.time.slice(0, 5))}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs">Started</p>
+                    <p>
+                      {session.started_at
+                        ? new Date(session.started_at).toLocaleTimeString(
+                            "en-AU",
+                            { hour: "numeric", minute: "2-digit", hour12: true },
+                          )
+                        : "—"}
+                    </p>
+                  </div>
+                  {session.completed_at && (
+                    <div>
+                      <p className="text-xs">Completed</p>
+                      <p>
+                        {new Date(session.completed_at).toLocaleTimeString(
+                          "en-AU",
+                          { hour: "numeric", minute: "2-digit", hour12: true },
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {session.actual_duration_minutes != null && (
+                    <div>
+                      <p className="text-xs">Actual duration</p>
+                      <p>
+                        {session.actual_duration_minutes} min
+                        {session.actual_duration_minutes !==
+                          session.duration_minutes && (
+                          <span className="ml-1 text-xs italic">
+                            (sched. {session.duration_minutes})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
           <Separator />
 

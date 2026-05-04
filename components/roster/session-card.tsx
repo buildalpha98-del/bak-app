@@ -5,6 +5,7 @@ import { ShieldAlert } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
+import { VarianceBadge } from "./variance-badge";
 
 interface SessionCardProps {
   session: SessionWithRelations;
@@ -61,6 +62,20 @@ export function SessionCard({
       >
         {session.coach_name ?? "Unassigned"}
       </span>
+
+      {/* Variance badge (bottom-left) */}
+      {(session.started_at || session.completed_at) && (
+        <span className="absolute bottom-1 left-1.5">
+          <VarianceBadge
+            date={session.date}
+            time={session.time}
+            durationMinutes={session.duration_minutes}
+            startedAt={session.started_at}
+            completedAt={session.completed_at}
+            size="xs"
+          />
+        </span>
+      )}
 
       {/* Compliance warning indicator */}
       {hasComplianceWarning && (
