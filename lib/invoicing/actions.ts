@@ -532,7 +532,7 @@ export async function getFlaggedInvoices(): Promise<{
 
     const { data, error } = await supabase
       .from("coach_invoices")
-      .select("*, profiles(name, email)")
+      .select("*, profiles!coach_invoices_coach_id_fkey(name, email)")
       .eq("status", "flagged")
       .order("created_at", { ascending: false });
 
@@ -658,7 +658,7 @@ export async function getAllCoachInvoices(filters?: {
 
     let query = supabase
       .from("coach_invoices")
-      .select("*, profiles(name, email)")
+      .select("*, profiles!coach_invoices_coach_id_fkey(name, email)")
       .order("created_at", { ascending: false });
 
     if (filters?.coachId) {

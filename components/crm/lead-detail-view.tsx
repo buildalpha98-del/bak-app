@@ -611,7 +611,11 @@ export function LeadDetailView({
               onOpenChange={(open) => { if (open) loadStaff(); }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Unassigned" />
+                {lead.owner_id ? (
+                  <span className="truncate">{lead.owner_name ?? "Loading…"}</span>
+                ) : (
+                  <SelectValue placeholder="Unassigned" />
+                )}
               </SelectTrigger>
               <SelectContent>
                 {staffList.map((s) => (

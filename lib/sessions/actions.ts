@@ -81,7 +81,7 @@ export async function getSessionsForWeek(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(title)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus)"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -126,8 +126,12 @@ export async function getSessionsForWeek(
         (s.profiles as unknown as { phone: string } | null)?.phone ?? null,
       term_name:
         (s.terms as unknown as { name: string } | null)?.name ?? "Unknown",
-      program_title:
-        (s.programs as unknown as { title: string } | null)?.title ?? null,
+      program_title: ((): string | null => {
+        const p = s.programs as unknown as { sport?: string; skill_focus?: string } | null;
+        if (!p) return null;
+        if (p.skill_focus && p.sport) return `${p.sport} · ${p.skill_focus}`;
+        return p.skill_focus ?? p.sport ?? null;
+      })(),
     }));
 
     return { data: sessions, error: null };
@@ -150,7 +154,7 @@ export async function getSessionDetail(
     const { data: s, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(title)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus)"
       )
       .eq("id", id)
       .single();
@@ -193,8 +197,12 @@ export async function getSessionDetail(
         (s.profiles as unknown as { phone: string } | null)?.phone ?? null,
       term_name:
         (s.terms as unknown as { name: string } | null)?.name ?? "Unknown",
-      program_title:
-        (s.programs as unknown as { title: string } | null)?.title ?? null,
+      program_title: ((): string | null => {
+        const p = s.programs as unknown as { sport?: string; skill_focus?: string } | null;
+        if (!p) return null;
+        if (p.skill_focus && p.sport) return `${p.sport} · ${p.skill_focus}`;
+        return p.skill_focus ?? p.sport ?? null;
+      })(),
     };
 
     return { data: session, error: null };
