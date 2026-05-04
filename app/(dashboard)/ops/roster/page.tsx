@@ -1,7 +1,7 @@
 import { RosterPage } from "@/components/roster/roster-page";
 import { getSessionsForWeek } from "@/lib/sessions/actions";
 import { getCentresForSelect, getActiveCoaches, getActiveTerm } from "@/lib/terms/actions";
-import { getComplianceWarningsForSessions } from "@/lib/sessions/scheduling-actions";
+import { getSessionCertWarningsForWeek } from "@/lib/roster/cert-warnings-actions";
 import { getUnconfirmedShifts } from "@/lib/sessions/shift-actions";
 import { getMonday } from "@/lib/utils/roster";
 
@@ -21,14 +21,14 @@ export default async function OpsRosterPage({
     centresRes,
     coachesRes,
     activeTermRes,
-    complianceRes,
+    certWarningsRes,
     unconfirmedRes,
   ] = await Promise.all([
     getSessionsForWeek(weekStart),
     getCentresForSelect(),
     getActiveCoaches(),
     getActiveTerm(),
-    getComplianceWarningsForSessions(weekStart),
+    getSessionCertWarningsForWeek(weekStart),
     getUnconfirmedShifts(24),
   ]);
 
@@ -37,7 +37,7 @@ export default async function OpsRosterPage({
     centresRes.error ||
     coachesRes.error ||
     activeTermRes.error ||
-    complianceRes.error ||
+    certWarningsRes.error ||
     unconfirmedRes.error;
   if (firstError) {
     return (
@@ -55,7 +55,7 @@ export default async function OpsRosterPage({
       coaches={coachesRes.data ?? []}
       activeTerm={activeTermRes.data ?? null}
       basePath="/ops/roster"
-      complianceWarnings={complianceRes.data ?? undefined}
+      sessionCertWarnings={certWarningsRes.data ?? undefined}
       unconfirmedShifts={unconfirmedRes.data ?? undefined}
     />
   );

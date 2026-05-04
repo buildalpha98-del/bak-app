@@ -1,17 +1,25 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, ShieldOff } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
 import { VarianceBadge } from "./variance-badge";
+import {
+  describeSessionCertWarning,
+  type SessionCertWarning,
+} from "@/lib/utils/compliance/cert-warnings";
 
 interface SessionCardProps {
   session: SessionWithRelations;
   onClick: () => void;
-  /** True when the assigned coach has a compliance issue */
-  hasComplianceWarning?: boolean;
+  /**
+   * Per-session-date cert state (preferred). Renders a red shield for
+   * `blocked` (cert invalid by session date) and an amber shield for
+   * `expiring` (cert expires within 14 days of session date).
+   */
+  certWarning?: SessionCertWarning;
   /** Optional confidence badge overlay (used during AI review mode) */
   confidenceBadge?: ReactNode;
 }
@@ -19,7 +27,7 @@ interface SessionCardProps {
 export function SessionCard({
   session,
   onClick,
-  hasComplianceWarning,
+  certWarning,
   confidenceBadge,
 }: SessionCardProps) {
   const colour = sportColour(session.sport);
@@ -77,16 +85,26 @@ export function SessionCard({
         </span>
       )}
 
-      {/* Compliance warning indicator */}
-      {hasComplianceWarning && (
+      {/* Per-session cert warning indicator */}
+      {certWarning && certWarning.blocked.length > 0 ? (
+        <span
+          className="absolute bottom-1 right-1.5 flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5"
+          title={describeSessionCertWarning(certWarning)}
+        >
+          <ShieldOff className="size-2.5 text-red-600" />
+          <span className="text-[9px] font-medium text-red-600">!</span>
+        </span>
+      ) : certWarning && certWarning.expiring.length > 0 ? (
         <span
           className="absolute bottom-1 right-1.5 flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5"
-          title="Coach has expired or missing compliance documents"
+          title={describeSessionCertWarning(certWarning)}
         >
           <ShieldAlert className="size-2.5 text-amber-600" />
-          <span className="text-[9px] font-medium text-amber-600">!</span>
+          <span className="text-[9px] font-medium text-amber-600">
+            {certWarning.expiring[0].daysUntilExpiry}d
+          </span>
         </span>
-      )}
+      ) : null}
     </button>
   );
 }

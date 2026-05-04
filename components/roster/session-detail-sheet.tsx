@@ -56,7 +56,11 @@ import type { ProgramListItem } from "@/lib/programs/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { SessionStatus } from "@/lib/types/enums";
 import type { Centre, Profile } from "@/lib/types/database";
-import type { ReplacementSuggestion, ComplianceCheckResult } from "@/lib/utils/scheduling";
+import type { ReplacementSuggestion } from "@/lib/utils/scheduling";
+import {
+  describeSessionCertWarning,
+  type SessionCertWarning,
+} from "@/lib/utils/compliance/cert-warnings";
 
 // ============================================================
 // Status action config
@@ -90,8 +94,8 @@ interface SessionDetailSheetProps {
   centres: Pick<Centre, "id" | "name">[];
   coaches: Pick<Profile, "id" | "name">[];
   onUpdate: () => void;
-  /** Compliance warnings keyed by coach_id */
-  complianceWarnings?: Record<string, ComplianceCheckResult>;
+  /** Per-session cert warnings keyed by session_id */
+  sessionCertWarnings?: Record<string, SessionCertWarning>;
 }
 
 // ============================================================
@@ -104,7 +108,7 @@ export function SessionDetailSheet({
   onOpenChange,
   coaches,
   onUpdate,
-  complianceWarnings,
+  sessionCertWarnings,
 }: SessionDetailSheetProps) {
   const [saving, setSaving] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -152,11 +156,9 @@ export function SessionDetailSheet({
   const isTerminal =
     session.status === "completed" || session.status === "cancelled";
 
-  // Compliance warning for current coach
-  const coachWarning =
-    session.coach_id && complianceWarnings
-      ? complianceWarnings[session.coach_id]
-      : undefined;
+  // Per-session cert warning (blocked or expiring within 14 days)
+  const certWarning = sessionCertWarnings?.[session.id];
+  const isBlocked = certWarning?.blocked.length ?? 0 > 0;
 
   async function handleStatusChange(nextStatus: SessionStatus) {
     setSaving(true);
@@ -262,26 +264,37 @@ export function SessionDetailSheet({
         </SheetHeader>
 
         <div className="space-y-6 px-4 pb-4">
-          {/* Compliance Warning Banner */}
-          {coachWarning && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-600" />
+          {/* Per-session cert warning banner */}
+          {certWarning && (certWarning.blocked.length > 0 || certWarning.expiring.length > 0) && (
+            <div
+              className={`flex items-start gap-2 rounded-lg border p-3 ${
+                isBlocked
+                  ? "border-red-200 bg-red-50"
+                  : "border-amber-200 bg-amber-50"
+              }`}
+            >
+              <ShieldAlert
+                className={`mt-0.5 size-4 shrink-0 ${
+                  isBlocked ? "text-red-600" : "text-amber-600"
+                }`}
+              />
               <div className="min-w-0">
-                <p className="text-sm font-medium text-amber-700">
-                  Compliance Warning
+                <p
+                  className={`text-sm font-medium ${
+                    isBlocked ? "text-red-700" : "text-amber-700"
+                  }`}
+                >
+                  {isBlocked
+                    ? "Coach blocked from this session"
+                    : "Cert expires soon"}
                 </p>
-                {coachWarning.issues.map((issue, i) => {
-                  const label =
-                    issue.docType === "wwcc" ? "WWCC" : "First Aid";
-                  return (
-                    <p key={i} className="text-xs text-amber-600">
-                      {label}:{" "}
-                      {issue.status === "expired"
-                        ? `Expired${issue.expiryDate ? ` (${issue.expiryDate})` : ""}`
-                        : "Missing"}
-                    </p>
-                  );
-                })}
+                <p
+                  className={`text-xs ${
+                    isBlocked ? "text-red-600" : "text-amber-600"
+                  }`}
+                >
+                  {describeSessionCertWarning(certWarning)}
+                </p>
               </div>
             </div>
           )}

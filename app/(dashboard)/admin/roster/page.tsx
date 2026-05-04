@@ -1,7 +1,7 @@
 import { RosterPage } from "@/components/roster/roster-page";
 import { getSessionsForWeek } from "@/lib/sessions/actions";
 import { getCentresForSelect, getActiveCoaches, getActiveTerm } from "@/lib/terms/actions";
-import { getComplianceWarningsForSessions } from "@/lib/sessions/scheduling-actions";
+import { getSessionCertWarningsForWeek } from "@/lib/roster/cert-warnings-actions";
 import { getMonday } from "@/lib/utils/roster";
 
 interface AdminRosterPageProps {
@@ -15,13 +15,13 @@ export default async function AdminRosterPage({
   const weekStart =
     week ?? getMonday(new Date()).toISOString().split("T")[0];
 
-  const [sessionsRes, centresRes, coachesRes, activeTermRes, complianceRes] =
+  const [sessionsRes, centresRes, coachesRes, activeTermRes, certWarningsRes] =
     await Promise.all([
       getSessionsForWeek(weekStart),
       getCentresForSelect(),
       getActiveCoaches(),
       getActiveTerm(),
-      getComplianceWarningsForSessions(weekStart),
+      getSessionCertWarningsForWeek(weekStart),
     ]);
 
   const firstError =
@@ -29,7 +29,7 @@ export default async function AdminRosterPage({
     centresRes.error ||
     coachesRes.error ||
     activeTermRes.error ||
-    complianceRes.error;
+    certWarningsRes.error;
   if (firstError) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -46,7 +46,7 @@ export default async function AdminRosterPage({
       coaches={coachesRes.data ?? []}
       activeTerm={activeTermRes.data ?? null}
       basePath="/admin/roster"
-      complianceWarnings={complianceRes.data ?? undefined}
+      sessionCertWarnings={certWarningsRes.data ?? undefined}
     />
   );
 }

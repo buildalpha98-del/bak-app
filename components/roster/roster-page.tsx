@@ -39,7 +39,7 @@ import {
 import { getSchedulingRun, publishSchedulingRun } from "@/lib/scheduling/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Centre, Profile, Term, SchedulingAssignment, SchedulingRunOutputSummary } from "@/lib/types/database";
-import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
+import type { SessionCertWarning } from "@/lib/utils/compliance/cert-warnings";
 import type { UnconfirmedShift } from "@/lib/sessions/shift-actions";
 import { UnconfirmedShiftsBanner } from "./unconfirmed-shifts-banner";
 import { WeekCostChip } from "./week-cost-chip";
@@ -55,8 +55,8 @@ interface RosterPageProps {
   coaches: Pick<Profile, "id" | "name">[];
   activeTerm: Term | null;
   basePath: string; // "/admin/roster" or "/ops/roster"
-  /** Compliance warnings keyed by coach_id */
-  complianceWarnings?: Record<string, ComplianceCheckResult>;
+  /** Per-session cert warnings keyed by session_id (preferred). */
+  sessionCertWarnings?: Record<string, SessionCertWarning>;
   /** Unconfirmed shifts for ops banner */
   unconfirmedShifts?: UnconfirmedShift[];
 }
@@ -72,7 +72,7 @@ export function RosterPage({
   coaches,
   activeTerm,
   basePath,
-  complianceWarnings,
+  sessionCertWarnings,
   unconfirmedShifts,
 }: RosterPageProps) {
   const router = useRouter();
@@ -396,7 +396,7 @@ export function RosterPage({
           coaches={coaches}
           onSessionClick={handleSessionClickWithReview}
           onEmptySlotClick={handleEmptySlotClick}
-          complianceWarnings={complianceWarnings}
+          sessionCertWarnings={sessionCertWarnings}
           renderConfidenceBadge={reviewRunId ? (sessionId) => {
             const a = getAssignmentForSession(sessionId);
             if (!a) return undefined;
@@ -409,7 +409,7 @@ export function RosterPage({
           weekStart={weekStart}
           onSessionClick={handleSessionClickWithReview}
           onEmptySlotClick={handleEmptySlotClick}
-          complianceWarnings={complianceWarnings}
+          sessionCertWarnings={sessionCertWarnings}
           renderConfidenceBadge={reviewRunId ? (sessionId) => {
             const a = getAssignmentForSession(sessionId);
             if (!a) return undefined;
@@ -442,7 +442,7 @@ export function RosterPage({
         centres={centres}
         coaches={coaches}
         onUpdate={handleRefresh}
-        complianceWarnings={complianceWarnings}
+        sessionCertWarnings={sessionCertWarnings}
       />
 
       {/* Create Session Dialog */}

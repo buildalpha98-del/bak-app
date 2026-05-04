@@ -12,7 +12,7 @@ import {
   formatDayHeader,
 } from "@/lib/utils/roster";
 import { SessionCard } from "./session-card";
-import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
+import type { SessionCertWarning } from "@/lib/utils/compliance/cert-warnings";
 
 // ============================================================
 // Props
@@ -23,8 +23,8 @@ interface SessionCalendarViewProps {
   weekStart: Date;
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string) => void;
-  /** Compliance warnings keyed by coach_id */
-  complianceWarnings?: Record<string, ComplianceCheckResult>;
+  /** Per-session cert warnings keyed by session_id */
+  sessionCertWarnings?: Record<string, SessionCertWarning>;
   /** Optional renderer for confidence badge overlay on each session card */
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
 }
@@ -38,7 +38,7 @@ export function SessionCalendarView({
   weekStart,
   onSessionClick,
   onEmptySlotClick,
-  complianceWarnings,
+  sessionCertWarnings,
   renderConfidenceBadge,
 }: SessionCalendarViewProps) {
   const weekDates = getWeekDates(weekStart);
@@ -138,11 +138,7 @@ export function SessionCalendarView({
               <SessionCard
                 session={s}
                 onClick={() => onSessionClick(s)}
-                hasComplianceWarning={
-                  !!s.coach_id &&
-                  !!complianceWarnings &&
-                  !!complianceWarnings[s.coach_id]
-                }
+                certWarning={sessionCertWarnings?.[s.id]}
                 confidenceBadge={renderConfidenceBadge?.(s.id)}
               />
             </div>

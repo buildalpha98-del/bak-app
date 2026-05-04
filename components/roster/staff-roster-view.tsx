@@ -1,10 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Plus, User } from "lucide-react";
+import { Plus, User, ShieldAlert, ShieldOff } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
-import type { ComplianceCheckResult } from "@/lib/utils/scheduling";
+import {
+  describeSessionCertWarning,
+  type SessionCertWarning,
+} from "@/lib/utils/compliance/cert-warnings";
 import { getWeekDates, formatDayHeader, formatTime12 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
@@ -19,7 +22,7 @@ interface StaffRosterViewProps {
   coaches: Pick<Profile, "id" | "name">[];
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string, coachId?: string) => void;
-  complianceWarnings?: Record<string, ComplianceCheckResult>;
+  sessionCertWarnings?: Record<string, SessionCertWarning>;
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
 }
 
@@ -74,10 +77,12 @@ function StaffSessionCard({
   session,
   onClick,
   confidenceBadge,
+  certWarning,
 }: {
   session: SessionWithRelations;
   onClick: () => void;
   confidenceBadge?: ReactNode;
+  certWarning?: SessionCertWarning;
 }) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -124,6 +129,27 @@ function StaffSessionCard({
       >
         {session.sport}
       </span>
+
+      {/* Per-session cert warning */}
+      {certWarning && certWarning.blocked.length > 0 ? (
+        <span
+          className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5"
+          title={describeSessionCertWarning(certWarning)}
+        >
+          <ShieldOff className="size-2.5 text-red-600" />
+          <span className="text-[9px] font-medium text-red-600">!</span>
+        </span>
+      ) : certWarning && certWarning.expiring.length > 0 ? (
+        <span
+          className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5"
+          title={describeSessionCertWarning(certWarning)}
+        >
+          <ShieldAlert className="size-2.5 text-amber-600" />
+          <span className="text-[9px] font-medium text-amber-600">
+            {certWarning.expiring[0].daysUntilExpiry}d
+          </span>
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -138,7 +164,7 @@ export function StaffRosterView({
   coaches,
   onSessionClick,
   onEmptySlotClick,
-  complianceWarnings,
+  sessionCertWarnings,
   renderConfidenceBadge,
 }: StaffRosterViewProps) {
   const weekDates = getWeekDates(weekStart);
@@ -192,6 +218,7 @@ export function StaffRosterView({
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
               renderConfidenceBadge={renderConfidenceBadge}
+              sessionCertWarnings={sessionCertWarnings}
               isUnassigned
             />
           )}
@@ -207,6 +234,7 @@ export function StaffRosterView({
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
               renderConfidenceBadge={renderConfidenceBadge}
+              sessionCertWarnings={sessionCertWarnings}
             />
           ))}
 
@@ -239,6 +267,7 @@ function StaffRow({
   onSessionClick,
   onEmptySlotClick,
   renderConfidenceBadge,
+  sessionCertWarnings,
   isUnassigned,
 }: {
   coachId: string;
@@ -248,6 +277,7 @@ function StaffRow({
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string, coachId?: string) => void;
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
+  sessionCertWarnings?: Record<string, SessionCertWarning>;
   isUnassigned?: boolean;
 }) {
   // Count total sessions for this coach this week
@@ -313,6 +343,7 @@ function StaffRow({
                     session={session}
                     onClick={() => onSessionClick(session)}
                     confidenceBadge={renderConfidenceBadge?.(session.id)}
+                    certWarning={sessionCertWarnings?.[session.id]}
                   />
                 ))}
                 {/* Add button below existing sessions */}
