@@ -89,9 +89,18 @@ describe("bucketCertExpiry", () => {
     expect(result.expired).toBe(1);
   });
 
-  it("counts a cert expiring today as critical (≤ 7d)", () => {
+  it("counts a cert expiring today as expired (matches cert-guard <=  semantics)", () => {
     const result = bucketCertExpiry(
       [row({ expiry_date: "2026-05-04" })],
+      NOW,
+    );
+    expect(result.expired).toBe(1);
+    expect(result.critical).toBe(0);
+  });
+
+  it("counts a cert expiring tomorrow as critical (≤ 7d)", () => {
+    const result = bucketCertExpiry(
+      [row({ expiry_date: "2026-05-05" })],
       NOW,
     );
     expect(result.critical).toBe(1);
@@ -128,10 +137,10 @@ describe("bucketCertExpiry", () => {
   it("places each cert in exactly one bucket, never double-counts", () => {
     const result = bucketCertExpiry(
       [
-        row({ id: "1", expiry_date: "2026-05-01" }), // expired
-        row({ id: "2", expiry_date: "2026-05-04" }), // critical (today)
-        row({ id: "3", expiry_date: "2026-05-12" }), // warning (8d)
-        row({ id: "4", expiry_date: "2026-06-03" }), // upcoming (30d)
+        row({ id: "1", expiry_date: "2026-05-01" }), // expired (-3d)
+        row({ id: "2", expiry_date: "2026-05-06" }), // critical (+2d)
+        row({ id: "3", expiry_date: "2026-05-12" }), // warning (+8d)
+        row({ id: "4", expiry_date: "2026-06-03" }), // upcoming (+30d)
       ],
       NOW,
     );

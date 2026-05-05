@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { assembleSchedulingInput } from "@/lib/utils/scheduling/data-assembly";
 import { generateRoster } from "@/lib/utils/scheduling/solver";
+import { bulkCheckCoachCertsForSessions } from "@/lib/utils/compliance/check-coach-certs";
 import type { SchedulingRunInputSummary, SchedulingRunOutputSummary, SchedulingAssignment } from "@/lib/types/database";
 
 export async function POST(request: NextRequest) {
@@ -109,20 +110,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: runError.message }, { status: 500 });
     }
 
-    // Apply assignments to sessions (set coach_id, keep status as draft)
-    for (const assignment of assignments) {
-      if (assignment.assignedCoachId) {
-        await supabase
-          .from("sessions")
-          .update({ coach_id: assignment.assignedCoachId })
-          .eq("id", assignment.sessionId);
-      }
+    // Cert guard — refuse to write a coach with expired/rejected wwcc
+    // or first_aid for the session date. Soft-penalised in the solver
+    // already; this is the hard gate before we touch `sessions.coach_id`.
+    const sessionDateMap = new Map(
+      input.sessions.map((s) => [s.id, s.date as string]),
+    );
+    const pairs = assignments
+      .filter((a) => a.assignedCoachId)
+      .map((a) => ({
+        sessionId: a.sessionId,
+        coachId: a.assignedCoachId as string,
+        sessionDate: sessionDateMap.get(a.sessionId) ?? "",
+      }))
+      .filter((p) => p.sessionDate);
+
+    const certCheck = await bulkCheckCoachCertsForSessions(pairs);
+
+    // Apply only the validly-priced assignments. Blocked ones surface in
+    // the response so the UI can flag them for ops review.
+    for (const pair of certCheck.valid) {
+      await supabase
+        .from("sessions")
+        .update({ coach_id: pair.coachId })
+        .eq("id", pair.sessionId);
     }
 
     return NextResponse.json({
       runId: run.id,
       assignments: assignmentsJson,
       summary: outputSummary,
+      certBlocked: certCheck.blocked.map((b) => ({
+        sessionId: b.sessionId,
+        coachId: b.coachId,
+        reason: b.result.message,
+      })),
     });
   } catch (error) {
     console.error("Scheduling generation error:", error);

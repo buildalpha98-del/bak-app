@@ -158,7 +158,7 @@ export function SessionDetailSheet({
 
   // Per-session cert warning (blocked or expiring within 14 days)
   const certWarning = sessionCertWarnings?.[session.id];
-  const isBlocked = certWarning?.blocked.length ?? 0 > 0;
+  const isBlocked = (certWarning?.blocked.length ?? 0) > 0;
 
   async function handleStatusChange(nextStatus: SessionStatus) {
     setSaving(true);

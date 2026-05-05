@@ -67,8 +67,10 @@ function startOfDayUtc(d: Date): number {
  * Bucket compliance docs by how soon they expire relative to `now`.
  *
  * Bucket boundaries (non-overlapping, each row falls into exactly one):
- * - **expired**:   status is expired/rejected, OR expiry_date is strictly before today
- * - **critical**:  expiry_date in [today, today + 7 days]
+ * - **expired**:   status is expired/rejected, OR expiry_date is on or before today
+ *                  (matches the cert-guard `<= sessionDate` rule — a cert that
+ *                  expires today is invalid for today's sessions)
+ * - **critical**:  expiry_date in (today, today + 7 days]
  * - **warning**:   expiry_date in (today + 7 days, today + 14 days]
  * - **upcoming**:  expiry_date in (today + 14 days, today + 30 days]
  * - Anything beyond 30 days is dropped (not surfaced).
@@ -98,7 +100,7 @@ export function bucketCertExpiry(
 
     const isInvalidStatus = INVALID_STATUSES.includes(c.status);
 
-    if (isInvalidStatus || expiryMs < todayMs) {
+    if (isInvalidStatus || expiryMs <= todayMs) {
       expiredItems.push(c);
       continue;
     }

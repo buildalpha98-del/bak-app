@@ -388,6 +388,11 @@ function toRad(deg: number): number {
 
 /**
  * Check a coach's mandatory compliance document status.
+ *
+ * "Expired" matches the cert-guard rule: a cert whose `expiry_date <= today`
+ * is treated as already expired (consistent with the hard guard's
+ * "same-day expiry counts as expired" semantics in
+ * `lib/utils/compliance/cert-guard.ts`).
  */
 export function checkComplianceStatus(
   coachId: string,
@@ -404,7 +409,7 @@ export function checkComplianceStatus(
       issues.push({ docType, status: "missing", expiryDate: null });
     } else if (
       doc.status === "expired" ||
-      (doc.expiry_date && doc.expiry_date < today)
+      (doc.expiry_date && doc.expiry_date <= today)
     ) {
       issues.push({
         docType,

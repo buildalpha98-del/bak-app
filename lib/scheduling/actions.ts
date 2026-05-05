@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { triggerNotification } from "@/lib/notifications/send";
 import { sendEmail } from "@/lib/launch/email";
 import { rosterAssignment } from "@/lib/launch/email-templates";
+import {
+  bulkCheckCoachCertsForSessions,
+  checkCoachCertsForSession,
+} from "@/lib/utils/compliance/check-coach-certs";
 import type { SchedulingAdjustment } from "@/lib/types/database";
 
 /**
@@ -47,6 +51,22 @@ export async function recordAdjustment(
     .single();
 
   if (!run) return { error: "Scheduling run not found" };
+
+  // Cert guard — refuse to write a coach with expired/rejected wwcc or
+  // first_aid for the session date. Same gate as the rest of the
+  // assignment paths (createSession, updateSession, etc.).
+  const { data: sessionForGuard } = await supabase
+    .from("sessions")
+    .select("date")
+    .eq("id", sessionId)
+    .single();
+  if (sessionForGuard?.date) {
+    const certCheck = await checkCoachCertsForSession(
+      replacementCoachId,
+      sessionForGuard.date,
+    );
+    if (!certCheck.ok) return { error: certCheck.message };
+  }
 
   const adjustments = (run.adjustments_json || []) as SchedulingAdjustment[];
   adjustments.push({
@@ -179,14 +199,45 @@ export async function publishSchedulingRun(runId: string) {
   const assignments = run.assignments_json as any[];
   const assignedSessions = assignments.filter((a: any) => a.assigned_coach_id);
 
-  // Publish all assigned sessions
+  // Cert guard — between generate and publish, a coach's WWCC or
+  // first_aid could have expired. Refuse to publish any session whose
+  // assigned coach is now invalid for the session date. Skipped
+  // sessions stay in `draft` and are reported back to the caller.
   const sessionIds = assignedSessions.map((a: any) => a.session_id);
+  let certBlocked: Array<{ sessionId: string; reason: string }> = [];
+
   if (sessionIds.length > 0) {
-    await supabase
+    const { data: sessionDates } = await supabase
       .from("sessions")
-      .update({ status: "published" })
-      .in("id", sessionIds)
-      .eq("status", "draft");
+      .select("id, date")
+      .in("id", sessionIds);
+    const dateBySession = new Map(
+      (sessionDates ?? []).map((s) => [s.id as string, s.date as string]),
+    );
+
+    const pairs = assignedSessions
+      .map((a: any) => ({
+        sessionId: a.session_id as string,
+        coachId: a.assigned_coach_id as string,
+        sessionDate: dateBySession.get(a.session_id) ?? "",
+      }))
+      .filter((p) => p.sessionDate);
+
+    const certCheck = await bulkCheckCoachCertsForSessions(pairs);
+    certBlocked = certCheck.blocked.map((b) => ({
+      sessionId: b.sessionId,
+      reason: b.result.message,
+    }));
+
+    const validSessionIds = certCheck.valid.map((p) => p.sessionId);
+
+    if (validSessionIds.length > 0) {
+      await supabase
+        .from("sessions")
+        .update({ status: "published" })
+        .in("id", validSessionIds)
+        .eq("status", "draft");
+    }
   }
 
   // Update run status
@@ -195,9 +246,12 @@ export async function publishSchedulingRun(runId: string) {
     .update({ status: "published", published_at: new Date().toISOString() })
     .eq("id", runId);
 
-  // Notify each assigned coach
+  // Notify each assigned coach — but only for sessions that actually
+  // got published (skip the cert-blocked ones).
+  const blockedSessionIds = new Set(certBlocked.map((b) => b.sessionId));
   const coachSessionMap = new Map<string, string[]>();
   for (const a of assignedSessions) {
+    if (blockedSessionIds.has(a.session_id)) continue;
     const list = coachSessionMap.get(a.assigned_coach_id) || [];
     list.push(a.session_id);
     coachSessionMap.set(a.assigned_coach_id, list);
@@ -205,16 +259,23 @@ export async function publishSchedulingRun(runId: string) {
 
   // Fetch coach details for notifications
   const coachIds = Array.from(coachSessionMap.keys());
-  const { data: coachProfiles } = await supabase
-    .from("profiles")
-    .select("id, email, name, role")
-    .in("id", coachIds);
+  const { data: coachProfiles } = coachIds.length > 0
+    ? await supabase
+        .from("profiles")
+        .select("id, email, name, role")
+        .in("id", coachIds)
+    : { data: [] };
 
-  // Fetch session details for email templates
-  const { data: sessionDetails } = await supabase
-    .from("sessions")
-    .select("id, sport, session_date, start_time, end_time, centre_id, centres:centre_id(name, address)")
-    .in("id", sessionIds);
+  // Fetch session details for email templates (only the published ones)
+  const publishedSessionIds = sessionIds.filter(
+    (id: string) => !blockedSessionIds.has(id),
+  );
+  const { data: sessionDetails } = publishedSessionIds.length > 0
+    ? await supabase
+        .from("sessions")
+        .select("id, sport, session_date, start_time, end_time, centre_id, centres:centre_id(name, address)")
+        .in("id", publishedSessionIds)
+    : { data: [] };
 
   const sessionMap = new Map(
     (sessionDetails || []).map((s: any) => [s.id, s])
@@ -278,7 +339,14 @@ export async function publishSchedulingRun(runId: string) {
   revalidatePath("/admin/roster");
   revalidatePath("/coach/schedule");
 
-  return { data: { published: true, sessionsCount: sessionIds.length, coachesNotified: coachSessionMap.size } };
+  return {
+    data: {
+      published: true,
+      sessionsCount: sessionIds.length - certBlocked.length,
+      coachesNotified: coachSessionMap.size,
+      certBlocked,
+    },
+  };
 }
 
 /**

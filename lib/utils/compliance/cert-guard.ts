@@ -35,10 +35,6 @@ export type CertCheckResult =
   | { ok: true }
   | { ok: false; message: string; blockedBy: BlockedCert[] };
 
-function isBlockingType(t: ComplianceDocType): t is BlockingCertType {
-  return (BLOCKING_CERT_TYPES as readonly string[]).includes(t);
-}
-
 function isCertValid(c: CertCheckInput, sessionDate: string): boolean {
   if (BLOCKED_STATUSES.includes(c.status)) return false;
   if (c.expiry_date && c.expiry_date <= sessionDate) return false;
@@ -121,14 +117,4 @@ export function assertCoachCertsValidForSession({
     blockedBy,
     message: `Cannot assign — coach has invalid compliance documents: ${summary}. Renew or update before assigning.`,
   };
-}
-
-/**
- * Filter helper: keep only the cert rows the guard cares about.
- * Cuts down the payload when fetching from `compliance_docs`.
- */
-export function isBlockingCertRow<
-  T extends { doc_type: ComplianceDocType },
->(row: T): boolean {
-  return isBlockingType(row.doc_type);
 }

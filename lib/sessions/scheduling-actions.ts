@@ -559,84 +559,9 @@ export async function acknowledgeClash(
   }
 }
 
-// ============================================================
-// 6. getComplianceWarningsForSessions
-// ============================================================
-
-/**
- * Get compliance warnings for all coaches assigned to sessions
- * in a given week. Used to show warning banners on session cards.
- */
-/**
- * Returns a plain object keyed by coach_id → ComplianceCheckResult
- * for coaches with compliance issues assigned to sessions this week.
- * Uses Record instead of Map for server-to-client serialisation.
- */
-export async function getComplianceWarningsForSessions(
-  weekStartDate: string
-): Promise<{
-  data: Record<string, ComplianceCheckResult> | null;
-  error: string | null;
-}> {
-  try {
-    const supabase = await createSupabaseServerClient();
-
-    // Calculate Friday
-    const monday = new Date(weekStartDate + "T00:00:00");
-    const friday = new Date(monday);
-    friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
-
-    // Get sessions with coaches
-    const { data: sessions } = await supabase
-      .from("sessions")
-      .select("coach_id, profiles:coach_id(id, name)")
-      .gte("date", weekStartDate)
-      .lte("date", weekEndDate)
-      .not("coach_id", "is", null)
-      .not("status", "eq", "cancelled");
-
-    // Unique coaches
-    const coachMap = new Map<string, string>();
-    for (const s of sessions ?? []) {
-      if (!s.coach_id) continue;
-      const name =
-        (s.profiles as unknown as { name: string } | null)?.name ?? "Unknown";
-      coachMap.set(s.coach_id, name);
-    }
-
-    const coachIds = [...coachMap.keys()];
-    if (coachIds.length === 0) {
-      return { data: {}, error: null };
-    }
-
-    // Get compliance docs
-    const { data: docs } = await supabase
-      .from("compliance_docs")
-      .select("user_id, doc_type, expiry_date, status")
-      .in("user_id", coachIds);
-
-    const results: Record<string, ComplianceCheckResult> = {};
-
-    for (const [coachId, coachName] of coachMap) {
-      const coachDocs = (docs ?? [])
-        .filter((d) => d.user_id === coachId)
-        .map((d) => ({
-          doc_type: d.doc_type as ComplianceDocType,
-          expiry_date: d.expiry_date,
-          status: d.status as ComplianceStatus,
-        }));
-
-      const result = checkComplianceStatus(coachId, coachName, coachDocs);
-
-      if (!result.isCompliant) {
-        results[coachId] = result;
-      }
-    }
-
-    return { data: results, error: null };
-  } catch (err) {
-    console.error("getComplianceWarningsForSessions error:", err);
-    return { data: null, error: "Failed to check compliance warnings." };
-  }
-}
+// (Removed `getComplianceWarningsForSessions` — superseded by
+// `getSessionCertWarningsForWeek` in lib/roster/cert-warnings-actions.ts,
+// which keys by session_id and runs the per-session-date hard-guard
+// predicate. The old function checked against today's date and keyed by
+// coach, which produced wrong verdicts later in the week and is no
+// longer used by any caller after the roster-grid migration.)
