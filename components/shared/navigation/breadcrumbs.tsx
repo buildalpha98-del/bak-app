@@ -28,16 +28,30 @@ function formatSegment(segment: string): string {
   return SEGMENT_LABELS[segment] ?? segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** UUID v4 (Postgres `gen_random_uuid()` shape) — used as the detail-page
+ *  segment for centres, leads, sessions, etc. We skip these because they're
+ *  not human-readable, and the parent crumb already conveys "you're inside
+ *  this section". A future enhancement could let pages publish an entity
+ *  name to substitute in here, but dropping is strictly better than leaking
+ *  the raw UUID. */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function Breadcrumbs() {
   const pathname = usePathname();
-  const segments = pathname.split("/").filter(Boolean);
+  const allSegments = pathname.split("/").filter(Boolean);
 
-  if (segments.length <= 1) return null;
+  if (allSegments.length <= 1) return null;
 
-  const crumbs = segments.map((segment, index) => ({
-    label: formatSegment(segment),
-    href: "/" + segments.slice(0, index + 1).join("/"),
-  }));
+  const crumbs: { label: string; href: string }[] = [];
+  allSegments.forEach((segment, index) => {
+    if (UUID_REGEX.test(segment)) return;
+    crumbs.push({
+      label: formatSegment(segment),
+      href: "/" + allSegments.slice(0, index + 1).join("/"),
+    });
+  });
+
+  if (crumbs.length <= 1) return null;
 
   return (
     <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-sm">
