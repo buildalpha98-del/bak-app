@@ -6,6 +6,11 @@ import type { SwapRequestWithDetails } from "@/lib/sessions/shift-actions";
 import { getTasks } from "@/lib/tasks/actions";
 import type { TaskWithRelations } from "@/lib/types/database";
 import { getRecentFeedback } from "@/lib/feedback/actions";
+import {
+  bucketCertExpiry,
+  TRACKED_EXPIRY_TYPES,
+  type CertSummaryRow,
+} from "@/lib/utils/compliance/cert-expiry-summary";
 import type { SessionStatus } from "@/lib/types/enums";
 
 // ============================================================
@@ -257,77 +262,77 @@ export async function getComplianceAlerts(): Promise<{
   try {
     const supabase = await createSupabaseServerClient();
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
-
-    // Fetch expired docs
-    const { data: expired, error: expErr } = await supabase
+    // Single query — pull every tracked-type doc with an expiry. The
+    // pure helper takes care of the bucket boundaries so the ops widget
+    // and the admin Compliance Health card always agree.
+    const { data, error } = await supabase
       .from("compliance_docs")
-      .select("id, doc_type, expiry_date, status, user_id, profiles:user_id(id, name)")
-      .eq("status", "expired");
+      .select(
+        "id, doc_type, expiry_date, status, user_id, profiles:user_id(id, name)",
+      )
+      .in("doc_type", [...TRACKED_EXPIRY_TYPES])
+      .not("expiry_date", "is", null);
 
-    if (expErr) throw expErr;
+    if (error) throw error;
 
-    // Fetch docs expiring within 30 days (still verified)
-    const { data: expiring, error: expingErr } = await supabase
-      .from("compliance_docs")
-      .select("id, doc_type, expiry_date, status, user_id, profiles:user_id(id, name)")
-      .eq("status", "verified")
-      .not("expiry_date", "is", null)
-      .lte("expiry_date", in30Days)
-      .gte("expiry_date", today);
-
-    if (expingErr) throw expingErr;
-
-    const todayMs = new Date(today).getTime();
-
-    const mapDoc = (
-      r: Record<string, unknown>,
-      isExpired: boolean
-    ): ComplianceAlert => {
-      const profile = r.profiles as unknown as Record<string, unknown> | null;
-      const expiryDate = r.expiry_date as string | null;
-      let daysRemaining: number | null = null;
-      let severity: ComplianceAlert["severity"] = "warning";
-
-      if (isExpired) {
-        severity = "expired";
-        daysRemaining = expiryDate
-          ? Math.floor((new Date(expiryDate).getTime() - todayMs) / (24 * 60 * 60 * 1000))
-          : null;
-      } else if (expiryDate) {
-        daysRemaining = Math.floor(
-          (new Date(expiryDate).getTime() - todayMs) / (24 * 60 * 60 * 1000)
-        );
-        severity = daysRemaining <= 7 ? "critical" : "warning";
-      }
-
+    const rows: CertSummaryRow[] = (data ?? []).map((r) => {
+      const profile = r.profiles as unknown as
+        | { id?: string; name?: string }
+        | null;
       return {
-        coach_id: (profile?.id as string) ?? (r.user_id as string),
-        coach_name: (profile?.name as string) ?? "Unknown",
-        doc_type: r.doc_type as string,
-        expiry_date: expiryDate,
-        status: r.status as string,
+        id: r.id as string,
+        user_id: r.user_id as string,
+        user_name: profile?.name ?? null,
+        doc_type: r.doc_type,
+        expiry_date: r.expiry_date,
+        status: r.status,
+      };
+    });
+
+    const now = new Date();
+    const buckets = bucketCertExpiry(rows, now);
+    const todayMs = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+    );
+
+    const toAlert = (
+      severity: ComplianceAlert["severity"],
+      r: CertSummaryRow,
+    ): ComplianceAlert => {
+      let daysRemaining: number | null = null;
+      if (r.expiry_date) {
+        const [y, m, d] = r.expiry_date.split("-").map(Number);
+        if (y && m && d) {
+          const expiryMs = Date.UTC(y, m - 1, d);
+          daysRemaining = Math.floor((expiryMs - todayMs) / 86_400_000);
+        }
+      }
+      return {
+        coach_id: r.user_id,
+        coach_name: r.user_name ?? "Unknown",
+        doc_type: r.doc_type,
+        expiry_date: r.expiry_date,
+        status: r.status,
         days_remaining: daysRemaining,
         severity,
       };
     };
 
+    // Preserve the widget's existing 3-tier severity model:
+    // expired (date-or-status), critical (≤7d), warning (8–30d).
+    // bucketCertExpiry's `warning` (8–14d) and `upcoming` (15–30d)
+    // fold into the widget's single `warning` tier.
     const alerts: ComplianceAlert[] = [
-      ...(expired ?? []).map((r) => mapDoc(r as unknown as Record<string, unknown>, true)),
-      ...(expiring ?? []).map((r) => mapDoc(r as unknown as Record<string, unknown>, false)),
+      ...buckets.expiredItems.map((r) => toAlert("expired", r)),
+      ...buckets.criticalItems.map((r) => toAlert("critical", r)),
+      ...buckets.warningItems.map((r) => toAlert("warning", r)),
+      ...buckets.upcomingItems.map((r) => toAlert("warning", r)),
     ];
 
-    // Sort: expired first, then by days_remaining ascending
-    alerts.sort((a, b) => {
-      if (a.severity === "expired" && b.severity !== "expired") return -1;
-      if (a.severity !== "expired" && b.severity === "expired") return 1;
-      return (a.days_remaining ?? 999) - (b.days_remaining ?? 999);
-    });
-
+    // bucketCertExpiry already returns each bucket sorted by expiry asc;
+    // expired → critical → warning order falls out for free.
     return { data: alerts, error: null };
   } catch (err) {
     console.error("getComplianceAlerts error:", err);
