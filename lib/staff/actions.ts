@@ -2,6 +2,8 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/launch/email";
+import { staffOnboarding } from "@/lib/launch/email-templates";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
 
@@ -197,7 +199,10 @@ export async function getStaffMember(
 
 export async function createStaffMember(
   data: CreateStaffData
-): Promise<{ data: { id: string; tempPassword: string } | null; error: string | null }> {
+): Promise<{
+  data: { id: string; tempPassword: string; emailSent: boolean } | null;
+  error: string | null;
+}> {
   const admin = createSupabaseAdmin();
 
   // Create auth user with a temporary password
@@ -230,7 +235,180 @@ export async function createStaffMember(
     return { data: null, error: profileError.message };
   }
 
-  return { data: { id: authUser.user.id, tempPassword }, error: null };
+  // Send welcome email with login credentials. We don't fail the
+  // whole onboarding if email delivery hiccups — the admin still has
+  // the temp password returned to them as a fallback.
+  let emailSent = false;
+  try {
+    const tpl = staffOnboarding({
+      name: data.name,
+      email: data.email,
+      tempPassword,
+      // Narrow: createStaffMember UI only ever creates staff roles,
+      // never `parent`. The wider UserRole type is accepted to keep
+      // CreateStaffData backwards-compatible with other callers.
+      role: data.role as "admin" | "ops" | "coach",
+    });
+    const result = await sendEmail({
+      to: data.email,
+      subject: tpl.subject,
+      html: tpl.html,
+      recipientId: authUser.user.id,
+      emailType: "staff_onboarding",
+      metadata: { user_id: authUser.user.id, role: data.role },
+    });
+    emailSent = result.success;
+  } catch (err) {
+    console.error("staff onboarding email failed:", err);
+  }
+
+  return {
+    data: { id: authUser.user.id, tempPassword, emailSent },
+    error: null,
+  };
+}
+
+// ============================================================
+// Archive (soft-delete) staff member
+// ============================================================
+
+/**
+ * Archive a staff member: sets profile.status = 'inactive' and revokes
+ * their auth session so they can no longer log in. Historical records
+ * (sessions worked, swap requests, etc.) are preserved.
+ *
+ * For a hard delete (permanent removal), use Supabase's auth.admin
+ * deleteUser directly — that cascades through profiles and most FKs,
+ * but loses history. Soft-delete is the default path and what the
+ * "Remove from team" button on the staff detail page calls.
+ */
+export async function archiveStaffMember(
+  id: string
+): Promise<{ error: string | null }> {
+  const admin = createSupabaseAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  // Verify caller is admin/ops
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    !callerProfile ||
+    (callerProfile.role !== "admin" && callerProfile.role !== "ops")
+  ) {
+    return { error: "Only admin or ops can archive staff." };
+  }
+
+  if (id === user.id) {
+    return { error: "You cannot archive your own account." };
+  }
+
+  // Look up profile for the activity log
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("name, role, email")
+    .eq("id", id)
+    .single();
+
+  if (!target) return { error: "Staff member not found." };
+
+  // Mark profile inactive
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ status: "inactive", updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (profileError) return { error: profileError.message };
+
+  // Ban the auth user so they can't log in again. We use Supabase's
+  // `banDuration` (100 years effectively forever); reactivation later
+  // calls updateUserById with `ban_duration: 'none'` to lift the ban.
+  // We do NOT delete the auth user — that would cascade and remove the
+  // profile row, breaking historical references on sessions.coach_id,
+  // swap_requests, activity_log, etc.
+  const { error: banError } = await admin.auth.admin.updateUserById(id, {
+    ban_duration: "876000h",
+  } as Parameters<typeof admin.auth.admin.updateUserById>[1]);
+  if (banError) {
+    console.error("archiveStaffMember ban failed:", banError);
+  }
+
+  // Revoke any active auth sessions (forces logout if currently signed in).
+  await admin.auth.admin.signOut(id).catch((err) => {
+    console.error("archiveStaffMember signOut failed:", err);
+  });
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "staff_archived",
+    entity_type: "profile",
+    entity_id: id,
+    metadata: {
+      archived_name: target.name,
+      archived_role: target.role,
+      archived_email: target.email,
+    },
+  });
+
+  return { error: null };
+}
+
+/**
+ * Reactivate a previously archived staff member: clears the auth ban
+ * and flips status back to active. Counterpart to `archiveStaffMember`.
+ */
+export async function reactivateStaffMember(
+  id: string
+): Promise<{ error: string | null }> {
+  const admin = createSupabaseAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    !callerProfile ||
+    (callerProfile.role !== "admin" && callerProfile.role !== "ops")
+  ) {
+    return { error: "Only admin or ops can reactivate staff." };
+  }
+
+  const { error: banError } = await admin.auth.admin.updateUserById(id, {
+    ban_duration: "none",
+  } as Parameters<typeof admin.auth.admin.updateUserById>[1]);
+  if (banError) return { error: banError.message };
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({ status: "active", updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (profileError) return { error: profileError.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "staff_reactivated",
+    entity_type: "profile",
+    entity_id: id,
+  });
+
+  return { error: null };
 }
 
 // ============================================================
@@ -294,23 +472,11 @@ export async function updateStaffMember(
   return { error: error?.message ?? null };
 }
 
-// ============================================================
-// Toggle staff status
-// ============================================================
-
-export async function toggleStaffStatus(
-  id: string,
-  newStatus: "active" | "inactive"
-): Promise<{ error: string | null }> {
-  const supabase = await createSupabaseServerClient();
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq("id", id);
-
-  return { error: error?.message ?? null };
-}
+// (Removed `toggleStaffStatus` — superseded by `archiveStaffMember`
+// (sets status=inactive AND bans the auth user + signs them out) and
+// `reactivateStaffMember` (lifts the ban + flips status). The bare
+// status-flip leaked the "they could still log in" bug — those
+// upgraded actions are now the only path.)
 
 // ============================================================
 // Pay rates

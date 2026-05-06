@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, Copy, KeyRound } from "lucide-react";
+import { ArrowLeft, CheckCircle, Copy, KeyRound, Mail, MailWarning } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ export function AddStaffForm() {
     email: string;
     tempPassword: string;
     id: string;
+    emailSent: boolean;
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -68,6 +69,7 @@ export function AddStaffForm() {
         email,
         tempPassword: result.data.tempPassword,
         id: result.data.id,
+        emailSent: result.data.emailSent,
       });
     }
 
@@ -91,11 +93,34 @@ export function AddStaffForm() {
             <p className="font-medium">{created.name} has been added successfully.</p>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            Share these login credentials with {created.name.split(" ")[0]}. They&apos;ll be prompted to set a new password on first login.
-          </p>
+          {created.emailSent ? (
+            <div className="flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-medium">Welcome email sent to {created.email}</p>
+                <p className="text-xs text-emerald-600/80">
+                  It contains the login URL and a temporary password. {created.name.split(" ")[0]} will be prompted to choose a new password on first login.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              <MailWarning className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-medium">Welcome email could not be sent.</p>
+                <p className="text-xs text-amber-600/80">
+                  Share the credentials below with {created.name.split(" ")[0]} manually.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
+            <p className="text-xs text-muted-foreground">
+              {created.emailSent
+                ? "Backup credentials in case the email doesn't arrive:"
+                : "Login credentials:"}
+            </p>
             <div>
               <Label className="text-xs text-muted-foreground">Email</Label>
               <p className="font-mono text-sm">{created.email}</p>

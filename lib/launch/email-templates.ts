@@ -130,6 +130,41 @@ export function welcomeCoach(data: {
 }
 
 // ========================
+// b2) Staff Onboarding (with credentials)
+// Sent on createStaffMember — includes temporary password + login URL.
+// ========================
+
+export function staffOnboarding(data: {
+  name: string;
+  email: string;
+  tempPassword: string;
+  role: "admin" | "ops" | "coach";
+}): { subject: string; html: string } {
+  const roleLabel =
+    data.role === "admin" ? "Admin" : data.role === "ops" ? "Operations" : "Coach";
+  const dashboardPath =
+    data.role === "admin" ? "/admin" : data.role === "ops" ? "/ops" : "/coach";
+
+  return {
+    subject: `Welcome to Build Alpha Kids — your ${roleLabel} account is ready`,
+    html: layout(`
+      <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.name},</p>
+      <p>Welcome to the <strong>Build Alpha Kids</strong> team. Your ${roleLabel} account is ready to use.</p>
+      <p>Here are your login details:</p>
+      ${detailTable(
+        detailRow("Login URL", `<a href="${APP_URL}/login" style="color:${BRAND_ORANGE};text-decoration:none;">${APP_URL}/login</a>`) +
+        detailRow("Email", data.email) +
+        detailRow("Temporary password", `<code style="font-family:'SF Mono',Monaco,monospace;background:#F5F5F5;padding:2px 6px;border-radius:4px;">${data.tempPassword}</code>`)
+      )}
+      <p><strong>You will be prompted to set a new password on first login.</strong> Please choose something memorable and don't share it.</p>
+      ${cta(`Open ${roleLabel} Dashboard`, `${APP_URL}${dashboardPath}`)}
+      <p>If you weren't expecting this email or didn't request an account, please reply to this email straight away.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
+    `),
+  };
+}
+
+// ========================
 // c) Welcome Centre
 // ========================
 

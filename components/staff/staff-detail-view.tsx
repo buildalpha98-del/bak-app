@@ -48,7 +48,8 @@ import {
 } from "@/components/ui/select";
 import {
   updateStaffMember,
-  toggleStaffStatus,
+  archiveStaffMember,
+  reactivateStaffMember,
   adminResetStaffPassword,
   sendStaffPasswordResetEmail,
   upsertPayRate,
@@ -777,7 +778,9 @@ function DeactivateDialog({
 
   async function handleConfirm() {
     setLoading(true);
-    const res = await toggleStaffStatus(profile.id, newStatus);
+    const res = isActive
+      ? await archiveStaffMember(profile.id)
+      : await reactivateStaffMember(profile.id);
     if (!res.error) {
       onDone(newStatus);
       onOpenChange(false);
@@ -793,9 +796,13 @@ function DeactivateDialog({
             {isActive ? "Deactivate" : "Reactivate"} {profile.name}?
           </DialogTitle>
           <DialogDescription>
-            {isActive
-              ? "This will prevent the staff member from logging in and being assigned to sessions."
-              : "This will restore the staff member's access to the platform."}
+            {isActive ? (
+              <>
+                Their account will be locked, any open session will be signed out, and they won&apos;t be eligible for new shifts. Historical records (sessions worked, swap requests, invoices) are kept. You can reactivate later if needed.
+              </>
+            ) : (
+              "This will lift the account lock and restore the staff member's access to the platform."
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
