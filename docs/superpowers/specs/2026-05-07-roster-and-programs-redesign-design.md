@@ -53,18 +53,22 @@ CREATE TABLE custom_sports (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        text NOT NULL,
   created_by  uuid NOT NULL REFERENCES profiles(id),
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT custom_sports_name_unique UNIQUE (lower(name))
+  created_at  timestamptz NOT NULL DEFAULT now()
 );
+-- Case-insensitive uniqueness via functional index (table-constraint
+-- form doesn't accept expressions in Postgres)
+CREATE UNIQUE INDEX custom_sports_name_unique
+  ON custom_sports (lower(name));
 
 -- Custom equipment list, org-wide
 CREATE TABLE custom_equipment (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        text NOT NULL,
   created_by  uuid NOT NULL REFERENCES profiles(id),
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT custom_equipment_name_unique UNIQUE (lower(name))
+  created_at  timestamptz NOT NULL DEFAULT now()
 );
+CREATE UNIQUE INDEX custom_equipment_name_unique
+  ON custom_equipment (lower(name));
 
 -- Multi age group on programs (currently single varchar(50))
 ALTER TABLE programs
@@ -87,13 +91,17 @@ ALTER TABLE sessions
 
 Decision rationale: a text column is the fastest ship + the simplest UX (one field, edit in place). If we end up wanting history we can graduate to threads later — but you'd have already been using the column productively.
 
-### P4 — DnD: none
+### P4 — DnD: none, plus a small gap-fix in `updateSession`
 
-All drops go through the existing `updateSession` server action, which is already cert-guarded as of Phase 7 + `0effd03`.
+All drops go through `updateSession`. The existing cert guard only fires when `data.coach_id` is in the patch — so a date-only drop (column change, same coach) currently bypasses it. Fix in P4 (not a schema change, but a behaviour fix to call out): when `date` is in the patch, fetch **all assigned coaches from `session_coaches`** (post-P5 source of truth) and run `bulkCheckCoachCertsForSessions` against the new date. If **any** coach is now invalid for the new date, refuse the drop. This handles both single-coach (today) and multi-coach (post-P5) cleanly.
+
+P4 ships after P5, so by the time the fix lands, `session_coaches` is the authoritative source. The pre-P5 implementation of this fix wouldn't exist — we'd ship P4 in a world where `sessions.coach_id` was still authoritative — but since the build order is P5 then P4, the fan-out version is the only one written.
 
 ### P5 — Multi-coach shifts
 
 ```sql
+BEGIN;
+
 CREATE TABLE session_coaches (
   session_id   uuid NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   user_id      uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -109,23 +117,28 @@ CREATE INDEX idx_session_coaches_user ON session_coaches(user_id);
 CREATE UNIQUE INDEX session_coaches_primary
   ON session_coaches(session_id) WHERE is_primary = true;
 
--- Trigger: keep sessions.coach_id in sync with the primary row in session_coaches.
--- This denormalisation is deliberate (not a hack): 181 existing read sites
--- expect a single coach, and the "primary" coach is the one whose pay rate
--- drives default pricing. Migrating all 181 sites to JOIN session_coaches in
--- one PR is too much risk. The trigger keeps both in sync; new code that
--- cares about "all coaches" queries session_coaches; old code keeps working.
+-- Forward sync: when session_coaches changes, update sessions.coach_id
+-- to reflect the current primary (or NULL if no rows remain).
 CREATE OR REPLACE FUNCTION sync_sessions_primary_coach()
 RETURNS TRIGGER AS $$
+DECLARE
+  sid uuid := COALESCE(NEW.session_id, OLD.session_id);
+  new_primary uuid;
 BEGIN
-  UPDATE sessions
-  SET coach_id = (
-    SELECT user_id FROM session_coaches
-    WHERE session_id = COALESCE(NEW.session_id, OLD.session_id)
-      AND is_primary = true
-    LIMIT 1
-  )
-  WHERE id = COALESCE(NEW.session_id, OLD.session_id);
+  SELECT user_id INTO new_primary FROM session_coaches
+   WHERE session_id = sid AND is_primary = true LIMIT 1;
+
+  UPDATE sessions SET coach_id = new_primary WHERE id = sid;
+
+  -- Auto-transition to needs_replacement when the last coach is removed
+  -- from a confirmed/published shift (edge case 4 in section 9).
+  IF new_primary IS NULL THEN
+    UPDATE sessions
+       SET status = 'needs_replacement'
+     WHERE id = sid
+       AND status IN ('published','pending_confirmation','confirmed');
+  END IF;
+
   RETURN COALESCE(NEW, OLD);
 END;
 $$ LANGUAGE plpgsql;
@@ -134,15 +147,37 @@ CREATE TRIGGER session_coaches_sync_primary
   AFTER INSERT OR UPDATE OR DELETE ON session_coaches
   FOR EACH ROW EXECUTE FUNCTION sync_sessions_primary_coach();
 
--- Backfill: every existing session with coach_id gets a primary row in session_coaches
+-- Backfill (inside the same transaction so there's no race window
+-- between trigger install and pre-existing rows being mirrored).
 INSERT INTO session_coaches (session_id, user_id, is_primary, assigned_at, assigned_by)
 SELECT id, coach_id, true, created_at, NULL
 FROM sessions
 WHERE coach_id IS NOT NULL
 ON CONFLICT DO NOTHING;
+
+COMMIT;
 ```
 
-`sessions.coach_id` stays as a denormalised "primary coach" cache. Reads that need the full coach list use `session_coaches`. Writes go through `session_coaches`; the trigger updates `sessions.coach_id` to match. Cert-guard, swap_requests, scheduling_preferences etc. continue to compile and work without immediate changes — they treat the primary coach as authoritative, which is the right semantics for single-coach sessions and a sensible default for multi-coach.
+**`sessions.coach_id` becomes a read-only cache.** All write paths in the codebase get migrated to write through `session_coaches` (via a new `setSessionCoaches` helper, see §6 P5). This is non-negotiable — leaving direct `coach_id` writes alive would silently desync the join table. Specific call sites to migrate as part of P5:
+
+| File | Function | Change |
+|---|---|---|
+| `lib/sessions/actions.ts` | `createSession` | After inserting the row, if `coach_id` was provided, insert a primary row in `session_coaches`. Do not write `coach_id` directly on insert. |
+| `lib/sessions/actions.ts` | `updateSession` | When `coach_id` is in the patch, route through `setSessionCoaches(sessionId, [coachId])` (deletes existing rows, inserts new primary). Strip `coach_id` from the direct UPDATE payload. |
+| `lib/sessions/actions.ts` | `bulkReassignCoach` | Loop through ids, call `setSessionCoaches` for each. |
+| `lib/sessions/shift-actions.ts` | `opsApproveSwap` | Replace direct `coach_id` write with `setSessionCoaches(session_id, [proposed_coach_id])`. |
+| `lib/sessions/shift-actions.ts` | `declineShift` (line 159) | Current code does `.update({ status: "published", coach_id: null })`. Replace with `setSessionCoaches(sessionId, [])` then `updateSession({ status: "published" })`. The trigger handles coach_id cache; the empty-set won't auto-flip status because the explicit `"published"` write comes immediately after. |
+| `lib/rerostering/actions.ts` | `respondToReplacementOffer` (accept path) | Same — write through `setSessionCoaches`. |
+| `lib/rerostering/actions.ts` | `cancelSessionAsCoach` (and any other path setting `coach_id: null` during rerostering) | Same pattern as `declineShift`: empty-set via `setSessionCoaches`, then explicit status change. |
+| `lib/scheduling/actions.ts` | `recordAdjustment` | Same. |
+| `lib/scheduling/actions.ts` | `publishSchedulingRun` | When applying assignments, route through `setSessionCoaches` per session (still one coach each for the AI path; multi-coach UI is a separate flow). |
+| `app/api/scheduling/generate/route.ts` | bulk apply loop | Same — replace direct UPDATE with `setSessionCoaches`. |
+
+The CI grep test in §8 (P5) is the safety net: it scans the same directories for any `coach_id` in an `.update({...})` or `.insert({...})` payload outside the `setSessionCoaches` helper file, and fails the build if found. Future call sites can't be missed silently.
+
+All 181 read sites that select `sessions.coach_id` continue to work unchanged — they're reading the trigger-maintained cache. Only writes are migrated. This is the cleanest design we can ship without rewriting 181 read sites in one PR.
+
+A defensive DB trigger that intercepts direct `coach_id` writes is intentionally **not** added — it'd produce trigger recursion (write to coach_id fires reverse trigger → updates session_coaches → fires forward trigger → updates coach_id...). Discipline via the helper function is the simpler and safer mechanism. CI test (see §8) verifies no call site writes `coach_id` directly post-migration.
 
 ---
 
@@ -184,7 +219,8 @@ Each card in the weekly grid grows a 3-dot menu in the top-right (icon button, s
 **Optimistic concurrency**: drop payload includes `session.updated_at`. Server rejects if stale — toast "Someone else just moved this. Refreshing." then refetch.
 
 **Conflict detection** (computed client-side on render, cheap O(N) per coach per week):
-- A session is "conflicting" if its assigned coach has another non-cancelled session on the same date whose `[time, time+duration]` overlaps.
+- Source data is the flattened `session_coaches` view, **not** `sessions.coach_id`. After P5, a coach can be primary on Session A and secondary on Session B — single-coach detection would miss the overlap.
+- A `(coach, session)` pair is "conflicting" if the same coach appears in another non-cancelled `session_coaches` row whose session's `[time, time+duration]` overlaps on the same date.
 - Conflict state: red left-border (3px), tiny red dot in the corner, tooltip "Coach is on overlapping shift at <other-centre> from <time>".
 - Drop is **allowed** on conflict (per Decision D). Ops sees the red flag and decides what to do.
 
@@ -240,28 +276,34 @@ Each card in the weekly grid grows a 3-dot menu in the top-right (icon button, s
 
 AI prompt update (`lib/ai/generate-program.ts`):
 - Accept `ageGroups: string[]`.
-- Prompt instruction: "Tailor activities for the youngest band; offer scaffolding suggestions for older bands within the same session. A single coach delivers one program to a mixed group."
-- For unknown sports (custom): "If the sport is unfamiliar, focus on general fundamentals appropriate to the age band: ball-handling, evasion, balance, teamwork."
+- **Output shape is locked to a single activity set with explicit per-band scaffolds**, not N parallel programs. Each activity in the returned JSON has a new optional `scaffolds: Record<AgeBand, string>` field where the keys are the requested age groups and the values are 1-2 line modifications ("for 3–5s: walk instead of run; for 5–8s: standard; for 8–12s: add an obstacle"). When only one band is selected, `scaffolds` is omitted.
+- Prompt: "You are building one coaching session a single coach can deliver to a mixed-age group. Design activities at the youngest selected band's level. For each activity, provide scaffolds: how to adjust the activity for the other selected bands. Return a single program — never a list of programs."
+- `ProgramContentJson` schema gets a new optional `scaffolds: Record<string, string>` per activity. Frontend renderer (`ProgramView`) shows scaffolds as a small "By age" section under each activity when present.
+- For unknown sports (custom): "If the sport is unfamiliar, focus on general fundamentals appropriate to the youngest selected age band: ball-handling, evasion, balance, teamwork."
 
 ### P3
 
 - `duplicateSession(id)` server action: select original by id (admin/ops only), insert new row with same fields except `id`, `coach_id=null`, `status='draft'`, `started_at=null`, `completed_at=null`. Returns new session id; revalidate roster.
-- `updateSessionNotes(id, notes)` server action: write-through; admin/ops or the assigned coach can write. Activity log entry.
+- `updateSessionNotes(id, notes)` server action: write-through. **Permission**: admin/ops, OR any coach in `session_coaches` for the shift (covers both single-coach today and multi-coach after P5). Single rule, no ambiguity. Activity log entry.
 
 ### P4
 
-- No new server actions. Drops route through `updateSession`, which already cert-guards.
-- Optimistic concurrency: client passes `expectedUpdatedAt`. Server reads current `updated_at`, rejects with 409 if mismatched. Existing `updateSession` doesn't do this — extend it with an optional `expectedUpdatedAt` parameter.
+- No new server actions. Drops route through `updateSession`.
+- **Cert-guard gap fix**: extend `updateSession` so the guard runs when **either** `coach_id` **or** `date` is in the patch. When `date` is in the patch, fetch **every assigned coach from `session_coaches`** for that session and call `bulkCheckCoachCertsForSessions([{coachId, sessionId, sessionDate: newDate}, ...])`. If any coach is blocked for the new date, refuse the whole drop. (Post-P5, sessions can have multiple coaches; the guard must fan out, not check a single `coach_id` cache.) Without this fix, a column-only drop bypasses the guard.
+- Optimistic concurrency: client passes `expectedUpdatedAt` in the patch. Server reads current `updated_at`, rejects with a 409-equivalent (`{ error: "stale", currentUpdatedAt }`) if mismatched. Existing `updateSession` doesn't do this — extend it with an **optional** `expectedUpdatedAt` parameter so existing callers (status transitions, swap accept, scheduling apply) are unchanged. Only the DnD path passes it. Callers that don't pass it remain non-concurrency-checked; that's the existing behaviour and acceptable for now (a follow-up task to apply checks everywhere is captured in §11 out-of-scope).
 - Existing realtime hook (`useSessionsRealtime`) propagates moves to other ops sessions.
 
 ### P5
 
-- New `assignCoaches(sessionId, [{ userId, isPrimary }])` action: validates exactly one primary, runs cert guard against every coach for the session date, writes to `session_coaches` atomically (delete missing, insert new, update existing).
-- `bulkReassignCoach` continues to exist for single-coach paths; new action is used when N>1.
-- Cert guard: per-coach. If any coach fails, the whole assignment rejects with a list of who's blocked and why.
+- New `setSessionCoaches(sessionId, coachIds: { userId: string; isPrimary: boolean }[])` helper — the **only** write path to `session_coaches`. Used by everything from single-coach `createSession` (just `[{ id, primary: true }]`) through to multi-coach assignment. Inside one transaction: delete rows not in the new set, upsert the rest, validate exactly one `isPrimary: true`.
+- New `assignCoaches(sessionId, coachIds[])` server action wraps `setSessionCoaches` for the multi-coach UI flow (admin/ops auth, cert-guard fan-out, activity log).
+- `bulkReassignCoach` continues to exist but is rewritten internally to call `setSessionCoaches` per session.
+- Cert guard: per-coach. `bulkCheckCoachCertsForSessions` already supports this shape. If any coach fails, the whole assignment rejects with a list of who's blocked and why — no partial writes.
 - Cost projection (`lib/utils/roster/cost-projection.ts`): for each `session_coach`, price at that coach's resolved rate × hours. Sum across all assigned coaches. **Decision E**: per-rate-summed.
 - Notifications: every assigned coach gets a roster notification; primary's includes "you're the lead, X and Y are with you".
 - Swap requests: scoped to `(session_id, requesting_coach_id)` — a single coach can swap out of their slot without taking the others with them.
+- **Activity log**: per-coach entries — `staff_assigned_to_session`, `staff_removed_from_session`, `session_primary_changed`. One row per change, not one per session.
+- **Zero-coach state**: if `setSessionCoaches` is called with an empty array, the trigger flips a `published`/`pending_confirmation`/`confirmed` session to `needs_replacement` automatically (see §4 P5 trigger body). `draft` sessions stay `draft`. `setSessionCoaches` does not refuse the empty case — ops needs to be able to clear a shift without it.
 
 ---
 
@@ -285,9 +327,9 @@ No new top-level dependencies.
 - **P2**: unit test the program form's "+ Add custom" flow (mock the server action), unit test the AI prompt builder with `ageGroups: ['3-5', '5-8']`.
 - **P3**: unit test `duplicateSession` (correct field copy, status reset, returns new id).
 - **P4**: unit test the conflict detection helper (overlapping time math); integration test the drop → server action → revalidate path; mobile interaction test via TouchSensor mock.
-- **P5**: unit tests for `assignCoaches` (one-primary invariant, cert-guard fan-out, atomic write); migration sanity test (backfill correctness — every session with coach_id ends up with a primary row).
+- **P5**: unit tests for `setSessionCoaches` / `assignCoaches` (one-primary invariant, cert-guard fan-out, atomic write, empty-set zero-coach transition); migration sanity test (backfill correctness — every session with coach_id ends up with a primary row); **CI guard test** that greps `lib/`, `app/`, `components/` for any direct `coach_id` writes outside `setSessionCoaches` and fails the build if found.
 
-All existing tests should continue to pass — the `coach_id` denormalisation specifically preserves the current contract for read sites.
+All existing tests should continue to pass — the `coach_id` denormalisation specifically preserves the current contract for read sites. Existing write sites are migrated to `setSessionCoaches`; their tests are updated to assert the new write path.
 
 ---
 
@@ -298,18 +340,21 @@ All existing tests should continue to pass — the `coach_id` denormalisation sp
 | 1 | Drag-drop to a date where assigned coach's WWCC just expired | Cert guard refuses; optimistic UI reverts; toast explains |
 | 2 | Two ops drag the same shift simultaneously | `expectedUpdatedAt` optimistic concurrency + realtime refresh |
 | 3 | Multi-coach where one coach is archived/`inactive` | UI hides archived from picker; existing rows show "(archived)" tag; can still demote primary to remove |
-| 4 | Duplicate a cancelled shift | Allow; new copy gets `status='draft'`, `cancellation_reason=null` |
-| 5 | Custom sport typo "Soccor" | Admin can rename/delete from `/admin/settings/programs`. Case-insensitive uniqueness prevents exact duplicates. |
+| 4 | Last coach removed from a confirmed shift | Trigger auto-flips status to `needs_replacement` (only when status was published/pending_confirmation/confirmed). Existing rerostering offer flow then handles replacement. |
+| 5 | Custom sport typo "Soccor" | Admin can rename/delete from `/admin/settings/programs`. Case-insensitive functional unique index prevents exact duplicates. |
 | 6 | Staff defaults seeding when slots already exist | Skip seed (don't overwrite). Tested. |
 | 7 | Mobile drag vs vertical scroll | TouchSensor activation distance 5px disambiguates |
 | 8 | Cost projection with primary coach unpriced | Surfaces in `unpricedSessions` count (already does); per-coach split inherits |
-| 9 | Conflict detection retroactive after manual create | Recompute on read each render |
+| 9 | Conflict detection retroactive after manual create | Recompute on read each render; source is `session_coaches`, not `sessions.coach_id`. |
 | 10 | Multi-age program saved without AI | Allowed; field independent of generation |
-| 11 | `sessions.notes` written by a coach who isn't the primary | Allowed if they're in `session_coaches` for the shift; otherwise forbidden |
-| 12 | DST boundary in default availability | Times stored as `time` (no tz). 8:00–16:30 local at the centre. Cron and roster reads stay in centre-local interpretation. |
-| 13 | Single-coach UI accidentally writes `sessions.coach_id` directly | Trigger keeps `session_coaches.is_primary` in sync via the inverse function (TODO: write inverse trigger or block direct writes; documented but deferred) |
-| 14 | Empty age_groups array | Validation: min 1 selected, prevent submit |
-| 15 | DnD on touch device with reduced-motion preference | Honour `prefers-reduced-motion`, snap without animation |
+| 11 | DST boundary in default availability | Times stored as `time` (no tz). 8:00–16:30 local at the centre. Cron and roster reads stay in centre-local interpretation. |
+| 12 | New code accidentally writes `sessions.coach_id` directly post-P5 | CI test asserts no `sessions.coach_id` writes outside the `setSessionCoaches` helper (grep + assertion). Defensive DB trigger NOT used (would recurse). |
+| 13 | Empty `age_groups` array | Validation: min 1 selected, prevent submit |
+| 14 | DnD on touch device with reduced-motion preference | Honour `prefers-reduced-motion`, snap without animation |
+| 15 | Duplicate a cancelled shift | Allow; new copy gets `status='draft'`, `cancellation_reason=null` |
+| 16 | Drag-only-date drop where coach's WWCC expires before new date | `updateSession` runs cert guard when `date` is in patch (gap fix called out in §6 P4). Drop is refused; optimistic UI reverts. |
+| 17 | Two-coach session where coach A is primary on session X and secondary on overlapping session Y | Conflict detection now reads `session_coaches` flattened, catches the overlap on both cards. |
+| 18 | Concurrent edit race not covered by P4 concurrency check (e.g. swap accept) | Existing behaviour preserved for non-DnD writes. Out-of-scope to extend, see §11. |
 
 ---
 
@@ -332,6 +377,7 @@ All existing tests should continue to pass — the `coach_id` denormalisation sp
 - Refactoring legacy `getComplianceWarningsForSessions` callers — already done in `5dc6fde`
 - Eliminating `sessions.coach_id` entirely — the trigger keeps it as a cache; full migration is a follow-up
 - Per-shift child-attendance integration with multi-coach (which coach signs each child in) — works fine with the existing UI today, can be revisited if needed
+- Extending optimistic-concurrency (`expectedUpdatedAt`) to all `updateSession` callers — only DnD passes it in P4; existing callers are left unchanged. Treating this as a follow-up "tighten everywhere" task once P4 has bedded in.
 
 ---
 
