@@ -100,6 +100,7 @@ export function AddStaffForm() {
                 <p className="font-medium">Welcome email sent to {created.email}</p>
                 <p className="text-xs text-emerald-600/80">
                   It contains the login URL and a temporary password. {created.name.split(" ")[0]} will be prompted to choose a new password on first login.
+                  Default availability seeded (Mon–Fri 8:00am–4:30pm) — edit anytime in the Availability tab.
                 </p>
               </div>
             </div>
