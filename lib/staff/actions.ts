@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
 import { staffOnboarding } from "@/lib/launch/email-templates";
+import { generateDefaultAvailabilitySlots } from "@/lib/utils/staff/default-availability";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
 
@@ -226,13 +227,37 @@ export async function createStaffMember(
     phone: data.phone ?? null,
     role: data.role,
     default_pay_rate: data.default_pay_rate ?? null,
-    status: "onboarding" as UserStatus,
+    status: "active" as UserStatus,
   });
 
   if (profileError) {
     // Attempt to clean up the auth user if profile insert fails
     await admin.auth.admin.deleteUser(authUser.user.id);
     return { data: null, error: profileError.message };
+  }
+
+  // Seed Mon–Fri 8:00am–4:30pm availability so the new staff member
+  // is immediately rosterable. Defensive: if any slots already exist
+  // (shouldn't happen on fresh create, but guards against re-runs),
+  // skip the seed rather than duplicate rows. Non-fatal on failure —
+  // ops can add slots from the Availability tab if seeding hiccups.
+  try {
+    const { count: existingSlotCount } = await admin
+      .from("availability_slots")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", authUser.user.id);
+
+    if ((existingSlotCount ?? 0) === 0) {
+      const slots = generateDefaultAvailabilitySlots(authUser.user.id);
+      const { error: slotError } = await admin
+        .from("availability_slots")
+        .insert(slots);
+      if (slotError) {
+        console.error("default availability seed failed:", slotError);
+      }
+    }
+  } catch (err) {
+    console.error("default availability seed exception:", err);
   }
 
   // Send welcome email with login credentials. We don't fail the
