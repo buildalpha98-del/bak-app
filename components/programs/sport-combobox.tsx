@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Check, Plus, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 import {
   Command,
   CommandEmpty,
@@ -59,6 +60,8 @@ export function SportCombobox({ value, onChange }: SportComboboxProps) {
       onChange(result.data.name);
       setOpen(false);
       setQuery("");
+    } else if (result.error) {
+      toast.error(result.error);
     }
   }
 
@@ -77,29 +80,18 @@ export function SportCombobox({ value, onChange }: SportComboboxProps) {
         {value || "Select sport"}
         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent className="w-[var(--anchor-width)] p-0" align="start">
         <Command>
           <CommandInput
-            placeholder="Search or add a sport&hellip;"
+            placeholder="Search or add a sport…"
             value={query}
             onValueChange={setQuery}
           />
           <CommandList>
             <CommandEmpty>
-              {canAdd ? (
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-primary hover:bg-accent"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add &ldquo;{trimmed}&rdquo;
-                </button>
-              ) : (
-                <p className="px-2 py-1.5 text-sm text-muted-foreground">
-                  No sports found.
-                </p>
-              )}
+              <p className="px-2 py-1.5 text-sm text-muted-foreground">
+                No sports found.
+              </p>
             </CommandEmpty>
             <CommandGroup>
               {dedupedSports.map((s) => (
@@ -123,7 +115,7 @@ export function SportCombobox({ value, onChange }: SportComboboxProps) {
               {canAdd && (
                 <CommandItem onSelect={handleAdd} className="text-primary">
                   <Plus className="mr-2 h-4 w-4" />
-                  Add &ldquo;{trimmed}&rdquo;
+                  Add "{trimmed}"
                 </CommandItem>
               )}
             </CommandGroup>

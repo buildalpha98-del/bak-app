@@ -145,12 +145,12 @@ function AddCustomEquipmentRow({
           disabled={!canAdd || busy}
           className="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground disabled:opacity-40"
         >
-          {busy ? "Adding…" : "Add"}
+          {busy ? "Adding..." : "Add"}
         </button>
       </div>
       {duplicate && trimmed.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          &ldquo;{trimmed}&rdquo; is already in the list.
+          "{trimmed}" is already in the list.
         </p>
       )}
       {error && <p className="text-xs text-red-600">{error}</p>}
