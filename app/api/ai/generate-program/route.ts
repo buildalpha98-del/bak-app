@@ -76,15 +76,44 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (
-      !body.availableEquipment ||
-      !Array.isArray(body.availableEquipment) ||
-      body.availableEquipment.length === 0
-    ) {
+    // Validate availableEquipment shape
+    const availableEquipment = Array.isArray(body.availableEquipment)
+      ? body.availableEquipment.filter((s: unknown): s is string => typeof s === "string" && s.length > 0)
+      : [];
+    if (availableEquipment.length === 0) {
       return NextResponse.json(
         { error: "Please select at least one piece of equipment." },
         { status: 400 }
       );
+    }
+
+    // Validate centreContext shape (optional)
+    let centreContext: {
+      centreName: string;
+      recentPrograms: Array<{ title: string; sport: string; skillFocus: string | null }>;
+    } | undefined;
+    if (body.centreContext != null) {
+      const cc = body.centreContext as Record<string, unknown>;
+      if (
+        typeof cc !== "object" ||
+        typeof cc.centreName !== "string" ||
+        !Array.isArray(cc.recentPrograms)
+      ) {
+        return NextResponse.json({ error: "Invalid centreContext shape." }, { status: 400 });
+      }
+      centreContext = {
+        centreName: cc.centreName as string,
+        recentPrograms: (cc.recentPrograms as unknown[])
+          .filter(
+            (p: unknown): p is { title: string; sport: string; skillFocus: string | null } =>
+              typeof p === "object" &&
+              p !== null &&
+              typeof (p as { title?: unknown }).title === "string" &&
+              typeof (p as { sport?: unknown }).sport === "string" &&
+              ((p as { skillFocus?: unknown }).skillFocus === null ||
+                typeof (p as { skillFocus?: unknown }).skillFocus === "string")
+          )
+      };
     }
 
     // 5. Generate programme via Claude
@@ -95,11 +124,8 @@ export async function POST(request: Request) {
       ageGroups,
       durationMinutes: body.durationMinutes as number,
       skillFocus: typeof body.skillFocus === "string" ? body.skillFocus : undefined,
-      availableEquipment: body.availableEquipment as string[],
-      centreContext: body.centreContext as {
-        centreName: string;
-        recentPrograms: Array<{ title: string; sport: string; skillFocus: string | null }>;
-      } | undefined,
+      availableEquipment,
+      centreContext,
     });
 
     return NextResponse.json({ data: programContent });

@@ -35,11 +35,11 @@ export function buildProgramPrompt(input: BuildProgramPromptInput): string {
   const isUnknownSport = !PRESET_SPORTS_LOWER.has(input.sport.toLowerCase());
 
   const ageSection = isMulti
-    ? `This program will be delivered to a mixed-age group spanning the following bands: ${ages.join(", ")}.
+    ? `This programme will be delivered to a mixed-age group spanning the following bands: ${ages.join(", ")}.
 Design activities appropriate to the youngest selected band (${ages[0]}). For each activity provide a \`scaffolds\` object whose keys are the selected age bands and whose values are 1-2 line instructions for adjusting the activity for that band (e.g. for the youngest: simpler rules, walking instead of running; for older: add a challenge constraint or obstacle).
 
-Output a single program — never a list of programs.`
-    : `This program is for age band ${ages[0]}. Design activities appropriate to that band.
+Output a single programme — never a list of programmes.`
+    : `This programme is for age band ${ages[0]}. Design activities appropriate to that band.
 When only one age band is selected, omit \`scaffolds\` from each activity.`;
 
   const unknownSportSection = isUnknownSport

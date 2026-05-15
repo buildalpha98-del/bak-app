@@ -33,7 +33,7 @@ describe("buildProgramPrompt", () => {
     expect(p).toContain("3-5");
     expect(p).toContain("5-8");
     expect(p).toMatch(/provide a `?scaffolds`?/i);
-    expect(p).toMatch(/single program/i);
+    expect(p).toMatch(/single programme/i);
   });
 
   it("instructs to design for the youngest band when multiple selected", () => {
