@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateProgram } from "@/lib/ai/generate-program";
-import type { GenerateProgramRequest } from "@/lib/ai/types";
-import { SPORTS } from "@/lib/types/enums";
+import { validateAgeBands } from "@/lib/utils/programs/age-bands";
 
 // Simple in-memory rate limit: userId → last generation timestamp
 const rateLimitMap = new Map<string, number>();
@@ -50,21 +49,28 @@ export async function POST(request: Request) {
     }
 
     // 4. Parse and validate body
-    const body = (await request.json()) as GenerateProgramRequest;
+    const body = (await request.json()) as Record<string, unknown>;
 
-    if (!body.sport || !SPORTS.includes(body.sport)) {
+    // Sport: accept any non-empty string up to 64 chars (custom sports supported)
+    const sport = typeof body.sport === "string" ? body.sport.trim() : "";
+    if (sport.length === 0 || sport.length > 64) {
       return NextResponse.json(
-        { error: "Invalid sport selection." },
+        { error: "Sport is required." },
         { status: 400 }
       );
     }
-    if (!["3-5", "5-8", "8-12"].includes(body.ageGroup)) {
+
+    // Age bands: validate array using AgeBand helper
+    const ageGroups = Array.isArray(body.ageGroups) ? (body.ageGroups as string[]) : [];
+    const ageValidation = validateAgeBands(ageGroups);
+    if (!ageValidation.ok) {
       return NextResponse.json(
-        { error: "Invalid age group." },
+        { error: ageValidation.message },
         { status: 400 }
       );
     }
-    if (![30, 45, 60].includes(body.durationMinutes)) {
+
+    if (![30, 45, 60].includes(body.durationMinutes as number)) {
       return NextResponse.json(
         { error: "Invalid duration." },
         { status: 400 }
@@ -84,7 +90,17 @@ export async function POST(request: Request) {
     // 5. Generate programme via Claude
     rateLimitMap.set(user.id, Date.now());
 
-    const programContent = await generateProgram(body);
+    const programContent = await generateProgram({
+      sport,
+      ageGroups,
+      durationMinutes: body.durationMinutes as number,
+      skillFocus: typeof body.skillFocus === "string" ? body.skillFocus : undefined,
+      availableEquipment: body.availableEquipment as string[],
+      centreContext: body.centreContext as {
+        centreName: string;
+        recentPrograms: Array<{ title: string; sport: string; skillFocus: string | null }>;
+      } | undefined,
+    });
 
     return NextResponse.json({ data: programContent });
   } catch (err) {

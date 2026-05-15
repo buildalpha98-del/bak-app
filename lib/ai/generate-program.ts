@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type {
-  GenerateProgramRequest,
-  ProgramContentJson,
-} from "./types";
+import type { ProgramContentJson } from "./types";
+import { buildProgramPrompt, type BuildProgramPromptInput } from "./program-prompt";
+
+export type GenerateProgramInput = BuildProgramPromptInput;
 
 // ============================================================
 // Claude API Programme Generator (server-only)
@@ -116,37 +116,8 @@ Respond with ONLY a valid JSON object (no markdown, no explanation, no code fenc
 
 Ensure the durations of all sections sum to the total session duration. Use Australian English (centre, colour, programme, organisation). Make activities creative, engaging, and fun.`;
 
-function buildUserMessage(request: GenerateProgramRequest): string {
-  const parts: string[] = [
-    `Generate a ${request.durationMinutes}-minute ${request.sport} coaching session plan.`,
-    `Age group: ${request.ageGroup} years`,
-    `Available equipment: ${request.availableEquipment.join(", ")}`,
-  ];
-
-  if (request.skillFocus) {
-    parts.push(`Skill focus: ${request.skillFocus}`);
-  }
-
-  if (request.centreType) {
-    parts.push(`Centre type: ${request.centreType === "childcare_centre" ? "Childcare centre (use EYLF outcomes)" : "School (use PDHPE outcomes)"}`);
-  }
-
-  if (request.centreContext) {
-    parts.push(`\nThis session is for ${request.centreContext.centreName}.`);
-    if (request.centreContext.recentPrograms.length > 0) {
-      parts.push(
-        "Recent programmes delivered at this centre (avoid repeating these):"
-      );
-      for (const p of request.centreContext.recentPrograms) {
-        parts.push(
-          `  - ${p.title} (${p.sport}${p.skillFocus ? `, focus: ${p.skillFocus}` : ""})`
-        );
-      }
-    }
-  }
-
-  return parts.join("\n");
-}
+// Prompt construction is now handled by the pure buildProgramPrompt helper
+// in ./program-prompt.ts. See that file for the age-band scaffolding logic.
 
 function parseResponse(text: string): ProgramContentJson {
   // Try direct JSON parse first
@@ -185,7 +156,7 @@ function parseResponse(text: string): ProgramContentJson {
  * Server-only — never import from client components.
  */
 export async function generateProgram(
-  request: GenerateProgramRequest
+  request: GenerateProgramInput
 ): Promise<ProgramContentJson> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error(
@@ -201,7 +172,7 @@ export async function generateProgram(
     messages: [
       {
         role: "user",
-        content: buildUserMessage(request),
+        content: buildProgramPrompt(request),
       },
     ],
   });

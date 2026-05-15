@@ -45,6 +45,13 @@ export interface SkillDrill {
   description: string;
   progressions: string[];
   coachingTips: string;
+  /**
+   * Per-age-band modifications for multi-age programs. Keys are the
+   * AgeBand strings ("3-5", "5-8", "8-12"). Omitted when only one
+   * age band was requested. Values are 1-2 line instructions for
+   * adjusting the activity for that band.
+   */
+  scaffolds?: Record<string, string>;
 }
 
 export interface ModifiedGameSection {

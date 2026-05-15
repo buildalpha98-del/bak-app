@@ -10,7 +10,7 @@ import type { ProgramContentJson } from "@/lib/ai/types";
 
 export interface SaveProgramInput {
   sport: string;
-  ageGroup: string;
+  ageGroups: string[];           // multi-age support; replaces singular ageGroup
   durationMinutes: number;
   skillFocus?: string;
   contentJson: ProgramContentJson;
@@ -21,7 +21,8 @@ export interface ProgramListItem {
   id: string;
   title: string;
   sport: string;
-  age_group: string | null;
+  age_group: string | null;      // denormalised primary band (first of age_groups)
+  age_groups: string[];          // full array from programs.age_groups
   duration_minutes: number;
   skill_focus: string | null;
   created_at: string;
@@ -68,7 +69,8 @@ export async function saveProgram(
       .from("programs")
       .insert({
         sport: input.sport,
-        age_group: input.ageGroup,
+        age_groups: input.ageGroups,
+        age_group: input.ageGroups[0] ?? null,  // keep denormalised primary band
         duration_minutes: input.durationMinutes,
         skill_focus: input.skillFocus ?? null,
         content_json: input.contentJson as unknown as Record<string, unknown>,
@@ -90,7 +92,8 @@ export async function saveProgram(
       entity_id: data.id,
       metadata: {
         sport: input.sport,
-        age_group: input.ageGroup,
+        age_groups: input.ageGroups,
+        age_group: input.ageGroups[0] ?? null,
         ai_generated: true,
       },
     });
@@ -105,7 +108,7 @@ export async function saveProgram(
         category: "program",
         file_url: `/ops/programs/${data.id}`,
         file_name: `${title}.json`,
-        tags: [input.sport, input.ageGroup].filter(Boolean),
+        tags: [input.sport, ...(input.ageGroups ?? [])].filter(Boolean),
         version: 1,
         parent_document_id: null,
         uploaded_by: user.id,
@@ -139,7 +142,7 @@ export async function getPrograms(
 
     const { data, error } = await supabase
       .from("programs")
-      .select("id, sport, age_group, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
+      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -154,6 +157,7 @@ export async function getPrograms(
           title: (content?.title as string) ?? `${r.sport} Programme`,
           sport: r.sport as string,
           age_group: r.age_group as string | null,
+          age_groups: (r.age_groups as string[]) ?? [],
           duration_minutes: r.duration_minutes as number,
           skill_focus: r.skill_focus as string | null,
           created_at: r.created_at as string,
@@ -332,6 +336,7 @@ export async function getProgramDetail(
       title: (content?.title as string) ?? `${data.sport} Programme`,
       sport: data.sport,
       age_group: data.age_group,
+      age_groups: (data.age_groups as string[]) ?? [],
       duration_minutes: data.duration_minutes,
       skill_focus: data.skill_focus,
       created_at: data.created_at,
@@ -435,7 +440,8 @@ export async function createNewVersion(
       .from("programs")
       .insert({
         sport: input.sport,
-        age_group: input.ageGroup,
+        age_groups: input.ageGroups,
+        age_group: input.ageGroups[0] ?? null,  // keep denormalised primary band
         duration_minutes: input.durationMinutes,
         skill_focus: input.skillFocus ?? null,
         content_json: input.contentJson as unknown as Record<string, unknown>,
@@ -591,7 +597,7 @@ export async function getProgramsForSport(
 
     const { data, error } = await supabase
       .from("programs")
-      .select("id, sport, age_group, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
+      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
       .eq("sport", sport)
       .order("created_at", { ascending: false })
       .limit(30);
@@ -607,6 +613,7 @@ export async function getProgramsForSport(
           title: (content?.title as string) ?? `${r.sport} Programme`,
           sport: r.sport as string,
           age_group: r.age_group as string | null,
+          age_groups: (r.age_groups as string[]) ?? [],
           duration_minutes: r.duration_minutes as number,
           skill_focus: r.skill_focus as string | null,
           created_at: r.created_at as string,
