@@ -19,15 +19,19 @@ import { Separator } from "@/components/ui/separator";
 import { EquipmentPicker, STANDARD_EQUIPMENT } from "./equipment-picker";
 import { ProgramView } from "./program-view";
 import { ProgramEditor } from "./program-editor";
-import { SPORTS } from "@/lib/types/enums";
+import { SportCombobox } from "./sport-combobox";
+import { AgeGroupCheckboxes } from "./age-group-checkboxes";
+import {
+  addCustomEquipment,
+} from "@/lib/programs/custom-taxonomy-actions";
+import { type AgeBand } from "@/lib/utils/programs/age-bands";
 import {
   saveProgram,
   getCentreListSimple,
   getCentreEquipment,
   getRecentProgramsForCentre,
 } from "@/lib/programs/actions";
-import type { ProgramContentJson, AgeGroup, SessionDuration } from "@/lib/ai/types";
-import type { Sport } from "@/lib/types/enums";
+import type { ProgramContentJson, SessionDuration } from "@/lib/ai/types";
 
 // ============================================================
 // Programme Generation Form
@@ -39,12 +43,6 @@ interface ProgramGenerateFormProps {
   basePath: string;
 }
 
-const AGE_GROUPS: { value: AgeGroup; label: string }[] = [
-  { value: "3-5", label: "3–5 years (Early Childhood)" },
-  { value: "5-8", label: "5–8 years (Junior)" },
-  { value: "8-12", label: "8–12 years (Senior)" },
-];
-
 const DURATIONS: { value: SessionDuration; label: string }[] = [
   { value: 30, label: "30 minutes" },
   { value: 45, label: "45 minutes" },
@@ -55,8 +53,8 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   const router = useRouter();
 
   // Form fields
-  const [sport, setSport] = useState<Sport | "">("");
-  const [ageGroup, setAgeGroup] = useState<AgeGroup | "">("");
+  const [sport, setSport] = useState<string>("");
+  const [ageGroups, setAgeGroups] = useState<AgeBand[]>([]);
   const [durationMinutes, setDurationMinutes] = useState<SessionDuration | 0>(0);
   const [skillFocus, setSkillFocus] = useState("");
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([
@@ -128,7 +126,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   }, []);
 
   // Validation
-  const isFormValid = sport && ageGroup && durationMinutes && selectedEquipment.length > 0;
+  const isFormValid = sport && ageGroups.length > 0 && durationMinutes && selectedEquipment.length > 0;
 
   // Generate handler
   async function handleGenerate() {
@@ -152,7 +150,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sport,
-          ageGroup,
+          ageGroups,
           durationMinutes,
           skillFocus: skillFocus.trim() || undefined,
           availableEquipment: selectedEquipment,
@@ -188,7 +186,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
     try {
       const { error: saveError } = await saveProgram({
         sport: sport as string,
-        ageGroup: ageGroup as string,
+        ageGroups,
         durationMinutes: durationMinutes as number,
         skillFocus: skillFocus.trim() || undefined,
         contentJson: contentToSave,
@@ -267,42 +265,14 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
             <CardContent className="pt-6 space-y-4">
               {/* Sport */}
               <div>
-                <Label htmlFor="sport">Sport *</Label>
-                <Select
-                  value={sport}
-                  onValueChange={(v) => setSport(v as Sport)}
-                >
-                  <SelectTrigger id="sport">
-                    <SelectValue placeholder="Select sport" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SPORTS.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Sport *</Label>
+                <SportCombobox value={sport} onChange={setSport} />
               </div>
 
               {/* Age Group */}
               <div>
-                <Label htmlFor="age-group">Age group *</Label>
-                <Select
-                  value={ageGroup}
-                  onValueChange={(v) => setAgeGroup(v as AgeGroup)}
-                >
-                  <SelectTrigger id="age-group">
-                    <SelectValue placeholder="Select age group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AGE_GROUPS.map((ag) => (
-                      <SelectItem key={ag.value} value={ag.value}>
-                        {ag.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Age group *</Label>
+                <AgeGroupCheckboxes value={ageGroups} onChange={setAgeGroups} />
               </div>
 
               {/* Duration */}
@@ -395,6 +365,15 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
                 items={equipmentItems}
                 selected={selectedEquipment}
                 onChange={setSelectedEquipment}
+                onAddCustom={async (name) => {
+                  const result = await addCustomEquipment(name);
+                  if (result.data) {
+                    setCentreEquipmentItems((prev) => [...prev, result.data!.name]);
+                    setSelectedEquipment((prev) => [...prev, result.data!.name]);
+                  } else if (result.error) {
+                    toast.error(result.error);
+                  }
+                }}
               />
             </CardContent>
           </Card>

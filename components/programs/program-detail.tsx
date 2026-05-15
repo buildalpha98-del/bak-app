@@ -89,7 +89,7 @@ export function ProgramDetailView({
     setSavingVersion(true);
     const input: SaveProgramInput = {
       sport: program.sport,
-      ageGroup: program.age_group ?? "",
+      ageGroups: program.age_groups?.length ? program.age_groups : (program.age_group ? [program.age_group] : []),
       durationMinutes: program.duration_minutes,
       skillFocus: program.skill_focus ?? undefined,
       contentJson: editContent,

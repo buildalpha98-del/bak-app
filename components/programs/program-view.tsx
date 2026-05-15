@@ -152,6 +152,16 @@ function SkillDevelopmentContent({ drills }: { drills: SkillDrill[] }) {
               <BulletList items={drill.progressions} />
             </div>
           )}
+          {drill.scaffolds && Object.keys(drill.scaffolds).length > 0 && (
+            <div className="mt-2 space-y-1 rounded bg-secondary/40 px-3 py-2 text-xs">
+              <p className="font-medium text-muted-foreground">By age:</p>
+              {Object.entries(drill.scaffolds).map(([band, note]) => (
+                <p key={band} className="text-foreground">
+                  <span className="font-medium">{band}:</span> {note}
+                </p>
+              ))}
+            </div>
+          )}
           <CoachingTip text={drill.coachingTips} />
         </div>
       ))}
