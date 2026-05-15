@@ -7,7 +7,7 @@
 CREATE TABLE custom_sports (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        text NOT NULL,
-  created_by  uuid NOT NULL REFERENCES profiles(id) ON DELETE SET NULL,
+  created_by  uuid REFERENCES profiles(id) ON DELETE SET NULL,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -31,7 +31,7 @@ CREATE POLICY "custom_sports write for admin/ops"
 CREATE TABLE custom_equipment (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        text NOT NULL,
-  created_by  uuid NOT NULL REFERENCES profiles(id) ON DELETE SET NULL,
+  created_by  uuid REFERENCES profiles(id) ON DELETE SET NULL,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -58,4 +58,6 @@ ALTER TABLE programs
 
 UPDATE programs
 SET age_groups = jsonb_build_array(age_group)
-WHERE age_group IS NOT NULL AND age_groups = '[]'::jsonb;
+WHERE age_group IS NOT NULL
+  AND length(trim(age_group)) > 0
+  AND age_groups = '[]'::jsonb;
