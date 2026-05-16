@@ -9,6 +9,7 @@ const {
   setSessionCoachesMock,
   bulkCheckMock,
   activityLogInsertMock,
+  notificationInsertMock,
 } = vi.hoisted(() => ({
   supabaseMock: {
     auth: { getUser: vi.fn() },
@@ -18,6 +19,7 @@ const {
   setSessionCoachesMock: vi.fn(),
   bulkCheckMock: vi.fn(),
   activityLogInsertMock: vi.fn(),
+  notificationInsertMock: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -99,7 +101,12 @@ function mockAuth(role: "admin" | "ops" | "coach", opts: MockAuthOptions = {}) {
       };
     }
     if (table === "notifications") {
-      return { insert: () => Promise.resolve({ error: null }) };
+      return {
+        insert: (rows: unknown) => {
+          notificationInsertMock(rows);
+          return Promise.resolve({ error: null });
+        },
+      };
     }
     throw new Error(`unmocked table ${table}`);
   });
@@ -240,5 +247,70 @@ describe("assignCoaches", () => {
       coaches: [],
       assignedBy: "ops1",
     });
+  });
+
+  it("fans out a roster notification to every newly-added coach, with lead-role wording for the primary", async () => {
+    mockAuth("ops", {
+      profileNames: [
+        { id: "u1", name: "Alice" },
+        { id: "u2", name: "Bob" },
+      ],
+      existingCoaches: [], // no existing assignments
+    });
+    bulkCheckMock.mockResolvedValue({
+      valid: [
+        { coachId: "u1", sessionId: "s1", sessionDate: "2026-06-01" },
+        { coachId: "u2", sessionId: "s1", sessionDate: "2026-06-01" },
+      ],
+      blocked: [],
+    });
+    setSessionCoachesMock.mockResolvedValue({ error: null });
+
+    await assignCoaches("s1", [
+      { userId: "u1", isPrimary: true },
+      { userId: "u2", isPrimary: false },
+    ]);
+
+    expect(notificationInsertMock).toHaveBeenCalledTimes(1);
+    const rows = notificationInsertMock.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    expect(rows).toHaveLength(2);
+    const primary = rows.find((r) => r.user_id === "u1");
+    const secondary = rows.find((r) => r.user_id === "u2");
+    expect(((primary?.body as string) ?? "").toLowerCase()).toMatch(
+      /lead|primary/,
+    );
+    expect(((secondary?.body as string) ?? "").toLowerCase()).not.toMatch(
+      /lead|primary/,
+    );
+  });
+
+  it("does NOT notify coaches who were already assigned (only newly added)", async () => {
+    mockAuth("ops", {
+      profileNames: [{ id: "u2", name: "Bob" }],
+      existingCoaches: [{ user_id: "u1", is_primary: true }],
+    });
+    bulkCheckMock.mockResolvedValue({
+      valid: [
+        { coachId: "u1", sessionId: "s1", sessionDate: "2026-06-01" },
+        { coachId: "u2", sessionId: "s1", sessionDate: "2026-06-01" },
+      ],
+      blocked: [],
+    });
+    setSessionCoachesMock.mockResolvedValue({ error: null });
+
+    await assignCoaches("s1", [
+      { userId: "u1", isPrimary: true },
+      { userId: "u2", isPrimary: false },
+    ]);
+
+    // u1 was already assigned; only u2 is newly added.
+    expect(notificationInsertMock).toHaveBeenCalledTimes(1);
+    const rows = notificationInsertMock.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].user_id).toBe("u2");
   });
 });

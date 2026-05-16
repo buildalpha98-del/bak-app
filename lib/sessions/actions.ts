@@ -679,6 +679,44 @@ export async function assignCoaches(
       await supabase.from("activity_log").insert(logRows);
     }
 
+    // Notifications — fan out one row per newly-added coach. Existing
+    // assignees don't get re-notified on a primary swap (the activity
+    // log captures the role change for ops; the coach already knows
+    // they're on the shift).
+    const newlyAdded = coachIds.filter((c) => !existingByUser.has(c.userId));
+    if (newlyAdded.length > 0) {
+      // Look up names for all assigned coaches so the primary's body
+      // can mention their co-coaches by name.
+      const allCoachIds = coachIds.map((c) => c.userId);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", allCoachIds);
+      const nameById = new Map(
+        (profiles ?? []).map((p) => [
+          p.id as string,
+          (p.name as string | null) ?? null,
+        ])
+      );
+
+      const otherNames = coachIds
+        .filter((c) => !c.isPrimary)
+        .map((c) => nameById.get(c.userId) ?? "another coach");
+
+      const notifications = newlyAdded.map((c) => ({
+        user_id: c.userId,
+        type: "roster_assigned",
+        tier: "important" as const,
+        title: "Roster assignment",
+        body: c.isPrimary
+          ? `You're the lead on a new shift${otherNames.length > 0 ? `, with ${otherNames.join(" and ")}` : ""}.`
+          : `You've been added to a shift led by another coach.`,
+        entity_type: "session",
+        entity_id: sessionId,
+      }));
+      await supabase.from("notifications").insert(notifications);
+    }
+
     return { error: null };
   } catch (err) {
     console.error("assignCoaches error:", err);
