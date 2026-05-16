@@ -909,29 +909,22 @@ export async function suggestCoachesForSession(
       .select("user_id, start_time, end_time")
       .eq("day_of_week", dayOfWeek);
 
-    // Get existing sessions for these coaches on this date (to check clashes)
+    // P5: clashes now read from `session_coaches` so a coach who is
+    // primary on shift X and secondary on shift Y still surfaces both
+    // overlaps. The candidate (this session) is excluded from the
+    // search via `.neq("session_id", ...)` so re-assigning the same
+    // coach to the same shift never counts as a clash.
     const coachIds = coaches.map((c) => c.id);
-    const { data: existingSessions } = await supabase
-      .from("sessions")
-      .select("coach_id, time, duration_minutes")
-      .eq("date", session.date)
-      .in("coach_id", coachIds)
-      .not("status", "eq", "cancelled");
-
-    // Build clash set
-    const clashCoaches = new Set<string>();
     const sessTime = session.time.slice(0, 5);
     const sessEnd = addMinutes(sessTime, session.duration_minutes);
 
-    for (const es of existingSessions ?? []) {
-      if (!es.coach_id) continue;
-      const esTime = es.time.slice(0, 5);
-      const esEnd = addMinutes(esTime, es.duration_minutes);
-      // Check overlap
-      if (sessTime < esEnd && sessEnd > esTime) {
-        clashCoaches.add(es.coach_id);
-      }
-    }
+    const { clashCoaches } = await detectCoachClashes({
+      coachIds,
+      date: session.date,
+      time: session.time,
+      durationMinutes: session.duration_minutes,
+      excludeSessionId: sessionId,
+    });
 
     // Build availability set
     const availableCoaches = new Set<string>();
@@ -957,6 +950,75 @@ export async function suggestCoachesForSession(
     console.error("suggestCoachesForSession error:", err);
     return { data: null, error: "Failed to suggest coaches." };
   }
+}
+
+// ============================================================
+// 10. detectCoachClashes — reads from session_coaches (P5)
+// ============================================================
+
+/**
+ * Detect time-overlap clashes for a candidate (date, time, duration)
+ * against each coach's existing assignments. Reads from
+ * `session_coaches` so a coach surfaces a clash whether they are
+ * primary OR secondary on the overlapping shift.
+ *
+ * Pass `excludeSessionId` to ignore the candidate's own current
+ * assignment — without it, re-assigning the same coach to the same
+ * shift would always self-clash.
+ *
+ * @returns `clashCoaches`: Set of coach IDs with at least one
+ *   overlapping, non-cancelled assignment on `date`.
+ */
+export async function detectCoachClashes(params: {
+  coachIds: string[];
+  date: string;
+  time: string;
+  durationMinutes: number;
+  excludeSessionId?: string;
+}): Promise<{ clashCoaches: Set<string> }> {
+  const { coachIds, date, time, durationMinutes, excludeSessionId } = params;
+  const clashCoaches = new Set<string>();
+  if (coachIds.length === 0) return { clashCoaches };
+
+  const supabase = await createSupabaseServerClient();
+
+  // One row per (coach, session) — multi-coach shifts produce N rows.
+  // The nested `sessions` join lets us filter to the candidate's date
+  // and status without a separate query.
+  const { data: scRows } = await supabase
+    .from("session_coaches")
+    .select(
+      "user_id, sessions:session_id(id, date, time, duration_minutes, status)"
+    )
+    .in("user_id", coachIds);
+
+  const candTime = time.slice(0, 5);
+  const candEnd = addMinutes(candTime, durationMinutes);
+
+  for (const row of (scRows ?? []) as unknown as Array<{
+    user_id: string;
+    sessions: {
+      id: string;
+      date: string;
+      time: string;
+      duration_minutes: number;
+      status: string;
+    } | null;
+  }>) {
+    const s = row.sessions;
+    if (!s) continue;
+    if (s.status === "cancelled") continue;
+    if (s.date !== date) continue;
+    if (excludeSessionId && s.id === excludeSessionId) continue;
+
+    const esTime = s.time.slice(0, 5);
+    const esEnd = addMinutes(esTime, s.duration_minutes);
+    if (candTime < esEnd && candEnd > esTime) {
+      clashCoaches.add(row.user_id);
+    }
+  }
+
+  return { clashCoaches };
 }
 
 // ============================================================
