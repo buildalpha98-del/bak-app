@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Plus, User, ShieldAlert, ShieldOff } from "lucide-react";
+import { Plus, User, ShieldAlert, ShieldOff, StickyNote } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
 import {
@@ -167,10 +167,11 @@ function StaffSessionCard({
 
       {session.notes && (
         <span
-          className="pointer-events-none absolute right-1 bottom-7 rounded bg-secondary px-1 text-[9px]"
+          className="pointer-events-none absolute bottom-1 left-1 z-10 flex h-4 w-4 items-center justify-center rounded bg-secondary text-secondary-foreground"
           title={session.notes}
+          aria-label="Has note"
         >
-          📝
+          <StickyNote className="h-2.5 w-2.5" aria-hidden="true" />
         </span>
       )}
     </div>

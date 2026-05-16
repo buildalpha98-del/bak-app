@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,7 +27,6 @@ export function SessionCardMenu({
   coaches,
   onChange,
 }: SessionCardMenuProps) {
-  const router = useRouter();
   const [openMenu, setOpenMenu] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [swapping, setSwapping] = useState(false);
@@ -50,14 +48,16 @@ export function SessionCardMenu({
     }
     if (!result.data) return;
     toast.success("Shift duplicated.");
-    onChange();
+    // onChange() in roster contexts is RosterPage.handleRefresh, which
+    // already calls router.refresh() — no need to refresh twice.
+    //
     // v1 deviation from spec §5 P3 (which says "opens the new card in
     // edit mode"): we refresh the grid and let the admin click the new
     // draft card to edit it. Auto-open requires lifting the new id up
     // to RosterPage and threading it into SessionDetailSheet state —
     // worth a follow-up but the toast + grid update give enough
     // signal for v1.
-    router.refresh();
+    onChange();
   }
 
   return (
