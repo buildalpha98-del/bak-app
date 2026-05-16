@@ -245,7 +245,16 @@ export interface SwapRequest {
 export interface Program {
   id: string;
   sport: string;
+  /** Denormalised primary age band — first entry of {@link age_groups}. */
   age_group: string | null;
+  /**
+   * Full set of age bands the programme targets (e.g. `["3-5", "5-8"]`).
+   * Column added in migration 046; jsonb NOT NULL DEFAULT `[]`.
+   * Always prefer this over `age_group` for display / filtering — fall back
+   * to `age_group` only when this is empty (legacy rows backfilled to a
+   * single-element array, but be defensive).
+   */
+  age_groups: string[];
   duration_minutes: number;
   skill_focus: string | null;
   content_json: Record<string, unknown>;

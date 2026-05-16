@@ -27,6 +27,11 @@ import {
   deleteProgram,
   createNewVersion,
 } from "@/lib/programs/actions";
+import {
+  formatProgramAgeBandsShort,
+  formatProgramAgeBandsTooltip,
+  getProgramAgeBands,
+} from "@/lib/utils/programs/age-bands";
 import type {
   ProgramDetail as ProgramDetailType,
   ProgramUsageStats,
@@ -89,7 +94,7 @@ export function ProgramDetailView({
     setSavingVersion(true);
     const input: SaveProgramInput = {
       sport: program.sport,
-      ageGroups: program.age_groups?.length ? program.age_groups : (program.age_group ? [program.age_group] : []),
+      ageGroups: getProgramAgeBands(program),
       durationMinutes: program.duration_minutes,
       skillFocus: program.skill_focus ?? undefined,
       contentJson: editContent,
@@ -126,9 +131,16 @@ export function ProgramDetailView({
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant="outline">{program.sport}</Badge>
-            {program.age_group && (
-              <Badge variant="secondary">Ages {program.age_group}</Badge>
-            )}
+            {(() => {
+              const short = formatProgramAgeBandsShort(program);
+              if (!short) return null;
+              const tooltip = formatProgramAgeBandsTooltip(program) ?? short;
+              return (
+                <Badge variant="secondary" title={tooltip}>
+                  Ages {short}
+                </Badge>
+              );
+            })()}
             <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
               <Clock className="h-3 w-3" />
               {program.duration_minutes} min

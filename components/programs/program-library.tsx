@@ -31,6 +31,11 @@ import { getProgramById } from "@/lib/programs/actions";
 import type { ProgramListItem } from "@/lib/programs/actions";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import { SPORTS } from "@/lib/types/enums";
+import {
+  formatProgramAgeBandsShort,
+  formatProgramAgeBandsTooltip,
+  getProgramAgeBands,
+} from "@/lib/utils/programs/age-bands";
 
 // ============================================================
 // Programme Library — searchable, filterable grid
@@ -92,9 +97,10 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
       result = result.filter((p) => p.sport === sportFilter);
     }
 
-    // Age filter
+    // Age filter — match against the full age_groups list so multi-age
+    // programmes (P2+) appear under each of their bands.
     if (ageFilter !== "all") {
-      result = result.filter((p) => p.age_group === ageFilter);
+      result = result.filter((p) => getProgramAgeBands(p).includes(ageFilter));
     }
 
     // Sort
@@ -410,11 +416,20 @@ function ProgramCard({
               <Badge variant="outline" className="text-xs">
                 {program.sport}
               </Badge>
-              {program.age_group && (
-                <Badge variant="secondary" className="text-xs">
-                  Ages {program.age_group}
-                </Badge>
-              )}
+              {(() => {
+                const short = formatProgramAgeBandsShort(program);
+                if (!short) return null;
+                const tooltip = formatProgramAgeBandsTooltip(program) ?? short;
+                return (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs"
+                    title={tooltip}
+                  >
+                    Ages {short}
+                  </Badge>
+                );
+              })()}
               <span className="flex items-center gap-1 text-xs text-muted-foreground/60">
                 <Clock className="h-3 w-3" />
                 {program.duration_minutes} min

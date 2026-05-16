@@ -119,7 +119,7 @@ export async function saveProgram(
       console.warn("Auto-file document for programme failed (non-critical).");
     }
 
-    return { data: data as Program, error: null };
+    return { data, error: null };
   } catch (err) {
     console.error("saveProgram error:", err);
     return { data: null, error: "Failed to save programme." };
@@ -198,7 +198,7 @@ export async function getProgramById(
 
     if (error) throw error;
 
-    return { data: data as Program, error: null };
+    return { data, error: null };
   } catch (err) {
     console.error("getProgramById error:", err);
     return { data: null, error: "Failed to fetch programme." };
@@ -466,7 +466,7 @@ export async function createNewVersion(
       },
     });
 
-    return { data: data as Program, error: null };
+    return { data, error: null };
   } catch (err) {
     console.error("createNewVersion error:", err);
     return { data: null, error: "Failed to create new version." };

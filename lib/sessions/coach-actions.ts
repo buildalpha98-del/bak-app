@@ -540,7 +540,7 @@ export async function getCoachSessionDetail(
       data: {
         session,
         centreNotes: (notesRes.data ?? []) as SessionCentreNote[],
-        program: (programRes.data as Program) ?? null,
+        program: programRes.data ?? null,
         equipmentKit,
         equipmentItems: (itemsRes.data ?? []) as SessionEquipmentItem[],
         shiftThread,
