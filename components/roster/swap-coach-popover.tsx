@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -17,6 +17,8 @@ import { updateSession } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
 
 interface SwapCoachPopoverProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   sessionId: string;
   currentCoachId: string | null;
   coaches: Pick<Profile, "id" | "name">[];
@@ -25,19 +27,25 @@ interface SwapCoachPopoverProps {
 }
 
 export function SwapCoachPopover({
+  open,
+  onOpenChange,
   sessionId,
   currentCoachId,
   coaches,
   onSwapped,
   children,
 }: SwapCoachPopoverProps) {
-  const [open, setOpen] = useState(false);
   const [coachId, setCoachId] = useState<string | null>(currentCoachId);
   const [saving, setSaving] = useState(false);
 
+  // Resync coachId when currentCoachId prop changes
+  useEffect(() => {
+    setCoachId(currentCoachId);
+  }, [currentCoachId]);
+
   async function handleSave() {
     if (coachId === currentCoachId) {
-      setOpen(false);
+      onOpenChange(false);
       return;
     }
     setSaving(true);
@@ -49,11 +57,11 @@ export function SwapCoachPopover({
     }
     toast.success("Coach updated.");
     onSwapped();
-    setOpen(false);
+    onOpenChange(false);
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       {/* base-ui pattern: PopoverTrigger takes a render prop, not asChild */}
       <PopoverTrigger render={<span>{children}</span>} />
       <PopoverContent className="w-72 p-3 space-y-2" side="right" align="start">
@@ -77,7 +85,7 @@ export function SwapCoachPopover({
           </Select>
         </div>
         <div className="flex justify-end gap-2 pt-1">
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving}>

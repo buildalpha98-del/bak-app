@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2 } from "lucide-react";
 import {
@@ -34,6 +34,11 @@ export function SessionCardMenu({
   const [swapping, setSwapping] = useState(false);
   const [noting, setNoting] = useState(false);
   const [localNotes, setLocalNotes] = useState(session.notes);
+
+  // Resync localNotes when session.notes changes (e.g. after router.refresh)
+  useEffect(() => {
+    setLocalNotes(session.notes);
+  }, [session.notes]);
 
   async function handleDuplicate() {
     setDuplicating(true);
@@ -98,32 +103,33 @@ export function SessionCardMenu({
 
       {/* Headless popovers — controlled by menu items. Render a hidden
           trigger so the Popover anchors to this menu's container. */}
-      {swapping && (
-        <SwapCoachPopover
-          sessionId={session.id}
-          currentCoachId={session.coach_id}
-          coaches={coaches}
-          onSwapped={() => {
-            setSwapping(false);
-            onChange();
-          }}
-        >
-          <span className="sr-only" aria-hidden="true" />
-        </SwapCoachPopover>
-      )}
-      {noting && (
-        <SessionNotesPopover
-          sessionId={session.id}
-          initialNotes={localNotes}
-          onSaved={(next) => {
-            setLocalNotes(next);
-            setNoting(false);
-            onChange();
-          }}
-        >
-          <span className="sr-only" aria-hidden="true" />
-        </SessionNotesPopover>
-      )}
+      <SwapCoachPopover
+        open={swapping}
+        onOpenChange={setSwapping}
+        sessionId={session.id}
+        currentCoachId={session.coach_id}
+        coaches={coaches}
+        onSwapped={() => {
+          setSwapping(false);
+          onChange();
+        }}
+      >
+        <span className="sr-only" aria-hidden="true" />
+      </SwapCoachPopover>
+
+      <SessionNotesPopover
+        open={noting}
+        onOpenChange={setNoting}
+        sessionId={session.id}
+        initialNotes={localNotes}
+        onSaved={(next) => {
+          setLocalNotes(next);
+          setNoting(false);
+          onChange();
+        }}
+      >
+        <span className="sr-only" aria-hidden="true" />
+      </SessionNotesPopover>
     </div>
   );
 }

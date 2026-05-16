@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { updateSessionNotes } from "@/lib/sessions/actions";
 
 interface SessionNotesPopoverProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   sessionId: string;
   initialNotes: string | null;
   onSaved: (notes: string | null) => void;
@@ -19,12 +21,13 @@ interface SessionNotesPopoverProps {
 const MAX = 2000;
 
 export function SessionNotesPopover({
+  open,
+  onOpenChange,
   sessionId,
   initialNotes,
   onSaved,
   children,
 }: SessionNotesPopoverProps) {
-  const [open, setOpen] = useState(false);
   const [text, setText] = useState(initialNotes ?? "");
   const [saving, setSaving] = useState(false);
 
@@ -43,13 +46,13 @@ export function SessionNotesPopover({
     }
     const next = text.trim() === "" ? null : text.trim();
     onSaved(next);
-    setOpen(false);
+    onOpenChange(false);
   }
 
   const over = text.length > MAX;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       {/* base-ui pattern: PopoverTrigger takes a render prop, not asChild */}
       <PopoverTrigger render={<span>{children}</span>} />
       <PopoverContent className="w-80 p-3 space-y-2" side="right" align="start">
@@ -63,7 +66,7 @@ export function SessionNotesPopover({
             onChange={(e) => setText(e.target.value)}
             placeholder="e.g. parent collecting at 3:45 — check ID before release"
             rows={4}
-            maxLength={MAX + 50}
+            maxLength={MAX}
             className="mt-1 text-xs"
           />
           <p className={`mt-1 text-[10px] ${over ? "text-red-500" : "text-muted-foreground/60"}`}>
@@ -71,7 +74,7 @@ export function SessionNotesPopover({
           </p>
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving || over}>
