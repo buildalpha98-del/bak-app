@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
 import { checkCoachCertsForSession } from "@/lib/utils/compliance/check-coach-certs";
+import { setSessionCoaches } from "@/lib/sessions/session-coaches";
 import type { SwapStatus } from "@/lib/types/enums";
 
 // ============================================================
@@ -152,14 +153,22 @@ export async function declineShift(
 
     const previousCoachId = session.coach_id;
 
-    // Direct update: set status to "published" and null coach_id
-    // (pending_confirmation→published is not in VALID_TRANSITIONS, so we bypass updateSessionStatus)
-    const { error: updateErr } = await supabase
+    // Clear the coach through the helper. The trigger would auto-flip
+    // status to needs_replacement, but we immediately overwrite with
+    // "published" per the existing decline-shift contract.
+    const { error: clearErr } = await setSessionCoaches({
+      sessionId,
+      coaches: [],
+      assignedBy: user.id,
+    });
+    if (clearErr) return { error: clearErr };
+
+    const { error: statusErr } = await supabase
       .from("sessions")
-      .update({ status: "published", coach_id: null })
+      .update({ status: "published" })
       .eq("id", sessionId);
 
-    if (updateErr) throw updateErr;
+    if (statusErr) return { error: "Failed to update shift." };
 
     const centre = session.centres as unknown as Record<string, unknown> | null;
     const centreName = (centre?.name as string) ?? "Unknown";
@@ -430,13 +439,13 @@ export async function opsApproveSwap(
 
     if (swapErr) throw swapErr;
 
-    // Update session coach_id to proposed coach
-    const { error: sessionErr } = await supabase
-      .from("sessions")
-      .update({ coach_id: swap.proposed_coach_id })
-      .eq("id", swap.session_id);
-
-    if (sessionErr) throw sessionErr;
+    // Update session coach through the helper
+    const { error: writeErr } = await setSessionCoaches({
+      sessionId: swap.session_id,
+      coaches: [{ userId: swap.proposed_coach_id, isPrimary: true }],
+      assignedBy: user.id,
+    });
+    if (writeErr) return { error: writeErr };
 
     const session = swap.sessions as unknown as Record<string, unknown> | null;
     const centre = session?.centres as unknown as Record<string, unknown> | null;
