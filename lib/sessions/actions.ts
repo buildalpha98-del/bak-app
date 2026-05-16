@@ -470,6 +470,12 @@ export async function bulkReassignCoach(
   try {
     const supabase = await createSupabaseServerClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // Cert guard (unchanged) — fan out across all target session dates.
     if (coachId && ids.length > 0) {
       const { data: targetSessions, error: fetchErr } = await supabase
         .from("sessions")
@@ -483,12 +489,18 @@ export async function bulkReassignCoach(
       if (!certCheck.ok) return { error: certCheck.message };
     }
 
-    const { error } = await supabase
-      .from("sessions")
-      .update({ coach_id: coachId })
-      .in("id", ids);
+    // Route through setSessionCoaches per session. coachId=null clears.
+    const coaches =
+      coachId === null ? [] : [{ userId: coachId, isPrimary: true }];
+    for (const id of ids) {
+      const { error } = await setSessionCoaches({
+        sessionId: id,
+        coaches,
+        assignedBy: user.id,
+      });
+      if (error) return { error };
+    }
 
-    if (error) throw error;
     return { error: null };
   } catch (err) {
     console.error("bulkReassignCoach error:", err);
