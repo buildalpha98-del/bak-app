@@ -6,6 +6,7 @@ import { suggestReplacements } from "@/lib/utils/scheduling/rerostering";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
 import { autoCreateTask } from "@/lib/tasks/auto-create";
 import { checkCoachCertsForSession } from "@/lib/utils/compliance/check-coach-certs";
+import { setSessionCoaches } from "@/lib/sessions/session-coaches";
 import type { CancellationReasonType } from "@/lib/types/enums";
 
 /**
@@ -35,15 +36,25 @@ export async function cancelSessionAsCoach(
     return { error: "Can only cancel confirmed or pending sessions" };
   }
 
-  // Update session status
-  await supabase
+  // Clear the coach through the helper — the sync trigger then flips
+  // status to needs_replacement (if status was published/pending/confirmed),
+  // which the rerostering offer flow listens for.
+  const { error: clearErr } = await setSessionCoaches({
+    sessionId,
+    coaches: [],
+    assignedBy: user.id,
+  });
+  if (clearErr) return { error: clearErr };
+
+  // Apply the non-coach patch separately. status field is NOT in this
+  // patch — the trigger owns the status flip on zero-coach.
+  const { error: patchErr } = await supabase
     .from("sessions")
     .update({
-      status: "needs_replacement",
-      coach_id: null,
       cancellation_reason: `Coach cancelled: ${reason}${details ? ` - ${details}` : ""}`,
     })
     .eq("id", sessionId);
+  if (patchErr) return { error: "Failed to cancel session." };
 
   // Generate replacement suggestions
   const suggestions = await suggestReplacements(sessionId);
@@ -222,11 +233,19 @@ export async function respondToReplacementOffer(
       if (!certCheck.ok) return { error: certCheck.message };
     }
 
-    // Update session with new coach
-    await supabase
+    // Update session with new coach through the helper
+    const { error: writeErr } = await setSessionCoaches({
+      sessionId: event.session_id,
+      coaches: [{ userId: user.id, isPrimary: true }],
+      assignedBy: user.id,
+    });
+    if (writeErr) return { error: writeErr };
+
+    const { error: patchErr } = await supabase
       .from("sessions")
-      .update({ coach_id: user.id, status: "confirmed", cancellation_reason: null })
+      .update({ status: "confirmed", cancellation_reason: null })
       .eq("id", event.session_id);
+    if (patchErr) return { error: "Failed to confirm session." };
 
     // Resolve event
     await supabase
