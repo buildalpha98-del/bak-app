@@ -9,6 +9,7 @@ import {
   bulkCheckCoachCertsForSessions,
   checkCoachCertsForSession,
 } from "@/lib/utils/compliance/check-coach-certs";
+import { setSessionCoaches } from "@/lib/sessions/session-coaches";
 import type { SchedulingAdjustment } from "@/lib/types/database";
 
 /**
@@ -84,11 +85,14 @@ export async function recordAdjustment(
     .update({ adjustments_json: adjustments, status: "reviewed" })
     .eq("id", runId);
 
-  // Update the session
-  await supabase
-    .from("sessions")
-    .update({ coach_id: replacementCoachId })
-    .eq("id", sessionId);
+  // Update the session — funnel through the single write path so the
+  // session_coaches mirror and downstream triggers stay consistent.
+  const { error: writeErr } = await setSessionCoaches({
+    sessionId,
+    coaches: [{ userId: replacementCoachId, isPrimary: true }],
+    assignedBy: user.id,
+  });
+  if (writeErr) throw new Error(writeErr);
 
   // Check for auto-learn: 3+ consistent overrides for same coach-centre
   await checkAutoLearnPreference(user.id, originalCoachId, sessionId);

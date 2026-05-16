@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { assembleSchedulingInput } from "@/lib/utils/scheduling/data-assembly";
 import { generateRoster } from "@/lib/utils/scheduling/solver";
 import { bulkCheckCoachCertsForSessions } from "@/lib/utils/compliance/check-coach-certs";
+import { setSessionCoaches } from "@/lib/sessions/session-coaches";
 import type { SchedulingRunInputSummary, SchedulingRunOutputSummary, SchedulingAssignment } from "@/lib/types/database";
 
 export async function POST(request: NextRequest) {
@@ -128,12 +129,18 @@ export async function POST(request: NextRequest) {
     const certCheck = await bulkCheckCoachCertsForSessions(pairs);
 
     // Apply only the validly-priced assignments. Blocked ones surface in
-    // the response so the UI can flag them for ops review.
+    // the response so the UI can flag them for ops review. Funnel through
+    // the single write path so session_coaches stays consistent.
+    const errors: { sessionId: string; message: string }[] = [];
     for (const pair of certCheck.valid) {
-      await supabase
-        .from("sessions")
-        .update({ coach_id: pair.coachId })
-        .eq("id", pair.sessionId);
+      const { error: writeErr } = await setSessionCoaches({
+        sessionId: pair.sessionId,
+        coaches: [{ userId: pair.coachId, isPrimary: true }],
+        assignedBy: user.id,
+      });
+      if (writeErr) {
+        errors.push({ sessionId: pair.sessionId, message: writeErr });
+      }
     }
 
     return NextResponse.json({
@@ -145,6 +152,7 @@ export async function POST(request: NextRequest) {
         coachId: b.coachId,
         reason: b.result.message,
       })),
+      writeErrors: errors,
     });
   } catch (error) {
     console.error("Scheduling generation error:", error);
