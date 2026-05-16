@@ -4,9 +4,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionStatus, CentreType } from "@/lib/types/enums";
 import type { Session, Profile } from "@/lib/types/database";
 import {
+  bulkCheckCoachCertsForSessions,
   checkCoachCertsForSession,
   checkCoachCertsForSessionDates,
 } from "@/lib/utils/compliance/check-coach-certs";
+import {
+  setSessionCoaches,
+  type SessionCoachInput,
+} from "@/lib/sessions/session-coaches";
 
 // ============================================================
 // Types
@@ -433,6 +438,129 @@ export async function bulkReassignCoach(
   } catch (err) {
     console.error("bulkReassignCoach error:", err);
     return { error: "Failed to reassign coach." };
+  }
+}
+
+// ============================================================
+// 7b. assignCoaches — multi-coach UI write path
+// ============================================================
+
+/**
+ * Server action: assign N coaches to a session, with one designated
+ * primary. Admin/ops only. Runs the cert guard for every coach against
+ * the session's date — any single failure refuses the whole write
+ * (no partial assignments). Backed by `setSessionCoaches` (the single
+ * write path to `session_coaches`).
+ *
+ * Empty coachIds is allowed: clears the shift and lets the sync
+ * trigger flip the status (edge case 4 in spec §9).
+ *
+ * @see docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md §6 P5
+ */
+export async function assignCoaches(
+  sessionId: string,
+  coachIds: SessionCoachInput[]
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    // Auth — only admin / ops can write the coach roster.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { error: "Only admin or ops can assign coaches." };
+    }
+
+    // Cert guard — fan out across every (coach, session) pair.
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("date")
+      .eq("id", sessionId)
+      .single();
+    if (!session) return { error: "Session not found." };
+
+    const pairs = coachIds.map((c) => ({
+      coachId: c.userId,
+      sessionId,
+      sessionDate: session.date as string,
+    }));
+    const certResult = await bulkCheckCoachCertsForSessions(pairs);
+    if (certResult.blocked.length > 0) {
+      const summary = certResult.blocked
+        .map((b) => `${b.coachId}: ${b.result.message}`)
+        .join("; ");
+      return { error: `Cert guard refused assignment — ${summary}` };
+    }
+
+    // Snapshot existing roster for diff (activity log).
+    const { data: existing } = await supabase
+      .from("session_coaches")
+      .select("user_id, is_primary")
+      .eq("session_id", sessionId);
+
+    // Atomic write.
+    const writeResult = await setSessionCoaches({
+      sessionId,
+      coaches: coachIds,
+      assignedBy: user.id,
+    });
+    if (writeResult.error) return { error: writeResult.error };
+
+    // Activity log — one row per added/removed/changed coach.
+    const existingByUser = new Map(
+      (existing ?? []).map((r) => [r.user_id as string, r.is_primary as boolean])
+    );
+    const newByUser = new Map(coachIds.map((c) => [c.userId, c.isPrimary]));
+
+    const logRows: Array<Record<string, unknown>> = [];
+    for (const c of coachIds) {
+      const wasAssigned = existingByUser.has(c.userId);
+      const wasPrimary = existingByUser.get(c.userId) ?? false;
+      if (!wasAssigned) {
+        logRows.push({
+          user_id: user.id,
+          action: "staff_assigned_to_session",
+          entity_type: "session",
+          entity_id: sessionId,
+          metadata: { coach_id: c.userId, is_primary: c.isPrimary },
+        });
+      } else if (wasPrimary !== c.isPrimary) {
+        logRows.push({
+          user_id: user.id,
+          action: "session_primary_changed",
+          entity_type: "session",
+          entity_id: sessionId,
+          metadata: { coach_id: c.userId, is_primary_now: c.isPrimary },
+        });
+      }
+    }
+    for (const [userId] of existingByUser) {
+      if (!newByUser.has(userId)) {
+        logRows.push({
+          user_id: user.id,
+          action: "staff_removed_from_session",
+          entity_type: "session",
+          entity_id: sessionId,
+          metadata: { coach_id: userId },
+        });
+      }
+    }
+    if (logRows.length > 0) {
+      await supabase.from("activity_log").insert(logRows);
+    }
+
+    return { error: null };
+  } catch (err) {
+    console.error("assignCoaches error:", err);
+    return { error: "Failed to assign coaches." };
   }
 }
 
