@@ -28,6 +28,7 @@ import {
   BookOpen,
   X,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   Select,
@@ -40,6 +41,7 @@ import { SessionStatusBadge } from "./session-status-badge";
 import { VarianceBadge } from "./variance-badge";
 import { SmartCoachSelect } from "./smart-coach-select";
 import { ReplacementPanel } from "./replacement-panel";
+import { SessionNotesPopover } from "./session-notes-popover";
 import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
 import {
@@ -114,6 +116,7 @@ export function SessionDetailSheet({
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   // Coach reassignment
   const [reassigning, setReassigning] = useState(false);
@@ -385,6 +388,37 @@ export function SessionDetailSheet({
               </div>
             </>
           )}
+
+          <Separator />
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-foreground">Notes</h3>
+              <SessionNotesPopover
+                open={notesOpen}
+                onOpenChange={setNotesOpen}
+                sessionId={session.id}
+                initialNotes={session.notes}
+                onSaved={() => {
+                  setNotesOpen(false);
+                  onUpdate();
+                }}
+              >
+                <Button variant="ghost" size="sm" onClick={() => setNotesOpen(true)}>
+                  <Pencil className="mr-1 h-3 w-3" />
+                  {session.notes ? "Edit" : "Add"}
+                </Button>
+              </SessionNotesPopover>
+            </div>
+            {session.notes ? (
+              <p className="whitespace-pre-wrap rounded bg-secondary/40 p-3 text-sm">
+                {session.notes}
+              </p>
+            ) : (
+              <p className="text-xs italic text-muted-foreground">No notes for this shift.</p>
+            )}
+          </div>
 
           <Separator />
 
