@@ -28,6 +28,10 @@ interface SessionCardProps {
   coaches?: Pick<Profile, "id" | "name">[];
   /** Called after any menu action mutates the session */
   onChange?: () => void;
+  /** When > 0, render an orange "+N others" badge on the primary card. */
+  otherCount?: number;
+  /** When true, render this as the secondary view (↔ shared, thinner left border). */
+  asSecondary?: boolean;
 }
 
 export function SessionCard({
@@ -37,6 +41,8 @@ export function SessionCard({
   confidenceBadge,
   coaches,
   onChange,
+  otherCount,
+  asSecondary,
 }: SessionCardProps) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -46,9 +52,15 @@ export function SessionCard({
       <button
         type="button"
         onClick={onClick}
-        aria-label={`${session.sport} session at ${session.centre_name}, ${session.duration_minutes} minutes${session.coach_name ? `, ${session.coach_name}` : ", unassigned"}, ${session.status}`}
-        className="flex h-full w-full cursor-pointer flex-col gap-0.5 rounded-md border bg-card px-2 py-1 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        style={{ borderLeftWidth: 3, borderLeftColor: colour }}
+        aria-label={`${session.sport} session at ${session.centre_name}, ${session.duration_minutes} minutes${session.coach_name ? `, ${session.coach_name}` : ", unassigned"}, ${session.status}${asSecondary ? ", shared shift" : ""}`}
+        className={`flex h-full w-full cursor-pointer flex-col gap-0.5 rounded-md border bg-card px-2 py-1 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          asSecondary ? "border-l border-l-muted-foreground/40" : ""
+        }`}
+        style={
+          asSecondary
+            ? undefined
+            : { borderLeftWidth: 3, borderLeftColor: colour }
+        }
       >
         {/* Status dot */}
         <span
@@ -123,6 +135,23 @@ export function SessionCard({
           onChange={onChange}
         />
       )}
+
+      {otherCount && otherCount > 0 ? (
+        <span
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-white"
+          title={`Plus ${otherCount} other coach${otherCount === 1 ? "" : "es"}`}
+        >
+          +{otherCount}
+        </span>
+      ) : null}
+      {asSecondary ? (
+        <span
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded border bg-background px-1 text-[9px] text-muted-foreground"
+          title="Shared shift — primary is on another coach's row"
+        >
+          ↔ shared
+        </span>
+      ) : null}
 
       {session.notes && (
         <span

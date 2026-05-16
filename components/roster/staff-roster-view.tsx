@@ -32,28 +32,80 @@ interface StaffRosterViewProps {
 // Helpers
 // ============================================================
 
-/** Group sessions by coach_id → date → sessions[] */
-function groupSessionsByCoachAndDate(
-  sessions: SessionWithRelations[]
-): Map<string, Map<string, SessionWithRelations[]>> {
-  const map = new Map<string, Map<string, SessionWithRelations[]>>();
+interface StaffViewSessionEntry {
+  coachId: string;
+  session: SessionWithRelations;
+  isPrimary: boolean;
+  /** Total assigned − 1 for the primary; 0 for secondaries. */
+  otherCount: number;
+}
 
+/**
+ * Flatten sessions × assigned_coaches into per-(coach, session) rows
+ * for the staff view. Every assigned coach gets a card in their own
+ * row; the primary's card carries "+N others", secondaries carry
+ * "↔ shared".
+ */
+function flattenForStaffView(
+  sessions: SessionWithRelations[]
+): StaffViewSessionEntry[] {
+  const out: StaffViewSessionEntry[] = [];
   for (const s of sessions) {
-    const coachKey = s.coach_id ?? "__unassigned__";
-    if (!map.has(coachKey)) {
-      map.set(coachKey, new Map());
+    if (s.assigned_coaches && s.assigned_coaches.length > 0) {
+      const total = s.assigned_coaches.length;
+      for (const c of s.assigned_coaches) {
+        out.push({
+          coachId: c.user_id,
+          session: s,
+          isPrimary: c.is_primary,
+          otherCount: c.is_primary ? Math.max(0, total - 1) : 0,
+        });
+      }
+    } else if (s.coach_id) {
+      // Legacy fallback for any read site that hasn't loaded
+      // assigned_coaches yet — treat the primary cache as a single
+      // entry. After Task 12 this should rarely fire in practice.
+      out.push({
+        coachId: s.coach_id,
+        session: s,
+        isPrimary: true,
+        otherCount: 0,
+      });
+    } else {
+      // Unassigned session — bucket under the synthetic key so the
+      // unassigned row still renders.
+      out.push({
+        coachId: "__unassigned__",
+        session: s,
+        isPrimary: true,
+        otherCount: 0,
+      });
     }
-    const dateMap = map.get(coachKey)!;
-    if (!dateMap.has(s.date)) {
-      dateMap.set(s.date, []);
+  }
+  return out;
+}
+
+/** Group flattened entries by coachId → date → entries[] */
+function groupEntriesByCoachAndDate(
+  entries: StaffViewSessionEntry[]
+): Map<string, Map<string, StaffViewSessionEntry[]>> {
+  const map = new Map<string, Map<string, StaffViewSessionEntry[]>>();
+
+  for (const e of entries) {
+    if (!map.has(e.coachId)) {
+      map.set(e.coachId, new Map());
     }
-    dateMap.get(s.date)!.push(s);
+    const dateMap = map.get(e.coachId)!;
+    if (!dateMap.has(e.session.date)) {
+      dateMap.set(e.session.date, []);
+    }
+    dateMap.get(e.session.date)!.push(e);
   }
 
-  // Sort sessions within each cell by time
+  // Sort entries within each cell by session time
   for (const dateMap of map.values()) {
-    for (const [date, arr] of dateMap) {
-      arr.sort((a, b) => a.time.localeCompare(b.time));
+    for (const arr of dateMap.values()) {
+      arr.sort((a, b) => a.session.time.localeCompare(b.session.time));
     }
   }
 
@@ -82,6 +134,8 @@ function StaffSessionCard({
   certWarning,
   coaches,
   onSessionChange,
+  otherCount,
+  asSecondary,
 }: {
   session: SessionWithRelations;
   onClick: () => void;
@@ -89,6 +143,10 @@ function StaffSessionCard({
   certWarning?: SessionCertWarning;
   coaches: Pick<Profile, "id" | "name">[];
   onSessionChange: () => void;
+  /** When > 0, render an orange "+N others" badge on the primary card. */
+  otherCount?: number;
+  /** When true, render this as the secondary view (↔ shared, thinner left border). */
+  asSecondary?: boolean;
 }) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -108,9 +166,15 @@ function StaffSessionCard({
       <button
         type="button"
         onClick={onClick}
-        className="w-full rounded-md border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        style={{ borderLeftWidth: 3, borderLeftColor: colour }}
-        aria-label={`${session.sport} at ${session.centre_name}, ${timeStr} – ${endTime}`}
+        className={`w-full rounded-md border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          asSecondary ? "border-l border-l-muted-foreground/40" : ""
+        }`}
+        style={
+          asSecondary
+            ? undefined
+            : { borderLeftWidth: 3, borderLeftColor: colour }
+        }
+        aria-label={`${session.sport} at ${session.centre_name}, ${timeStr} – ${endTime}${asSecondary ? ", shared shift" : ""}`}
       >
         {/* Status dot */}
         <span
@@ -165,6 +229,23 @@ function StaffSessionCard({
         onChange={onSessionChange}
       />
 
+      {otherCount && otherCount > 0 ? (
+        <span
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-white"
+          title={`Plus ${otherCount} other coach${otherCount === 1 ? "" : "es"}`}
+        >
+          +{otherCount}
+        </span>
+      ) : null}
+      {asSecondary ? (
+        <span
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded border bg-background px-1 text-[9px] text-muted-foreground"
+          title="Shared shift — primary is on another coach's row"
+        >
+          ↔ shared
+        </span>
+      ) : null}
+
       {session.notes && (
         <span
           className="pointer-events-none absolute bottom-1 left-1 z-10 flex h-4 w-4 items-center justify-center rounded bg-secondary text-secondary-foreground"
@@ -193,7 +274,8 @@ export function StaffRosterView({
   renderConfidenceBadge,
 }: StaffRosterViewProps) {
   const weekDates = getWeekDates(weekStart);
-  const grouped = groupSessionsByCoachAndDate(sessions);
+  const entries = flattenForStaffView(sessions);
+  const grouped = groupEntriesByCoachAndDate(entries);
 
   // Build the coach rows: all coaches who have sessions + any coaches from the list
   // who don't have sessions this week (so the full team is visible)
@@ -239,7 +321,7 @@ export function StaffRosterView({
               coachId="__unassigned__"
               coachName="Unassigned"
               weekDates={weekDates}
-              sessionsByDate={grouped.get("__unassigned__") ?? new Map()}
+              entriesByDate={grouped.get("__unassigned__") ?? new Map()}
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
               onSessionChange={onSessionChange}
@@ -257,7 +339,7 @@ export function StaffRosterView({
               coachId={coach.id}
               coachName={coach.name}
               weekDates={weekDates}
-              sessionsByDate={grouped.get(coach.id) ?? new Map()}
+              entriesByDate={grouped.get(coach.id) ?? new Map()}
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
               onSessionChange={onSessionChange}
@@ -292,7 +374,7 @@ function StaffRow({
   coachId,
   coachName,
   weekDates,
-  sessionsByDate,
+  entriesByDate,
   onSessionClick,
   onEmptySlotClick,
   onSessionChange,
@@ -304,7 +386,7 @@ function StaffRow({
   coachId: string;
   coachName: string;
   weekDates: string[];
-  sessionsByDate: Map<string, SessionWithRelations[]>;
+  entriesByDate: Map<string, StaffViewSessionEntry[]>;
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string, coachId?: string) => void;
   onSessionChange: () => void;
@@ -313,9 +395,9 @@ function StaffRow({
   coaches: Pick<Profile, "id" | "name">[];
   isUnassigned?: boolean;
 }) {
-  // Count total sessions for this coach this week
+  // Count total entries (per-coach cards) for this row this week
   let totalSessions = 0;
-  for (const arr of sessionsByDate.values()) {
+  for (const arr of entriesByDate.values()) {
     totalSessions += arr.length;
   }
 
@@ -350,8 +432,8 @@ function StaffRow({
 
       {/* Day cells */}
       {weekDates.map((dateStr) => {
-        const daySessions = sessionsByDate.get(dateStr) ?? [];
-        const isEmpty = daySessions.length === 0;
+        const dayEntries = entriesByDate.get(dateStr) ?? [];
+        const isEmpty = dayEntries.length === 0;
 
         return (
           <td
@@ -370,15 +452,17 @@ function StaffRow({
               </button>
             ) : (
               <div className="flex flex-col gap-1">
-                {daySessions.map((session) => (
+                {dayEntries.map((entry) => (
                   <StaffSessionCard
-                    key={session.id}
-                    session={session}
-                    onClick={() => onSessionClick(session)}
-                    confidenceBadge={renderConfidenceBadge?.(session.id)}
-                    certWarning={sessionCertWarnings?.[session.id]}
+                    key={`${entry.session.id}-${entry.coachId}`}
+                    session={entry.session}
+                    onClick={() => onSessionClick(entry.session)}
+                    confidenceBadge={renderConfidenceBadge?.(entry.session.id)}
+                    certWarning={sessionCertWarnings?.[entry.session.id]}
                     coaches={coaches}
                     onSessionChange={onSessionChange}
+                    otherCount={entry.otherCount}
+                    asSecondary={!entry.isPrimary}
                   />
                 ))}
                 {/* Add button below existing sessions */}

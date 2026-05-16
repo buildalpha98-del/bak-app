@@ -149,6 +149,11 @@ export function SessionCalendarView({
                 confidenceBadge={renderConfidenceBadge?.(s.id)}
                 coaches={coaches}
                 onChange={onSessionChange}
+                otherCount={
+                  s.assigned_coaches && s.assigned_coaches.length > 1
+                    ? s.assigned_coaches.length - 1
+                    : 0
+                }
               />
             </div>
           );
