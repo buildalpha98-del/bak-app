@@ -728,7 +728,11 @@ export async function duplicateSession(
         program_id: original.program_id,
         pay_rate_override: original.pay_rate_override,
         notes: original.notes,
-        coach_id: null,
+        // No coach_id — duplicates start as unassigned drafts. P5
+        // moved coach assignment to session_coaches; omitting the
+        // column lets the default NULL stand. The CI guard in
+        // lib/__tests__/no-direct-coach-id-writes.test.ts forbids
+        // direct sessions.coach_id writes outside setSessionCoaches.
         status: "draft" as SessionStatus,
       })
       .select("id")
