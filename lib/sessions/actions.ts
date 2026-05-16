@@ -241,6 +241,14 @@ export async function createSession(
       }
     }
 
+    // Auth — needed for assigned_by on the session_coaches row.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    // Insert the session WITHOUT coach_id. The trigger will populate
+    // it once we write the primary into session_coaches below.
     const { data: session, error } = await supabase
       .from("sessions")
       .insert({
@@ -250,7 +258,6 @@ export async function createSession(
         duration_minutes: data.duration_minutes,
         centre_id: data.centre_id,
         sport: data.sport,
-        coach_id: data.coach_id ?? null,
         pay_rate_override: data.pay_rate_override ?? null,
         status: "draft" as SessionStatus,
       })
@@ -258,6 +265,29 @@ export async function createSession(
       .single();
 
     if (error) throw error;
+
+    // If a coach was provided, write a primary row through the helper.
+    if (data.coach_id) {
+      const { error: writeErr } = await setSessionCoaches({
+        sessionId: session.id,
+        coaches: [{ userId: data.coach_id, isPrimary: true }],
+        assignedBy: user.id,
+      });
+      if (writeErr) {
+        // Rollback: delete the session we just created so we don't leave
+        // an unstaffed draft when the caller expected a staffed insert.
+        await supabase.from("sessions").delete().eq("id", session.id);
+        return { data: null, error: writeErr };
+      }
+      // Re-fetch so the returned row has the trigger-populated coach_id.
+      const { data: refetched } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("id", session.id)
+        .single();
+      return { data: refetched ?? session, error: null };
+    }
+
     return { data: session, error: null };
   } catch (err) {
     console.error("createSession error:", err);
