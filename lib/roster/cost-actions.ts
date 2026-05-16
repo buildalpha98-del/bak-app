@@ -24,6 +24,17 @@ interface SessionRow {
   pay_rate_override: number | null;
   status: string;
   profiles: { name: string } | null;
+  /**
+   * P5: every assigned coach on the shift (primary first). Drives the
+   * per-coach fan-out below. A multi-coach shift produces N priced
+   * rows so the chip's labour figure reflects coach-hours, not
+   * shift-hours.
+   */
+  session_coaches: Array<{
+    user_id: string;
+    is_primary: boolean;
+    profiles: { name: string | null } | null;
+  }> | null;
 }
 
 const COSTABLE_STATUSES = new Set([
@@ -57,7 +68,7 @@ export async function getWeekCostProjection(
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")
       .select(
-        "id, date, duration_minutes, coach_id, centre_id, pay_rate_override, status, profiles:coach_id(name)",
+        "id, date, duration_minutes, coach_id, centre_id, pay_rate_override, status, profiles:coach_id(name), session_coaches(user_id, is_primary, profiles:user_id(name))",
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate);
@@ -72,8 +83,16 @@ export async function getWeekCostProjection(
       return { data: projectWeekCost([]), error: null };
     }
 
+    // P5: derive coachIds from `session_coaches` so rate/profile
+    // lookups cover every assigned coach, not just the primary on the
+    // legacy `sessions.coach_id` column. Secondary coaches need their
+    // own resolved rate for the per-coach fan-out below.
     const coachIds = Array.from(
-      new Set(rows.map((r) => r.coach_id).filter((id): id is string => !!id)),
+      new Set(
+        rows.flatMap((r) =>
+          (r.session_coaches ?? []).map((c) => c.user_id),
+        ),
+      ),
     );
     const centreIds = Array.from(new Set(rows.map((r) => r.centre_id)));
 
@@ -124,33 +143,51 @@ export async function getWeekCostProjection(
       ),
     );
 
-    const priced: PricedSession[] = rows.map((r) => {
-      let amount: number | null = null;
-      if (r.coach_id) {
+    // P5 per-coach fan-out (spec §10 Decision E, per-rate-summed):
+    // a multi-coach shift produces one priced row per assigned coach,
+    // each priced at that coach's resolved rate. Unassigned shifts
+    // emit a single null-coach row so the `unassignedSessions` count
+    // in the aggregator stays correct.
+    const priced: PricedSession[] = rows.flatMap((r): PricedSession[] => {
+      const assigned = r.session_coaches ?? [];
+      if (assigned.length === 0) {
+        return [{
+          sessionId: r.id,
+          coachId: null,
+          coachName: null,
+          durationMinutes: r.duration_minutes,
+          amount: null,
+        }];
+      }
+      return assigned.map((c): PricedSession => {
+        let amount: number | null = null;
         const resolved = resolvePayRate(
           {
-            pay_rate_override: r.pay_rate_override,
-            coach_id: r.coach_id,
+            // pay_rate_override applies only to the primary — it's a
+            // session-level override of the primary's rate, not a
+            // per-secondary override. Spec §10 Decision E intentionally
+            // keeps secondary coaches on their resolved rate.
+            pay_rate_override: c.is_primary ? r.pay_rate_override : null,
+            coach_id: c.user_id,
             duration_minutes: r.duration_minutes,
             centre_type:
               centreTypeById.get(r.centre_id) ?? "childcare_centre",
           },
-          ratesByCoach.get(r.coach_id) ?? [],
-          profileById.get(r.coach_id) ?? null,
+          ratesByCoach.get(c.user_id) ?? [],
+          profileById.get(c.user_id) ?? null,
           r.date,
         );
         if (resolved) {
           amount = calculateSessionPay(resolved, r.duration_minutes).amount;
         }
-      }
-
-      return {
-        sessionId: r.id,
-        coachId: r.coach_id,
-        coachName: r.profiles?.name ?? null,
-        durationMinutes: r.duration_minutes,
-        amount,
-      };
+        return {
+          sessionId: r.id,
+          coachId: c.user_id,
+          coachName: c.profiles?.name ?? null,
+          durationMinutes: r.duration_minutes,
+          amount,
+        };
+      });
     });
 
     return { data: projectWeekCost(priced), error: null };

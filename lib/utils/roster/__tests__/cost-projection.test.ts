@@ -107,4 +107,25 @@ describe("projectWeekCost", () => {
     ]);
     expect(result.byCoach[0].coachName).toBe("(unknown)");
   });
+
+  it("multi-coach session produces one byCoach row per assigned coach (per-rate-summed)", () => {
+    // Same session, two coaches. The caller (cost-actions.ts) has
+    // already priced each (session, coach) pair at that coach's rate.
+    const result = projectWeekCost([
+      s({ sessionId: "shift-A", coachId: "u1", coachName: "Alice", amount: 100, durationMinutes: 60 }),
+      s({ sessionId: "shift-A", coachId: "u2", coachName: "Bob",   amount:  80, durationMinutes: 60 }),
+    ]);
+    expect(result.byCoach).toHaveLength(2);
+    expect(result.byCoach).toContainEqual(
+      expect.objectContaining({ coachId: "u1", cost: 100, hours: 1, sessions: 1 })
+    );
+    expect(result.byCoach).toContainEqual(
+      expect.objectContaining({ coachId: "u2", cost: 80, hours: 1, sessions: 1 })
+    );
+    expect(result.totalCost).toBe(180);
+    // Total hours double-counts a multi-coach shift on purpose — the
+    // chip surfaces coach-hours, which is the labour figure ops cares
+    // about (two coaches each working an hour = 2 coach-hours).
+    expect(result.totalHours).toBe(2);
+  });
 });
