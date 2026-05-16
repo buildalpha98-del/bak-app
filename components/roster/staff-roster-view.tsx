@@ -11,6 +11,7 @@ import {
 import { getWeekDates, formatDayHeader, formatTime12 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
+import { SessionCardMenu } from "./session-card-menu";
 
 // ============================================================
 // Props
@@ -22,6 +23,7 @@ interface StaffRosterViewProps {
   coaches: Pick<Profile, "id" | "name">[];
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string, coachId?: string) => void;
+  onSessionChange: () => void;
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
 }
@@ -78,11 +80,15 @@ function StaffSessionCard({
   onClick,
   confidenceBadge,
   certWarning,
+  coaches,
+  onSessionChange,
 }: {
   session: SessionWithRelations;
   onClick: () => void;
   confidenceBadge?: ReactNode;
   certWarning?: SessionCertWarning;
+  coaches: Pick<Profile, "id" | "name">[];
+  onSessionChange: () => void;
 }) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -98,59 +104,76 @@ function StaffSessionCard({
   })();
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group relative w-full rounded-md border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      style={{ borderLeftWidth: 3, borderLeftColor: colour }}
-      aria-label={`${session.sport} at ${session.centre_name}, ${timeStr} – ${endTime}`}
-    >
-      {/* Status dot */}
-      <span
-        className="absolute right-1.5 top-1.5 size-1.5 rounded-full"
-        style={{ backgroundColor: dotColour }}
-        title={session.status}
+    <div className="relative w-full group">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-md border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        style={{ borderLeftWidth: 3, borderLeftColor: colour }}
+        aria-label={`${session.sport} at ${session.centre_name}, ${timeStr} – ${endTime}`}
+      >
+        {/* Status dot */}
+        <span
+          className="absolute right-1.5 top-1.5 size-1.5 rounded-full"
+          style={{ backgroundColor: dotColour }}
+          title={session.status}
+        />
+
+        {/* AI confidence badge */}
+        {confidenceBadge && (
+          <span className="absolute right-5 top-1">{confidenceBadge}</span>
+        )}
+
+        <span className="block truncate text-[11px] font-semibold text-foreground">
+          {timeStr} – {endTime}
+        </span>
+        <span className="block truncate text-[11px] text-muted-foreground">
+          {session.centre_name}
+        </span>
+        <span
+          className="block truncate text-[10px] font-medium"
+          style={{ color: colour }}
+        >
+          {session.sport}
+        </span>
+
+        {/* Per-session cert warning */}
+        {certWarning && certWarning.blocked.length > 0 ? (
+          <span
+            className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5"
+            title={describeSessionCertWarning(certWarning)}
+          >
+            <ShieldOff className="size-2.5 text-red-600" />
+            <span className="text-[9px] font-medium text-red-600">!</span>
+          </span>
+        ) : certWarning && certWarning.expiring.length > 0 ? (
+          <span
+            className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5"
+            title={describeSessionCertWarning(certWarning)}
+          >
+            <ShieldAlert className="size-2.5 text-amber-600" />
+            <span className="text-[9px] font-medium text-amber-600">
+              {certWarning.expiring[0].daysUntilExpiry}d
+            </span>
+          </span>
+        ) : null}
+      </button>
+
+      <SessionCardMenu
+        session={session}
+        coaches={coaches}
+        onChange={onSessionChange}
       />
 
-      {/* AI confidence badge */}
-      {confidenceBadge && (
-        <span className="absolute right-5 top-1">{confidenceBadge}</span>
+      {session.notes && (
+        <span
+          className="pointer-events-none absolute right-1 bottom-7 rounded bg-secondary px-1 text-[9px]"
+          title={session.notes}
+        >
+          📝
+        </span>
       )}
-
-      <span className="block truncate text-[11px] font-semibold text-foreground">
-        {timeStr} – {endTime}
-      </span>
-      <span className="block truncate text-[11px] text-muted-foreground">
-        {session.centre_name}
-      </span>
-      <span
-        className="block truncate text-[10px] font-medium"
-        style={{ color: colour }}
-      >
-        {session.sport}
-      </span>
-
-      {/* Per-session cert warning */}
-      {certWarning && certWarning.blocked.length > 0 ? (
-        <span
-          className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5"
-          title={describeSessionCertWarning(certWarning)}
-        >
-          <ShieldOff className="size-2.5 text-red-600" />
-          <span className="text-[9px] font-medium text-red-600">!</span>
-        </span>
-      ) : certWarning && certWarning.expiring.length > 0 ? (
-        <span
-          className="absolute bottom-0.5 right-1 flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5"
-          title={describeSessionCertWarning(certWarning)}
-        >
-          <ShieldAlert className="size-2.5 text-amber-600" />
-          <span className="text-[9px] font-medium text-amber-600">
-            {certWarning.expiring[0].daysUntilExpiry}d
-          </span>
-        </span>
-      ) : null}
-    </button>
+    </div>
   );
 }
 
@@ -164,6 +187,7 @@ export function StaffRosterView({
   coaches,
   onSessionClick,
   onEmptySlotClick,
+  onSessionChange,
   sessionCertWarnings,
   renderConfidenceBadge,
 }: StaffRosterViewProps) {
@@ -217,8 +241,10 @@ export function StaffRosterView({
               sessionsByDate={grouped.get("__unassigned__") ?? new Map()}
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
+              onSessionChange={onSessionChange}
               renderConfidenceBadge={renderConfidenceBadge}
               sessionCertWarnings={sessionCertWarnings}
+              coaches={coaches}
               isUnassigned
             />
           )}
@@ -233,8 +259,10 @@ export function StaffRosterView({
               sessionsByDate={grouped.get(coach.id) ?? new Map()}
               onSessionClick={onSessionClick}
               onEmptySlotClick={onEmptySlotClick}
+              onSessionChange={onSessionChange}
               renderConfidenceBadge={renderConfidenceBadge}
               sessionCertWarnings={sessionCertWarnings}
+              coaches={coaches}
             />
           ))}
 
@@ -266,8 +294,10 @@ function StaffRow({
   sessionsByDate,
   onSessionClick,
   onEmptySlotClick,
+  onSessionChange,
   renderConfidenceBadge,
   sessionCertWarnings,
+  coaches,
   isUnassigned,
 }: {
   coachId: string;
@@ -276,8 +306,10 @@ function StaffRow({
   sessionsByDate: Map<string, SessionWithRelations[]>;
   onSessionClick: (session: SessionWithRelations) => void;
   onEmptySlotClick: (date: string, time: string, coachId?: string) => void;
+  onSessionChange: () => void;
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
   sessionCertWarnings?: Record<string, SessionCertWarning>;
+  coaches: Pick<Profile, "id" | "name">[];
   isUnassigned?: boolean;
 }) {
   // Count total sessions for this coach this week
@@ -344,6 +376,8 @@ function StaffRow({
                     onClick={() => onSessionClick(session)}
                     confidenceBadge={renderConfidenceBadge?.(session.id)}
                     certWarning={sessionCertWarnings?.[session.id]}
+                    coaches={coaches}
+                    onSessionChange={onSessionChange}
                   />
                 ))}
                 {/* Add button below existing sessions */}

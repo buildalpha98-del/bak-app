@@ -396,6 +396,7 @@ export function RosterPage({
           coaches={coaches}
           onSessionClick={handleSessionClickWithReview}
           onEmptySlotClick={handleEmptySlotClick}
+          onSessionChange={handleRefresh}
           sessionCertWarnings={sessionCertWarnings}
           renderConfidenceBadge={reviewRunId ? (sessionId) => {
             const a = getAssignmentForSession(sessionId);
