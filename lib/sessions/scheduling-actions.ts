@@ -181,7 +181,7 @@ export async function checkWeekClashes(
     const { data: raw, error: sessError } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -233,6 +233,20 @@ export async function checkWeekClashes(
         if (!p) return null;
         if (p.skill_focus && p.sport) return `${p.sport} · ${p.skill_focus}`;
         return p.skill_focus ?? p.sport ?? null;
+      })(),
+      assigned_coaches: (() => {
+        const rows = (s.session_coaches as unknown as Array<{
+          user_id: string;
+          is_primary: boolean;
+          profiles: { name: string | null } | null;
+        }>) ?? [];
+        return rows
+          .map((sc) => ({
+            user_id: sc.user_id,
+            name: sc.profiles?.name ?? null,
+            is_primary: sc.is_primary,
+          }))
+          .sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
       })(),
     }));
 

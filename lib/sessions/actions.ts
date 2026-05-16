@@ -25,6 +25,19 @@ export interface SessionWithRelations extends Session {
   term_name: string;
   program_title: string | null;
   notes: string | null;
+  /**
+   * Flat list of every coach assigned to this session, ordered with
+   * the primary first. Populated by the read helpers via a join on
+   * `session_coaches`. Empty when no coach is assigned.
+   *
+   * P5: prefer this for UI and computations over `coach_id` /
+   * `coach_name`, which carry only the primary.
+   */
+  assigned_coaches: Array<{
+    user_id: string;
+    name: string | null;
+    is_primary: boolean;
+  }>;
 }
 
 export interface CreateSessionData {
@@ -91,7 +104,7 @@ export async function getSessionsForWeek(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -143,6 +156,20 @@ export async function getSessionsForWeek(
         if (p.skill_focus && p.sport) return `${p.sport} · ${p.skill_focus}`;
         return p.skill_focus ?? p.sport ?? null;
       })(),
+      assigned_coaches: (() => {
+        const rows = (s.session_coaches as unknown as Array<{
+          user_id: string;
+          is_primary: boolean;
+          profiles: { name: string | null } | null;
+        }>) ?? [];
+        return rows
+          .map((sc) => ({
+            user_id: sc.user_id,
+            name: sc.profiles?.name ?? null,
+            is_primary: sc.is_primary,
+          }))
+          .sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
+      })(),
     }));
 
     return { data: sessions, error: null };
@@ -165,7 +192,7 @@ export async function getSessionDetail(
     const { data: s, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus)"
+        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .eq("id", id)
       .single();
@@ -214,6 +241,20 @@ export async function getSessionDetail(
         if (!p) return null;
         if (p.skill_focus && p.sport) return `${p.sport} · ${p.skill_focus}`;
         return p.skill_focus ?? p.sport ?? null;
+      })(),
+      assigned_coaches: (() => {
+        const rows = (s.session_coaches as unknown as Array<{
+          user_id: string;
+          is_primary: boolean;
+          profiles: { name: string | null } | null;
+        }>) ?? [];
+        return rows
+          .map((sc) => ({
+            user_id: sc.user_id,
+            name: sc.profiles?.name ?? null,
+            is_primary: sc.is_primary,
+          }))
+          .sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
       })(),
     };
 

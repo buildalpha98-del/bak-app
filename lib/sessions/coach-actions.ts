@@ -95,6 +95,16 @@ export interface CoachSessionDetail {
     centre_contact_name: string | null;
     centre_contact_phone: string | null;
     centre_contact_email: string | null;
+    /**
+     * Flat list of every coach assigned to this session, ordered with
+     * the primary first. Populated via a join on `session_coaches`.
+     * Empty when no coach is assigned.
+     */
+    assigned_coaches: Array<{
+      user_id: string;
+      name: string | null;
+      is_primary: boolean;
+    }>;
   };
   centreNotes: SessionCentreNote[];
   program: Program | null;
@@ -413,7 +423,7 @@ export async function getCoachSessionDetail(
     const { data: raw, error: sessionErr } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type, address, primary_contact_name, primary_contact_phone, primary_contact_email), terms:term_id(name), equipment_kits:equipment_kit_id(name)"
+        "*, centres:centre_id(name, type, address, primary_contact_name, primary_contact_phone, primary_contact_email), terms:term_id(name), equipment_kits:equipment_kit_id(name), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .eq("id", sessionId)
       .single();
@@ -453,6 +463,20 @@ export async function getCoachSessionDetail(
         (centre?.primary_contact_phone as string) ?? null,
       centre_contact_email:
         (centre?.primary_contact_email as string) ?? null,
+      assigned_coaches: (() => {
+        const rows = ((raw as unknown as Record<string, unknown>).session_coaches as unknown as Array<{
+          user_id: string;
+          is_primary: boolean;
+          profiles: { name: string | null } | null;
+        }>) ?? [];
+        return rows
+          .map((sc) => ({
+            user_id: sc.user_id,
+            name: sc.profiles?.name ?? null,
+            is_primary: sc.is_primary,
+          }))
+          .sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
+      })(),
     };
 
     // Fetch related data in parallel
