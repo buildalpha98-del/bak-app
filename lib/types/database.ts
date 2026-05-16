@@ -225,6 +225,28 @@ export interface Session {
 }
 
 // ========================
+// 9b. session_coaches (P5 multi-coach)
+// ========================
+/**
+ * One row per (session, coach). Added in migration 048.
+ *
+ * `sessions.coach_id` is the denormalised primary cache maintained
+ * by the `sync_sessions_primary_coach` trigger — read sites continue
+ * to read it; write sites route through `setSessionCoaches` instead
+ * of touching `sessions.coach_id` directly.
+ *
+ * Exactly one row per session has `is_primary = true` (partial unique
+ * index `session_coaches_primary`).
+ */
+export interface SessionCoach {
+  session_id: string;
+  user_id: string;
+  is_primary: boolean;
+  assigned_at: string;
+  assigned_by: string | null;
+}
+
+// ========================
 // 10. swap_requests
 // ========================
 export interface SwapRequest {
