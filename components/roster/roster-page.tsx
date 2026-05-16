@@ -415,6 +415,8 @@ export function RosterPage({
             if (!a) return undefined;
             return <ConfidenceBadge confidence={a.confidence} reasoning={a.reasoning} />;
           } : undefined}
+          coaches={coaches}
+          onSessionChange={handleRefresh}
         />
       ) : (
         <SessionListView

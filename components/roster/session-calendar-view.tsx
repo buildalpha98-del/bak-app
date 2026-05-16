@@ -2,6 +2,7 @@
 
 import { Fragment, type ReactNode } from "react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
+import type { Profile } from "@/lib/types/database";
 import {
   SLOT_TIMES,
   formatTime12,
@@ -27,6 +28,10 @@ interface SessionCalendarViewProps {
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   /** Optional renderer for confidence badge overlay on each session card */
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
+  /** Coach list — forwarded to SessionCardMenu */
+  coaches?: Pick<Profile, "id" | "name">[];
+  /** Called after any card-menu action mutates a session */
+  onSessionChange?: () => void;
 }
 
 // ============================================================
@@ -40,6 +45,8 @@ export function SessionCalendarView({
   onEmptySlotClick,
   sessionCertWarnings,
   renderConfidenceBadge,
+  coaches,
+  onSessionChange,
 }: SessionCalendarViewProps) {
   const weekDates = getWeekDates(weekStart);
 
@@ -140,6 +147,8 @@ export function SessionCalendarView({
                 onClick={() => onSessionClick(s)}
                 certWarning={sessionCertWarnings?.[s.id]}
                 confidenceBadge={renderConfidenceBadge?.(s.id)}
+                coaches={coaches}
+                onChange={onSessionChange}
               />
             </div>
           );
