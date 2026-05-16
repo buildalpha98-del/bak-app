@@ -147,6 +147,7 @@ export function createMockSession(overrides: Partial<Session> = {}): Session {
     actual_duration_minutes: null,
     headcount: null,
     coach_notes: null,
+    notes: null,
     needs_ops_review: false,
     is_trial: false,
     created_at: new Date().toISOString(),

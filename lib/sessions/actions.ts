@@ -19,6 +19,7 @@ export interface SessionWithRelations extends Session {
   coach_phone: string | null;
   term_name: string;
   program_title: string | null;
+  notes: string | null;
 }
 
 export interface CreateSessionData {
@@ -113,6 +114,7 @@ export async function getSessionsForWeek(
       actual_duration_minutes: (s as Record<string, unknown>).actual_duration_minutes as number | null ?? null,
       headcount: (s as Record<string, unknown>).headcount as number | null ?? null,
       coach_notes: (s as Record<string, unknown>).coach_notes as string | null ?? null,
+      notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
       started_at: s.started_at,
@@ -184,6 +186,7 @@ export async function getSessionDetail(
       actual_duration_minutes: (s as Record<string, unknown>).actual_duration_minutes as number | null ?? null,
       headcount: (s as Record<string, unknown>).headcount as number | null ?? null,
       coach_notes: (s as Record<string, unknown>).coach_notes as string | null ?? null,
+      notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
       started_at: s.started_at,
@@ -459,6 +462,151 @@ export async function deleteSession(
   } catch (err) {
     console.error("deleteSession error:", err);
     return { error: "Failed to delete session." };
+  }
+}
+
+// ============================================================
+// 10. duplicateSession — admin/ops only; creates a new draft
+// ============================================================
+
+/**
+ * Copies a session into a new draft row with `coach_id = null` and
+ * resets the started_at / completed_at / cancellation_reason fields.
+ * Returns the new id so the caller can open it for editing.
+ *
+ * Useful for "same shift Tuesday too" — admin clicks Duplicate,
+ * then changes the date in the resulting edit dialog.
+ */
+export async function duplicateSession(
+  id: string
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { data: null, error: "Only admin or ops can duplicate sessions." };
+    }
+
+    const { data: original, error: fetchErr } = await supabase
+      .from("sessions")
+      .select(
+        "term_id, date, time, duration_minutes, centre_id, sport, program_id, pay_rate_override, notes"
+      )
+      .eq("id", id)
+      .single();
+    if (fetchErr || !original) {
+      return { data: null, error: "Session not found." };
+    }
+
+    const { data: copy, error: insertErr } = await supabase
+      .from("sessions")
+      .insert({
+        term_id: original.term_id,
+        date: original.date,
+        time: original.time,
+        duration_minutes: original.duration_minutes,
+        centre_id: original.centre_id,
+        sport: original.sport,
+        program_id: original.program_id,
+        pay_rate_override: original.pay_rate_override,
+        notes: original.notes,
+        coach_id: null,
+        status: "draft" as SessionStatus,
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !copy) {
+      return { data: null, error: insertErr?.message ?? "Failed to duplicate." };
+    }
+
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "session_duplicated",
+      entity_type: "session",
+      entity_id: copy.id,
+      metadata: { source_session_id: id },
+    });
+
+    return { data: { id: copy.id }, error: null };
+  } catch (err) {
+    console.error("duplicateSession error:", err);
+    return { data: null, error: "Failed to duplicate session." };
+  }
+}
+
+// ============================================================
+// 11. updateSessionNotes — admin/ops or the assigned coach
+// ============================================================
+
+/**
+ * Write-through edit for the per-session note text. Permission:
+ * admin/ops, OR the coach currently assigned to the session
+ * (via sessions.coach_id — which is also the denormalised primary
+ * coach cache post-P5).
+ */
+export async function updateSessionNotes(
+  id: string,
+  notes: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const [profileRes, sessionRes] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", user.id).single(),
+      supabase.from("sessions").select("coach_id").eq("id", id).single(),
+    ]);
+
+    if (sessionRes.error || !sessionRes.data) {
+      return { error: "Session not found." };
+    }
+
+    const role = profileRes.data?.role;
+    const isAdminOrOps = role === "admin" || role === "ops";
+    const isAssignedCoach = sessionRes.data.coach_id === user.id;
+
+    if (!isAdminOrOps && !isAssignedCoach) {
+      return { error: "You don't have permission to edit notes for this session." };
+    }
+
+    // Empty string allowed — wipes the note. Null treated the same.
+    const trimmed = notes.trim();
+    if (trimmed.length > 2000) {
+      return { error: "Note is too long (max 2000 characters)." };
+    }
+
+    const { error } = await supabase
+      .from("sessions")
+      .update({ notes: trimmed === "" ? null : trimmed })
+      .eq("id", id);
+
+    if (error) return { error: error.message };
+
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "session_notes_updated",
+      entity_type: "session",
+      entity_id: id,
+      metadata: { note_length: trimmed.length },
+    });
+
+    return { error: null };
+  } catch (err) {
+    console.error("updateSessionNotes error:", err);
+    return { error: "Failed to update notes." };
   }
 }
 

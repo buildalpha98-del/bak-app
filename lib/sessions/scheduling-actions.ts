@@ -210,6 +210,7 @@ export async function checkWeekClashes(
       actual_duration_minutes: (s as Record<string, unknown>).actual_duration_minutes as number | null ?? null,
       headcount: (s as Record<string, unknown>).headcount as number | null ?? null,
       coach_notes: (s as Record<string, unknown>).coach_notes as string | null ?? null,
+      notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
       started_at: s.started_at,

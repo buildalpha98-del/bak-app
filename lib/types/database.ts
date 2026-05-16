@@ -217,6 +217,7 @@ export interface Session {
   actual_duration_minutes: number | null;
   headcount: number | null;
   coach_notes: string | null;
+  notes: string | null;
   needs_ops_review: boolean;
   is_trial: boolean;
   created_at: string;
