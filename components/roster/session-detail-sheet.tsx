@@ -26,7 +26,6 @@ import {
   Trophy,
   Star,
   BookOpen,
-  X,
   Trash2,
   Pencil,
 } from "lucide-react";
@@ -39,15 +38,20 @@ import {
 } from "@/components/ui/select";
 import { SessionStatusBadge } from "./session-status-badge";
 import { VarianceBadge } from "./variance-badge";
-import { SmartCoachSelect } from "./smart-coach-select";
+import {
+  CoachChipMultiselect,
+  type ChipCoach,
+} from "./coach-chip-multiselect";
 import { ReplacementPanel } from "./replacement-panel";
 import { SessionNotesPopover } from "./session-notes-popover";
 import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
+import { toast } from "sonner";
 import {
   updateSessionStatus,
   updateSession,
   deleteSession,
+  assignCoaches,
 } from "@/lib/sessions/actions";
 import { getReplacementSuggestions } from "@/lib/sessions/scheduling-actions";
 import {
@@ -117,9 +121,6 @@ export function SessionDetailSheet({
   const [cancelReason, setCancelReason] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
-
-  // Coach reassignment
-  const [reassigning, setReassigning] = useState(false);
 
   // Pay rate override
   const [editingRate, setEditingRate] = useState(false);
@@ -199,16 +200,29 @@ export function SessionDetailSheet({
     }
   }
 
-  async function handleSmartSelect(coachId: string) {
+  async function handleAssignCoaches(next: ChipCoach[]) {
     setSaving(true);
-    const { error } = await updateSession(session!.id, {
-      coach_id: coachId || null,
-    });
+    const { error } = await assignCoaches(
+      session!.id,
+      next.map((c, i) => ({ userId: c.id, isPrimary: i === 0 }))
+    );
     setSaving(false);
-    if (!error) {
-      setReassigning(false);
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success("Coaches updated.");
+    onUpdate();
+  }
+
+  async function handleReplacementPick(coachId: string) {
+    // Replacement suggestions are single-pick (legacy primary swap).
+    // Route through assignCoaches so the cert guard + activity log fire.
+    const name =
+      replacements.find((r) => r.coachId === coachId)?.coachName ??
+      coaches.find((c) => c.id === coachId)?.name ??
+      "(unknown)";
+    await handleAssignCoaches([{ id: coachId, name }]);
   }
 
   async function handleSaveRate() {
@@ -497,47 +511,42 @@ export function SessionDetailSheet({
 
           <Separator />
 
-          {/* Coach */}
+          {/* Coaches */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">Coach</h3>
-              {!isTerminal && !reassigning && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setReassigning(true)}
-                >
-                  Reassign
-                </Button>
-              )}
+              <h3 className="text-sm font-medium text-foreground">Coaches</h3>
             </div>
 
-            {reassigning ? (
+            {!isTerminal ? (
               <div className="space-y-3">
-                {/* Smart Coach Select with availability indicators */}
-                <SmartCoachSelect
-                  sessionId={session.id}
-                  currentCoachId={session.coach_id}
-                  onSelect={handleSmartSelect}
+                {/* Chip multiselect — primary first, drag-to-reorder. */}
+                <CoachChipMultiselect
+                  value={(session.assigned_coaches ?? []).map((c) => ({
+                    id: c.user_id,
+                    name: c.name ?? "(unknown)",
+                    // Active coaches list is filtered server-side
+                    // (getActiveCoaches). Anyone still in `assigned_coaches`
+                    // but missing from the active list is archived.
+                    inactive: !coaches.some((opt) => opt.id === c.user_id),
+                  }))}
+                  options={coaches.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                    inactive: false,
+                  }))}
+                  onChange={handleAssignCoaches}
+                  disabled={saving}
                 />
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setReassigning(false)}
-                >
-                  Cancel
-                </Button>
 
                 <Separator />
 
-                {/* Replacement Suggestions */}
+                {/* Replacement Suggestions — single-pick primary swap. */}
                 <div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleLoadReplacements}
-                    disabled={loadingReplacements}
+                    disabled={loadingReplacements || saving}
                   >
                     {loadingReplacements ? (
                       <Loader2 className="size-4 animate-spin" />
@@ -558,8 +567,9 @@ export function SessionDetailSheet({
                         <button
                           key={r.coachId}
                           type="button"
-                          className="flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors hover:bg-muted/50"
-                          onClick={() => handleSmartSelect(r.coachId)}
+                          disabled={saving}
+                          className="flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+                          onClick={() => handleReplacementPick(r.coachId)}
                         >
                           <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)] text-xs font-semibold text-primary">
                             {i + 1}
@@ -600,17 +610,29 @@ export function SessionDetailSheet({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <UserCircle className="size-5 text-muted-foreground" />
-                <span
-                  className={`text-sm ${
-                    session.coach_name
-                      ? "text-foreground"
-                      : "italic text-amber-600"
-                  }`}
-                >
-                  {session.coach_name ?? "Unassigned"}
-                </span>
+              <div className="space-y-1">
+                {(session.assigned_coaches ?? []).length === 0 ? (
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="size-5 text-muted-foreground" />
+                    <span className="text-sm italic text-amber-600">
+                      Unassigned
+                    </span>
+                  </div>
+                ) : (
+                  (session.assigned_coaches ?? []).map((c) => (
+                    <div key={c.user_id} className="flex items-center gap-2">
+                      <UserCircle className="size-5 text-muted-foreground" />
+                      <span className="text-sm text-foreground">
+                        {c.name ?? "(unknown)"}
+                        {c.is_primary ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            (primary)
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
