@@ -494,8 +494,22 @@ export async function assignCoaches(
     }));
     const certResult = await bulkCheckCoachCertsForSessions(pairs);
     if (certResult.blocked.length > 0) {
+      // Resolve coach names so the error message is human-readable
+      // for ops — UUIDs only get used as a fallback when a profile
+      // lookup turns up nothing (e.g. archived coach hard-deleted).
+      const blockedIds = certResult.blocked.map((b) => b.coachId);
+      const { data: blockedProfiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", blockedIds);
+      const nameById = new Map(
+        (blockedProfiles ?? []).map((p) => [
+          p.id as string,
+          (p.name as string | null) ?? null,
+        ])
+      );
       const summary = certResult.blocked
-        .map((b) => `${b.coachId}: ${b.result.message}`)
+        .map((b) => `${nameById.get(b.coachId) ?? b.coachId}: ${b.result.message}`)
         .join("; ");
       return { error: `Cert guard refused assignment — ${summary}` };
     }
