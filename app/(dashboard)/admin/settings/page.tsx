@@ -7,6 +7,7 @@ import {
   Link2,
   Receipt,
   Bell,
+  Boxes,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -59,6 +60,13 @@ const settingsSections = [
     href: "/admin/settings/reminders",
     icon: Bell,
     colour: "text-orange-500 bg-orange-50",
+  },
+  {
+    label: "Custom Sports & Equipment",
+    description: "Manage org-wide custom sports and equipment items for program generation",
+    href: "/admin/settings/programs",
+    icon: Boxes,
+    colour: "text-indigo-500 bg-indigo-50",
   },
 ];
 
