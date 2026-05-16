@@ -306,6 +306,12 @@ export async function updateSession(
   try {
     const supabase = await createSupabaseServerClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // Cert guard for coach assignment (unchanged behaviour).
     if (data.coach_id) {
       const { data: existing, error: fetchErr } = await supabase
         .from("sessions")
@@ -318,12 +324,31 @@ export async function updateSession(
       if (!certCheck.ok) return { error: certCheck.message };
     }
 
-    const { error } = await supabase
-      .from("sessions")
-      .update(data)
-      .eq("id", id);
+    // Separate coach_id from the rest of the patch — it now writes
+    // through session_coaches; the trigger maintains the cache column.
+    const coachKeyInPatch = Object.prototype.hasOwnProperty.call(data, "coach_id");
+    const { coach_id: nextCoachId, ...patch } = data;
 
-    if (error) throw error;
+    // Apply the non-coach patch directly (status, date, time, etc.)
+    if (Object.keys(patch).length > 0) {
+      const { error } = await supabase.from("sessions").update(patch).eq("id", id);
+      if (error) throw error;
+    }
+
+    // Apply the coach change, if any, through the helper.
+    if (coachKeyInPatch) {
+      const coaches =
+        nextCoachId === null || nextCoachId === undefined
+          ? []
+          : [{ userId: nextCoachId, isPrimary: true }];
+      const { error: writeErr } = await setSessionCoaches({
+        sessionId: id,
+        coaches,
+        assignedBy: user.id,
+      });
+      if (writeErr) return { error: writeErr };
+    }
+
     return { error: null };
   } catch (err) {
     console.error("updateSession error:", err);
