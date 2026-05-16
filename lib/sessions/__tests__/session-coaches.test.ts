@@ -110,4 +110,31 @@ describe("setSessionCoaches", () => {
     });
     expect(result.error).toBe("permission denied");
   });
+
+  it("falls back to a generic message when RPC error has no .message", async () => {
+    // Defensive against malformed/non-PostgrestError shapes — the
+    // typed contract is `string | null` and must never resolve to
+    // `undefined`.
+    supabaseMock.rpc.mockResolvedValue({ data: null, error: {} });
+    const result = await setSessionCoaches({
+      sessionId: "s1",
+      coaches: [{ userId: "u1", isPrimary: true }],
+      assignedBy: "ops1",
+    });
+    expect(result.error).toBe("set_session_coaches RPC failed");
+  });
+
+  it("rejects inputs above MAX_SESSION_COACHES without calling the RPC", async () => {
+    const tooMany = Array.from({ length: 11 }, (_, i) => ({
+      userId: `u${i + 1}`,
+      isPrimary: i === 0,
+    }));
+    const result = await setSessionCoaches({
+      sessionId: "s1",
+      coaches: tooMany,
+      assignedBy: "ops1",
+    });
+    expect(result.error).toMatch(/too many coaches.*max 10/i);
+    expect(supabaseMock.rpc).not.toHaveBeenCalled();
+  });
 });

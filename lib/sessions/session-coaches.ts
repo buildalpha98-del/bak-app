@@ -14,6 +14,14 @@ export interface SetSessionCoachesParams {
 }
 
 /**
+ * Defensive cap on the number of coaches per shift. The product
+ * surface tops out around 3 (primary + 2 secondaries); 10 is well
+ * above any realistic value while still preventing a runaway jsonb
+ * payload if a buggy caller passes a giant array.
+ */
+export const MAX_SESSION_COACHES = 10;
+
+/**
  * The single write path to `session_coaches`. Every call site that
  * previously wrote `sessions.coach_id` directly funnels through here.
  *
@@ -33,6 +41,13 @@ export async function setSessionCoaches({
   assignedBy,
 }: SetSessionCoachesParams): Promise<{ error: string | null }> {
   // Pre-flight client-side validation — fails fast before round-trip.
+  if (coaches.length > MAX_SESSION_COACHES) {
+    return {
+      error: `session_coaches: too many coaches (got ${coaches.length}, max ${MAX_SESSION_COACHES})`,
+    };
+  }
+  // The empty array is a valid "clear shift" state; only validate the
+  // one-primary invariant when there's at least one coach to assign.
   if (coaches.length > 0) {
     const primaries = coaches.filter((c) => c.isPrimary).length;
     if (primaries !== 1) {
@@ -60,7 +75,10 @@ export async function setSessionCoaches({
   });
 
   if (error) {
-    return { error: error.message };
+    // Supabase errors should always carry `.message`, but fall back
+    // defensively so we never return `{ error: undefined }` against
+    // the typed `string | null` contract.
+    return { error: error.message ?? "set_session_coaches RPC failed" };
   }
   return { error: null };
 }
