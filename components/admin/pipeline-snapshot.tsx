@@ -15,11 +15,24 @@ function formatAUD(value: number): string {
   }).format(value);
 }
 
-export function PipelineSnapshot() {
-  const [data, setData] = useState<SnapshotData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface PipelineSnapshotProps {
+  /**
+   * Server-rendered seed. When provided, the widget skips the initial
+   * loading state and refreshes in the background via `useEffect` —
+   * this lets the admin home batch-load all 6 panels in a single
+   * `Promise.all` upstream while preserving the per-widget refresh
+   * cadence.
+   */
+  initialData?: SnapshotData | null;
+}
+
+export function PipelineSnapshot({ initialData = null }: PipelineSnapshotProps = {}) {
+  const [data, setData] = useState<SnapshotData | null>(initialData);
+  const [loading, setLoading] = useState(initialData === null);
 
   useEffect(() => {
+    // Always refresh once on mount so a long-lived tab doesn't show
+    // stale numbers indefinitely.
     getPipelineSnapshot()
       .then(({ data }) => setData(data))
       .catch(() => {})
@@ -27,7 +40,7 @@ export function PipelineSnapshot() {
   }, []);
 
   return (
-    <Card>
+    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">Sales Pipeline</CardTitle>
         <Link

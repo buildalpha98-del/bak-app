@@ -67,9 +67,20 @@ function StatRow({
   );
 }
 
-export function CertExpirySnapshot() {
-  const [data, setData] = useState<CertBucketResult | null>(null);
-  const [loading, setLoading] = useState(true);
+interface CertExpirySnapshotProps {
+  /**
+   * Server-rendered seed from the admin home's batched
+   * `Promise.all`. The widget still re-fetches once on mount so
+   * compliance-sensitive numbers stay fresh.
+   */
+  initialData?: CertBucketResult | null;
+}
+
+export function CertExpirySnapshot({
+  initialData = null,
+}: CertExpirySnapshotProps = {}) {
+  const [data, setData] = useState<CertBucketResult | null>(initialData);
+  const [loading, setLoading] = useState(initialData === null);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,7 +108,7 @@ export function CertExpirySnapshot() {
     : [];
 
   return (
-    <Card>
+    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <ShieldAlert className="size-4" />

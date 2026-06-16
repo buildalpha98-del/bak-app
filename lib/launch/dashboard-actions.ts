@@ -5,14 +5,15 @@
 // ============================================================
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { getY1Targets } from "@/lib/launch/y1-targets-actions";
 
 // ========================
-// Constants (Year 1 growth targets)
+// Constants
 // ========================
-
-const YEAR_1_CENTRE_TARGET = 40;
-const YEAR_1_SCHOOL_TARGET = 10;
-const YEAR_1_REVENUE_TARGET = 400_000;
+//
+// Y1 growth targets now live in `business_settings` (migration 051)
+// and are editable from the home dashboard metric cards. Read via
+// `getY1Targets()` and threaded into `getDashboardMetrics()` below.
 
 const DEFAULT_SESSION_RATE = 165;
 const SCHOOL_RATE_PER_CHILD = 5;
@@ -63,6 +64,16 @@ export interface DashboardMetrics {
     type: "centre" | "school";
     revenue: number;
   }>;
+  /**
+   * Top sports this term ranked by session count. Used by the home
+   * dashboard's "Programme Mix" panel — the replacement card we
+   * render in place of Revenue Split when the viewer is not
+   * financial_access. Contains no dollar figures by design.
+   */
+  programmeMix: Array<{
+    sport: string;
+    sessionCount: number;
+  }>;
   coaches: {
     active: number;
     total: number;
@@ -91,6 +102,12 @@ export interface ActivityItem {
   description: string;
   timestamp: string;
   entityId?: string;
+}
+
+export interface AdminStatusPulse {
+  needsReplacementCount: number;
+  overdueInvoiceCount: number;
+  leadsRepliedTodayCount: number;
 }
 
 // ========================
@@ -178,6 +195,11 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const monthStart = getMonthStart();
   const termRange = getTermRange();
   const fyStart = getFinancialYearStart();
+
+  // Y1 targets are editable from the home dashboard, persisted in
+  // business_settings. We fetch them up front so every target field
+  // below uses the same snapshot value.
+  const y1Targets = await getY1Targets();
 
   // ========================
   // CENTRES
@@ -426,6 +448,30 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .slice(0, 5);
 
   // ========================
+  // PROGRAMME MIX — top sports this term by session count
+  // ========================
+  // Used by the home dashboard's financial-restricted view as a
+  // non-monetary replacement for the Revenue Split + Top Earners cards.
+
+  const { data: termSessionsBySport } = await admin
+    .from("sessions")
+    .select("sport")
+    .gte("date", termRange.start)
+    .lte("date", termRange.end)
+    .neq("status", "cancelled")
+    .not("sport", "is", null);
+
+  const sportCounts = new Map<string, number>();
+  for (const row of (termSessionsBySport ?? []) as Array<{ sport: string | null }>) {
+    if (!row.sport) continue;
+    sportCounts.set(row.sport, (sportCounts.get(row.sport) ?? 0) + 1);
+  }
+  const programmeMix = Array.from(sportCounts.entries())
+    .map(([sport, sessionCount]) => ({ sport, sessionCount }))
+    .sort((a, b) => b.sessionCount - a.sessionCount)
+    .slice(0, 6);
+
+  // ========================
   // GROWTH CHART (cumulative centres + schools)
   // ========================
 
@@ -613,7 +659,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     centres: {
       active: activeCentreIds.size,
       total: totalCentres ?? 0,
-      target: YEAR_1_CENTRE_TARGET,
+      target: y1Targets.centres,
       newThisMonth: newCentresThisMonth ?? 0,
       sessionsThisWeek,
       avgSessionRate: Math.round(avgSessionRate),
@@ -621,14 +667,14 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     schools: {
       active: activeSchoolIds.size,
       total: totalSchools ?? 0,
-      target: YEAR_1_SCHOOL_TARGET,
+      target: y1Targets.schools,
       totalEnrolledStudents,
     },
     revenue: {
       thisMonth: Math.round(revenueThisMonth),
       thisTerm: Math.round(revenueThisTerm),
       thisYear: Math.round(revenueThisYear),
-      yearTarget: YEAR_1_REVENUE_TARGET,
+      yearTarget: y1Targets.revenue,
       childcareRevenue: Math.round(childcareRevenue),
       schoolRevenue: Math.round(schoolRevenue),
       isEstimate: !hasInvoices,
@@ -638,6 +684,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       monthlyBreakdown: growthBreakdown,
     },
     topEntities,
+    programmeMix,
     coaches: {
       active: coachSessionMap.size,
       total: totalCoaches,
@@ -793,4 +840,57 @@ export async function getRecentActivity(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )
     .slice(0, limit);
+}
+
+// ========================
+// 3. getAdminStatusPulse
+// ========================
+//
+// Powers the live "N shifts need a coach · M invoices overdue · K leads
+// replied today" pulse strip at the top of /admin. Each count is a
+// link target — keep this fast (3 lightweight counts, all `head: true`).
+
+export async function getAdminStatusPulse(): Promise<AdminStatusPulse> {
+  const admin = createSupabaseAdmin();
+
+  // Sessions with no coach assigned that still need rostering
+  const needsReplacementPromise = admin
+    .from("sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "needs_replacement");
+
+  // Outbound invoices marked overdue (the cron job stamps this status
+  // when due_date < today and status is sent|partially_paid).
+  const overdueInvoicesPromise = admin
+    .from("outbound_invoices")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "overdue");
+
+  // Lead activity created today, restricted to engagement signals that
+  // imply the lead "moved" — opens, clicks, calls, meetings, notes.
+  // (We don't yet ingest inbound email, so this is the best proxy for
+  // "today's responsive leads".)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const leadsRepliedPromise = admin
+    .from("lead_activities")
+    .select("lead_id")
+    .in("type", ["email_opened", "email_clicked", "call", "meeting", "note"])
+    .gte("created_at", todayStart.toISOString());
+
+  const [needsRes, overdueRes, leadsRes] = await Promise.all([
+    needsReplacementPromise,
+    overdueInvoicesPromise,
+    leadsRepliedPromise,
+  ]);
+
+  const leadsRepliedTodayCount = new Set(
+    (leadsRes.data ?? []).map((r: { lead_id: string }) => r.lead_id),
+  ).size;
+
+  return {
+    needsReplacementCount: needsRes.count ?? 0,
+    overdueInvoiceCount: overdueRes.count ?? 0,
+    leadsRepliedTodayCount,
+  };
 }

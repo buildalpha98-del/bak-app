@@ -1,33 +1,75 @@
 "use client";
 
+// ============================================================
+// Admin home — Launch Dashboard
+// ============================================================
+//
+// 5 rows:
+//   1. KPI metric cards (Centres, Schools, Revenue, Coaches)
+//   2. Monthly Revenue + Centre/School Growth charts
+//   3. Revenue Split + Top Earners (replaced by Programme Mix when
+//      the viewer doesn't have financial_access)
+//   4. Coach Overview table
+//   5. Recent Activity timeline + chip filter + view-all link
+//
+// Three behaviours wired in:
+//   - Admin viewers see a pencil affordance on each KPI card with a
+//     Y1 target; clicking opens an inline-edit popover.
+//   - Numbers tick up from 0 → target on mount (useCountUp).
+//   - When the viewer's `financial_access` is false, revenue is
+//     hidden and the grid stays intact via fallback cards/columns.
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Building2, GraduationCap, DollarSign, Users,
-  CheckCircle2, AlertTriangle, AlertCircle,
-  Calendar, CreditCard, UserPlus, Receipt, Clock,
+  Building2,
+  GraduationCap,
+  DollarSign,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Activity,
+  TrendingUp,
 } from "lucide-react";
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getRecentActivity } from "@/lib/launch/dashboard-actions";
-import type { DashboardMetrics, ActivityItem } from "@/lib/launch/dashboard-actions";
+import {
+  getRecentActivity,
+  type DashboardMetrics,
+  type ActivityItem,
+} from "@/lib/launch/dashboard-actions";
+import type { Profile } from "@/lib/types/database";
+import { ActivityTimeline } from "@/components/admin/activity-timeline";
+import { Y1TargetEditPopover } from "@/components/admin/y1-target-edit-popover";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 // ========================
-// Colour palette
+// Palette
 // ========================
+//
+// Brand orange is reserved for: primary KPI icon, status-pulse counts,
+// active chips, save CTAs, today's timeline dots. Everywhere else uses
+// neutral foreground / muted-foreground.
 
-const COLOURS = {
-  childcare: "#E8712A", // brand orange
-  school: "#2962FF",
-  green: "#10B981",
-  amber: "#F59E0B",
-  red: "#EF4444",
-  grey: "#94A3B8",
-};
+const BRAND = "#E8712A";
+const BRAND_TINT = "#F4A87B";
 
 // ========================
 // Helpers
@@ -43,19 +85,6 @@ function fmtCurrencyFull(n: number): string {
   return `$${Math.round(n).toLocaleString("en-AU")}`;
 }
 
-function timeAgo(ts: string): string {
-  const diff = Date.now() - new Date(ts).getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return "just now";
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(ts).toLocaleDateString("en-AU");
-}
-
 function progressColour(pct: number): string {
   if (pct >= 50) return "bg-green-500";
   if (pct >= 25) return "bg-amber-500";
@@ -66,16 +95,24 @@ function progressColour(pct: number): string {
 // Main Dashboard
 // ========================
 
-export function LaunchDashboard({
-  metrics,
-  initialActivity,
-}: {
+export interface LaunchDashboardProps {
   metrics: DashboardMetrics;
   initialActivity: ActivityItem[];
-}) {
-  const [activity, setActivity] = useState(initialActivity);
+  profile: Pick<Profile, "role" | "financial_access" | "name">;
+}
 
-  // Auto-refresh activity every 60 seconds
+export function LaunchDashboard({
+  metrics: initialMetrics,
+  initialActivity,
+  profile,
+}: LaunchDashboardProps) {
+  const [activity, setActivity] = useState(initialActivity);
+  const [metrics, setMetrics] = useState(initialMetrics);
+
+  const isAdmin = profile.role === "admin";
+  const showFinancial = !!profile.financial_access;
+
+  // Auto-refresh activity every 60 seconds (matches prior behaviour).
   useEffect(() => {
     const interval = setInterval(async () => {
       const fresh = await getRecentActivity(20);
@@ -84,102 +121,160 @@ export function LaunchDashboard({
     return () => clearInterval(interval);
   }, []);
 
+  function applyTarget(field: "centres" | "schools" | "revenue", newValue: number) {
+    setMetrics((prev) => {
+      switch (field) {
+        case "centres":
+          return { ...prev, centres: { ...prev.centres, target: newValue } };
+        case "schools":
+          return { ...prev, schools: { ...prev.schools, target: newValue } };
+        case "revenue":
+          return { ...prev, revenue: { ...prev.revenue, yearTarget: newValue } };
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
-      {/* Page header */}
+      {/* Eyebrow + title */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
-          Launch Dashboard
+        <p className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">
+          Launch dashboard
         </p>
-        <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Build Alpha Kids
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Year 1 targets: 40 centres, 10 schools, $400K revenue
+        <p className="mt-1 text-sm text-muted-foreground">
+          Year 1 targets: {metrics.centres.target} centres, {metrics.schools.target} schools,{" "}
+          {fmtCurrency(metrics.revenue.yearTarget)} revenue
         </p>
       </div>
 
-      {/* ROW 1 — Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ROW 1 — KPI cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           icon={Building2}
           label="Active Centres"
-          value={metrics.centres.active}
+          numericValue={metrics.centres.active}
           target={metrics.centres.target}
           suffix={`/ ${metrics.centres.target}`}
           footer={`${metrics.centres.newThisMonth} new this month`}
-          iconBg="bg-orange-100"
-          iconColor="text-[#E8712A]"
+          isPrimary
+          editor={
+            <Y1TargetEditPopover
+              field="centres"
+              label="Centres"
+              current={metrics.centres.target}
+              onSaved={(v) => applyTarget("centres", v)}
+              enabled={isAdmin}
+            />
+          }
         />
         <MetricCard
           icon={GraduationCap}
           label="Active Schools"
-          value={metrics.schools.active}
+          numericValue={metrics.schools.active}
           target={metrics.schools.target}
           suffix={`/ ${metrics.schools.target}`}
           footer={`${metrics.schools.totalEnrolledStudents} enrolled students`}
-          iconBg="bg-blue-100"
-          iconColor="text-blue-600"
+          editor={
+            <Y1TargetEditPopover
+              field="schools"
+              label="Schools"
+              current={metrics.schools.target}
+              onSaved={(v) => applyTarget("schools", v)}
+              enabled={isAdmin}
+            />
+          }
         />
-        <MetricCard
-          icon={DollarSign}
-          label="Revenue (YTD)"
-          value={fmtCurrency(metrics.revenue.thisYear)}
-          numericValue={metrics.revenue.thisYear}
-          target={metrics.revenue.yearTarget}
-          suffix={`/ ${fmtCurrency(metrics.revenue.yearTarget)}`}
-          footer={metrics.revenue.isEstimate ? "Estimated from sessions" : `${fmtCurrency(metrics.revenue.thisMonth)} this month`}
-          iconBg="bg-green-100"
-          iconColor="text-green-600"
-        />
+        {showFinancial ? (
+          <MetricCard
+            icon={DollarSign}
+            label="Revenue (YTD)"
+            numericValue={metrics.revenue.thisYear}
+            target={metrics.revenue.yearTarget}
+            displayValue={fmtCurrency(metrics.revenue.thisYear)}
+            displayValueFromTickedUp={(n) => fmtCurrency(n)}
+            suffix={`/ ${fmtCurrency(metrics.revenue.yearTarget)}`}
+            footer={
+              metrics.revenue.isEstimate
+                ? "Estimated from sessions"
+                : `${fmtCurrency(metrics.revenue.thisMonth)} this month`
+            }
+            editor={
+              <Y1TargetEditPopover
+                field="revenue"
+                label="Revenue"
+                prefix="$"
+                current={metrics.revenue.yearTarget}
+                onSaved={(v) => applyTarget("revenue", v)}
+                enabled={isAdmin}
+              />
+            }
+          />
+        ) : (
+          <CentresHealthCard activeWeek={metrics.centres.sessionsThisWeek} totalCentres={metrics.centres.total} />
+        )}
         <CoachesCard coaches={metrics.coaches} />
       </div>
 
       {/* ROW 2 — Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Revenue bar chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Monthly Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={metrics.revenue.monthlyBreakdown} margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis fontSize={11} tickFormatter={(v: number) => fmtCurrency(v)} />
-                  <Tooltip
-                    formatter={(v) => fmtCurrencyFull(Number(v))}
-                    contentStyle={{ fontSize: 12, borderRadius: 6 }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="childcare" stackId="a" fill={COLOURS.childcare} name="Childcare" radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="school" stackId="a" fill={COLOURS.school} name="School" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      <div
+        className={
+          showFinancial
+            ? "grid grid-cols-1 gap-4 lg:grid-cols-2"
+            : "grid grid-cols-1 gap-4"
+        }
+      >
+        {showFinancial && (
+          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="text-base">Monthly Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={metrics.revenue.monthlyBreakdown}
+                    margin={{ top: 10, right: 10, bottom: 0, left: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" fontSize={11} />
+                    <YAxis fontSize={11} tickFormatter={(v: number) => fmtCurrency(v)} />
+                    <Tooltip
+                      formatter={(v) => fmtCurrencyFull(Number(v))}
+                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="childcare" stackId="a" fill={BRAND} name="Childcare" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="school" stackId="a" fill={BRAND_TINT} name="School" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Growth line chart */}
-        <Card>
+        <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
           <CardHeader>
             <CardTitle className="text-base">Centre &amp; School Growth</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={metrics.growth.monthlyBreakdown} margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
+                <LineChart
+                  data={metrics.growth.monthlyBreakdown}
+                  margin={{ top: 10, right: 10, bottom: 0, left: 10 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" fontSize={11} />
                   <YAxis fontSize={11} allowDecimals={false} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Line
                     type="monotone"
                     dataKey="centres"
-                    stroke={COLOURS.childcare}
+                    stroke="currentColor"
                     strokeWidth={2}
                     name="Centres"
                     dot={{ r: 3 }}
@@ -187,7 +282,8 @@ export function LaunchDashboard({
                   <Line
                     type="monotone"
                     dataKey="schools"
-                    stroke={COLOURS.school}
+                    stroke="currentColor"
+                    strokeOpacity={0.55}
                     strokeWidth={2}
                     name="Schools"
                     dot={{ r: 3 }}
@@ -199,111 +295,162 @@ export function LaunchDashboard({
         </Card>
       </div>
 
-      {/* ROW 3 — Revenue Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Revenue Split</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[240px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: "Childcare", value: metrics.revenue.childcareRevenue },
-                      { name: "School", value: metrics.revenue.schoolRevenue },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={85}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    <Cell fill={COLOURS.childcare} />
-                    <Cell fill={COLOURS.school} />
-                  </Pie>
-                  <Tooltip formatter={(v) => fmtCurrencyFull(Number(v))} contentStyle={{ fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Breakdown below the chart for quick reading */}
-            <div className="mt-2 flex justify-around text-sm">
-              <div className="text-center">
-                <p className="text-muted-foreground text-xs">Childcare</p>
-                <p className="font-bold" style={{ color: COLOURS.childcare }}>
-                  {fmtCurrencyFull(metrics.revenue.childcareRevenue)}
-                </p>
+      {/* ROW 3 — Revenue Split + Top Earners, or Programme Mix */}
+      {showFinancial ? (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="text-base">Revenue Split</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Childcare", value: metrics.revenue.childcareRevenue },
+                        { name: "School", value: metrics.revenue.schoolRevenue },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={85}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      <Cell fill={BRAND} />
+                      <Cell fill={BRAND_TINT} />
+                    </Pie>
+                    <Tooltip
+                      formatter={(v) => fmtCurrencyFull(Number(v))}
+                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              <div className="text-center">
-                <p className="text-muted-foreground text-xs">School</p>
-                <p className="font-bold" style={{ color: COLOURS.school }}>
-                  {fmtCurrencyFull(metrics.revenue.schoolRevenue)}
-                </p>
+              <div className="mt-2 flex justify-around text-sm">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Childcare</p>
+                  <p className="font-semibold" style={{ color: BRAND }}>
+                    {fmtCurrencyFull(metrics.revenue.childcareRevenue)}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">School</p>
+                  <p className="font-semibold text-foreground">
+                    {fmtCurrencyFull(metrics.revenue.schoolRevenue)}
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
+          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="text-base">Top Earners This Term</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {metrics.topEntities.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No revenue data for this term yet.
+                </p>
+              ) : (
+                <div className="-mx-2 overflow-x-auto px-2">
+                  <table className="w-full min-w-[320px] text-sm">
+                    <thead>
+                      <tr className="border-b text-xs text-muted-foreground">
+                        <th className="pb-2 text-left font-medium">Name</th>
+                        <th className="pb-2 text-left font-medium">Type</th>
+                        <th className="pb-2 text-right font-medium">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {metrics.topEntities.map((e) => (
+                        <tr key={e.id} className="border-b last:border-0">
+                          <td className="max-w-[180px] truncate py-2 font-medium">
+                            {e.name || "—"}
+                          </td>
+                          <td className="py-2">
+                            <Badge variant="outline" className="text-xs">
+                              {e.type === "school" ? "School" : "Centre"}
+                            </Badge>
+                          </td>
+                          <td className="whitespace-nowrap py-2 text-right font-medium">
+                            {fmtCurrencyFull(e.revenue)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
           <CardHeader>
-            <CardTitle className="text-base">Top Earners This Term</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="size-4 text-muted-foreground" />
+              Programme Mix
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {metrics.topEntities.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                No revenue data for this term yet.
+            {metrics.programmeMix.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                No sessions logged this term yet.
               </p>
             ) : (
-              <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full text-sm min-w-[320px]">
-                  <thead>
-                    <tr className="border-b text-xs text-muted-foreground">
-                      <th className="text-left pb-2 font-medium">Name</th>
-                      <th className="text-left pb-2 font-medium">Type</th>
-                      <th className="text-right pb-2 font-medium">Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {metrics.topEntities.map((e) => (
-                      <tr key={e.id} className="border-b last:border-0">
-                        <td className="py-2 font-medium truncate max-w-[180px]">{e.name || "—"}</td>
-                        <td className="py-2">
-                          <Badge variant="outline" className="text-xs">
-                            {e.type === "school" ? "School" : "Centre"}
-                          </Badge>
-                        </td>
-                        <td className="py-2 text-right font-medium whitespace-nowrap">{fmtCurrencyFull(e.revenue)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ul className="space-y-2">
+                {metrics.programmeMix.map((row, i) => {
+                  const total = metrics.programmeMix.reduce(
+                    (sum, r) => sum + r.sessionCount,
+                    0,
+                  );
+                  const pct = total > 0 ? Math.round((row.sessionCount / total) * 100) : 0;
+                  return (
+                    <li key={row.sport} className="space-y-1">
+                      <div className="flex items-baseline justify-between text-sm">
+                        <span className="font-medium text-foreground">{row.sport}</span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {row.sessionCount} sessions ({pct}%)
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-foreground/70"
+                          style={{
+                            width: `${pct}%`,
+                            opacity: 1 - i * 0.1,
+                          }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* ROW 4 — Coach Overview */}
-      <Card>
+      <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
         <CardHeader>
           <CardTitle className="text-base">Coach Overview</CardTitle>
         </CardHeader>
         <CardContent>
           {metrics.coaches.list.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No coaches yet.
-            </p>
+            <p className="py-8 text-center text-sm text-muted-foreground">No coaches yet.</p>
           ) : (
-            <div className="overflow-x-auto -mx-2 px-2">
-              <table className="w-full text-sm min-w-[360px]">
+            <div className="-mx-2 overflow-x-auto px-2">
+              <table className="w-full min-w-[360px] text-sm">
                 <thead>
                   <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-2 font-medium">Coach</th>
-                    <th className="text-right pb-2 font-medium whitespace-nowrap">Sessions</th>
-                    <th className="text-center pb-2 font-medium">Compliance</th>
+                    <th className="pb-2 text-left font-medium">Coach</th>
+                    <th className="whitespace-nowrap pb-2 text-right font-medium">Sessions</th>
+                    <th className="pb-2 text-center font-medium">Compliance</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -312,7 +459,7 @@ export function LaunchDashboard({
                       <td className="py-3">
                         <Link
                           href={`/admin/staff/${c.id}`}
-                          className="font-medium hover:text-primary hover:underline flex items-center min-h-[44px]"
+                          className="flex min-h-[44px] items-center font-medium hover:text-[#E8712A] hover:underline"
                         >
                           {c.name}
                         </Link>
@@ -330,23 +477,22 @@ export function LaunchDashboard({
         </CardContent>
       </Card>
 
-      {/* ROW 5 — Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent Activity</CardTitle>
+      {/* ROW 5 — Activity timeline */}
+      <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Activity className="size-4 text-muted-foreground" />
+            Recent Activity
+          </CardTitle>
+          <Link
+            href="/admin/activity"
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+          >
+            View all activity →
+          </Link>
         </CardHeader>
         <CardContent>
-          {activity.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No activity yet.
-            </p>
-          ) : (
-            <div className="max-h-[400px] overflow-y-auto space-y-2">
-              {activity.map((item: ActivityItem, i: number) => (
-                <ActivityRow key={`${item.type}-${i}`} item={item} />
-              ))}
-            </div>
-          )}
+          <ActivityTimeline items={activity} maxItems={20} />
         </CardContent>
       </Card>
     </div>
@@ -357,54 +503,77 @@ export function LaunchDashboard({
 // Sub-components
 // ========================
 
+interface MetricCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  numericValue: number;
+  target?: number;
+  /** When provided, used as the headline rather than the numeric value. */
+  displayValue?: string;
+  /** When provided, called with the ticked-up integer to render a custom label (e.g. fmtCurrency). */
+  displayValueFromTickedUp?: (n: number) => string;
+  suffix?: string;
+  footer?: string;
+  /** Render the brand-orange icon treatment (only on the lead KPI card). */
+  isPrimary?: boolean;
+  /** Pencil-edit popover, rendered top-right on group hover when present. */
+  editor?: React.ReactNode;
+}
+
 function MetricCard({
   icon: Icon,
   label,
-  value,
   numericValue,
   target,
+  displayValue,
+  displayValueFromTickedUp,
   suffix,
   footer,
-  iconBg,
-  iconColor,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | number;
-  numericValue?: number;
-  target?: number;
-  suffix?: string;
-  footer?: string;
-  iconBg: string;
-  iconColor: string;
-}) {
-  const actualNum = numericValue ?? (typeof value === "number" ? value : 0);
-  const pct = target ? Math.min(100, (actualNum / target) * 100) : 0;
+  isPrimary,
+  editor,
+}: MetricCardProps) {
+  const ticked = useCountUp(numericValue);
+  const pct = target ? Math.min(100, (numericValue / target) * 100) : 0;
+  const headline = displayValueFromTickedUp
+    ? displayValueFromTickedUp(ticked)
+    : displayValue ?? ticked.toLocaleString("en-AU");
 
   return (
-    <Card>
+    <Card className="group/card relative rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+      {editor && (
+        <div className="absolute right-2 top-2 z-10">{editor}</div>
+      )}
       <CardContent className="py-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg}`}>
-            <Icon className={`h-5 w-5 ${iconColor}`} />
+        <div className="mb-2 flex items-start justify-between">
+          <div
+            className={
+              "flex size-10 items-center justify-center rounded-xl " +
+              (isPrimary ? "bg-[#E8712A]/10" : "bg-muted")
+            }
+          >
+            <Icon
+              className={
+                "size-5 " + (isPrimary ? "text-[#E8712A]" : "text-foreground")
+              }
+            />
           </div>
         </div>
         <p className="text-sm text-muted-foreground">{label}</p>
-        <div className="flex items-baseline gap-1.5 mt-1">
-          <span className="text-2xl font-bold">{value}</span>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-2xl font-semibold tabular-nums">{headline}</span>
           {suffix && <span className="text-sm text-muted-foreground">{suffix}</span>}
         </div>
-        {target && (
+        {target ? (
           <div className="mt-3">
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
               <div
-                className={`h-full transition-all ${progressColour(pct)}`}
+                className={"h-full transition-all " + progressColour(pct)}
                 style={{ width: `${pct}%` }}
               />
             </div>
           </div>
-        )}
-        {footer && <p className="text-xs text-muted-foreground mt-2">{footer}</p>}
+        ) : null}
+        {footer && <p className="mt-2 text-xs text-muted-foreground">{footer}</p>}
       </CardContent>
     </Card>
   );
@@ -412,29 +581,31 @@ function MetricCard({
 
 function CoachesCard({ coaches }: { coaches: DashboardMetrics["coaches"] }) {
   const hasWarning = coaches.compliance.expiringSoon > 0 || coaches.compliance.expired > 0;
+  const active = useCountUp(coaches.active);
 
   return (
-    <Card>
+    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="py-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
-            <Users className="h-5 w-5 text-purple-600" />
+        <div className="mb-2 flex items-start justify-between">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+            <Users className="size-5 text-foreground" />
           </div>
         </div>
         <p className="text-sm text-muted-foreground">Active Coaches</p>
-        <div className="flex items-baseline gap-1.5 mt-1">
-          <span className="text-2xl font-bold">{coaches.active}</span>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-2xl font-semibold tabular-nums">{active}</span>
           <span className="text-sm text-muted-foreground">/ {coaches.total}</span>
         </div>
         {hasWarning ? (
-          <p className="text-xs text-amber-700 mt-3 flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" />
+          <p className="mt-3 flex items-center gap-1 text-xs text-amber-700">
+            <AlertTriangle className="size-3" />
             {coaches.compliance.expired > 0 && `${coaches.compliance.expired} expired`}
             {coaches.compliance.expired > 0 && coaches.compliance.expiringSoon > 0 && ", "}
-            {coaches.compliance.expiringSoon > 0 && `${coaches.compliance.expiringSoon} expiring soon`}
+            {coaches.compliance.expiringSoon > 0 &&
+              `${coaches.compliance.expiringSoon} expiring soon`}
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground mt-3">
+          <p className="mt-3 text-xs text-muted-foreground">
             {coaches.avgSessionsPerWeek} sessions/coach/week avg
           </p>
         )}
@@ -443,46 +614,33 @@ function CoachesCard({ coaches }: { coaches: DashboardMetrics["coaches"] }) {
   );
 }
 
-function ComplianceIcon({ status }: { status: "clear" | "warning" | "alert" }) {
-  if (status === "clear")
-    return <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />;
-  if (status === "warning")
-    return <AlertTriangle className="h-4 w-4 text-amber-600 mx-auto" />;
-  return <AlertCircle className="h-4 w-4 text-red-600 mx-auto" />;
-}
-
-function ActivityRow({ item }: { item: ActivityItem }) {
-  const { icon: Icon, colour, bg } = getActivityStyle(item.type);
+function CentresHealthCard({ activeWeek, totalCentres }: { activeWeek: number; totalCentres: number }) {
+  const ticked = useCountUp(activeWeek);
   return (
-    <div className="flex items-start gap-3 py-2 border-b last:border-0">
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${bg}`}>
-        <Icon className={`h-4 w-4 ${colour}`} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm">{item.description}</p>
-        <p className="text-xs text-muted-foreground">{timeAgo(item.timestamp)}</p>
-      </div>
-    </div>
+    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="py-4">
+        <div className="mb-2 flex items-start justify-between">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+            <Activity className="size-5 text-foreground" />
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">Centres Active This Week</p>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-2xl font-semibold tabular-nums">{ticked}</span>
+          <span className="text-sm text-muted-foreground">/ {totalCentres}</span>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Centres with at least one session this week
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
-function getActivityStyle(type: ActivityItem["type"]): {
-  icon: React.ComponentType<{ className?: string }>;
-  colour: string;
-  bg: string;
-} {
-  switch (type) {
-    case "new_centre":
-      return { icon: Building2, colour: "text-[#E8712A]", bg: "bg-orange-100" };
-    case "new_booking":
-      return { icon: Calendar, colour: "text-blue-600", bg: "bg-blue-100" };
-    case "session_completed":
-      return { icon: CheckCircle2, colour: "text-green-600", bg: "bg-green-100" };
-    case "invoice_paid":
-      return { icon: Receipt, colour: "text-emerald-600", bg: "bg-emerald-100" };
-    case "new_coach":
-      return { icon: UserPlus, colour: "text-purple-600", bg: "bg-purple-100" };
-    default:
-      return { icon: Clock, colour: "text-gray-600", bg: "bg-gray-100" };
-  }
+function ComplianceIcon({ status }: { status: "clear" | "warning" | "alert" }) {
+  if (status === "clear")
+    return <CheckCircle2 className="mx-auto size-4 text-green-600" />;
+  if (status === "warning")
+    return <AlertTriangle className="mx-auto size-4 text-amber-600" />;
+  return <AlertCircle className="mx-auto size-4 text-red-600" />;
 }

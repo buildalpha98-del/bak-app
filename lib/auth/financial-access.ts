@@ -46,3 +46,27 @@ export async function requireFinancialAccess(): Promise<void> {
     redirect(`${root}?denied=financial`);
   }
 }
+
+/**
+ * Soft variant of `requireFinancialAccess()` — returns the current
+ * viewer's financial-access flag without redirecting. Use inside pages
+ * (e.g. /admin home) that need to conditionally render revenue cards
+ * for admins-with-grant while still rendering the rest of the layout
+ * for those without. Returns `false` when the viewer is unauthenticated
+ * or has no profile, so the caller can default to "hide" safely.
+ */
+export async function getFinancialAccess(): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("financial_access")
+    .eq("id", user.id)
+    .single();
+
+  return !!profile?.financial_access;
+}
