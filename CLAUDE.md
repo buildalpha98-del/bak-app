@@ -4,7 +4,15 @@
 
 Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in South-West Sydney. Manages operations, client engagement, sales, revenue intelligence, AI scheduling, training, coaching support, direct-to-parent bookings, referral growth, business intelligence, and predictive analytics for ~40 childcare centres and 6–8 schools.
 
-**Current status:** MVP + Waves 1–5 deployed. Building Waves 6–8 (growth, intelligence, hardening).
+**Current status:** MVP + Waves 1–8 schema fully shipped. Sub-projects P1–P5 of the May 2026 roster-and-programs redesign all in production:
+
+- **P1** (commit `8b7…` lineage) — staff defaults: new coaches seeded with Mon–Fri 8:00–16:30 availability and shipped as `active` immediately.
+- **P2** (`12076c3` and prior) — custom-taxonomy: org-wide `custom_sports` + `custom_equipment` tables (admin-managed via `/admin/settings/programs`), `programs.age_groups` jsonb for multi-age generation, AI prompt rewrite for multi-band scaffolds.
+- **P3** (`974a385 … 68812f5`) — shift-card power moves: per-shift `sessions.notes` (migration 047), inline 3-dot menu (Swap coach / Add note / Duplicate), notes section in detail sheet, CI guard on direct writes.
+- **P5** (`4207c68 … 0558b3f`) — multi-coach per shift: `session_coaches` join table (migration 048) with sync-trigger maintaining `sessions.coach_id` as a read-only cache; `setSessionCoaches` helper is the single write path; CI guard test (`lib/__tests__/no-direct-coach-id-writes.test.ts`) enforces it; cost projection per-rate-summed; conflict detection reads from `session_coaches`; UI roster grid renders "+N others" badge on primary and "↔ shared" on secondaries; detail sheet uses a drag-to-reorder `CoachChipMultiselect`.
+- **P4** (drag-and-drop scheduling + colour coding + mobile polish) — **deferred**, planned for post-beta.
+
+**Beta-readiness (Wave A — pre-launch):** 5 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite pending, Square live cutover pending). See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
 
 ## Tech Stack
 
@@ -58,6 +66,17 @@ parent_profiles, parent_children, bookable_sessions, waitlist, packages, package
 
 ### Growth & Intelligence (Waves 6–8)
 referral_codes, referrals, referral_rewards, referral_config, reengagement_campaigns, reengagement_sends, discount_codes, sales_proposals, regions, child_insights, churn_events, churn_risk_indicators
+
+### Operational Hardening (post-Wave 8, May 2026)
+- **Native invoicing** (migration 040): `business_settings` for ABN/GST defaults
+- **Equipment inventory** (041): `equipment_inventory` per-centre item tracking
+- **CRM enhancements** (042): `demo_sessions`, `lead_documents`
+- **Launch foundation** (042): `email_log`, `attendance`, `session_notes`, `session_photos`, `child_observations`, `invitations`, `invoices`, `invoice_line_items`, `reminder_log`
+- **Lead/grant ops** (043–045): lead field richness, `payment_batches` (weekly Monday cron), `grants` + `grant_applications` + `grant_invoice_allocations`
+- **P2 — Custom taxonomy + multi-age** (046): `custom_sports`, `custom_equipment`, `programs.age_groups` jsonb
+- **P3 — Shift notes** (047): `sessions.notes` text
+- **P5 — Multi-coach per shift** (048): `session_coaches` join table with sync trigger + `set_session_coaches` atomic RPC; `sessions.coach_id` becomes a trigger-maintained primary cache. The `setSessionCoaches` helper at `lib/sessions/session-coaches.ts` is the **only** write path; CI guard at `lib/__tests__/no-direct-coach-id-writes.test.ts` enforces this at build time.
+- **Performance enrichment**: `coach_badges` (029), `ai_assistant_usage` (032)
 
 ## Key Business Rules
 
