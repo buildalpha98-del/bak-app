@@ -130,6 +130,37 @@ export function welcomeCoach(data: {
 }
 
 // ========================
+// a2) Parent Bulk Invite (magic link)
+// Sent on bulk parent CSV import — the magic link IS the credential,
+// so no password is included. Link expires after 1 hour (Supabase default).
+// ========================
+
+export function parentBulkInvite(data: {
+  firstName: string;
+  magicLinkUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: "You've been invited to Build Alpha Kids",
+    html: layout(`
+      <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.firstName},</p>
+      <p>Welcome to <strong>Build Alpha Kids</strong>! We've set up your parent account so you can join the beta and start booking sport sessions for your kids.</p>
+      <p>From your parent portal you can:</p>
+      <ul style="line-height:2;">
+        <li>Browse and book sport sessions near you</li>
+        <li>Manage your children's profiles in one place</li>
+        <li>Track upcoming bookings and past sessions</li>
+        <li>See your kids' progress and skill assessments</li>
+      </ul>
+      <p>Tap the button below to sign in &mdash; no password needed.</p>
+      ${cta("Sign In to Your Portal", data.magicLinkUrl)}
+      <p style="color:${BRAND_GREY};font-size:13px;">This sign-in link expires in 1 hour. If it's expired by the time you tap it, just head to <a href="${APP_URL}/parent-login" style="color:${BRAND_ORANGE};text-decoration:none;">${APP_URL}/parent-login</a> and request a new one with the same email address.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">If you weren't expecting this email, you can safely ignore it.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
+    `),
+  };
+}
+
+// ========================
 // b2) Staff Onboarding (with credentials)
 // Sent on createStaffMember — includes temporary password + login URL.
 // ========================
