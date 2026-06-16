@@ -356,6 +356,75 @@ export function onboardingFollowUpEmail(
   };
 }
 
+export function onboardingDocsReminderEmail(
+  centreName: string,
+  contactName: string
+): { subject: string; html: string } {
+  return {
+    subject: `Just Checking In — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>We're keen to get <strong>${centreName}</strong>'s onboarding moving along!</p>
+      <p>It's been a couple of days since we kicked things off and we noticed the centre profile still needs a few details. When you have a moment, could you please:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">Confirm your primary contact details and any access notes</li>
+        <li style="margin-bottom:8px;">Send through the child enrolment list (or what you have so far)</li>
+        <li style="margin-bottom:8px;">Let us know any preferred session days and times</li>
+      </ul>
+      <p style="padding:12px;background:#FFF3E0;border-radius:6px;border-left:3px solid ${BRAND_ORANGE};">
+        <strong>No rush</strong> — even partial info helps us get your first session locked in. Just reply to this email.
+      </p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingHalfwayCheckInEmail(
+  centreName: string,
+  contactName: string
+): { subject: string; html: string } {
+  return {
+    subject: `Halfway There! — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p>Great progress — <strong>${centreName}</strong> is now halfway through onboarding with Build Alpha Kids!</p>
+      <p>Here's what's already done and what's still ahead:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">Centre profile, logo and contacts are sorted</li>
+        <li style="margin-bottom:8px;">Child list is in and the client portal is on its way</li>
+        <li style="margin-bottom:8px;">Next up: scheduling your first session and assigning a coach</li>
+      </ul>
+      <p>If anything on your end has changed — staff, days, expectations — now's a great time to flag it so we can adjust before the first session.</p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
+export function onboardingCompletionCelebrationEmail(
+  centreName: string,
+  contactName: string
+): { subject: string; html: string } {
+  return {
+    subject: `You're All Set Up! — ${centreName}`,
+    html: layout(`
+      <p>Hi ${contactName},</p>
+      <p><strong>${centreName}</strong> is fully onboarded with Build Alpha Kids — congratulations, and thank you for partnering with us!</p>
+      <p>Here's what happens from here:</p>
+      <ul style="margin:16px 0;padding-left:20px;">
+        <li style="margin-bottom:8px;">Your coach will continue running sessions on your scheduled days</li>
+        <li style="margin-bottom:8px;">You'll receive a session summary after every visit through the client portal</li>
+        <li style="margin-bottom:8px;">Skill assessments and progress reports will land each term</li>
+        <li style="margin-bottom:8px;">Invoices are issued at the end of each billing period</li>
+      </ul>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://app.buildalphakids.com.au" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Open Your Portal</a>
+      </div>
+      <p>Anything you need, just reply — we're a quick email away.</p>
+      <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
+    `),
+  };
+}
+
 // ========================
 // Outbound invoice email templates
 // ========================

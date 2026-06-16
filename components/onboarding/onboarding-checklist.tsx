@@ -194,7 +194,8 @@ function StepRow({
               {stepEmails.map((email) => (
                 <p key={email.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Send className="size-3" />
-                  Sent to {email.sent_to} on {formatDate(email.sent_at)}
+                  Sent to {email.sent_to}
+                  {email.sent_at && <> on {formatDate(email.sent_at)}</>}
                   {email.opened_at && (
                     <span className="text-green-600"> (opened)</span>
                   )}

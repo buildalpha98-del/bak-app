@@ -6,18 +6,38 @@ import {
   onboardingChildListRequestEmail,
   onboardingSessionPrepEmail,
   onboardingFollowUpEmail,
+  onboardingDocsReminderEmail,
+  onboardingHalfwayCheckInEmail,
+  onboardingCompletionCelebrationEmail,
 } from "@/lib/email/templates";
+import {
+  ONBOARDING_EMAIL_KEYS as LIFECYCLE_EMAIL_KEYS,
+  type OnboardingEmailKey as LifecycleKey,
+} from "@/lib/onboarding/constants";
 
 export const dynamic = "force-dynamic";
 
+// 48 hours since checklist started — when we nudge ops to chase the
+// centre profile + docs if nothing's landed yet.
+const DOCS_REMINDER_THRESHOLD_MS = 48 * 60 * 60 * 1000;
+
+const LIFECYCLE_KEY_SET = new Set<string>(Object.values(LIFECYCLE_EMAIL_KEYS));
+
 /**
- * Onboarding emails cron — runs hourly.
- * Processes scheduled onboarding steps (auto_email type) that are due.
+ * Onboarding emails cron — runs every 2 hours (see vercel.json).
  *
- * Step 3: Welcome email (triggered immediately on start)
- * Step 4: Child list request (scheduled for 2 days after start)
- * Step 9: First session prep email (scheduled when first session is created)
- * Step 10: Post first-session follow-up (scheduled 1 day after first session)
+ * Drives three queues per run:
+ *  1. Per-step auto_email rows whose `scheduled_for` has passed
+ *     (the legacy per-step path; steps 3/4/9/10).
+ *  2. Lifecycle queue rows (sent_at IS NULL, lifecycle email_type)
+ *     inserted by `queueOnboardingEmail` from action triggers.
+ *  3. 48h docs reminder: in-progress checklists older than 48h whose
+ *     step 1 ("Complete centre profile") is still pending get a
+ *     docs_reminder lifecycle row enqueued, which the same run picks
+ *     up and dispatches.
+ *
+ * Finally, in-progress checklists older than 14 days are flipped to
+ * "stalled" so they show up in ops triage.
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -27,51 +47,116 @@ export async function GET(request: Request) {
 
   try {
     const admin = createSupabaseAdmin();
-    const now = new Date().toISOString();
+    const now = new Date();
     let sent = 0;
     let skipped = 0;
+    let failed = 0;
 
-    // Find all auto_email steps that are in_progress or pending with a due scheduled_for
+    // ── Per-step queue (legacy path) ──────────────────────────────
     const { data: dueSteps, error: stepsError } = await admin
       .from("centre_onboarding_steps")
       .select("*, centre_onboarding_checklists!inner(centre_id, status)")
       .eq("step_type", "auto_email")
       .in("status", ["pending", "in_progress"])
-      .lte("scheduled_for", now);
+      .lte("scheduled_for", now.toISOString());
 
     if (stepsError) throw stepsError;
-    if (!dueSteps || dueSteps.length === 0) {
-      // Also check for step 3 (welcome) that is in_progress but has no scheduled_for
-      const { data: welcomeSteps } = await admin
-        .from("centre_onboarding_steps")
-        .select("*, centre_onboarding_checklists!inner(centre_id, status)")
-        .eq("step_type", "auto_email")
-        .eq("step_number", 3)
-        .eq("status", "in_progress");
 
-      if (!welcomeSteps || welcomeSteps.length === 0) {
-        return NextResponse.json({ sent: 0, skipped: 0 });
-      }
-
-      // Process welcome emails
-      for (const step of welcomeSteps) {
-        const result = await processStep(admin, step);
-        if (result === "sent") sent++;
-        else skipped++;
-      }
-
-      return NextResponse.json({ sent, skipped });
-    }
-
-    for (const step of dueSteps) {
-      const result = await processStep(admin, step);
-      if (result === "sent") sent++;
+    for (const step of dueSteps ?? []) {
+      const outcome = await processStep(admin, step as StepRow);
+      if (outcome === "sent") sent++;
+      else if (outcome === "failed") failed++;
       else skipped++;
     }
 
-    // Check for stalled onboardings (no progress in 14+ days)
+    // Step 3 (welcome) is started as `in_progress` with no
+    // scheduled_for, so the .lte filter above won't catch it. Pick it
+    // up here.
+    const { data: welcomeSteps } = await admin
+      .from("centre_onboarding_steps")
+      .select("*, centre_onboarding_checklists!inner(centre_id, status)")
+      .eq("step_type", "auto_email")
+      .eq("step_number", 3)
+      .eq("status", "in_progress")
+      .is("scheduled_for", null);
+
+    for (const step of welcomeSteps ?? []) {
+      const outcome = await processStep(admin, step as StepRow);
+      if (outcome === "sent") sent++;
+      else if (outcome === "failed") failed++;
+      else skipped++;
+    }
+
+    // ── 48h docs reminder enqueue ─────────────────────────────────
+    // Find in-progress checklists started more than 48h ago whose
+    // step 1 is still pending, then queue a docs_reminder if one
+    // hasn't already been queued.
+    const cutoffIso = new Date(
+      now.getTime() - DOCS_REMINDER_THRESHOLD_MS
+    ).toISOString();
+
+    const { data: agedChecklists } = await admin
+      .from("centre_onboarding_checklists")
+      .select("id, centre_id, started_at")
+      .eq("status", "in_progress")
+      .lt("started_at", cutoffIso);
+
+    for (const checklist of agedChecklists ?? []) {
+      const { data: docsStep } = await admin
+        .from("centre_onboarding_steps")
+        .select("status")
+        .eq("checklist_id", checklist.id)
+        .eq("step_number", 1)
+        .maybeSingle();
+
+      if (!docsStep || docsStep.status !== "pending") continue;
+
+      // Look up centre contact and enqueue. The unique index makes
+      // this idempotent.
+      const { data: centre } = await admin
+        .from("centres")
+        .select("contact_email")
+        .eq("id", checklist.centre_id)
+        .maybeSingle();
+
+      if (!centre?.contact_email) continue;
+
+      await admin
+        .from("centre_onboarding_emails")
+        .insert({
+          checklist_id: checklist.id,
+          step_number: 0,
+          email_type: LIFECYCLE_EMAIL_KEYS.docsReminder,
+          sent_to: centre.contact_email,
+          sent_at: null,
+        });
+    }
+
+    // ── Lifecycle queue dispatch ──────────────────────────────────
+    // Read after enqueueing so the freshly-queued docs reminders get
+    // sent in this same run.
+    const { data: queued } = await admin
+      .from("centre_onboarding_emails")
+      .select(
+        "id, checklist_id, email_type, sent_to, centre_onboarding_checklists!inner(centre_id)"
+      )
+      .is("sent_at", null)
+      .is("error_text", null)
+      .in("email_type", Array.from(LIFECYCLE_KEY_SET));
+
+    for (const row of queued ?? []) {
+      const outcome = await dispatchLifecycleEmail(
+        admin,
+        row as unknown as LifecycleRow
+      );
+      if (outcome === "sent") sent++;
+      else if (outcome === "failed") failed++;
+      else skipped++;
+    }
+
+    // ── Stalled-onboarding sweep ──────────────────────────────────
     const fourteenDaysAgo = new Date(
-      Date.now() - 14 * 24 * 60 * 60 * 1000
+      now.getTime() - 14 * 24 * 60 * 60 * 1000
     ).toISOString();
 
     await admin
@@ -80,7 +165,7 @@ export async function GET(request: Request) {
       .eq("status", "in_progress")
       .lt("started_at", fourteenDaysAgo);
 
-    return NextResponse.json({ sent, skipped });
+    return NextResponse.json({ sent, skipped, failed });
   } catch (err) {
     console.error("Onboarding emails cron error:", err);
     return NextResponse.json(
@@ -89,6 +174,10 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// ============================================================
+// Per-step auto_email handler (legacy: steps 3, 4, 9, 10)
+// ============================================================
 
 type StepRow = {
   id: string;
@@ -105,10 +194,9 @@ type StepRow = {
 async function processStep(
   admin: ReturnType<typeof createSupabaseAdmin>,
   step: StepRow
-): Promise<"sent" | "skipped"> {
+): Promise<"sent" | "skipped" | "failed"> {
   const centreId = step.centre_onboarding_checklists.centre_id;
 
-  // Get centre details
   const { data: centre } = await admin
     .from("centres")
     .select("name, contact_name, contact_email")
@@ -122,13 +210,13 @@ async function processStep(
   // Check if email already sent for this step
   const { data: existingEmail } = await admin
     .from("centre_onboarding_emails")
-    .select("id")
+    .select("id, sent_at")
     .eq("checklist_id", step.checklist_id)
     .eq("step_number", step.step_number)
     .maybeSingle();
 
-  if (existingEmail) {
-    // Already sent — mark step as completed
+  if (existingEmail?.sent_at) {
+    // Already sent — mark step as completed and move on
     await admin
       .from("centre_onboarding_steps")
       .update({ status: "completed", completed_at: new Date().toISOString() })
@@ -139,11 +227,11 @@ async function processStep(
   let emailData: { subject: string; html: string } | null = null;
 
   switch (step.step_number) {
-    case 3: // Welcome email
+    case 3:
       emailData = onboardingWelcomeEmail(centre.name || "Your Centre", contactName);
       break;
 
-    case 4: // Child list request
+    case 4:
       emailData = onboardingChildListRequestEmail(
         centre.name || "Your Centre",
         contactName
@@ -151,7 +239,6 @@ async function processStep(
       break;
 
     case 9: {
-      // Session prep email — needs first session details
       const { data: firstSession } = await admin
         .from("sessions")
         .select("date, sport, profiles!sessions_coach_id_fkey(name)")
@@ -162,7 +249,9 @@ async function processStep(
 
       if (!firstSession) return "skipped";
 
-      const coachProfile = firstSession.profiles as unknown as { name: string } | null;
+      const coachProfile = firstSession.profiles as unknown as
+        | { name: string }
+        | null;
       emailData = onboardingSessionPrepEmail(
         centre.name || "Your Centre",
         contactName,
@@ -178,7 +267,6 @@ async function processStep(
     }
 
     case 10: {
-      // Post first-session follow-up
       const feedbackUrl = `https://app.buildalphakids.com.au/feedback/centre/${centreId}`;
       emailData = onboardingFollowUpEmail(
         centre.name || "Your Centre",
@@ -201,15 +289,14 @@ async function processStep(
   );
 
   if (result.success) {
-    // Record the email
     await admin.from("centre_onboarding_emails").insert({
       checklist_id: step.checklist_id,
       step_number: step.step_number,
       email_type: step.step_name,
       sent_to: centre.contact_email,
+      sent_at: new Date().toISOString(),
     });
 
-    // Mark step as completed
     await admin
       .from("centre_onboarding_steps")
       .update({ status: "completed", completed_at: new Date().toISOString() })
@@ -218,5 +305,115 @@ async function processStep(
     return "sent";
   }
 
-  return "skipped";
+  // Record the failure so we don't hammer Resend on the next run.
+  await admin.from("centre_onboarding_emails").insert({
+    checklist_id: step.checklist_id,
+    step_number: step.step_number,
+    email_type: step.step_name,
+    sent_to: centre.contact_email,
+    sent_at: null,
+    error_text: result.error ?? "send failed",
+  });
+
+  return "failed";
+}
+
+// ============================================================
+// Lifecycle queue dispatcher (welcome, halfway, completion, etc.)
+// ============================================================
+
+type LifecycleRow = {
+  id: string;
+  checklist_id: string;
+  email_type: LifecycleKey;
+  sent_to: string;
+  centre_onboarding_checklists: {
+    centre_id: string;
+  };
+};
+
+async function dispatchLifecycleEmail(
+  admin: ReturnType<typeof createSupabaseAdmin>,
+  row: LifecycleRow
+): Promise<"sent" | "skipped" | "failed"> {
+  if (!row.sent_to) return "skipped";
+
+  const centreId = row.centre_onboarding_checklists.centre_id;
+  const { data: centre } = await admin
+    .from("centres")
+    .select("name, contact_name")
+    .eq("id", centreId)
+    .single();
+
+  if (!centre) return "skipped";
+
+  const contactName = centre.contact_name || centre.name || "there";
+  const centreName = centre.name || "Your Centre";
+
+  let emailData: { subject: string; html: string } | null = null;
+  switch (row.email_type) {
+    case LIFECYCLE_EMAIL_KEYS.welcome:
+      emailData = onboardingWelcomeEmail(centreName, contactName);
+      break;
+    case LIFECYCLE_EMAIL_KEYS.docsReminder:
+      emailData = onboardingDocsReminderEmail(centreName, contactName);
+      break;
+    case LIFECYCLE_EMAIL_KEYS.firstSessionPrep: {
+      const { data: firstSession } = await admin
+        .from("sessions")
+        .select("date, sport, profiles!sessions_coach_id_fkey(name)")
+        .eq("centre_id", centreId)
+        .order("date", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (!firstSession) return "skipped";
+
+      const coachProfile = firstSession.profiles as unknown as
+        | { name: string }
+        | null;
+      emailData = onboardingSessionPrepEmail(
+        centreName,
+        contactName,
+        new Date(firstSession.date).toLocaleDateString("en-AU", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        }),
+        coachProfile?.name || "Your Coach",
+        firstSession.sport || "Multi-Sport"
+      );
+      break;
+    }
+    case LIFECYCLE_EMAIL_KEYS.halfwayCheckIn:
+      emailData = onboardingHalfwayCheckInEmail(centreName, contactName);
+      break;
+    case LIFECYCLE_EMAIL_KEYS.completionCelebration:
+      emailData = onboardingCompletionCelebrationEmail(centreName, contactName);
+      break;
+    default:
+      return "skipped";
+  }
+
+  if (!emailData) return "skipped";
+
+  const result = await sendEmail(
+    row.sent_to,
+    emailData.subject,
+    emailData.html
+  );
+
+  if (result.success) {
+    await admin
+      .from("centre_onboarding_emails")
+      .update({ sent_at: new Date().toISOString() })
+      .eq("id", row.id);
+    return "sent";
+  }
+
+  await admin
+    .from("centre_onboarding_emails")
+    .update({ error_text: result.error ?? "send failed" })
+    .eq("id", row.id);
+  return "failed";
 }

@@ -1252,8 +1252,9 @@ export interface CentreOnboardingEmail {
   step_number: number;
   email_type: string;
   sent_to: string;
-  sent_at: string;
+  sent_at: string | null;
   opened_at: string | null;
+  error_text: string | null;
 }
 
 // ========================
