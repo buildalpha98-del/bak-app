@@ -8,11 +8,13 @@ import type { UserRole } from "@/lib/types/enums";
 
 interface BottomTabsProps {
   role: UserRole;
+  /** Hides items flagged `financial: true` when false. */
+  financialAccess?: boolean;
 }
 
-export function BottomTabs({ role }: BottomTabsProps) {
+export function BottomTabs({ role, financialAccess = true }: BottomTabsProps) {
   const pathname = usePathname();
-  const items = getMobileItems(role);
+  const items = getMobileItems(role, financialAccess);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)]">

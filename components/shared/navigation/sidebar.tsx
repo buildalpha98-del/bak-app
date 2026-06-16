@@ -6,18 +6,20 @@ import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { NAV_CONFIG, isNavItemActive } from "./nav-config";
+import { NAV_CONFIG, filterNavByAccess, isNavItemActive } from "./nav-config";
 import { useSidebar } from "./sidebar-context";
 import type { UserRole } from "@/lib/types/enums";
 
 interface SidebarProps {
   role: UserRole;
+  /** Hides items flagged `financial: true` when false. */
+  financialAccess?: boolean;
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, financialAccess = true }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar();
   const pathname = usePathname();
-  const items = NAV_CONFIG[role];
+  const items = filterNavByAccess(NAV_CONFIG[role], financialAccess);
 
   return (
     <aside

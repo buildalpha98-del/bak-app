@@ -23,7 +23,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
   return (
     <SidebarProvider>
       <div className="grain-overlay flex min-h-screen bg-background">
-        <Sidebar role={profile.role} />
+        <Sidebar role={profile.role} financialAccess={profile.financial_access} />
         <div className="flex flex-1 flex-col min-w-0">
           <TopBar profile={profile} />
           <SyncStatusIndicator />
@@ -31,7 +31,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
             {children}
           </main>
         </div>
-        <BottomTabs role={profile.role} />
+        <BottomTabs role={profile.role} financialAccess={profile.financial_access} />
         <QuickActions role={profile.role} />
         <CommandPalette userRole={profile.role} />
         <InstallPrompt />

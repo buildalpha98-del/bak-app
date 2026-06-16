@@ -40,6 +40,26 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   mobileOrder?: number;
+  /**
+   * When true, this item is hidden from the sidebar / bottom tabs /
+   * command palette for users with `financial_access = false`. The
+   * server-side guard at `lib/auth/financial-access.ts` is the source
+   * of truth — this flag is the UI mirror.
+   */
+  financial?: boolean;
+}
+
+/**
+ * Filter a role's nav list against the current user's financial-access
+ * flag. UI helper only — server enforcement lives in
+ * `requireFinancialAccess()`.
+ */
+export function filterNavByAccess(
+  items: NavItem[],
+  financialAccess: boolean
+): NavItem[] {
+  if (financialAccess) return items;
+  return items.filter((item) => !item.financial);
 }
 
 export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
@@ -57,18 +77,18 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Equipment", href: "/admin/equipment", icon: Package },
     { label: "Documents", href: "/admin/documents", icon: FileText },
     { label: "Forms", href: "/admin/forms", icon: ClipboardList, mobileOrder: 4 },
-    { label: "Invoicing", href: "/admin/invoicing", icon: Receipt },
-    { label: "Grants", href: "/admin/grants", icon: Award },
-    { label: "Payroll", href: "/admin/payroll", icon: Receipt },
+    { label: "Invoicing", href: "/admin/invoicing", icon: Receipt, financial: true },
+    { label: "Grants", href: "/admin/grants", icon: Award, financial: true },
+    { label: "Payroll", href: "/admin/payroll", icon: Receipt, financial: true },
     { label: "Reports", href: "/admin/reports", icon: FileBarChart },
-    { label: "Analytics", href: "/admin/analytics", icon: LineChart },
+    { label: "Analytics", href: "/admin/analytics", icon: LineChart, financial: true },
     { label: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     { label: "Bookings", href: "/admin/bookings", icon: ShoppingBag },
     { label: "Marketing", href: "/admin/marketing", icon: Globe },
     { label: "Referrals", href: "/admin/referrals", icon: Gift },
     { label: "Campaigns", href: "/admin/campaigns", icon: BarChart3 },
-    { label: "Intelligence", href: "/admin/intelligence", icon: Brain },
+    { label: "Intelligence", href: "/admin/intelligence", icon: Brain, financial: true },
     { label: "Churn Risk", href: "/admin/churn", icon: AlertTriangle },
     { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
     { label: "Messages", href: "/admin/messages", icon: MessageSquare },
@@ -89,7 +109,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Equipment", href: "/ops/equipment", icon: Package },
     { label: "Documents", href: "/ops/documents", icon: FileText },
     { label: "Forms", href: "/ops/forms", icon: ClipboardList, mobileOrder: 4 },
-    { label: "Invoicing", href: "/ops/invoicing", icon: Receipt },
+    { label: "Invoicing", href: "/ops/invoicing", icon: Receipt, financial: true },
     { label: "Reports", href: "/ops/reports", icon: FileBarChart },
     { label: "Tasks", href: "/ops/tasks", icon: CheckSquare, mobileOrder: 5 },
     { label: "Feedback", href: "/ops/feedback", icon: MessageSquare },
@@ -122,8 +142,11 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   ],
 };
 
-export function getMobileItems(role: UserRole): NavItem[] {
-  return NAV_CONFIG[role]
+export function getMobileItems(
+  role: UserRole,
+  financialAccess: boolean = true
+): NavItem[] {
+  return filterNavByAccess(NAV_CONFIG[role], financialAccess)
     .filter((item) => item.mobileOrder !== undefined)
     .sort((a, b) => a.mobileOrder! - b.mobileOrder!);
 }

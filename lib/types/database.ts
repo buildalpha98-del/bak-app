@@ -70,6 +70,15 @@ export interface Profile {
   default_pay_rate: number | null;
   status: UserStatus;
   dnd_enabled: boolean;
+  /**
+   * Per-profile gate for financial-data visibility. Admins default to
+   * true; ops/coach/client/parent default to false. Toggled per user
+   * from the staff detail page. Routes gated by `requireFinancialAccess()`
+   * include /admin|ops/invoicing, payroll, analytics, grants, the
+   * Financial tab of intelligence, and the weekly cost chip on roster.
+   * Added in migration 050.
+   */
+  financial_access: boolean;
   created_at: string;
   updated_at: string;
 }
