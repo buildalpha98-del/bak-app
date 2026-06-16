@@ -504,6 +504,58 @@ export async function updateStaffMember(
 // upgraded actions are now the only path.)
 
 // ============================================================
+// Financial access toggle
+// ============================================================
+/**
+ * Grant or revoke per-profile financial-data visibility. Admin only —
+ * the actor must be an admin profile. Writes an activity_log entry so
+ * the audit trail captures who flipped the switch when.
+ *
+ * The column itself is read by `requireFinancialAccess()` server guard
+ * (lib/auth/financial-access.ts) and mirrored in the sidebar / bottom-
+ * tabs nav filtering.
+ */
+export async function setStaffFinancialAccess(
+  staffId: string,
+  value: boolean,
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!actor || actor.role !== "admin") {
+    return { error: "Only admins can change financial access." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      financial_access: value,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", staffId);
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: value ? "staff_financial_access_granted" : "staff_financial_access_revoked",
+    entity_type: "profile",
+    entity_id: staffId,
+    metadata: { financial_access: value },
+  });
+
+  return { error: null };
+}
+
+// ============================================================
 // Pay rates
 // ============================================================
 

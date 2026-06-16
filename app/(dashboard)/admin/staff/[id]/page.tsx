@@ -14,5 +14,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
     notFound();
   }
 
-  return <StaffDetailView data={data} />;
+  // Only admins land on /admin/staff/[id] (the DashboardShell would
+  // redirect ops to /ops). The financial-access toggle is admin-only.
+  return <StaffDetailView data={data} canEditFinancialAccess />;
 }

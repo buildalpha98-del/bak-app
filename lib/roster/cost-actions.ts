@@ -60,6 +60,24 @@ export async function getWeekCostProjection(
   try {
     const supabase = await createSupabaseServerClient();
 
+    // Financial-access gate — hide wage projections from ops users
+    // without the financial_access flag. Returning null (rather than
+    // an error) lets the WeekCostChip silently skip rendering instead
+    // of surfacing a confusing toast.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    const { data: actor } = await supabase
+      .from("profiles")
+      .select("financial_access")
+      .eq("id", user.id)
+      .single();
+    if (!actor?.financial_access) {
+      return { data: null, error: null };
+    }
+
     const start = new Date(weekStartDate + "T00:00:00");
     const end = new Date(start);
     end.setDate(end.getDate() + (weekDays - 1));

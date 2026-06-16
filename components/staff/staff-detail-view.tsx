@@ -16,7 +16,10 @@ import {
   KeyRound,
   Copy,
   Mail,
+  Banknote,
+  BanknoteX,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -52,6 +55,7 @@ import {
   reactivateStaffMember,
   adminResetStaffPassword,
   sendStaffPasswordResetEmail,
+  setStaffFinancialAccess,
   upsertPayRate,
   upsertComplianceDoc,
   verifyComplianceDoc,
@@ -155,9 +159,19 @@ function formatDate(dateStr: string | null): string {
 
 interface StaffDetailViewProps {
   data: StaffDetail;
+  /**
+   * When true, the viewer is an admin and may grant/revoke financial
+   * access on this profile. Hides the toggle for non-admin viewers
+   * (e.g. ops viewing a coach's detail). Defaults to false — the
+   * page.tsx is the source of truth.
+   */
+  canEditFinancialAccess?: boolean;
 }
 
-export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
+export function StaffDetailView({
+  data: initialData,
+  canEditFinancialAccess = false,
+}: StaffDetailViewProps) {
   const router = useRouter();
   const [profile, setProfile] = useState(initialData.profile);
   const [payRates, setPayRates] = useState(initialData.pay_rates);
@@ -171,6 +185,26 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Financial access toggle
+  const [financialBusy, setFinancialBusy] = useState(false);
+
+  async function handleToggleFinancialAccess() {
+    const next = !profile.financial_access;
+    setFinancialBusy(true);
+    const { error } = await setStaffFinancialAccess(profile.id, next);
+    setFinancialBusy(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setProfile((p) => ({ ...p, financial_access: next }));
+    toast.success(
+      next
+        ? `Financial access granted to ${profile.name}.`
+        : `Financial access revoked from ${profile.name}.`,
+    );
+  }
 
   // Dialogs
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -203,11 +237,17 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
         </Avatar>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-foreground">{profile.name}</h1>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
             <Badge variant="outline">{ROLE_LABELS[profile.role]}</Badge>
             <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}>
               {statusStyle.label}
             </span>
+            {profile.financial_access && (
+              <Badge variant="secondary" className="gap-1">
+                <Banknote className="h-3 w-3" />
+                Financial access
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -219,6 +259,31 @@ export function StaffDetailView({ data: initialData }: StaffDetailViewProps) {
             <KeyRound className="h-3.5 w-3.5" />
             Reset Password
           </Button>
+          {canEditFinancialAccess && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleFinancialAccess}
+              disabled={financialBusy}
+              title={
+                profile.financial_access
+                  ? "Hides invoicing, payroll, analytics, grants, and intelligence from this user."
+                  : "Grants invoicing, payroll, analytics, grants, and intelligence to this user."
+              }
+            >
+              {profile.financial_access ? (
+                <>
+                  <BanknoteX className="h-3.5 w-3.5" />
+                  Revoke financial access
+                </>
+              ) : (
+                <>
+                  <Banknote className="h-3.5 w-3.5" />
+                  Grant financial access
+                </>
+              )}
+            </Button>
+          )}
           <Button
             variant={profile.status === "active" ? "destructive" : "outline"}
             size="sm"
