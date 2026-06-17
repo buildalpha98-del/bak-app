@@ -20,8 +20,10 @@ import { Button } from "@/components/ui/button";
 import { useCountUp } from "@/components/launch/use-count-up";
 import { ClientHomePulseStrip } from "@/components/client/client-status-pulse";
 import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
+import { MultiCentreRollUp } from "@/components/client/multi-centre-roll-up";
 import type { ClientDashboardData } from "@/lib/client/portal-actions";
 import type { ClientStatusPulse } from "@/lib/client/status-pulse-actions";
+import type { ClientUserCentreSummary } from "@/lib/client/actions";
 
 interface ClientDashboardProps {
   data: ClientDashboardData;
@@ -29,6 +31,8 @@ interface ClientDashboardProps {
   pulse: ClientStatusPulse;
   /** Calendar feed URL (null when token couldn't be issued — hides button). */
   calendarFeedUrl?: string | null;
+  /** All centres this director can access. Drives the optional roll-up. */
+  centresSummary?: ClientUserCentreSummary[];
 }
 
 function formatDateNice(dateStr: string): string {
@@ -86,6 +90,7 @@ export function ClientDashboard({
   centreId,
   pulse,
   calendarFeedUrl,
+  centresSummary = [],
 }: ClientDashboardProps) {
   const { centreName, nextSession, stats, recentSessions } = data;
   const days = nextSession ? daysUntil(nextSession.date) : null;
@@ -112,6 +117,9 @@ export function ClientDashboard({
 
       {/* Status pulse */}
       <ClientHomePulseStrip pulse={pulse} centreId={centreId} />
+
+      {/* Multi-centre roll-up — only renders when the director can access >1 centre */}
+      <MultiCentreRollUp centres={centresSummary} currentCentreId={centreId} />
 
       {/* Quick actions row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

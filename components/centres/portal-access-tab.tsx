@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, UserPlus, Users, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  UserPlus,
+  Users,
+  Trash2,
+  Building2,
+  Star,
+  ChevronDown,
+  Plus,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,20 +22,18 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { toast } from "sonner";
 import {
   inviteClientUser,
   getCentreClientUsers,
   revokeClientAccess,
+  getCentresForClientUser,
+  linkClientUserToCentre,
+  unlinkClientUserFromCentre,
 } from "@/lib/client/actions";
 import type { ClientUser } from "@/lib/types/database";
+import type { ClientUserCentre } from "@/lib/client/actions";
+import { cn } from "@/lib/utils";
 
 // ============================================================
 // Types
@@ -35,6 +43,8 @@ interface PortalAccessTabProps {
   centreId: string;
   centreName: string;
   contactEmail: string | null;
+  /** All centres in the org (id+name only). Optional — when omitted the link UI is hidden. */
+  availableCentres?: Array<{ id: string; name: string }>;
 }
 
 // ============================================================
@@ -60,6 +70,7 @@ export function PortalAccessTab({
   centreId,
   centreName,
   contactEmail,
+  availableCentres = [],
 }: PortalAccessTabProps) {
   // Invite form state
   const [inviteName, setInviteName] = useState("");
@@ -228,55 +239,252 @@ export function PortalAccessTab({
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Primary</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        {user.name}
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        {user.is_primary && (
-                          <Badge variant="default">Primary</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatLastLogin(user.last_login)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRevoke(user)}
-                          disabled={revokingId === user.id}
-                          title="Revoke access"
-                        >
-                          {revokingId === user.id ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="size-4 text-destructive" />
-                          )}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="flex flex-col gap-3">
+              {users.map((user) => (
+                <PortalUserRow
+                  key={user.id}
+                  user={user}
+                  availableCentres={availableCentres}
+                  revoking={revokingId === user.id}
+                  onRevoke={() => handleRevoke(user)}
+                  onUsersChange={setUsers}
+                />
+              ))}
             </div>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ============================================================
+// PortalUserRow — single director with expandable linked centres
+// ============================================================
+//
+// Each row keeps its own loaded list of linked centres (fetched
+// lazily on expand). The "Link centre" picker filters out centres
+// already linked so the admin can't accidentally insert a duplicate.
+
+function PortalUserRow({
+  user,
+  availableCentres,
+  revoking,
+  onRevoke,
+  onUsersChange,
+}: {
+  user: ClientUser;
+  availableCentres: Array<{ id: string; name: string }>;
+  revoking: boolean;
+  onRevoke: () => void;
+  onUsersChange: React.Dispatch<React.SetStateAction<ClientUser[]>>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [linkedCentres, setLinkedCentres] = useState<ClientUserCentre[] | null>(
+    null,
+  );
+  const [loadingCentres, setLoadingCentres] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [selectedToLink, setSelectedToLink] = useState<string>("");
+  const [linking, setLinking] = useState(false);
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
+
+  // Suppress lint warning — onUsersChange exists for future hookups
+  // (e.g. when a primary user is revoked we need to refresh the
+  // list). For now we keep it on the prop surface to avoid a churny
+  // signature change later.
+  void onUsersChange;
+
+  async function loadCentres() {
+    setLoadingCentres(true);
+    const { data } = await getCentresForClientUser(user.id);
+    setLinkedCentres(data);
+    setLoadingCentres(false);
+  }
+
+  function handleToggle() {
+    setExpanded((prev) => {
+      if (!prev && linkedCentres === null) {
+        void loadCentres();
+      }
+      return !prev;
+    });
+  }
+
+  async function handleLink() {
+    if (!selectedToLink) return;
+    setLinking(true);
+    const { error } = await linkClientUserToCentre(user.id, selectedToLink, false);
+    setLinking(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setSelectedToLink("");
+    setShowPicker(false);
+    await loadCentres();
+    toast.success("Centre linked.");
+  }
+
+  async function handleUnlink(centreId: string) {
+    setUnlinkingId(centreId);
+    const { error } = await unlinkClientUserFromCentre(user.id, centreId);
+    setUnlinkingId(null);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setLinkedCentres((prev) => prev?.filter((c) => c.id !== centreId) ?? null);
+    toast.success("Centre unlinked.");
+  }
+
+  const linkedIds = new Set(linkedCentres?.map((c) => c.id) ?? []);
+  const pickableCentres = availableCentres.filter((c) => !linkedIds.has(c.id));
+
+  return (
+    <div className="rounded-xl border bg-white">
+      <div className="flex flex-wrap items-center gap-3 p-3">
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-expanded={expanded}
+          aria-label="Expand linked centres"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40"
+        >
+          <ChevronDown
+            className={cn("size-4 transition-transform", expanded && "rotate-180")}
+          />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-foreground">{user.name}</span>
+            {user.is_primary && <Badge variant="default">Primary</Badge>}
+          </div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            {user.email} · Last login {formatLastLogin(user.last_login)}
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onRevoke}
+          disabled={revoking}
+          title="Revoke access"
+        >
+          {revoking ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Trash2 className="size-4 text-destructive" />
+          )}
+        </Button>
+      </div>
+
+      {expanded && (
+        <div className="border-t bg-muted/20 p-3">
+          <div className="flex items-center gap-2 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Building2 className="size-3.5" />
+            Linked centres
+          </div>
+          {loadingCentres ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : !linkedCentres || linkedCentres.length === 0 ? (
+            <p className="py-2 text-xs text-muted-foreground">
+              No centres linked yet.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {linkedCentres.map((c) => (
+                <li
+                  key={c.id}
+                  className="flex items-center gap-2 rounded-lg border bg-white px-2.5 py-1.5"
+                >
+                  <span className="text-sm text-foreground">{c.name}</span>
+                  {c.is_default && (
+                    <Badge
+                      variant="outline"
+                      className="border-amber-200 bg-amber-50 text-[10px] text-amber-700"
+                    >
+                      <Star className="mr-1 size-3 fill-amber-400 text-amber-400" />
+                      Default
+                    </Badge>
+                  )}
+                  <span className="flex-1" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={
+                      c.is_default
+                        ? "Cannot unlink the default centre — set another default first"
+                        : "Unlink centre"
+                    }
+                    disabled={c.is_default || unlinkingId === c.id}
+                    onClick={() => handleUnlink(c.id)}
+                    className="h-7 w-7"
+                  >
+                    {unlinkingId === c.id ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <X className="size-3.5" />
+                    )}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {availableCentres.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {showPicker ? (
+                <>
+                  <select
+                    value={selectedToLink}
+                    onChange={(e) => setSelectedToLink(e.target.value)}
+                    disabled={linking}
+                    className="h-8 rounded-md border bg-white px-2 text-xs"
+                  >
+                    <option value="">Pick a centre…</option>
+                    {pickableCentres.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    onClick={handleLink}
+                    disabled={linking || !selectedToLink}
+                  >
+                    {linking && <Loader2 className="mr-1 size-3.5 animate-spin" />}
+                    Link
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowPicker(false);
+                      setSelectedToLink("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPicker(true)}
+                  disabled={pickableCentres.length === 0}
+                >
+                  <Plus className="mr-1 size-3.5" />
+                  Link another centre
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

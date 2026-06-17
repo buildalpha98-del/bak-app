@@ -211,12 +211,18 @@ interface CentreDetailViewProps {
    * gate defaults to closed (no financial visibility).
    */
   profile?: { role: string; financial_access: boolean } | null;
+  /**
+   * All centres (id+name only) for the Portal Access tab link picker.
+   * Optional — when omitted the link affordance is hidden.
+   */
+  allCentres?: Array<{ id: string; name: string }>;
 }
 
 export function CentreDetailView({
   data,
   basePath,
   profile,
+  allCentres = [],
 }: CentreDetailViewProps) {
   const router = useRouter();
   const { centre } = data;
@@ -694,6 +700,7 @@ export function CentreDetailView({
             centreId={centre.id}
             centreName={centre.name}
             contactEmail={centre.primary_contact_email}
+            availableCentres={allCentres}
           />
         </TabsContent>
 

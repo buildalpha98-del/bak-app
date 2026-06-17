@@ -22,13 +22,17 @@ export default async function AdminCentreDetailPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, detail] = await Promise.all([
+  const [{ data: profile }, detail, { data: allCentres }] = await Promise.all([
     supabase
       .from("profiles")
       .select("role, financial_access")
       .eq("id", user.id)
       .single(),
     getCentreDetail(id),
+    supabase
+      .from("centres")
+      .select("id, name")
+      .order("name", { ascending: true }),
   ]);
 
   if (detail.error || !detail.data) {
@@ -40,6 +44,7 @@ export default async function AdminCentreDetailPage({
       data={detail.data}
       basePath="/admin/centres"
       profile={profile ?? null}
+      allCentres={allCentres ?? []}
     />
   );
 }

@@ -23,12 +23,18 @@ import {
 } from "lucide-react";
 import { AppLogo } from "@/components/shared/app-logo";
 import { NotificationBell } from "@/components/shared/navigation/notification-bell";
+import { CentreSwitcher } from "@/components/client/centre-switcher";
 import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
-import type { ClientUserWithCentre } from "@/lib/client/actions";
+import type {
+  ClientUserCentre,
+  ClientUserWithCentre,
+} from "@/lib/client/actions";
 
 interface ClientShellProps {
   clientUser: ClientUserWithCentre;
+  /** Every centre this director can access. Empty array stays plain. */
+  centres: ClientUserCentre[];
   children: React.ReactNode;
 }
 
@@ -49,7 +55,7 @@ function getNavItems(centreId: string) {
   ] as const;
 }
 
-export function ClientShell({ clientUser, children }: ClientShellProps) {
+export function ClientShell({ clientUser, centres, children }: ClientShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -85,11 +91,15 @@ export function ClientShell({ clientUser, children }: ClientShellProps) {
           <AppLogo size="sm" />
         </Link>
 
-        {/* Centre name */}
-        <div className="mx-4 flex-1 text-center">
-          <span className="text-sm font-medium text-gray-700 truncate">
-            {clientUser.centre_name}
-          </span>
+        {/* Centre name or multi-centre switcher */}
+        <div className="mx-4 flex flex-1 items-center justify-center">
+          {centres.length > 1 ? (
+            <CentreSwitcher centres={centres} currentCentreId={clientUser.centre_id} />
+          ) : (
+            <span className="truncate text-sm font-medium text-gray-700">
+              {clientUser.centre_name}
+            </span>
+          )}
         </div>
 
         {/* Notification bell + User menu */}

@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
-import { getCurrentClientUser, getActiveSharedLinks } from "@/lib/client/actions";
+import {
+  getCurrentClientUser,
+  getActiveSharedLinks,
+  getCurrentClientUserCentres,
+} from "@/lib/client/actions";
 import { ClientSettings } from "@/components/client/client-settings";
 
 export default async function ClientSettingsPage({
@@ -9,23 +13,30 @@ export default async function ClientSettingsPage({
 }) {
   const { centreId } = await params;
 
-  const { data: clientUser, error: authError } = await getCurrentClientUser();
+  const { data: clientUser, error: authError } = await getCurrentClientUser(centreId);
   if (authError || !clientUser) redirect("/client-login");
-  if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
+  if (clientUser.is_authorised_for_current === false) {
+    redirect(`/client/${clientUser.centre_id}`);
+  }
 
   const isPrimary = clientUser.is_primary ?? false;
 
-  let sharedLinks: Awaited<ReturnType<typeof getActiveSharedLinks>>["data"] = [];
-  if (isPrimary) {
-    const { data } = await getActiveSharedLinks(centreId);
-    sharedLinks = data;
-  }
+  const [sharedLinksRes, centresRes] = await Promise.all([
+    isPrimary
+      ? getActiveSharedLinks(centreId)
+      : Promise.resolve({
+          data: [] as Awaited<ReturnType<typeof getActiveSharedLinks>>["data"],
+          error: null,
+        }),
+    getCurrentClientUserCentres(),
+  ]);
 
   return (
     <ClientSettings
       isPrimary={isPrimary}
       centreId={centreId}
-      sharedLinks={sharedLinks}
+      sharedLinks={sharedLinksRes.data}
+      linkedCentres={centresRes.data ?? []}
     />
   );
 }

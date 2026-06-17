@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { getCurrentClientUser } from "@/lib/client/actions";
+import {
+  getCurrentClientUser,
+  getCurrentClientUserCentres,
+} from "@/lib/client/actions";
 import { ClientShell } from "@/components/client/client-shell";
 
 export default async function ClientLayout({
@@ -10,15 +13,25 @@ export default async function ClientLayout({
   params: Promise<{ centreId: string }>;
 }) {
   const { centreId } = await params;
-  const { data: clientUser, error } = await getCurrentClientUser();
+  const [{ data: clientUser, error }, centresRes] = await Promise.all([
+    getCurrentClientUser(centreId),
+    getCurrentClientUserCentres(),
+  ]);
 
   if (error || !clientUser) {
     redirect("/client-login");
   }
 
-  if (clientUser.centre_id !== centreId) {
+  // The user might have multiple centres — only redirect when they
+  // don't have access to the one in the URL. getCurrentClientUser
+  // sets is_authorised_for_current after consulting the join.
+  if (clientUser.is_authorised_for_current === false) {
     redirect(`/client/${clientUser.centre_id}`);
   }
 
-  return <ClientShell clientUser={clientUser}>{children}</ClientShell>;
+  return (
+    <ClientShell clientUser={clientUser} centres={centresRes.data ?? []}>
+      {children}
+    </ClientShell>
+  );
 }

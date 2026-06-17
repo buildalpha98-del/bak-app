@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { getCurrentClientUser } from "@/lib/client/actions";
+import {
+  getCurrentClientUser,
+  getClientUserCentresSummary,
+} from "@/lib/client/actions";
 import { getClientDashboard } from "@/lib/client/portal-actions";
 import { getClientStatusPulse } from "@/lib/client/status-pulse-actions";
 import { getCalendarToken } from "@/lib/calendar/actions";
@@ -12,15 +15,22 @@ export default async function ClientDashboardPage({
 }) {
   const { centreId } = await params;
 
-  const { data: clientUser, error: authError } = await getCurrentClientUser();
+  const { data: clientUser, error: authError } = await getCurrentClientUser(centreId);
   if (authError || !clientUser) redirect("/client-login");
-  if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
+  // is_authorised_for_current is set after the join lookup. Falsey
+  // means the user can't see this centre — bounce them back to the
+  // default one rather than 404 / login.
+  if (clientUser.is_authorised_for_current === false) {
+    redirect(`/client/${clientUser.centre_id}`);
+  }
 
-  const [{ data, error }, pulse, { token: calToken }] = await Promise.all([
-    getClientDashboard(centreId),
-    getClientStatusPulse(centreId),
-    getCalendarToken("centre", centreId),
-  ]);
+  const [{ data, error }, pulse, { token: calToken }, centresSummaryRes] =
+    await Promise.all([
+      getClientDashboard(centreId),
+      getClientStatusPulse(centreId),
+      getCalendarToken("centre", centreId),
+      getClientUserCentresSummary(),
+    ]);
 
   if (error || !data) {
     return (
@@ -43,6 +53,7 @@ export default async function ClientDashboardPage({
       centreId={centreId}
       pulse={pulse}
       calendarFeedUrl={calendarFeedUrl}
+      centresSummary={centresSummaryRes.data ?? []}
     />
   );
 }
