@@ -1367,3 +1367,106 @@ The forms command center. Status Pulse strip surfaces what's blocking (drafts pe
 **Plumbing verified:** All sub-route hrefs unchanged.
 
 ---
+
+## 2. Ops
+
+### 2.1 `/ops` — Command Centre
+
+🔍 **Current state**
+
+`app/(dashboard)/ops/page.tsx` fans out `getCommandCentreData(userId)` + the new `getOpsCommandPulse()` in a single `Promise.all`, then renders:
+
+- `OpsContextStrip` — sticky greeting strip with Sydney-local date + 3 inline pulse stats (shifts need a coach today / unconfirmed shifts / equipment issues), each a deep link to the relevant view with a filter param applied
+- `OpsQuickActionsRow` — 5 ghost-style rounded-2xl actions (Publish roster / Add session / Check clashes / View tasks / Training overdue) with restrained brand-orange icon tiles
+- `CommandCentre` — the existing 2-column widget grid with all 9 widgets (today's sessions hero + unconfirmed/swaps/rerostering/compliance on the left, equipment/tasks/assessments/ratings on the right)
+
+The `WidgetWrapper` was refreshed to a `rounded-2xl` card with hover-lift and a tick-up count pill — the brand-orange tile stays as a visual anchor but the count badge now uses `useCountUp` on first paint and only tints when > 0.
+
+✅ **What works**
+
+- Single fan-out keeps LCP bounded by the slowest sub-query
+- Status pulse drops Abdul straight into rostering for the most urgent counts
+- All 9 existing widgets keep their realtime + refresh contracts (sessions, swap_requests, feedback_ratings, rerostering_events subscriptions)
+- 60-second auto-refresh + manual Refresh button retained
+- Equipment-issue count mirrors the existing `getEquipmentIssues` widget logic — once a follow-up task lands in a final column, the kit drops out
+
+⚠️ **Gaps**
+
+- The `?status=needs_coach`, `?status=unconfirmed`, `?status=issues` jump-links land on the right pages but the destination filter chips don't yet read those exact params (will land in a follow-up trim of the roster + equipment filter shapes).
+- The pulse counts use Sydney-local date math via a hard-coded AEDT offset; revisit if/when DST ends.
+
+🎯 **Final-state target**
+
+The /ops home is Abdul's morning landing pad — pulse + quick actions at the top, hero "today's sessions" widget, then a calm 2-column grid of widgets that summarise what needs attention. Looks like the /admin home seen from the operational angle.
+
+📋 **Open items** — closed in this commit
+
+- [x] **Ops Command Pulse** server action (`lib/ops/command-pulse-actions.ts`) + 7 vitest cases
+- [x] **OpsContextStrip** — Sydney-local greeting + 3-stat pulse with useCountUp + brand-orange-on-active
+- [x] **OpsQuickActionsRow** — 5 quick actions in a rounded-2xl ghost-button row
+- [x] **Single fan-out** at page level — pulse + command data in one Promise.all
+- [x] **Widget refresh** — `rounded-2xl`, hover-lift, useCountUp count pill, restrained orange in `WidgetWrapper`
+- [x] **gap-6 rhythm** between widget rows
+
+**Plumbing verified:** `getCommandCentreData(userId)` contract preserved; 4 supabase realtime channels untouched; refresh wiring intact.
+
+---
+
+### 2.2 `/ops/onboarding` — Centre Onboarding
+
+🔍 **Current state**
+
+`app/(dashboard)/ops/onboarding/page.tsx` was rebuilt around the same pattern as `/ops/centres`:
+
+- `OnboardingStatusPulseStrip` — 4 inline counts (in progress / behind schedule >14d / completed this week / emails waiting to send), each linking to the relevant filtered list
+- URL-persisted filter chip row (search by centre name, status select with `all / in_progress / behind / complete`, region select) — view-mode toggle (`?view=grid|table`) also URL-persisted
+- New `OnboardingListView` with both grid and table modes — grid cards show centre name, region, status badge, progress bar (N/10 steps), days in flight, next-step label + due date
+- The Start Onboarding CTA + dialog are unchanged; they route through the existing `startCentreOnboarding` write path
+
+Backed by a new `getOnboardingListItems()` server action that joins centres + regions + steps in one round-trip (replacing the per-row step query the previous widget did).
+
+✅ **What works**
+
+- Pulse counts derive from canonical columns: `centre_onboarding_checklists.status / started_at / completed_at` and `centre_onboarding_emails.sent_at IS NULL AND error_text IS NULL` (the queued state introduced in migration 049)
+- Grid + table views share the same data; only render differs
+- Region filter joins through `centres.region_id` → `regions.name`
+- Existing `ActiveOnboardingsWidget` retained for backward compat; not imported by the new page but stays callable
+- All write paths (start, complete step, skip, revert, queue email) untouched — `lib/onboarding/actions.ts` still owns them
+
+⚠️ **Gaps**
+
+- The `?queued=yes` deep-link from the pulse currently lands but doesn't yet narrow the list to only-queued rows (we surface emails at the checklist level, not the row). Worth a small follow-up if Abdul finds himself drilling into the queue often.
+
+🎯 **Final-state target**
+
+A single place to see every onboarding in flight, what's behind, what just shipped, and what's waiting on an email send — with filters that drop Abdul into the rows he needs without scanning the whole list.
+
+📋 **Open items** — closed in this commit
+
+- [x] **Onboarding Status Pulse** server action (`lib/onboarding/status-pulse-actions.ts`) + 6 vitest cases
+- [x] **OnboardingStatusPulseStrip** component with `useCountUp` + brand-orange-on-active
+- [x] **URL-persisted filter chips** — search / status / region / `?view=grid|table`
+- [x] **`OnboardingListView`** with grid + table modes, shared progress bar + next-step label
+- [x] **`getOnboardingListItems()`** — single-fan-out replacement for the per-row widget loop
+- [x] **UI refresh** — `rounded-2xl`, restrained orange (Start CTA + Behind badge + progress fill), hover-lift on cards
+
+**Plumbing verified:** `startCentreOnboarding` + `completeOnboardingStep` + `skipOnboardingStep` + `revertOnboardingStep` + `queueOnboardingEmail` unchanged; `getActiveOnboardings()` retained for backward compat.
+
+---
+
+### 2.3 `/ops/*` audit — cross-page consistency
+
+Walked every `/ops/*` route against its `/admin/*` equivalent and back-filled the missing pulse strips so Abdul gets the same morning glance as the admin:
+
+- **`/ops/tasks`** — was missing `TasksStatusPulseStrip`. Now fans out `getTasksStatusPulse()` and renders the strip above the existing `OpsTasksClient`. Jump-links honor the same `?overdue=yes / ?mine=yes / ?unassigned=yes / ?due=today` URL shape the admin client uses.
+- **`/ops/feedback`** — was missing `FeedbackStatusPulseStrip`. Now fans out `getFeedbackStatusPulse()` and renders it above the existing `OpsFeedbackClient`.
+- **`/ops/announcements`** — was missing `AnnouncementsStatusPulseStrip`. Now fans out `getAnnouncementsStatusPulse()` alongside `getAnnouncements()`.
+- **`/ops/messages`** — was missing `MessagesStatusPulseStrip`. Now fans out `getMessagesStatusPulse()` and renders above `MessagesPageClient`.
+
+Pages already wired (no change needed): `/ops/centres`, `/ops/roster`, `/ops/crm`, `/ops/staff`, `/ops/children`, `/ops/performance`, `/ops/assessments`, `/ops/programs`, `/ops/training`, `/ops/equipment`, `/ops/documents`, `/ops/forms`, `/ops/invoicing`, `/ops/reports`.
+
+Pages with deliberate scope difference vs admin (no change): `/ops/bookings/sessions` — admin has a full bookings dashboard (`/admin/bookings`); ops only owns the sessions sub-page (Abdul doesn't manage parent revenue) — preserved.
+
+No regressions to shared list views (admin + ops share `CentreListView`, `StaffListView`, `ChildrenListView`, etc.); the audit was purely additive on the ops side.
+
+---

@@ -126,10 +126,10 @@ export function CommandCentre(props: CommandCentreProps) {
 
   return (
     <div className="space-y-6">
-      {/* Top Bar */}
-      <div className="flex items-start justify-between animate-fade-up">
+      {/* Section header — sits beneath the OpsContextStrip + Quick Actions */}
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
             Operations
           </p>
           <h1 className="text-3xl font-bold text-foreground font-heading tracking-tight page-header-sport">
@@ -146,7 +146,7 @@ export function CommandCentre(props: CommandCentreProps) {
             size="sm"
             onClick={refreshAll}
             disabled={refreshing}
-            className="transition-all duration-200"
+            className="rounded-2xl transition-all duration-200"
           >
             <RefreshCw
               className={`mr-1.5 size-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -165,9 +165,9 @@ export function CommandCentre(props: CommandCentreProps) {
       </div>
 
       {/* Widget grid — 2 cols desktop, 1 col mobile */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Left column — action items (higher urgency) */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="animate-fade-up stagger-2">
             <UnconfirmedShiftsWidget
               shifts={data.unconfirmedShifts}
@@ -194,7 +194,7 @@ export function CommandCentre(props: CommandCentreProps) {
         </div>
 
         {/* Right column — monitoring */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="animate-fade-up stagger-2">
             <EquipmentIssuesWidget
               issues={data.equipmentIssues}

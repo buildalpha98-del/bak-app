@@ -270,7 +270,163 @@ export async function getCentreOnboarding(centreId: string): Promise<{
 }
 
 /**
- * Get all active onboarding checklists for the ops widget.
+ * Get every onboarding row for the ops list view — both in-flight and
+ * recently completed. Provides everything the list needs to render
+ * grid cards (next step + due date + region) without extra round-trips.
+ *
+ * Filters:
+ *   - `includeCompleted`: when true, also returns rows whose
+ *     `status='completed'` AND `completed_at` is within the last 30
+ *     days. Useful for "completed this week" pulse jump-links.
+ */
+export async function getOnboardingListItems({
+  includeCompleted = true,
+}: { includeCompleted?: boolean } = {}): Promise<
+  Array<{
+    id: string;
+    centreId: string;
+    centreName: string;
+    status: "in_progress" | "completed" | "stalled";
+    startedAt: string;
+    completedAt: string | null;
+    completedSteps: number;
+    totalSteps: number;
+    daysSinceStart: number;
+    nextStepLabel: string | null;
+    nextStepDueAt: string | null;
+    regionId: string | null;
+    regionName: string | null;
+  }>
+> {
+  const supabase = await createSupabaseServerClient();
+
+  // Pull every onboarding row we want to render. Joining the centre
+  // gives us name + region in one round-trip.
+  const thirtyDaysAgoIso = new Date(
+    Date.now() - 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+
+  let query = supabase
+    .from("centre_onboarding_checklists")
+    .select(
+      "*, centres:centre_id(id, name, region_id, regions:region_id(name))",
+    )
+    .order("started_at", { ascending: false });
+
+  if (!includeCompleted) {
+    query = query.eq("status", "in_progress");
+  } else {
+    // Either in_progress OR completed within the last 30 days. We
+    // can't express OR cleanly with .eq+.gte, so we filter in JS
+    // below after pulling everything.
+  }
+
+  const { data: rows } = await query;
+  if (!rows || rows.length === 0) return [];
+
+  const checklistIds = rows.map((r: Record<string, unknown>) => r.id as string);
+
+  // One query, all steps for these checklists. Avoids a per-row loop.
+  const { data: stepRows } = await supabase
+    .from("centre_onboarding_steps")
+    .select("checklist_id, step_number, step_name, status, scheduled_for")
+    .in("checklist_id", checklistIds)
+    .order("step_number", { ascending: true });
+
+  // Group steps by checklist for fast lookup.
+  const stepsByChecklist = new Map<
+    string,
+    Array<{
+      step_number: number;
+      step_name: string;
+      status: string;
+      scheduled_for: string | null;
+    }>
+  >();
+  for (const s of (stepRows ?? []) as Array<{
+    checklist_id: string;
+    step_number: number;
+    step_name: string;
+    status: string;
+    scheduled_for: string | null;
+  }>) {
+    if (!stepsByChecklist.has(s.checklist_id)) {
+      stepsByChecklist.set(s.checklist_id, []);
+    }
+    stepsByChecklist.get(s.checklist_id)!.push({
+      step_number: s.step_number,
+      step_name: s.step_name,
+      status: s.status,
+      scheduled_for: s.scheduled_for,
+    });
+  }
+
+  const out = [];
+  for (const row of rows as Array<Record<string, unknown>>) {
+    const status = row.status as "in_progress" | "completed" | "stalled";
+    const completedAt = (row.completed_at as string | null) ?? null;
+
+    // Skip stale completed rows — keep the list focused on what ops
+    // can act on. The "completed this week" jump-link still hits the
+    // recent ones.
+    if (
+      includeCompleted &&
+      status === "completed" &&
+      completedAt &&
+      completedAt < thirtyDaysAgoIso
+    ) {
+      continue;
+    }
+
+    const centre = row.centres as unknown as
+      | {
+          id: string;
+          name: string;
+          region_id: string | null;
+          regions: { name: string } | null;
+        }
+      | null;
+    if (!centre) continue;
+
+    const steps = stepsByChecklist.get(row.id as string) ?? [];
+    const completedSteps = steps.filter(
+      (s) => s.status === "completed" || s.status === "skipped",
+    ).length;
+
+    // Next step = lowest step_number that isn't terminal.
+    const nextStep = steps.find(
+      (s) => s.status !== "completed" && s.status !== "skipped",
+    );
+
+    const startedAt = row.started_at as string;
+    const daysSinceStart = Math.floor(
+      (Date.now() - new Date(startedAt).getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    out.push({
+      id: row.id as string,
+      centreId: centre.id,
+      centreName: centre.name,
+      status,
+      startedAt,
+      completedAt,
+      completedSteps,
+      totalSteps: TOTAL_STEPS,
+      daysSinceStart,
+      nextStepLabel: nextStep ? nextStep.step_name : null,
+      nextStepDueAt: nextStep?.scheduled_for ?? null,
+      regionId: centre.region_id,
+      regionName: centre.regions?.name ?? null,
+    });
+  }
+
+  return out;
+}
+
+/**
+ * Get all active onboarding checklists for the legacy ops widget.
+ * Kept for backward compatibility with any caller that still uses the
+ * `ActiveOnboardingsWidget` shape.
  */
 export async function getActiveOnboardings(): Promise<
   Array<{
