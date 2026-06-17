@@ -5,6 +5,8 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
 import { staffOnboarding } from "@/lib/launch/email-templates";
 import { generateDefaultAvailabilitySlots } from "@/lib/utils/staff/default-availability";
+import { getMonday, getFriday } from "@/lib/utils/roster";
+import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
 
@@ -25,6 +27,16 @@ export interface StaffListItem extends Profile {
     expired: number;
     pending: number;
   };
+  /** First region id resolved for the coach (null if none). */
+  region_id: string | null;
+  /** Aggregated hours rostered in the current Mon–Fri week. */
+  hours_this_week: number;
+  /** Length-4 array of hours rostered in each of the past 4 weeks (oldest → newest). */
+  hours_last_4_weeks: number[];
+  /** ISO timestamp of the closest upcoming non-cancelled session, or null. */
+  next_session_at: string | null;
+  /** ISO timestamp of the most recent past non-cancelled session, or null. */
+  last_session_at: string | null;
 }
 
 export interface StaffDetail {
@@ -40,6 +52,13 @@ export interface CreateStaffData {
   phone?: string;
   role: UserRole;
   default_pay_rate?: number;
+  /**
+   * Grant the new profile financial-data visibility at create time.
+   * Only meaningful for `admin`/`ops` roles — coaches never see
+   * financial data, parents are out of scope. Defaults to false so
+   * a forgetful operator doesn't accidentally expose payroll.
+   */
+  financial_access?: boolean;
 }
 
 export interface UpdateStaffData {
@@ -114,7 +133,7 @@ export async function getStaffList(
   if (error) return { data: null, error: error.message };
   if (!profiles) return { data: [], error: null };
 
-  // Fetch compliance summaries for all users in one query
+  // Fetch compliance summaries for all users in one query.
   const userIds = profiles.map((p) => p.id);
   const { data: docs } = await supabase
     .from("compliance_docs")
@@ -140,15 +159,134 @@ export async function getStaffList(
     complianceMap.set(doc.user_id, existing);
   }
 
-  const data: StaffListItem[] = profiles.map((p) => ({
-    ...p,
-    compliance_summary: complianceMap.get(p.id) ?? {
-      total: 0,
-      verified: 0,
-      expired: 0,
-      pending: 0,
-    },
-  }));
+  // ============================================================
+  // Session-derived facts: utilisation + next/last shift.
+  // We compute a 4-week window (3 prior weeks + current) so the
+  // tooltip's "Past 4 weeks: 28h / 32h / 25h / 30h" history reads
+  // straight off the same single query, then a forward window of
+  // 28 days for the "Next: …" column.
+  //
+  // For inactive coaches we still resolve `last_session_at` so the
+  // 30+-day amber callout works.
+  // ============================================================
+  const today = new Date();
+  const thisMonday = getMonday(today);
+  const fourWeeksAgo = new Date(thisMonday);
+  fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 21);
+  const thisFriday = getFriday(thisMonday);
+  const horizonForward = new Date(today);
+  horizonForward.setDate(horizonForward.getDate() + 28);
+
+  const histStart = fourWeeksAgo.toISOString().split("T")[0];
+  const histEnd = thisFriday.toISOString().split("T")[0];
+  const fwdStart = today.toISOString().split("T")[0];
+  const fwdEnd = horizonForward.toISOString().split("T")[0];
+
+  const [histRes, fwdRes, lastEverRes] = await Promise.all([
+    // Historical: any session in the past-4-weeks window.
+    supabase
+      .from("sessions")
+      .select("coach_id, date, time, duration_minutes")
+      .in("coach_id", userIds)
+      .gte("date", histStart)
+      .lte("date", histEnd)
+      .neq("status", "cancelled"),
+    // Forward-looking: next 28 days for the "Next: …" cell.
+    supabase
+      .from("sessions")
+      .select("coach_id, date, time")
+      .in("coach_id", userIds)
+      .gt("date", fwdStart)
+      .lte("date", fwdEnd)
+      .neq("status", "cancelled"),
+    // Last-ever session per coach for the "Last: …" / "30+ days" fallback
+    // — we cap to 200 rows and bucket by coach because the typical
+    // operator browses <50 coaches; this stays cheap.
+    supabase
+      .from("sessions")
+      .select("coach_id, date, time")
+      .in("coach_id", userIds)
+      .lt("date", fwdStart)
+      .neq("status", "cancelled")
+      .order("date", { ascending: false })
+      .limit(200),
+  ]);
+
+  // Bucket past-4-weeks sessions into week buckets.
+  // weekIndex = 0 → oldest, 3 → current week.
+  function weekIndexFor(dateStr: string): number {
+    const d = new Date(dateStr + "T00:00:00");
+    const diffDays = Math.floor(
+      (d.getTime() - fourWeeksAgo.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return Math.min(3, Math.max(0, Math.floor(diffDays / 7)));
+  }
+
+  const hoursByCoach = new Map<string, number[]>();
+  for (const row of histRes.data ?? []) {
+    const r = row as {
+      coach_id: string | null;
+      date: string;
+      duration_minutes: number;
+    };
+    if (!r.coach_id) continue;
+    const idx = weekIndexFor(r.date);
+    const arr = hoursByCoach.get(r.coach_id) ?? [0, 0, 0, 0];
+    arr[idx] += (r.duration_minutes ?? 0) / 60;
+    hoursByCoach.set(r.coach_id, arr);
+  }
+
+  // Next session: smallest date+time ≥ today per coach.
+  const nextByCoach = new Map<string, string>();
+  for (const row of fwdRes.data ?? []) {
+    const r = row as {
+      coach_id: string | null;
+      date: string;
+      time: string | null;
+    };
+    if (!r.coach_id) continue;
+    const iso = `${r.date}T${r.time ?? "00:00:00"}`;
+    const existing = nextByCoach.get(r.coach_id);
+    if (!existing || iso < existing) nextByCoach.set(r.coach_id, iso);
+  }
+
+  // Last session: largest date+time strictly before today.
+  // We already pulled in descending date order, so the first row
+  // we see for a given coach is their latest.
+  const lastByCoach = new Map<string, string>();
+  for (const row of lastEverRes.data ?? []) {
+    const r = row as {
+      coach_id: string | null;
+      date: string;
+      time: string | null;
+    };
+    if (!r.coach_id) continue;
+    if (lastByCoach.has(r.coach_id)) continue;
+    const iso = `${r.date}T${r.time ?? "00:00:00"}`;
+    lastByCoach.set(r.coach_id, iso);
+  }
+
+  const data: StaffListItem[] = profiles.map((p) => {
+    const weekHours = hoursByCoach.get(p.id) ?? [0, 0, 0, 0];
+    const regionIds = ((p as Record<string, unknown>).region_ids ?? null) as
+      | string[]
+      | null;
+    return {
+      ...p,
+      compliance_summary: complianceMap.get(p.id) ?? {
+        total: 0,
+        verified: 0,
+        expired: 0,
+        pending: 0,
+      },
+      region_id:
+        Array.isArray(regionIds) && regionIds.length > 0 ? regionIds[0] : null,
+      hours_this_week: Math.round(weekHours[3] * 10) / 10,
+      hours_last_4_weeks: weekHours.map((h) => Math.round(h * 10) / 10),
+      next_session_at: nextByCoach.get(p.id) ?? null,
+      last_session_at: lastByCoach.get(p.id) ?? null,
+    };
+  });
 
   return { data, error: null };
 }
@@ -219,7 +357,11 @@ export async function createStaffMember(
 
   if (authError) return { data: null, error: authError.message };
 
-  // Insert profile row
+  // Insert profile row. financial_access only meaningful for
+  // admin/ops — defaults to false everywhere else regardless of input.
+  const financialAccess =
+    (data.role === "admin" || data.role === "ops") &&
+    data.financial_access === true;
   const { error: profileError } = await admin.from("profiles").insert({
     id: authUser.user.id,
     email: data.email,
@@ -227,6 +369,7 @@ export async function createStaffMember(
     phone: data.phone ?? null,
     role: data.role,
     default_pay_rate: data.default_pay_rate ?? null,
+    financial_access: financialAccess,
     status: "active" as UserStatus,
   });
 
@@ -234,6 +377,28 @@ export async function createStaffMember(
     // Attempt to clean up the auth user if profile insert fails
     await admin.auth.admin.deleteUser(authUser.user.id);
     return { data: null, error: profileError.message };
+  }
+
+  // Audit log when the new profile lands with financial access on. We
+  // log against the new profile id so the staff detail's history view
+  // surfaces the grant alongside any subsequent toggle. Best-effort —
+  // a logging hiccup must never sink the create.
+  if (financialAccess) {
+    try {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user: actor },
+      } = await supabase.auth.getUser();
+      await supabase.from("activity_log").insert({
+        user_id: actor?.id ?? null,
+        action: "staff_financial_access_granted",
+        entity_type: "profile",
+        entity_id: authUser.user.id,
+        metadata: { financial_access: true, granted_at_create: true },
+      });
+    } catch (err) {
+      console.error("financial-access activity_log on create failed:", err);
+    }
   }
 
   // Seed Mon–Fri 8:00am–4:30pm availability so the new staff member
@@ -797,4 +962,276 @@ export async function updateCoachProfile(data: {
     .eq("id", user.id);
 
   return { error: error?.message ?? null };
+}
+
+// ============================================================
+// Bulk actions for the staff list (admin/ops only)
+// ============================================================
+//
+// All four bulk actions follow the same shape — auth gate the caller,
+// iterate the selected ids, swallow per-row errors so a single bad
+// row doesn't sink the whole batch, and write one activity_log entry
+// per successful action. The sticky bulk-action bar in the list view
+// shows the result via sonner toasts.
+
+interface BulkAuthOk {
+  ok: true;
+  actorId: string;
+}
+interface BulkAuthBlocked {
+  ok: false;
+  error: string;
+}
+type BulkAuth = BulkAuthOk | BulkAuthBlocked;
+
+async function requireBulkActor(
+  allow: Array<UserRole>,
+): Promise<BulkAuth> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!profile || !allow.includes(profile.role as UserRole)) {
+    return { ok: false, error: "Not authorised." };
+  }
+  return { ok: true, actorId: user.id };
+}
+
+export interface BulkResetResult {
+  reset: number;
+  errors: Array<{ id: string; error: string }>;
+  error: string | null;
+}
+
+/**
+ * Reset passwords for the selected staff members. Admin only. Each
+ * reset generates a new temp password via `adminResetStaffPassword`
+ * and sends the existing Supabase recovery email; we surface a single
+ * toast in the UI summarising the count + any per-row failures.
+ *
+ * Empty selection short-circuits before any auth work.
+ */
+export async function bulkResetPasswords(
+  staffIds: string[],
+): Promise<BulkResetResult> {
+  if (staffIds.length === 0) {
+    return { reset: 0, errors: [], error: "No staff selected." };
+  }
+  const auth = await requireBulkActor(["admin"]);
+  if (!auth.ok) return { reset: 0, errors: [], error: auth.error };
+
+  const supabase = await createSupabaseServerClient();
+  let reset = 0;
+  const errors: Array<{ id: string; error: string }> = [];
+
+  for (const id of staffIds) {
+    const { error: resetErr } = await adminResetStaffPassword(id);
+    if (resetErr) {
+      errors.push({ id, error: resetErr });
+      continue;
+    }
+    reset += 1;
+    const { error: logErr } = await supabase.from("activity_log").insert({
+      user_id: auth.actorId,
+      action: "staff_password_bulk_reset",
+      entity_type: "profile",
+      entity_id: id,
+    });
+    if (logErr) {
+      console.error("bulkResetPasswords log error:", id, logErr);
+    }
+  }
+
+  return {
+    reset,
+    errors,
+    error:
+      reset === 0 && errors.length > 0
+        ? "Failed to reset any passwords."
+        : null,
+  };
+}
+
+export interface BulkArchiveResult {
+  archived: number;
+  errors: Array<{ id: string; error: string }>;
+  error: string | null;
+}
+
+/**
+ * Archive multiple staff at once. Admin only — `archiveStaffMember`
+ * itself also enforces admin/ops, but we gate up front for fail-fast
+ * clarity.
+ */
+export async function bulkArchiveStaff(
+  staffIds: string[],
+): Promise<BulkArchiveResult> {
+  if (staffIds.length === 0) {
+    return { archived: 0, errors: [], error: "No staff selected." };
+  }
+  const auth = await requireBulkActor(["admin"]);
+  if (!auth.ok) return { archived: 0, errors: [], error: auth.error };
+
+  let archived = 0;
+  const errors: Array<{ id: string; error: string }> = [];
+
+  for (const id of staffIds) {
+    const { error: archErr } = await archiveStaffMember(id);
+    if (archErr) {
+      errors.push({ id, error: archErr });
+      continue;
+    }
+    archived += 1;
+  }
+
+  return {
+    archived,
+    errors,
+    error:
+      archived === 0 && errors.length > 0
+        ? "Failed to archive any staff."
+        : null,
+  };
+}
+
+/**
+ * Insert one notification per selected staff member with the supplied
+ * title/body. Tier is fixed at `important` (it's a deliberate broadcast,
+ * not an alarm). Admin/ops may dispatch.
+ *
+ * The `notifications.type` column is a free string today, so we use
+ * `admin_announcement` to namespace these for any future filtering
+ * UI — the in-app inbox surfaces the tier badge regardless of type.
+ */
+export async function bulkSendStaffAnnouncement(
+  staffIds: string[],
+  title: string,
+  body: string,
+): Promise<{ sent: number; error: string | null }> {
+  if (staffIds.length === 0) {
+    return { sent: 0, error: "No staff selected." };
+  }
+  if (!title.trim() || !body.trim()) {
+    return { sent: 0, error: "Title and body are required." };
+  }
+  const auth = await requireBulkActor(["admin", "ops"]);
+  if (!auth.ok) return { sent: 0, error: auth.error };
+
+  const supabase = await createSupabaseServerClient();
+  const rows = staffIds.map((id) => ({
+    user_id: id,
+    type: "admin_announcement",
+    title: title.trim(),
+    body: body.trim(),
+    tier: "important" as const,
+    entity_type: null,
+    entity_id: null,
+    read: false,
+  }));
+
+  const { error } = await supabase.from("notifications").insert(rows);
+  if (error) {
+    console.error("bulkSendStaffAnnouncement error:", error);
+    return { sent: 0, error: error.message };
+  }
+
+  // One activity_log entry summarising the broadcast — we don't need
+  // a per-recipient row because the notification rows already carry
+  // the audit trail.
+  await supabase.from("activity_log").insert({
+    user_id: auth.actorId,
+    action: "staff_announcement_sent",
+    entity_type: "profile",
+    entity_id: null,
+    metadata: {
+      recipient_count: staffIds.length,
+      title: title.trim(),
+    },
+  });
+
+  return { sent: staffIds.length, error: null };
+}
+
+const CSV_STAFF_BASE = [
+  "id",
+  "name",
+  "email",
+  "phone",
+  "role",
+  "status",
+  "last_session_at",
+  "compliance_total",
+  "compliance_verified",
+  "compliance_expired",
+  "compliance_pending",
+] as const;
+
+function escapeCsv(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+/**
+ * Build a CSV export of the selected staff. `financial_access` is
+ * appended as the last column only when the caller themselves carry
+ * financial access — denying the column entirely (rather than blanking
+ * it) means a leaked file can't be re-shared with the data still
+ * embedded. Admin/ops only.
+ */
+export async function exportStaffCsv(
+  staffIds: string[],
+): Promise<{ csv: string | null; error: string | null }> {
+  if (staffIds.length === 0) {
+    return { csv: null, error: "No staff selected." };
+  }
+  const auth = await requireBulkActor(["admin", "ops"]);
+  if (!auth.ok) return { csv: null, error: auth.error };
+
+  const supabase = await createSupabaseServerClient();
+  const hasFinancial = await getFinancialAccess();
+
+  // Use getStaffList() so we reuse the compliance + last_session_at
+  // aggregation — we pull the full list and filter in memory. For our
+  // current scale this is fine (<50 staff); flagged for the report if
+  // it ever needs to scale further.
+  const { data: list, error } = await getStaffList();
+  if (error) return { csv: null, error };
+
+  const idSet = new Set(staffIds);
+  const rows = (list ?? []).filter((r) => idSet.has(r.id));
+
+  const fields = hasFinancial
+    ? [...CSV_STAFF_BASE, "financial_access"]
+    : [...CSV_STAFF_BASE];
+
+  const header = fields.join(",");
+  const lines = rows.map((r) => {
+    const flat: Record<string, unknown> = {
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      role: r.role,
+      status: r.status,
+      last_session_at: r.last_session_at,
+      compliance_total: r.compliance_summary.total,
+      compliance_verified: r.compliance_summary.verified,
+      compliance_expired: r.compliance_summary.expired,
+      compliance_pending: r.compliance_summary.pending,
+    };
+    if (hasFinancial) {
+      flat.financial_access = r.financial_access ? "yes" : "no";
+    }
+    return fields.map((f) => escapeCsv(flat[f])).join(",");
+  });
+
+  return { csv: [header, ...lines].join("\n"), error: null };
 }

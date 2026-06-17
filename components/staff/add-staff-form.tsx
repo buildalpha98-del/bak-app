@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, Copy, KeyRound, Mail, MailWarning } from "lucide-react";
+import { ArrowLeft, Banknote, CheckCircle, Copy, KeyRound, Mail, MailWarning } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +23,10 @@ export function AddStaffForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("coach");
+  // financial_access is admin/ops-only; if the operator flips the
+  // dropdown to coach we drop the bit silently rather than leak it
+  // through. Default off so a forgetful add doesn't grant payroll.
+  const [grantFinancialAccess, setGrantFinancialAccess] = useState(false);
   const [created, setCreated] = useState<{
     name: string;
     email: string;
@@ -55,6 +60,8 @@ export function AddStaffForm() {
       phone,
       role,
       default_pay_rate,
+      financial_access:
+        (role === "admin" || role === "ops") && grantFinancialAccess,
     });
 
     if (result.error) {
@@ -222,6 +229,38 @@ export function AddStaffForm() {
             </SelectContent>
           </Select>
         </div>
+
+        {/*
+         * Financial-access toggle — admin/ops only. Coaches never see
+         * financial data so we hide the checkbox entirely rather than
+         * disable it; the server action also drops the bit defensively
+         * for non-admin/ops roles.
+         */}
+        {(role === "admin" || role === "ops") && (
+          <div className="flex items-start gap-3 rounded-2xl border bg-muted/30 p-3">
+            <Checkbox
+              id="financial_access"
+              checked={grantFinancialAccess}
+              onCheckedChange={(checked) =>
+                setGrantFinancialAccess(checked === true)
+              }
+              className="mt-0.5"
+            />
+            <div className="space-y-1">
+              <Label
+                htmlFor="financial_access"
+                className="inline-flex cursor-pointer items-center gap-1.5 font-medium"
+              >
+                <Banknote className="size-4 text-[#E8712A]" />
+                Grant financial access
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Allows viewing invoicing, payroll, analytics, grants, and
+                intelligence.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <Label htmlFor="default_pay_rate">Default Pay Rate ($)</Label>

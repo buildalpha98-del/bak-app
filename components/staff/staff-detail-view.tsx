@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -173,6 +173,24 @@ export function StaffDetailView({
   canEditFinancialAccess = false,
 }: StaffDetailViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Deep-link support: ?tab=compliance|pay-rates|availability|sessions|feedback
+  // picks the tab on first paint. Used by the list view's compliance
+  // indicator click-through and the at-risk pulse jumps.
+  const allowedTabs = [
+    "overview",
+    "compliance",
+    "pay-rates",
+    "availability",
+    "sessions",
+    "feedback",
+  ] as const;
+  const tabParam = searchParams.get("tab");
+  const initialTab = (
+    tabParam && (allowedTabs as readonly string[]).includes(tabParam)
+      ? tabParam
+      : "overview"
+  ) as (typeof allowedTabs)[number];
   const [profile, setProfile] = useState(initialData.profile);
   const [payRates, setPayRates] = useState(initialData.pay_rates);
   const [compDocs, setCompDocs] = useState(initialData.compliance_docs);
@@ -305,7 +323,7 @@ export function StaffDetailView({
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue={initialTab}>
         <TabsList variant="line">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
