@@ -1199,3 +1199,171 @@ The forms command center. Status Pulse strip surfaces what's blocking (drafts pe
 **Plumbing verified:** `getAdminBookingSummary` / `getAdminBookingsList` / `getAdminSessionsList` / `getAdminPackageBalances` / `getAdminRevenueBreakdown` / `toggleSessionStatus` / `getSessionsForDropdown` / `exportBookingsCSV` signatures preserved — `/parent/book` (parent portal) reads `bookable_sessions` read-only, unchanged; `/ops/bookings/sessions`, `/admin/bookings/sessions/new`, `/admin/bookings/packages`, `/admin/bookings/holiday-clinics` sub-pages all continue to work.
 
 ---
+
+### 1.23 `/admin/marketing` — Marketing & Testimonials
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/marketing/page.tsx` is reshaped around the `MarketingStatusPulseStrip` (`pending testimonials · approved this week · stale cache (>24h) · web enquiries this week`) with URL-persisted `?tab=stats|testimonials|widgets`. The testimonials sub-page rebuild adds filter chips (`?filter=all|pending|approved|rejected`), per-pending bulk-select with a sticky BulkActionBar (approve / reject), and `useCountUp` on the stat tiles. `bulkApproveTestimonials` + `bulkRejectTestimonials` server actions live alongside the existing single-row flow; both are idempotent (already-handled feedback ids are silently skipped) and admin/ops gated.
+
+✅ **What works** — pulse with red-tone stale cache + jump links to `?tab=testimonials&filter=pending` / `&range=this_week`; URL filter chips; bulk approve writes `status='approved'` with default display-name = centre primary contact (or centre name fallback) so the queue clears in one motion; bulk reject writes a `status='rejected'` placeholder row so the source feedback drops out of the pending feed; `rounded-2xl` shells, restrained orange.
+
+⚠️ **Gaps** — Web-enquiries count proxies `leads.source='web'` (no dedicated enquiry table). Cache freshness uses `public_stats_cache.calculated_at` and surfaces `1` if >24h old (binary signal rather than per-key drift).
+
+🎯 **Final-state target** — Marketing dashboard that surfaces what needs ops attention (pending review · cache drift · inbound web enquiries) and lets the operator clear the testimonial queue with a single bulk gesture.
+
+📋 **Open items**
+- [x] **Marketing Status Pulse** strip — pending testimonials · approved this week · stale cache · web enquiries (`lib/marketing/status-pulse-actions.ts`)
+- [x] **URL-persisted tab + filter state** — `?tab=stats|testimonials|widgets` + `?filter=pending|approved|rejected` on testimonials
+- [x] **Bulk actions** — `bulkApproveTestimonials` + `bulkRejectTestimonials` (admin/ops gated, idempotent, per-id failure surface)
+- [x] **UI refresh** — `rounded-2xl`, `gap-6`, `useCountUp` on stat tiles, restrained orange
+- [x] **Tests** — `lib/marketing/__tests__/marketing-status-pulse.test.ts` (6) + `lib/marketing/__tests__/bulk-actions.test.ts` (8)
+
+**Plumbing verified:** `getPublicStats` / `refreshPublicStats` signatures preserved; `/api/public/testimonials` keeps the parent-portal contract; per-row approve/reject/unpublish flow on the sub-page unchanged.
+
+---
+
+### 1.24 `/admin/referrals` — Referral management
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/referrals/page.tsx` adds `ReferralsStatusPulseStrip` (`active codes · conversions this week · rewards pending · config drift`), URL-persisted `?tab=Parent+Referrals|Centre+Referrals|Rewards|Configuration` + `?range=this_week` / `?status=pending|awarded|redeemed` jump-chips. Summary cards use `useCountUp` via the new `CountTile` helper; tables move to `rounded-2xl border bg-background hover:shadow-md transition`.
+
+✅ **What works** — pulse jump-links land directly on the right tab + filter; orange-tinted clear-X chips on active jumps; config drift uses a baseline of three expected keys (`parent_instant_reward`, `parent_milestone`, `centre_reward`) and counts missing ones — red tone on the active count.
+
+⚠️ **Gaps** — `range=this_week` filters the parent referrals table client-side off `created_at` (not `conversion_date`) because the dashboard returns the 20 most-recent regardless of conversion status; acceptable for a 7d ops glance.
+
+🎯 **Final-state target** — Single-screen referral health view that surfaces operational gaps (code generation needed, missing config, awarded rewards waiting to redeem) instead of leaving them buried in the Configuration tab.
+
+📋 **Open items**
+- [x] **Referrals Status Pulse** strip (`lib/referrals/status-pulse-actions.ts`)
+- [x] **URL-persisted tab + jump chips**
+- [x] **UI refresh** — `rounded-2xl`, `useCountUp` on summary cards, restrained orange
+- [x] **Tests** — `lib/referrals/__tests__/referrals-status-pulse.test.ts` (5)
+
+**Plumbing verified:** `getAdminReferralDashboard` / `getAdminReferralConfig` / `updateReferralConfig` / `generateCentreReferralCodes` unchanged. Parent portal (`/refer`, magic-link landing) reads `getReferralByCode` / `createReferralRecord` — contract intact.
+
+---
+
+### 1.25 `/admin/campaigns` — Re-engagement campaigns
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/campaigns/page.tsx` is rewired around `CampaignsStatusPulseStrip` (`active · sends this week · sends pending · discount codes expiring (14d)`), URL-persisted `?tab=campaigns|reporting` + jump-chips for `?status=&audience=&send_status=`. `bulkUpdateCampaignStatus` powers a sticky BulkActionBar with Pause / Activate (admin/ops gated). Card shells move to `rounded-2xl` with `useCountUp` via `AnimatedMetric`.
+
+✅ **What works** — pulse + bulk + restrained orange; per-row Pause/Resume still calls `updateCampaignStatus` and refreshes the pulse; `?audience=…` and `?status=…` chips filter the client-side list immediately.
+
+⚠️ **Gaps** — `send_status=pending` chip is informational (mirrors the pulse jump) — actual filtering happens on the campaign expandable detail panel, not the top-level table.
+
+🎯 **Final-state target** — Campaign command-center where ops can pause/activate multiple campaigns in one motion and read engagement at a glance.
+
+📋 **Open items**
+- [x] **Campaigns Status Pulse** strip (`lib/reengagement/status-pulse-actions.ts`)
+- [x] **URL-persisted tab + filter chips**
+- [x] **Bulk actions** — `bulkUpdateCampaignStatus` (admin/ops gate, partial-failure surface)
+- [x] **UI refresh** — `rounded-2xl` summary cards, restrained orange
+- [x] **Tests** — `lib/reengagement/__tests__/campaigns-status-pulse.test.ts` (6) + `bulk-actions.test.ts` (5)
+
+**Plumbing verified:** `processCampaign` cron handler unchanged; `getCampaigns` / `getCampaignDetail` / `getCampaignReporting` / `updateCampaignStatus` contracts preserved.
+
+---
+
+### 1.26 `/admin/churn` — Churn risk dashboard
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/churn/page.tsx` adds `ChurnStatusPulseStrip` (`centres at risk · new events this week · improving · unchanged`), URL-persisted `?tab=Overview|At+Risk|Events|Trends` + `?severity=high|critical` / `?trend=improving|unchanged` / `?period=this_week` jump chips. KPI tiles use the new `KpiCard` helper with `useCountUp`; all shells move to `rounded-2xl`.
+
+✅ **What works** — pulse counts (high+critical for at-risk, ≤−5 point delta for improving, ±2 for unchanged); jump-links route into the right tab; `getChurnStatusPulse` swallows errors so a broken snapshot doesn't blank the dashboard.
+
+⚠️ **Gaps** — The improving/unchanged trend uses only the previous snapshot per centre (not a moving average), so a single noisy snapshot can flip the count. Acceptable for ops glance — daily cron evens it out.
+
+🎯 **Final-state target** — Real-time churn risk view where the at-a-glance pulse surfaces movement direction (improving vs unchanged) without burying ops in chart drill-downs.
+
+📋 **Open items**
+- [x] **Churn Status Pulse** strip (`lib/churn/status-pulse-actions.ts`)
+- [x] **URL-persisted tab + filter chips**
+- [x] **UI refresh** — `rounded-2xl` KPI tiles + tables, restrained orange / red / green tones
+- [x] **Tests** — `lib/churn/__tests__/churn-status-pulse.test.ts` (6)
+
+**Plumbing verified:** `getChurnDashboard` / `getChurnRiskOverview` / `getChurnTrends` / `resolveChurnEvent` contracts preserved — home churn snapshot keeps reading `getChurnRiskSnapshot` from `/admin`.
+
+---
+
+### 1.27 `/admin/announcements` — Org announcements
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/announcements/page.tsx` becomes a small server wrapper that batches `getAnnouncements` + `getAnnouncementsStatusPulse` and renders `AnnouncementsStatusPulseStrip` above the existing `AnnouncementList`. The list is rebuilt around URL-persisted filter chips (`?audience=&period=this_week|this_month&read=low|mine_unread`), bulk-select with a sticky BulkActionBar (Delete with confirm dialog), and `bulkDeleteAnnouncements` server action (admin/ops gated, cascades read receipts).
+
+✅ **What works** — pulse counts (sent this week / this month / low-read <30% / unread by me); `AlertDialog` confirm on bulk delete to match the per-row delete; filter chips with clear-X; `rounded-2xl` accents on the list shell.
+
+⚠️ **Gaps** — Schema has no draft/scheduled state, so the pulse surfaces engagement metrics (sent + low-read) rather than queue depth. Low-read uses `audience_count` based on `profiles.role` filter — exact for current org sizes; would need pagination for very large user bases.
+
+🎯 **Final-state target** — Announcement inbox where ops can spot under-read posts and bulk-clean stale ones without leaving the page.
+
+📋 **Open items**
+- [x] **Announcements Status Pulse** strip (`lib/announcements/status-pulse-actions.ts`)
+- [x] **URL-persisted filter chips**
+- [x] **Bulk actions** — `bulkDeleteAnnouncements` (admin/ops, cascade read receipts, per-id failure surface)
+- [x] **UI refresh** — `rounded-2xl` list shell, restrained orange filter chips, red tone on low-read
+- [x] **Tests** — `lib/announcements/__tests__/announcements-status-pulse.test.ts` (5) + `bulk-actions.test.ts` (5)
+
+**Plumbing verified:** `getAnnouncements` / `getAnnouncementDetail` / `createAnnouncement` / `deleteAnnouncement` / `markAnnouncementRead` signatures preserved — coach/admin/ops sidebars + push notifications continue to read the same contracts.
+
+---
+
+### 1.28 `/admin/messages` — Direct messages
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/messages/page.tsx` adds `getMessagesStatusPulse` to the SSR fetch and renders `MessagesStatusPulseStrip` above the existing two-pane layout. `messages-page-client.tsx` picks up `?status=unread|awaiting|sent_today|mentions` and filters the sidebar list client-side. The wrapping card moves to `rounded-2xl`.
+
+✅ **What works** — pulse counts (`unread` / `awaiting response` / `sent today` / `mentions`); awaiting-response approximated by "latest message in conversation is from me"; clear-X filter chip restores the full list.
+
+⚠️ **Gaps** — Mentions count is always 0 today (no `@`-mention modelling). Sidebar filter operates client-side — fine for current DM volumes; would need server-side query for very large inboxes.
+
+🎯 **Final-state target** — DM inbox where admins/ops can jump straight to the conversations that need them (unread, waiting on a reply) without scanning every partner.
+
+📋 **Open items**
+- [x] **Messages Status Pulse** strip (`lib/messages/status-pulse-actions.ts`)
+- [x] **URL-persisted filter chip** — `?status=unread|awaiting|sent_today|mentions`
+- [x] **UI refresh** — `rounded-2xl` shell, restrained orange filter chip
+- [x] **Tests** — `lib/messages/__tests__/messages-status-pulse.test.ts` (6)
+
+**Plumbing verified:** `getConversations` / `getConversationMessages` / `sendDirectMessage` / `editDirectMessage` contracts preserved; coach `/coach/messages` + parent flows unaffected; realtime channel keeps working.
+
+---
+
+### 1.29 `/admin/settings` — Settings index
+
+📋 **Open items** — closed in the final-batch `feat(admin)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/settings/page.tsx` is a category index — no pulse counts apply. The eight sub-route cards (Health Score Config, Revenue Forecasting, Scheduling Preferences, Regions, Integrations, Invoicing, Session Reminders, Custom Sports & Equipment) move to `rounded-2xl` shells with a uniform muted icon tile that flips to brand orange on hover (replacing the eight competing colour tints), `gap-6` rhythm, and a subtle chevron that fades in on hover.
+
+✅ **What works** — clean grid; uniform iconography; settings sub-pages keep their own per-page treatments.
+
+⚠️ **Gaps** — None for this surface; sub-pages were already in-scope of earlier batches.
+
+🎯 **Final-state target** — Calm category landing that doesn't compete with the more action-oriented sibling tabs.
+
+📋 **Open items**
+- [x] **UI refresh** — `rounded-2xl` cards, hover-lift, brand orange on hover icon
+
+**Plumbing verified:** All sub-route hrefs unchanged.
+
+---

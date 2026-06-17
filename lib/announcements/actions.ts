@@ -322,6 +322,68 @@ export async function deleteAnnouncement(
 }
 
 // ============================================================
+// bulkDeleteAnnouncements — admin/ops bulk cleanup
+// ============================================================
+//
+// Schema doesn't track archive state, so the "archive" action in the
+// admin UI maps to a hard delete (read receipts cascade). Partial
+// failure: per-id error so the caller can toast progress.
+
+export interface BulkAnnouncementResult {
+  succeeded: number;
+  failed: Array<{ id: string; error: string }>;
+}
+
+export async function bulkDeleteAnnouncements(
+  ids: string[]
+): Promise<{ data: BulkAnnouncementResult | null; error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: "Not authenticated" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { data: null, error: "Insufficient permissions" };
+  }
+
+  if (ids.length === 0) {
+    return { data: { succeeded: 0, failed: [] }, error: null };
+  }
+
+  const failed: Array<{ id: string; error: string }> = [];
+  let succeeded = 0;
+
+  for (const id of ids) {
+    // Read receipts first (FK ON DELETE CASCADE would handle this
+    // automatically — explicit delete is defensive in case the
+    // cascade is dropped in the future).
+    await supabase
+      .from("announcement_reads")
+      .delete()
+      .eq("announcement_id", id);
+    const { error: delErr } = await supabase
+      .from("announcements")
+      .delete()
+      .eq("id", id);
+    if (delErr) {
+      failed.push({ id, error: delErr.message });
+    } else {
+      succeeded += 1;
+    }
+  }
+
+  return { data: { succeeded, failed }, error: null };
+}
+
+// ============================================================
 // markAnnouncementRead — upsert read receipt
 // ============================================================
 

@@ -1,7 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// ============================================================
+// Admin Marketing dashboard
+// ============================================================
+//
+// Mirrors the close-out pattern (db2d0aa, 94cfba3, 91b383e):
+//   - inline status pulse strip above the page header
+//   - URL-persisted tab + filter state (?tab=stats|testimonials|widgets)
+//   - bulk-select testimonials with sticky BulkActionBar (approve/reject)
+//   - `useCountUp` on the stat tiles
+//   - rounded-2xl shells + restrained brand orange
+
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   MessageSquareQuote,
@@ -23,6 +35,10 @@ import {
   refreshPublicStats,
   type PublicStats,
 } from "@/lib/marketing/actions";
+import { getMarketingStatusPulse } from "@/lib/marketing/status-pulse-actions";
+import type { MarketingStatusPulse } from "@/lib/marketing/status-pulse-actions";
+import { MarketingStatusPulseStrip } from "@/components/marketing/marketing-status-pulse";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 const STAT_CONFIG: {
   key: keyof Omit<PublicStats, "last_calculated">;
@@ -33,54 +49,118 @@ const STAT_CONFIG: {
   {
     key: "sessions_all_time",
     label: "Total Sessions (All Time)",
-    icon: <Calendar className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Calendar className="h-5 w-5 text-muted-foreground" />,
     format: (v) => v.toLocaleString(),
   },
   {
     key: "sessions_this_term",
     label: "Sessions This Term",
-    icon: <Activity className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Activity className="h-5 w-5 text-muted-foreground" />,
     format: (v) => v.toLocaleString(),
   },
   {
     key: "centre_count",
     label: "Active Centres",
-    icon: <Users className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Users className="h-5 w-5 text-muted-foreground" />,
     format: (v) => v.toLocaleString(),
   },
   {
     key: "sport_count",
     label: "Sports Offered",
-    icon: <Trophy className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Trophy className="h-5 w-5 text-muted-foreground" />,
     format: (v) => v.toLocaleString(),
   },
   {
     key: "average_rating",
     label: "Average Rating",
-    icon: <Star className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Star className="h-5 w-5 text-muted-foreground" />,
     format: (v) => (v ? `${v.toFixed(1)} / 5` : "N/A"),
   },
   {
     key: "children_count",
     label: "Active Children",
-    icon: <Baby className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Baby className="h-5 w-5 text-muted-foreground" />,
     format: (v) => v.toLocaleString(),
   },
 ];
 
-type Tab = "testimonials" | "widgets" | "stats";
+const TAB_VALUES = ["stats", "testimonials", "widgets"] as const;
+type Tab = (typeof TAB_VALUES)[number];
+
+function isTab(v: string | null): v is Tab {
+  return v !== null && (TAB_VALUES as readonly string[]).includes(v);
+}
+
+function CountTile({
+  label,
+  value,
+  formatted,
+  icon,
+}: {
+  label: string;
+  value: number;
+  formatted: string;
+  icon: React.ReactNode;
+}) {
+  // useCountUp ticks integer values; formatted display kept for
+  // average_rating etc. We show ticked digits when the formatted
+  // string is a pure integer-ish; otherwise fall through to formatted.
+  const ticked = useCountUp(value);
+  const isNumeric = /^[0-9,]+$/.test(formatted);
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border bg-background p-5 hover:shadow-md transition">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/40">
+        {icon}
+      </div>
+      <div>
+        <p className="text-2xl font-bold tabular-nums text-[#1A1A1A]">
+          {isNumeric ? ticked.toLocaleString() : formatted}
+        </p>
+        <p className="text-xs text-[#666666]">{label}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminMarketingPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("stats");
+  const router = useRouter();
+  const params = useSearchParams();
+
+  // URL-backed tab state
+  const initialTab: Tab = isTab(params.get("tab"))
+    ? (params.get("tab") as Tab)
+    : "stats";
+  const [activeTab, setActiveTabState] = useState<Tab>(initialTab);
+
+  const urlTab = params.get("tab");
+  useEffect(() => {
+    const target = isTab(urlTab) ? (urlTab as Tab) : "stats";
+    setActiveTabState((prev) => (prev === target ? prev : target));
+  }, [urlTab]);
+
+  function setActiveTab(v: string) {
+    if (!isTab(v)) return;
+    setActiveTabState(v);
+    const next = new URLSearchParams(Array.from(params.entries()));
+    if (v === "stats") next.delete("tab");
+    else next.set("tab", v);
+    const qs = next.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  // Pulse strip
+  const [pulse, setPulse] = useState<MarketingStatusPulse>({
+    pendingTestimonialsCount: 0,
+    approvedThisWeekCount: 0,
+    staleCacheCount: 0,
+    webEnquiriesCount: 0,
+  });
+
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  async function fetchStats() {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await getPublicStats();
@@ -92,19 +172,29 @@ export default function AdminMarketingPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  // Initial load: stats + pulse in parallel.
+  useEffect(() => {
+    void (async () => {
+      const [, p] = await Promise.all([fetchStats(), getMarketingStatusPulse()]);
+      setPulse(p);
+    })();
+  }, [fetchStats]);
 
   async function handleRefresh() {
     setRefreshing(true);
     try {
-      const { success, error } = await refreshPublicStats();
+      const { success } = await refreshPublicStats();
       if (!success) {
         toast.error("Could not refresh stats. Please try again.");
       } else {
         toast.success("Stats refreshed.");
       }
-      // Re-fetch regardless to show latest cached data
       await fetchStats();
+      // Pulse will recompute cache freshness on next pulse fetch.
+      const p = await getMarketingStatusPulse();
+      setPulse(p);
     } finally {
       setRefreshing(false);
     }
@@ -122,6 +212,8 @@ export default function AdminMarketingPage() {
 
   return (
     <div className="space-y-6">
+      <MarketingStatusPulseStrip pulse={pulse} basePath="/admin/marketing" />
+
       <div>
         <h1 className="text-2xl font-bold text-[#1A1A1A]">Marketing</h1>
         <p className="text-sm text-[#666666]">
@@ -130,14 +222,14 @@ export default function AdminMarketingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-[#F5F5F5] p-1">
+      <div className="flex gap-1 rounded-2xl bg-muted/40 p-1">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? "bg-white text-[#1A1A1A] shadow-sm"
+                ? "bg-background text-[#1A1A1A] shadow-sm"
                 : "text-[#666666] hover:text-[#1A1A1A]"
             }`}
           >
@@ -175,36 +267,29 @@ export default function AdminMarketingPage() {
               <RefreshCw
                 className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
               />
-              {refreshing ? "Refreshing..." : "Refresh Now"}
+              {refreshing ? "Refreshing…" : "Refresh Now"}
             </Button>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-xl bg-[#F5F5F5]"
+                  className="h-24 animate-pulse rounded-2xl bg-muted/40"
                 />
               ))}
             </div>
           ) : stats ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {STAT_CONFIG.map((cfg) => (
-                <div
+                <CountTile
                   key={cfg.key}
-                  className="flex items-center gap-4 rounded-xl border bg-white p-5"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-                    {cfg.icon}
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#1A1A1A]">
-                      {cfg.format(stats[cfg.key] as number)}
-                    </p>
-                    <p className="text-xs text-[#666666]">{cfg.label}</p>
-                  </div>
-                </div>
+                  label={cfg.label}
+                  value={Math.round(stats[cfg.key] as number)}
+                  formatted={cfg.format(stats[cfg.key] as number)}
+                  icon={cfg.icon}
+                />
               ))}
             </div>
           ) : (
@@ -233,11 +318,15 @@ export default function AdminMarketingPage() {
               </Button>
             </Link>
           </div>
-          <div className="rounded-xl border bg-white p-8 text-center">
+          <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
             <MessageSquareQuote className="mx-auto h-12 w-12 text-[#E8712A] opacity-50" />
             <p className="mt-3 text-sm text-[#666666]">
               Review pending feedback and approve testimonials for your marketing
               website.
+            </p>
+            <p className="mt-1 text-xs text-[#666666]">
+              {pulse.pendingTestimonialsCount} pending ·{" "}
+              {pulse.approvedThisWeekCount} approved this week
             </p>
             <Link href="/admin/marketing/testimonials">
               <Button className="mt-4 bg-[#E8712A] hover:bg-[#d4641f]">
@@ -266,12 +355,12 @@ export default function AdminMarketingPage() {
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {["Stats Bar", "Sports Grid", "Testimonial Carousel", "Enquiry Form"].map(
               (widget) => (
                 <div
                   key={widget}
-                  className="rounded-xl border bg-white p-5"
+                  className="rounded-2xl border bg-background p-5 hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-2">
                     <Code2 className="h-5 w-5 text-[#E8712A]" />

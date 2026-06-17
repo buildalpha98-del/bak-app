@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Megaphone,
   Users,
-  Activity,
   TrendingUp,
   Pause,
   Play,
@@ -16,6 +16,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,12 +27,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   getCampaigns,
   getCampaignDetail,
   updateCampaignStatus,
   getCampaignReporting,
+  bulkUpdateCampaignStatus,
 } from "@/lib/reengagement/campaign-actions";
+import { getCampaignsStatusPulse } from "@/lib/reengagement/status-pulse-actions";
+import type { CampaignsStatusPulse } from "@/lib/reengagement/status-pulse-actions";
+import { CampaignsStatusPulseStrip } from "@/components/campaigns/campaigns-status-pulse";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -187,16 +194,61 @@ function formatDate(iso: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
+function AnimatedMetric({ value }: { value: number }) {
+  const ticked = useCountUp(value);
+  return <>{ticked}</>;
+}
+
 export default function AdminCampaignsPage() {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const urlTab = params.get("tab");
+  const urlStatus = params.get("status");
+  const urlSendStatus = params.get("send_status");
+  const urlAudience = params.get("audience");
+
+  const initialTab: "campaigns" | "reporting" =
+    urlTab === "reporting" ? "reporting" : "campaigns";
+  const [tab, setTabState] = useState<"campaigns" | "reporting">(initialTab);
+
+  function setTab(t: "campaigns" | "reporting") {
+    setTabState(t);
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    if (t === "campaigns") sp.delete("tab");
+    else sp.set("tab", t);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  function setUrlParam(key: string, value: string | null) {
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    if (value === null || value === "") sp.delete(key);
+    else sp.set(key, value);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  const [pulse, setPulse] = useState<CampaignsStatusPulse>({
+    activeCampaignsCount: 0,
+    sendsThisWeekCount: 0,
+    unsentCount: 0,
+    expiringDiscountCodesCount: 0,
+  });
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [reporting, setReporting] = useState<ReportingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"campaigns" | "reporting">("campaigns");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailSends, setDetailSends] = useState<CampaignSend[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<"pause" | "activate" | null>(
+    null
+  );
 
   // ---- Data fetching ----
 
@@ -204,14 +256,16 @@ export default function AdminCampaignsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [campRes, repRes] = await Promise.all([
+      const [campRes, repRes, p] = await Promise.all([
         getCampaigns(),
         getCampaignReporting(),
+        getCampaignsStatusPulse(),
       ]);
       if (campRes.error) throw new Error(campRes.error);
       if (repRes.error) throw new Error(repRes.error);
       setCampaigns(campRes.data ?? []);
       setReporting(repRes.data ?? null);
+      setPulse(p);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
@@ -222,6 +276,64 @@ export default function AdminCampaignsPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  async function refreshPulse() {
+    const p = await getCampaignsStatusPulse();
+    setPulse(p);
+  }
+
+  // Filtered campaigns based on URL chips
+  const filteredCampaigns = useMemo(() => {
+    let list = campaigns;
+    if (urlStatus) list = list.filter((c) => c.status === urlStatus);
+    if (urlAudience) list = list.filter((c) => c.audience_type === urlAudience);
+    return list;
+  }, [campaigns, urlStatus, urlAudience]);
+
+  // Bulk helpers
+  function toggleId(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function handleBulkUpdate(action: "pause" | "activate") {
+    if (selectedIds.size === 0) return;
+    setBulkAction(action);
+    try {
+      const newStatus = action === "pause" ? "paused" : "active";
+      const ids = Array.from(selectedIds);
+      const { data, error: err } = await bulkUpdateCampaignStatus(
+        ids,
+        newStatus
+      );
+      if (err) {
+        toast.error(err);
+        return;
+      }
+      const succeeded = data?.succeeded ?? 0;
+      const failed = data?.failed.length ?? 0;
+      if (failed > 0) {
+        toast.warning(
+          `${action === "pause" ? "Paused" : "Activated"} ${succeeded}, failed ${failed}.`
+        );
+      } else {
+        toast.success(
+          `${action === "pause" ? "Paused" : "Activated"} ${succeeded} campaign${
+            succeeded === 1 ? "" : "s"
+          }.`
+        );
+      }
+      setSelectedIds(new Set());
+      await loadData();
+      void refreshPulse();
+    } finally {
+      setBulkAction(null);
+    }
+  }
 
   // ---- Actions ----
 
@@ -238,6 +350,7 @@ export default function AdminCampaignsPage() {
         )
       );
       toast.success(`Campaign ${newStatus === "active" ? "activated" : "paused"}.`);
+      void refreshPulse();
     }
     setTogglingId(null);
   }
@@ -293,7 +406,9 @@ export default function AdminCampaignsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <CampaignsStatusPulseStrip pulse={pulse} basePath="/admin/campaigns" />
+
       {/* Header */}
       <div className="animate-fade-up">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
@@ -311,74 +426,53 @@ export default function AdminCampaignsPage() {
         </p>
       </div>
 
+      {/* Jump filter chips */}
+      {(urlStatus || urlSendStatus || urlAudience) && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Filtered:</span>
+          {urlStatus && (
+            <FilterClearChip
+              label={`Status: ${urlStatus}`}
+              onClear={() => setUrlParam("status", null)}
+            />
+          )}
+          {urlAudience && (
+            <FilterClearChip
+              label={`Audience: ${urlAudience}`}
+              onClear={() => setUrlParam("audience", null)}
+            />
+          )}
+          {urlSendStatus && (
+            <FilterClearChip
+              label={`Sends: ${urlSendStatus}`}
+              onClear={() => setUrlParam("send_status", null)}
+            />
+          )}
+        </div>
+      )}
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs font-medium uppercase tracking-wide">
-              Total Campaigns
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-[#E8712A]" />
-              <span className="text-2xl font-bold text-[#1A1A1A]">
-                {campaigns.length}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <SummaryCard label="Total Campaigns" icon={Megaphone}>
+          <AnimatedMetric value={campaigns.length} />
+        </SummaryCard>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs font-medium uppercase tracking-wide">
-              Active Campaigns
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
-              </span>
-              <span className="text-2xl font-bold text-[#1A1A1A]">
-                {activeCampaigns.length}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <SummaryCard label="Active Campaigns" iconNode={
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+          </span>
+        }>
+          <AnimatedMetric value={activeCampaigns.length} />
+        </SummaryCard>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs font-medium uppercase tracking-wide">
-              Total Recipients
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-[#E8712A]" />
-              <span className="text-2xl font-bold text-[#1A1A1A]">
-                {totalRecipients.toLocaleString()}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <SummaryCard label="Total Recipients" icon={Users}>
+          <AnimatedMetric value={totalRecipients} />
+        </SummaryCard>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs font-medium uppercase tracking-wide">
-              Engagement Rate
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-[#E8712A]" />
-              <span className="text-2xl font-bold text-[#1A1A1A]">
-                {pct(overallRate)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <SummaryCard label="Engagement Rate" icon={TrendingUp}>
+          {pct(overallRate)}
+        </SummaryCard>
       </div>
 
       {/* Tabs */}
@@ -408,20 +502,107 @@ export default function AdminCampaignsPage() {
       {/* Tab Content */}
       {tab === "campaigns" && (
         <CampaignsTab
-          campaigns={campaigns}
+          campaigns={filteredCampaigns}
           expandedId={expandedId}
           detailSends={detailSends}
           detailLoading={detailLoading}
           togglingId={togglingId}
           onToggleStatus={handleToggleStatus}
           onViewDetail={handleViewDetail}
+          selectedIds={selectedIds}
+          onToggleId={toggleId}
         />
       )}
 
       {tab === "reporting" && reporting && (
         <ReportingTab reporting={reporting} />
       )}
+
+      {/* Sticky bulk-action bar */}
+      {tab === "campaigns" && selectedIds.size > 0 && (
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+          <div className="flex items-center gap-3 pr-2 text-sm">
+            <span className="font-medium text-foreground">
+              {selectedIds.size} campaign{selectedIds.size === 1 ? "" : "s"}{" "}
+              selected
+            </span>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:underline"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Clear
+            </button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleBulkUpdate("pause")}
+            disabled={bulkAction !== null}
+          >
+            <Pause className="mr-1 h-3.5 w-3.5" />
+            {bulkAction === "pause" ? "Pausing…" : "Pause"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleBulkUpdate("activate")}
+            disabled={bulkAction !== null}
+            className="bg-[#E8712A] text-white hover:bg-[#d4641f]"
+          >
+            <Play className="mr-1 h-3.5 w-3.5" />
+            {bulkAction === "activate" ? "Activating…" : "Activate"}
+          </Button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  icon: Icon,
+  iconNode,
+  children,
+}: {
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  iconNode?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+      <p className="text-xs font-medium uppercase tracking-wide text-[#666666]">
+        {label}
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        {iconNode ?? (Icon && <Icon className="h-5 w-5 text-muted-foreground" />)}
+        <span className="text-2xl font-bold tabular-nums text-[#1A1A1A]">
+          {children}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function FilterClearChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        aria-label="Clear filter"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
   );
 }
 
@@ -437,6 +618,8 @@ function CampaignsTab({
   togglingId,
   onToggleStatus,
   onViewDetail,
+  selectedIds,
+  onToggleId,
 }: {
   campaigns: Campaign[];
   expandedId: string | null;
@@ -445,6 +628,8 @@ function CampaignsTab({
   togglingId: string | null;
   onToggleStatus: (c: Campaign) => void;
   onViewDetail: (id: string) => void;
+  selectedIds: Set<string>;
+  onToggleId: (id: string) => void;
 }) {
   if (campaigns.length === 0) {
     return (
@@ -461,11 +646,12 @@ function CampaignsTab({
     <>
       {/* Desktop Table */}
       <div className="hidden md:block">
-        <Card>
+        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs font-medium uppercase tracking-wide text-[#666666]">
+                  <th className="w-[36px] px-4 py-3" />
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Audience</th>
                   <th className="px-4 py-3">Status</th>
@@ -494,13 +680,15 @@ function CampaignsTab({
                       togglingId={togglingId}
                       onToggleStatus={onToggleStatus}
                       onViewDetail={onViewDetail}
+                      selected={selectedIds.has(c.id)}
+                      onToggleSelect={() => onToggleId(c.id)}
                     />
                   );
                 })}
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Mobile Cards */}
@@ -601,6 +789,8 @@ function CampaignTableRows({
   togglingId,
   onToggleStatus,
   onViewDetail,
+  selected,
+  onToggleSelect,
 }: {
   campaign: Campaign;
   rate: number;
@@ -610,10 +800,22 @@ function CampaignTableRows({
   togglingId: string | null;
   onToggleStatus: (c: Campaign) => void;
   onViewDetail: (id: string) => void;
+  selected: boolean;
+  onToggleSelect: () => void;
 }) {
   return (
     <>
-      <tr className="border-b last:border-0 hover:bg-gray-50/50 transition-colors">
+      <tr
+        className="border-b last:border-0 hover:bg-gray-50/50 transition-colors"
+        data-state={selected ? "selected" : undefined}
+      >
+        <td className="px-4 py-3">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={onToggleSelect}
+            aria-label={`Select ${c.name}`}
+          />
+        </td>
         <td className="px-4 py-3 font-medium text-[#1A1A1A]">{c.name}</td>
         <td className="px-4 py-3">{audienceBadge(c.audience_type)}</td>
         <td className="px-4 py-3">{statusBadge(c.status)}</td>
@@ -658,7 +860,7 @@ function CampaignTableRows({
 
       {isExpanded && (
         <tr>
-          <td colSpan={7} className="bg-gray-50/80 px-4 py-4">
+          <td colSpan={8} className="bg-gray-50/80 px-4 py-4">
             <DetailPanel sends={detailSends} loading={detailLoading} />
           </td>
         </tr>

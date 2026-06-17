@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   ShieldAlert,
   AlertTriangle,
-  TrendingDown,
-  TrendingUp,
   Activity,
   CheckCircle2,
   XCircle,
@@ -14,7 +13,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
+  X,
 } from "lucide-react";
+import { getChurnStatusPulse } from "@/lib/churn/status-pulse-actions";
+import type { ChurnStatusPulse } from "@/lib/churn/status-pulse-actions";
+import { ChurnStatusPulseStrip } from "@/components/churn/churn-status-pulse";
+import { useCountUp } from "@/components/launch/use-count-up";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +42,6 @@ import {
   getChurnDashboard,
   getChurnRiskOverview,
   getChurnTrends,
-  recordChurnEvent,
   resolveChurnEvent,
 } from "@/lib/churn/actions";
 import type { RiskLevel, ChurnEventType } from "@/lib/types/enums";
@@ -179,8 +182,54 @@ function getTopRiskFactor(
 // Component
 // ============================================================
 
+function AnimatedMetric({ value }: { value: number }) {
+  const ticked = useCountUp(value);
+  return <>{ticked}</>;
+}
+
 export default function AdminChurnPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const urlTab = params.get("tab");
+  const initialTab: Tab = (TABS as readonly string[]).includes(urlTab ?? "")
+    ? (urlTab as Tab)
+    : "Overview";
+  const [activeTab, setActiveTabState] = useState<Tab>(initialTab);
+
+  function setActiveTab(t: Tab) {
+    setActiveTabState(t);
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    if (t === "Overview") sp.delete("tab");
+    else sp.set("tab", t);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  useEffect(() => {
+    if ((TABS as readonly string[]).includes(urlTab ?? "")) {
+      setActiveTabState(urlTab as Tab);
+    }
+  }, [urlTab]);
+
+  const severityFilter = params.get("severity");
+  const trendFilter = params.get("trend"); // improving | unchanged
+  const periodFilter = params.get("period"); // this_week
+  const centreFilter = params.get("centre");
+
+  function clearUrlParam(key: string) {
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    sp.delete(key);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  const [pulse, setPulse] = useState<ChurnStatusPulse>({
+    atRiskCount: 0,
+    newEventsThisWeekCount: 0,
+    improvingCount: 0,
+    unchangedCount: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
@@ -192,11 +241,13 @@ export default function AdminChurnPage() {
     setLoading(true);
     setError(null);
 
-    const [dashResult, riskResult, trendsResult] = await Promise.all([
+    const [dashResult, riskResult, trendsResult, p] = await Promise.all([
       getChurnDashboard(),
       getChurnRiskOverview(),
       getChurnTrends(),
+      getChurnStatusPulse(),
     ]);
+    setPulse(p);
 
     if (dashResult.error) {
       setError(dashResult.error);
@@ -214,6 +265,36 @@ export default function AdminChurnPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Derived filtered list for At Risk tab
+  const filteredCentreRisks = useMemo(() => {
+    let list = centreRisks;
+    if (severityFilter === "high") {
+      list = list.filter(
+        (c) => c.risk_level === "high" || c.risk_level === "critical"
+      );
+    } else if (severityFilter === "critical") {
+      list = list.filter((c) => c.risk_level === "critical");
+    }
+    if (centreFilter) {
+      list = list.filter((c) => c.centre_id === centreFilter);
+    }
+    return list;
+  }, [centreRisks, severityFilter, centreFilter]);
+
+  // Derived filtered events
+  const filteredEvents = useMemo(() => {
+    if (!dashboard?.recentEvents) return [];
+    let list = dashboard.recentEvents;
+    if (periodFilter === "this_week") {
+      const monday = new Date();
+      monday.setDate(monday.getDate() - monday.getDay() || -6);
+      monday.setHours(0, 0, 0, 0);
+      const mondayIso = monday.toISOString();
+      list = list.filter((e) => e.detected_at >= mondayIso);
+    }
+    return list;
+  }, [dashboard, periodFilter]);
 
   async function handleResolve(eventId: string) {
     setResolvingId(eventId);
@@ -276,6 +357,8 @@ export default function AdminChurnPage() {
 
   return (
     <div className="space-y-6 pb-8">
+      <ChurnStatusPulseStrip pulse={pulse} basePath="/admin/churn" />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#1A1A1A]">
@@ -286,54 +369,63 @@ export default function AdminChurnPage() {
         </p>
       </div>
 
+      {/* Jump-filter chips */}
+      {(severityFilter || trendFilter || periodFilter || centreFilter) && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Filtered:</span>
+          {severityFilter && (
+            <FilterClearChip
+              label={`Severity: ${severityFilter}`}
+              onClear={() => clearUrlParam("severity")}
+            />
+          )}
+          {trendFilter && (
+            <FilterClearChip
+              label={`Trend: ${trendFilter}`}
+              onClear={() => clearUrlParam("trend")}
+            />
+          )}
+          {periodFilter === "this_week" && (
+            <FilterClearChip
+              label="This week"
+              onClear={() => clearUrlParam("period")}
+            />
+          )}
+          {centreFilter && (
+            <FilterClearChip
+              label="Centre filter"
+              onClear={() => clearUrlParam("centre")}
+            />
+          )}
+        </div>
+      )}
+
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-green-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <span className="text-xs font-medium text-[#666666]">
-              Low Risk
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-[#1A1A1A]">{riskCounts.low}</p>
-          <p className="text-xs text-[#666666] mt-0.5">centres</p>
-        </div>
-        <div className="rounded-xl border border-yellow-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Activity className="h-4 w-4 text-yellow-600" />
-            <span className="text-xs font-medium text-[#666666]">
-              Medium Risk
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-[#1A1A1A]">
-            {riskCounts.medium}
-          </p>
-          <p className="text-xs text-[#666666] mt-0.5">centres</p>
-        </div>
-        <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-            <span className="text-xs font-medium text-[#666666]">
-              High Risk
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-[#1A1A1A]">
-            {riskCounts.high}
-          </p>
-          <p className="text-xs text-[#666666] mt-0.5">centres</p>
-        </div>
-        <div className="rounded-xl border border-red-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <ShieldAlert className="h-4 w-4 text-red-600" />
-            <span className="text-xs font-medium text-[#666666]">
-              Critical Risk
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-[#1A1A1A]">
-            {riskCounts.critical}
-          </p>
-          <p className="text-xs text-[#666666] mt-0.5">centres</p>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <KpiCard
+          icon={CheckCircle2}
+          iconTone="text-green-600"
+          label="Low Risk"
+          value={riskCounts.low}
+        />
+        <KpiCard
+          icon={Activity}
+          iconTone="text-yellow-600"
+          label="Medium Risk"
+          value={riskCounts.medium}
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          iconTone="text-orange-600"
+          label="High Risk"
+          value={riskCounts.high}
+        />
+        <KpiCard
+          icon={ShieldAlert}
+          iconTone="text-red-600"
+          label="Critical Risk"
+          value={riskCounts.critical}
+        />
       </div>
 
       {/* Tabs */}
@@ -361,7 +453,7 @@ export default function AdminChurnPage() {
           {/* Risk Distribution Chart + Recent Alerts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pie Chart */}
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Risk Distribution
               </h3>
@@ -394,7 +486,7 @@ export default function AdminChurnPage() {
             </div>
 
             {/* Recent Alerts */}
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Recent Alerts
               </h3>
@@ -437,7 +529,7 @@ export default function AdminChurnPage() {
 
           {/* Risk Score Bar Chart */}
           {centreRisks.length > 0 && (
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Risk Scores by Centre
               </h3>
@@ -479,7 +571,7 @@ export default function AdminChurnPage() {
       )}
 
       {activeTab === "At Risk" && (
-        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -508,7 +600,7 @@ export default function AdminChurnPage() {
                 </tr>
               </thead>
               <tbody>
-                {centreRisks.length === 0 ? (
+                {filteredCentreRisks.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
@@ -518,7 +610,7 @@ export default function AdminChurnPage() {
                     </td>
                   </tr>
                 ) : (
-                  centreRisks.map((centre) => (
+                  filteredCentreRisks.map((centre) => (
                     <tr
                       key={centre.centre_id}
                       className="border-b last:border-0 hover:bg-gray-50/50"
@@ -572,19 +664,21 @@ export default function AdminChurnPage() {
 
       {activeTab === "Events" && (
         <div className="space-y-4">
-          {!dashboard?.recentEvents?.length ? (
-            <div className="rounded-xl border bg-white p-12 text-center shadow-sm">
+          {!filteredEvents.length ? (
+            <div className="rounded-2xl border bg-background p-12 text-center hover:shadow-md transition">
               <Clock className="h-8 w-8 text-[#666666] mx-auto mb-3" />
               <p className="text-sm text-[#666666]">
-                No churn events recorded yet
+                {periodFilter === "this_week"
+                  ? "No churn events this week."
+                  : "No churn events recorded yet"}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {dashboard.recentEvents.map((event) => (
+              {filteredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-xl border bg-white p-4 shadow-sm flex items-start gap-4"
+                  className="rounded-2xl border bg-background p-4 hover:shadow-md transition flex items-start gap-4"
                 >
                   {/* Timeline dot */}
                   <div className="flex-shrink-0 mt-1">
@@ -651,7 +745,7 @@ export default function AdminChurnPage() {
       {activeTab === "Trends" && (
         <div className="space-y-6">
           {/* Average Risk Over Time */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
             <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
               Average Risk Score Over Time
             </h3>
@@ -687,7 +781,7 @@ export default function AdminChurnPage() {
           </div>
 
           {/* Distribution Over Time (Stacked Area) */}
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
             <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
               Centres by Risk Level Over Time
             </h3>
@@ -748,5 +842,52 @@ export default function AdminChurnPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function KpiCard({
+  icon: Icon,
+  iconTone,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  iconTone: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className={`h-4 w-4 ${iconTone}`} />
+        <span className="text-xs font-medium text-[#666666]">{label}</span>
+      </div>
+      <p className="text-2xl font-bold tabular-nums text-[#1A1A1A]">
+        <AnimatedMetric value={value} />
+      </p>
+      <p className="text-xs text-[#666666] mt-0.5">centres</p>
+    </div>
+  );
+}
+
+function FilterClearChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        aria-label="Clear filter"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
   );
 }

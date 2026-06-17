@@ -1,8 +1,15 @@
 import { getAnnouncements } from "@/lib/announcements/actions";
+import { getAnnouncementsStatusPulse } from "@/lib/announcements/status-pulse-actions";
 import { AnnouncementList } from "@/components/announcements/announcement-list";
+import { AnnouncementsStatusPulseStrip } from "@/components/announcements/announcements-status-pulse";
 
 export default async function AdminAnnouncementsPage() {
-  const { data: announcements, error } = await getAnnouncements();
+  const [announcementsRes, pulse] = await Promise.all([
+    getAnnouncements(),
+    getAnnouncementsStatusPulse(),
+  ]);
+
+  const { data: announcements, error } = announcementsRes;
 
   if (error) {
     return (
@@ -14,6 +21,10 @@ export default async function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
+      <AnnouncementsStatusPulseStrip
+        pulse={pulse}
+        basePath="/admin/announcements"
+      />
       <AnnouncementList
         initialAnnouncements={announcements ?? []}
         canCreate={true}

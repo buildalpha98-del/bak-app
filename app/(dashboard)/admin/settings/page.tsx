@@ -1,3 +1,17 @@
+// ============================================================
+// Admin Settings index
+// ============================================================
+//
+// Final-batch refresh: settings is a category index — pulse counts
+// don't fit here, so we surface the same set of sub-routes as a
+// clean rounded-2xl card grid with restrained orange iconography
+// (chip-style accent on hover rather than colourful per-card tints
+// that competed with each other).
+//
+// Sub-routes themselves (forecasting / health-scores / regions /
+// integrations / invoicing / reminders / scheduling / programs)
+// keep their own per-page treatments.
+
 import Link from "next/link";
 import {
   Heart,
@@ -8,8 +22,8 @@ import {
   Receipt,
   Bell,
   Boxes,
+  ChevronRight,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
 const settingsSections = [
   {
@@ -17,56 +31,48 @@ const settingsSections = [
     description: "Adjust weights for centre health score calculation",
     href: "/admin/settings/health-scores",
     icon: Heart,
-    colour: "text-rose-500 bg-rose-50",
   },
   {
     label: "Revenue Forecasting",
     description: "Configure conversion rates and seasonal factors",
     href: "/admin/settings/forecasting",
     icon: LineChart,
-    colour: "text-blue-500 bg-blue-50",
   },
   {
     label: "Scheduling Preferences",
     description: "AI scheduler weights and constraint settings",
     href: "/admin/settings/scheduling",
     icon: Calendar,
-    colour: "text-cyan-500 bg-cyan-50",
   },
   {
     label: "Regions",
     description: "Manage region definitions and suburb assignments",
     href: "/admin/settings/regions",
     icon: MapPin,
-    colour: "text-emerald-500 bg-emerald-50",
   },
   {
     label: "Integrations",
     description: "External service connections and API keys",
     href: "/admin/settings/integrations",
     icon: Link2,
-    colour: "text-purple-500 bg-purple-50",
   },
   {
     label: "Invoicing",
     description: "Business details, payment terms, and invoice settings",
     href: "/admin/settings/invoicing",
     icon: Receipt,
-    colour: "text-amber-500 bg-amber-50",
   },
   {
     label: "Session Reminders",
     description: "Automated 24-hour reminders for parents and coaches",
     href: "/admin/settings/reminders",
     icon: Bell,
-    colour: "text-orange-500 bg-orange-50",
   },
   {
     label: "Custom Sports & Equipment",
-    description: "Manage org-wide custom sports and equipment items for program generation",
+    description: "Org-wide custom sports and equipment items for program generation",
     href: "/admin/settings/programs",
     icon: Boxes,
-    colour: "text-indigo-500 bg-indigo-50",
   },
 ];
 
@@ -82,26 +88,25 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {settingsSections.map((section) => (
-          <Link key={section.href} href={section.href}>
-            <Card className="h-full transition-shadow hover:shadow-md cursor-pointer">
-              <CardContent className="flex items-start gap-4 p-5">
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.colour}`}
-                >
-                  <section.icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-foreground">
-                    {section.label}
-                  </p>
-                  <p className="mt-0.5 text-sm text-muted-foreground">
-                    {section.description}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          <Link
+            key={section.href}
+            href={section.href}
+            className="group rounded-2xl border bg-background p-5 transition hover:shadow-md hover:-translate-y-0.5"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 transition group-hover:bg-[#E8712A]/10">
+                <section.icon className="h-5 w-5 text-muted-foreground transition group-hover:text-[#E8712A]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-foreground">{section.label}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {section.description}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 group-hover:text-[#E8712A]" />
+            </div>
           </Link>
         ))}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Link2,
@@ -20,7 +21,12 @@ import {
   getAdminReferralConfig,
   updateReferralConfig,
   generateCentreReferralCodes,
+  type ReferralReward,
 } from "@/lib/referrals/actions";
+import { getReferralsStatusPulse } from "@/lib/referrals/status-pulse-actions";
+import type { ReferralsStatusPulse } from "@/lib/referrals/status-pulse-actions";
+import { ReferralsStatusPulseStrip } from "@/components/referrals/referrals-status-pulse";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 type DashboardStats = {
   activeCodes: number;
@@ -107,8 +113,74 @@ function formatConfigLabel(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function CountTile({
+  label,
+  value,
+  suffix,
+  icon: Icon,
+}: {
+  label: string;
+  value: number;
+  suffix?: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  const ticked = useCountUp(value);
+  return (
+    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs font-medium text-[#666666]">{label}</span>
+      </div>
+      <p className="text-2xl font-bold tabular-nums text-[#1A1A1A]">
+        {ticked}
+        {suffix}
+      </p>
+    </div>
+  );
+}
+
 export default function AdminReferralsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("Parent Referrals");
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const urlTab = params.get("tab");
+  const initialTab: Tab = (TABS as readonly string[]).includes(urlTab ?? "")
+    ? (urlTab as Tab)
+    : "Parent Referrals";
+  const [activeTab, setActiveTabState] = useState<Tab>(initialTab);
+
+  function setActiveTab(t: Tab) {
+    setActiveTabState(t);
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    if (t === "Parent Referrals") sp.delete("tab");
+    else sp.set("tab", t);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  useEffect(() => {
+    if ((TABS as readonly string[]).includes(urlTab ?? "")) {
+      setActiveTabState(urlTab as Tab);
+    }
+  }, [urlTab]);
+
+  // Filter chips
+  const rangeFilter = params.get("range"); // "this_week" jump
+  const rewardStatusFilter = params.get("status"); // pending | awarded | redeemed
+
+  function clearJumpFilter(key: string) {
+    const sp = new URLSearchParams(Array.from(params.entries()));
+    sp.delete(key);
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
+
+  const [pulse, setPulse] = useState<ReferralsStatusPulse>({
+    activeCodesCount: 0,
+    conversionsThisWeekCount: 0,
+    pendingRewardsCount: 0,
+    configDriftCount: 0,
+  });
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [parentReferrals, setParentReferrals] = useState<ParentReferral[]>([]);
   const [centreReferrals, setCentreReferrals] = useState<CentreReferral[]>([]);
@@ -123,9 +195,10 @@ export default function AdminReferralsPage() {
 
   useEffect(() => {
     async function load() {
-      const [dashResult, configResult] = await Promise.all([
+      const [dashResult, configResult, pulseRes] = await Promise.all([
         getAdminReferralDashboard(),
         getAdminReferralConfig(),
+        getReferralsStatusPulse(),
       ]);
 
       if (dashResult.error) {
@@ -141,8 +214,11 @@ export default function AdminReferralsPage() {
         });
         setParentReferrals(d.recentParentReferrals as unknown as ParentReferral[]);
         setCentreReferrals(d.recentCentreReferrals as unknown as CentreReferral[]);
-        if ((d as any).recentRewards) {
-          setRewards((d as any).recentRewards as unknown as Reward[]);
+        if ((d as { recentRewards?: unknown }).recentRewards) {
+          setRewards(
+            (d as { recentRewards: ReferralReward[] })
+              .recentRewards as unknown as Reward[]
+          );
         }
       }
 
@@ -150,10 +226,34 @@ export default function AdminReferralsPage() {
         setConfig(configResult.data);
       }
 
+      setPulse(pulseRes);
+
       setLoading(false);
     }
     load();
   }, []);
+
+  // Derived filtered lists
+  const filteredParentReferrals = useMemo(() => {
+    let list = parentReferrals;
+    if (rangeFilter === "this_week") {
+      // Approximate: keep created in last 7 days
+      const monday = new Date();
+      monday.setDate(monday.getDate() - monday.getDay() || -6);
+      monday.setHours(0, 0, 0, 0);
+      const mondayIso = monday.toISOString();
+      list = list.filter((r) => r.created_at >= mondayIso);
+    }
+    return list;
+  }, [parentReferrals, rangeFilter]);
+
+  const filteredRewards = useMemo(() => {
+    let list = rewards;
+    if (rewardStatusFilter) {
+      list = list.filter((r) => r.status === rewardStatusFilter);
+    }
+    return list;
+  }, [rewards, rewardStatusFilter]);
 
   async function handleSaveConfig(key: string) {
     setSavingConfig(true);
@@ -232,6 +332,8 @@ export default function AdminReferralsPage() {
 
   return (
     <div className="space-y-6 pb-8">
+      <ReferralsStatusPulseStrip pulse={pulse} basePath="/admin/referrals" />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#1A1A1A]">
@@ -244,32 +346,20 @@ export default function AdminReferralsPage() {
 
       {/* Summary Cards */}
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <CountTile
+            label="Active Codes"
+            value={stats.activeCodes}
+            icon={Link2}
+          />
+          <CountTile
+            label="Total Referrals"
+            value={stats.totalReferrals}
+            icon={Users}
+          />
+          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
             <div className="flex items-center gap-2 mb-2">
-              <Link2 className="h-4 w-4 text-[#E8712A]" />
-              <span className="text-xs font-medium text-[#666666]">
-                Active Codes
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-[#1A1A1A]">
-              {stats.activeCodes}
-            </p>
-          </div>
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-[#E8712A]" />
-              <span className="text-xs font-medium text-[#666666]">
-                Total Referrals
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-[#1A1A1A]">
-              {stats.totalReferrals}
-            </p>
-          </div>
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-[#E8712A]" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-[#666666]">
                 Conversion Rate
               </span>
@@ -278,9 +368,9 @@ export default function AdminReferralsPage() {
               {stats.conversionRate.toFixed(1)}%
             </p>
           </div>
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
             <div className="flex items-center gap-2 mb-2">
-              <Gift className="h-4 w-4 text-[#E8712A]" />
+              <Gift className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-[#666666]">
                 Rewards Awarded
               </span>
@@ -292,6 +382,39 @@ export default function AdminReferralsPage() {
               {stats.totalConversions} conversions
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Jump-filter chips */}
+      {(rangeFilter === "this_week" || rewardStatusFilter) && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Filtered:</span>
+          {rangeFilter === "this_week" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+              This week
+              <button
+                type="button"
+                onClick={() => clearJumpFilter("range")}
+                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                aria-label="Clear range filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {rewardStatusFilter && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+              Status: {rewardStatusFilter}
+              <button
+                type="button"
+                onClick={() => clearJumpFilter("status")}
+                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                aria-label="Clear status filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
         </div>
       )}
 
@@ -316,8 +439,8 @@ export default function AdminReferralsPage() {
 
       {/* Tab Content */}
       {activeTab === "Parent Referrals" && (
-        <div className="rounded-xl border border-orange-100 bg-white shadow-sm overflow-hidden">
-          {parentReferrals.length === 0 ? (
+        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+          {filteredParentReferrals.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-10 w-10 text-orange-200 mx-auto mb-3" />
               <p className="text-[#1A1A1A] font-medium">
@@ -350,7 +473,7 @@ export default function AdminReferralsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {parentReferrals.map((ref) => (
+                  {filteredParentReferrals.map((ref) => (
                     <tr
                       key={ref.id}
                       className="border-b border-gray-50 hover:bg-gray-50/50"
@@ -380,7 +503,7 @@ export default function AdminReferralsPage() {
       )}
 
       {activeTab === "Centre Referrals" && (
-        <div className="rounded-xl border border-orange-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
           {centreReferrals.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-10 w-10 text-orange-200 mx-auto mb-3" />
@@ -436,8 +559,8 @@ export default function AdminReferralsPage() {
       )}
 
       {activeTab === "Rewards" && (
-        <div className="rounded-xl border border-orange-100 bg-white shadow-sm overflow-hidden">
-          {rewards.length === 0 ? (
+        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+          {filteredRewards.length === 0 ? (
             <div className="p-8 text-center">
               <Gift className="h-10 w-10 text-orange-200 mx-auto mb-3" />
               <p className="text-[#1A1A1A] font-medium">No rewards yet</p>
@@ -468,7 +591,7 @@ export default function AdminReferralsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rewards.map((reward) => (
+                  {filteredRewards.map((reward) => (
                     <tr
                       key={reward.id}
                       className="border-b border-gray-50 hover:bg-gray-50/50"
@@ -502,7 +625,7 @@ export default function AdminReferralsPage() {
           {config.map((item) => (
             <div
               key={item.id}
-              className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm"
+              className="rounded-2xl border bg-background p-5 hover:shadow-md transition"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -561,7 +684,7 @@ export default function AdminReferralsPage() {
           ))}
 
           {config.length === 0 && (
-            <div className="rounded-xl border border-orange-100 bg-white p-8 shadow-sm text-center">
+            <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
               <p className="text-[#666666] text-sm">
                 No configuration items found
               </p>
@@ -569,7 +692,7 @@ export default function AdminReferralsPage() {
           )}
 
           {/* Generate Centre Codes */}
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-[#1A1A1A] text-sm">

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
@@ -268,4 +269,63 @@ export async function getCampaignReporting(): Promise<{
     console.error("Error fetching campaign reporting:", err);
     return { data: null, error: "Failed to fetch campaign reporting" };
   }
+}
+
+// ============================================================
+// Bulk campaign status changes
+// ============================================================
+//
+// Both bulk actions take a list of campaign ids and an action
+// ("pause"|"activate") and update each campaign's `status`. Partial
+// failure: per-id error so the caller can toast successful count
+// and report broken rows.
+
+export interface BulkCampaignResult {
+  succeeded: number;
+  failed: Array<{ id: string; error: string }>;
+}
+
+export async function bulkUpdateCampaignStatus(
+  ids: string[],
+  status: "active" | "paused" | "inactive"
+): Promise<{ data: BulkCampaignResult | null; error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: "Not authenticated" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { data: null, error: "Insufficient permissions" };
+  }
+
+  if (ids.length === 0) {
+    return { data: { succeeded: 0, failed: [] }, error: null };
+  }
+
+  const failed: Array<{ id: string; error: string }> = [];
+  let succeeded = 0;
+
+  for (const id of ids) {
+    const { error: updErr } = await supabase
+      .from("reengagement_campaigns")
+      .update({ status })
+      .eq("id", id);
+    if (updErr) {
+      failed.push({ id, error: updErr.message });
+    } else {
+      succeeded += 1;
+    }
+  }
+
+  revalidatePath("/admin/campaigns");
+
+  return { data: { succeeded, failed }, error: null };
 }

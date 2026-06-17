@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { MessageSquare, X } from "lucide-react";
 import { getConversations, type ConversationSummary } from "@/lib/messages/actions";
 import { ConversationList } from "@/components/messages/conversation-list";
 import { ConversationThread } from "@/components/messages/conversation-thread";
@@ -20,8 +20,17 @@ export function MessagesPageClient({
   currentUserId,
   role,
 }: MessagesPageClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const coachParam = searchParams.get("coach");
+  const statusFilter = searchParams.get("status");
+
+  function clearStatusFilter() {
+    const sp = new URLSearchParams(Array.from(searchParams.entries()));
+    sp.delete("status");
+    const qs = sp.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
 
   const [conversations, setConversations] =
     useState<ConversationSummary[]>(initialConversations);
@@ -30,6 +39,36 @@ export function MessagesPageClient({
     name: string;
   } | null>(null);
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+
+  // Filter the conversation list when a pulse jump-link is active.
+  const filteredConversations = useMemo(() => {
+    if (!statusFilter) return conversations;
+    if (statusFilter === "unread") {
+      return conversations.filter((c) => c.unread_count > 0);
+    }
+    if (statusFilter === "awaiting") {
+      // Best-effort: conversations where the latest message was sent
+      // by the current user (i.e. waiting on the partner).
+      return conversations.filter(
+        (c) => c.last_message_sender_id === currentUserId
+      );
+    }
+    if (statusFilter === "sent_today") {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const startIso = startOfToday.toISOString();
+      return conversations.filter(
+        (c) =>
+          c.last_message_sender_id === currentUserId &&
+          c.last_message_at >= startIso
+      );
+    }
+    if (statusFilter === "mentions") {
+      // Mentions aren't modelled today; show empty.
+      return [];
+    }
+    return conversations;
+  }, [conversations, statusFilter, currentUserId]);
 
   // Refresh conversations from server
   const refreshConversations = useCallback(async () => {
@@ -100,13 +139,39 @@ export function MessagesPageClient({
         <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Filter chip (status filter from pulse jump-link) */}
+      {statusFilter && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Filtered:</span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            {statusFilter === "unread"
+              ? "Unread only"
+              : statusFilter === "awaiting"
+                ? "Awaiting response"
+                : statusFilter === "sent_today"
+                  ? "Sent today"
+                  : statusFilter === "mentions"
+                    ? "Mentions"
+                    : statusFilter}
+            <button
+              type="button"
+              onClick={clearStatusFilter}
+              className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+              aria-label="Clear filter"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition">
         {/* Desktop: side-by-side layout */}
-        <div className="hidden md:flex h-[calc(100vh-12rem)]">
+        <div className="hidden md:flex h-[calc(100vh-14rem)]">
           {/* Sidebar — 320px conversation list */}
           <div className="w-80 border-r border-border shrink-0 overflow-hidden">
             <ConversationList
-              initialConversations={conversations}
+              initialConversations={filteredConversations}
               selectedId={selectedConversation?.id}
               onSelect={handleSelectConversation}
               role={role}
@@ -130,7 +195,7 @@ export function MessagesPageClient({
         </div>
 
         {/* Mobile: show one or the other */}
-        <div className="md:hidden h-[calc(100vh-12rem)]">
+        <div className="md:hidden h-[calc(100vh-14rem)]">
           {selectedConversation ? (
             <ConversationThread
               key={selectedConversation.id}
@@ -141,7 +206,7 @@ export function MessagesPageClient({
             />
           ) : (
             <ConversationList
-              initialConversations={conversations}
+              initialConversations={filteredConversations}
               onSelect={handleSelectConversation}
               role={role}
               onNewMessage={() => setNewMessageOpen(true)}
