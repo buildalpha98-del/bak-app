@@ -1470,3 +1470,120 @@ Pages with deliberate scope difference vs admin (no change): `/ops/bookings/sess
 No regressions to shared list views (admin + ops share `CentreListView`, `StaffListView`, `ChildrenListView`, etc.); the audit was purely additive on the ops side.
 
 ---
+
+## 3. Coach
+
+Coach is the mobile-first role. CLAUDE.md ties it to 44px touch targets, terse copy, weekly grid focus. The close-out kept that posture: no URL-persisted multi-filter views, no leaderboard peer data, no other-coach $$ — every page is read in seconds, then drilled into one tap.
+
+### 3.1 `/coach` — home
+
+🔍 **Current state**
+
+`app/(dashboard)/coach/page.tsx` now fans out 8 server actions in parallel: today / week sessions, next session, pending actions, latest announcement, incoming swap inbox, the new `getCoachStatusPulse(user.id)`, and the coach profile name lookup. Top of page is a sticky **`CoachContextStrip`** (`components/coach/home/coach-context-strip.tsx`) — Sydney-local "Good morning, [first_name]" with a 4-stat grid (shifts today / shifts to confirm / forms overdue / unread announcements). Each stat is a 44px tap target with a brand-orange icon when active. Below it: a 4-button **`CoachQuickActions`** row (Schedule / Forms / Training / Messages), a 4-card **`CoachSummaryCards`** strip (today / week / forms overdue / unread news, useCountUp), then the existing `CoachTodayDashboard`, pending-actions card, and latest-announcement card.
+
+✅ **What works**
+
+- Sticky greeting + 4-stat pulse — bounces between brand-orange (active) and muted in tabular-nums.
+- `useCountUp` on every summary card; numbers tick into place.
+- `rounded-2xl` everywhere with hover-lift on quick-action + summary tiles; restrained orange (greeting first name, overdue-forms accent, pulse-active icons only).
+- Mobile-first grid — quick actions go 2×2 on phones / 4-up on tablets; pulse strip stacks horizontally with chip-style links.
+
+🎯 **Final-state target**
+
+The home is a 5-second scan: greeting + 4-stat pulse on top, one tap to anywhere via Quick Actions, summary cards as the visual anchor, then today's sessions. Future work could add `Today's first session` countdown (sub-card) — deferred until we have feedback from active coaches.
+
+📋 **Closed:**
+
+- [x] `getCoachStatusPulse` server action (shifts-today / to-confirm / overdue-forms / unread-announcements) — Sydney-local date, swallows to zeros on error
+- [x] `CoachContextStrip` sticky greeting + pulse — 44px tap targets, brand-orange when active, useCountUp
+- [x] `CoachQuickActions` 4-up grid (Schedule / Forms / Training / Messages)
+- [x] `CoachSummaryCards` 4-up grid (today / week / overdue forms / unread news) — useCountUp, accent on overdue
+- [x] Home page rewired — `Promise.all` includes pulse + profile, week count derived from already-fetched week data
+- [x] Restrained orange (first name highlight, overdue card accent, pulse icons only); muted everywhere else
+
+### 3.2 `/coach/schedule` — weekly grid
+
+🔍 **Current state**
+
+`/coach/schedule` page now loads `getCoachSchedulePulse(user.id)` alongside the existing tab data and renders a **`CoachSchedulePulseStrip`** above the tab wrapper (today / to-confirm / past-unconfirmed). Today/week views received UI refresh: session cards are now `rounded-2xl` with a subtle hover-translate + brand-orange border on hover. Bulk-confirm banner (existing) still surfaces above the tabs when 2+ pending. Status pulse drives the `?filter=pending` URL on the bulk confirm row and the `?filter=overdue` URL on the past-unconfirmed link.
+
+✅ **What works**
+
+- 3-stat pulse drives the schedule actions: brand-orange when there's anything to do.
+- Today timeline cards are `rounded-2xl` with hover-lift; week-grid columns rounded with brand-tinted hover border.
+- Week navigation, sport colours, status badges all preserved (no regression).
+
+📋 **Closed:**
+
+- [x] `getCoachSchedulePulse` (three single-shot head counts)
+- [x] `CoachSchedulePulseStrip` (3 stats, 44px tap targets)
+- [x] Strip wired above tabs on the schedule page
+- [x] UI refresh on `today-view` (`rounded-2xl`, hover-translate) and `week-view` (`rounded-2xl` columns, brand-tinted hover border)
+- [x] No URL-persisted multi-filter complexity added — keep coach world simple per the brief
+
+### 3.3 `/coach/performance` — self vs benchmark
+
+🔍 **Current state**
+
+`getCoachSelfPerformance` already returned snapshot / badges / team averages / percentiles / monthly trend. The page now derives 3 pulse stats from the existing data (no extra queries) — sessions-this-period, badges-earned, months-tracked — and renders them as a muted **`CoachSelfPulseStrip`** above the score hero. The hero card gained a delta chip (`+N vs prior`) and a `Team avg N` chip, so the comparison is now visible on the page header rather than buried in the metric cards. Cards are now `rounded-2xl` with hover-lift on metric tiles; everything else preserved.
+
+✅ **What works**
+
+- Pulse uses already-fetched data — zero extra round trips; "own data only" guarantee unchanged.
+- Trend arrow is derived from snapshots[len-2] vs snapshots[len-1], so it appears as soon as a coach has ≥2 months tracked.
+- `rounded-2xl` everywhere; metric cards lift on hover.
+- Recharts trend chart unchanged (Recharts works fine inside a `rounded-2xl` card).
+
+📋 **Closed:**
+
+- [x] `CoachSelfPulseStrip` (sessions / badges / months) — muted by default, brand-orange only on badges-earned > 0
+- [x] Score hero — added prior-period delta chip + team avg chip beneath the score number
+- [x] `rounded-2xl` on score hero, badges card, metric cards (hover-lift), trend chart, highlights empty state
+- [x] No leaderboard leak; no peer names returned (function signature unchanged)
+
+### 3.4 Other coach surfaces (forms / training / messages / invoicing / docs / tasks / assessments / announcements / equipment / notifications / profile)
+
+🔍 **Current state**
+
+A single `lib/coach/page-pulses.ts` module exposes one server action per page; a single **`CoachPulseStrip`** component (generic items array) renders the strip with consistent visual rhythm. Every action scopes to `coach_id = me` and swallows errors to zeros (so a missing column never blanks the page).
+
+**Pulses wired:**
+
+- `/coach/forms` — overdue / due-today / completed-this-week. Overdue = past completed sessions that I haven't submitted a form for.
+- `/coach/training` — overdue / due-in-7-days / new-this-week / completed.
+- `/coach/invoicing` — unpaid invoices / paid-this-month / sessions-in-current-fortnight. Coach's OWN $$ only — no financial-access gate needed because the whole page is the coach's own data.
+- `/coach/tasks` — overdue / due-today / done-this-week. Open-only filtering (skips tasks already in a final column).
+- `/coach/assessments` — children-pending-this-term / submitted-this-term. Pending = children at my sessions' centres I haven't rated yet.
+- `/coach/announcements` — unread / this-week. Unread = no `announcement_reads` row for me.
+- `/coach/equipment` — kits-assigned-on-upcoming-shifts / issues-open. Issues = `equipment_logs.action='issue_flagged'` for me.
+- `/coach/notifications` — urgent / important. Same `notifications.tier` ladder as the rest of the platform.
+
+**No-pulse / UI-only:**
+
+- `/coach/messages` — full-screen conversation pane; an extra strip would push the chat off the viewport on phones. Skipped deliberately.
+- `/coach/docs` — already uses the platform's `DocumentsStatusPulseStrip` shared with admin/ops (it's a cross-role doc hub). No coach-specific extension needed.
+- `/coach/profile` — UI-only: personal-details card upgraded to `rounded-2xl` with subtle hover shadow; pay rates section preserved read-only as designed.
+
+✅ **What works**
+
+- One server-action file, one client component, one icon vocabulary across 8 pages — easy to extend.
+- All `rounded-lg` borders on coach surfaces lifted to `rounded-2xl`.
+- Restrained orange — accent is reserved for actively-overdue / urgent items; everything else stays muted.
+- All counts use `useCountUp` so numbers tick into place on first render.
+
+📋 **Closed:**
+
+- [x] `lib/coach/page-pulses.ts` — 8 server actions (forms / training / messages / invoicing / docs / tasks / assessments / announcements / equipment / notifications)
+- [x] `components/coach/coach-pulse-strip.tsx` — reusable strip with `CoachPulseItem[]` API, `accent` flag drives brand-orange
+- [x] 8 page.tsx files updated to fan-out pulse alongside existing data; error banners lifted to `rounded-2xl`
+- [x] `profile/page.tsx` — personal-details card upgraded to `rounded-2xl`
+- [x] All financial-access boundaries respected — no cross-coach pay / no team-peer scores anywhere on coach surfaces
+- [x] `getCoachSelfPerformance` remains the only path to performance data on coach surfaces
+
+📋 **Tests added:** 18 cases across 2 files —
+- `lib/coach/__tests__/coach-status-pulse.test.ts` — `getCoachStatusPulse` (6 cases: quiet day / shift-today / shift-to-confirm / overdue-forms compute / unread-announcements filter / defensive error) + `getCoachSchedulePulse` (3 cases: zeros / propagation / defensive error)
+- `lib/coach/__tests__/coach-page-pulses.test.ts` — `getCoachFormsPulse` (3: zeros / overdue compute / defensive), `getCoachTrainingPulse` (2: propagation / defensive), `getCoachMessagesPulse` + `getCoachNotificationsPulse` (2: both pass through head counts), `getCoachAnnouncementsPulse` (2: unread + this-week compute / defensive)
+
+**Verification:** `npx vitest run lib/coach/` → 18/18 pass; `npx tsc --noEmit` → clean; `npm run build` → ✓ Compiled successfully (pre-existing CRM dynamic-server warnings unchanged).
+
+---

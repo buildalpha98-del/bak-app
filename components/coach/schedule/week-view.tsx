@@ -73,7 +73,7 @@ export function WeekView({ sessions, weekStart }: WeekViewProps) {
           return (
             <div
               key={dateStr}
-              className="min-w-[200px] flex-1 snap-start rounded-lg border bg-card p-2"
+              className="min-w-[200px] flex-1 snap-start rounded-2xl border bg-card p-2 transition-colors hover:border-[#E8712A]/20"
             >
               {/* Day header */}
               <div

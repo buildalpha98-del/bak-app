@@ -6,7 +6,10 @@ import {
   getCoachInvoiceHistory,
 } from "@/lib/invoicing/actions";
 import { getFortnightlyPeriodForOffset } from "@/lib/utils/invoicing";
+import { getCoachInvoicingPulse } from "@/lib/coach/page-pulses";
 import { InvoicingDashboard } from "@/components/invoicing/invoicing-dashboard";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { Receipt, Wallet, CalendarCheck2 } from "lucide-react";
 
 interface Props {
   searchParams: Promise<{ period?: string }>;
@@ -28,7 +31,7 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
   const periodEnd = end.toISOString().split("T")[0];
 
   // Parallel fetches
-  const [invoiceResult, sessionsResult, historyResult, profileResult] =
+  const [invoiceResult, sessionsResult, historyResult, profileResult, pulse] =
     await Promise.all([
       getCoachInvoiceForPeriod(periodStart, periodEnd),
       getUninvoicedSessions(periodStart, periodEnd),
@@ -38,12 +41,13 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
         .select("name, email, phone, address, abn, gst_registered")
         .eq("id", user.id)
         .single(),
+      getCoachInvoicingPulse(user.id, periodStart, periodEnd),
     ]);
 
   const firstError = invoiceResult.error || sessionsResult.error || historyResult.error || profileResult.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         Failed to load page data. Please try refreshing.
       </div>
     );
@@ -59,15 +63,37 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
   };
 
   return (
-    <InvoicingDashboard
-      periodOffset={periodOffset}
-      periodStart={periodStart}
-      periodEnd={periodEnd}
-      existingInvoice={invoiceResult.data}
-      uninvoicedSessions={sessionsResult.data}
-      invoiceHistory={historyResult.data}
-      gstRegistered={coachProfile.gst_registered}
-      coachProfile={coachProfile}
-    />
+    <div className="space-y-4 animate-fade-up">
+      <CoachPulseStrip
+        items={[
+          {
+            icon: Receipt,
+            count: pulse.unpaidCount,
+            label: pulse.unpaidCount === 1 ? "unpaid" : "unpaid",
+            accent: true,
+          },
+          {
+            icon: Wallet,
+            count: pulse.paidThisMonthCount,
+            label: "paid this month",
+          },
+          {
+            icon: CalendarCheck2,
+            count: pulse.sessionsThisPeriodCount,
+            label: "sessions this period",
+          },
+        ]}
+      />
+      <InvoicingDashboard
+        periodOffset={periodOffset}
+        periodStart={periodStart}
+        periodEnd={periodEnd}
+        existingInvoice={invoiceResult.data}
+        uninvoicedSessions={sessionsResult.data}
+        invoiceHistory={historyResult.data}
+        gstRegistered={coachProfile.gst_registered}
+        coachProfile={coachProfile}
+      />
+    </div>
   );
 }

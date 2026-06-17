@@ -87,7 +87,7 @@ export function TodayView({ sessions, nextSessionDate }: TodayViewProps) {
               href={`/coach/schedule/${session.id}`}
               className="min-w-0 flex-1"
             >
-              <Card className="card-hover transition-shadow active:shadow-md min-h-[44px]">
+              <Card className="card-hover rounded-2xl transition-all active:shadow-md min-h-[44px] hover:-translate-y-0.5 hover:border-[#E8712A]/30">
                 <CardContent className="p-3 space-y-2">
                   {/* Time range */}
                   <div className="flex items-center justify-between">

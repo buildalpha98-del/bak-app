@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getRecentNotifications } from "@/lib/notifications/actions";
+import { getCoachNotificationsPulse } from "@/lib/coach/page-pulses";
 import { NotificationsList } from "@/components/shared/notifications-list";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { Bell, BellRing } from "lucide-react";
 
 export default async function CoachNotificationsPage() {
   const supabase = await createSupabaseServerClient();
@@ -11,18 +14,37 @@ export default async function CoachNotificationsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: notifications, error } = await getRecentNotifications(50);
+  const [{ data: notifications, error }, pulse] = await Promise.all([
+    getRecentNotifications(50),
+    getCoachNotificationsPulse(user.id),
+  ]);
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="mx-auto max-w-2xl space-y-4 px-4 py-6 animate-fade-up">
+      <CoachPulseStrip
+        items={[
+          {
+            icon: BellRing,
+            count: pulse.urgentCount,
+            label: "urgent",
+            accent: true,
+          },
+          {
+            icon: Bell,
+            count: pulse.importantCount,
+            label: "important",
+            accent: pulse.importantCount > 0,
+          },
+        ]}
+      />
       <NotificationsList
         initialNotifications={notifications ?? []}
         userId={user.id}

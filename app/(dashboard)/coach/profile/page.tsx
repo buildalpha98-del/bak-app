@@ -28,7 +28,7 @@ export default async function CoachProfilePage() {
       <h1 className="text-xl font-semibold font-heading text-foreground">Profile</h1>
 
       {/* Basic info */}
-      <div className="rounded-lg border border-border bg-card p-4 space-y-3 stagger-1">
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-3 stagger-1 transition-shadow hover:shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Personal Details

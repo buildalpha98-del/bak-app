@@ -1,8 +1,27 @@
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMyTrainingDashboard } from "@/lib/training/coach-actions";
+import { getCoachTrainingPulse } from "@/lib/coach/page-pulses";
 import { CoachTrainingDashboard } from "@/components/training/coach-training-dashboard";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import {
+  AlertTriangle,
+  Clock,
+  Sparkles,
+  CheckCircle2,
+} from "lucide-react";
 
 export default async function CoachTrainingPage() {
-  const dashboard = await getMyTrainingDashboard();
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const [dashboard, pulse] = await Promise.all([
+    getMyTrainingDashboard(),
+    getCoachTrainingPulse(user.id),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -18,11 +37,42 @@ export default async function CoachTrainingPage() {
         </p>
       </div>
 
-      <CoachTrainingDashboard
-        assigned={dashboard.assigned}
-        inProgress={dashboard.in_progress}
-        completed={dashboard.completed}
-      />
+      <div className="animate-fade-up stagger-1">
+        <CoachPulseStrip
+          items={[
+            {
+              icon: AlertTriangle,
+              count: pulse.overdueCount,
+              label: "overdue",
+              accent: true,
+            },
+            {
+              icon: Clock,
+              count: pulse.dueSoonCount,
+              label: "due in 7 days",
+              accent: pulse.dueSoonCount > 0,
+            },
+            {
+              icon: Sparkles,
+              count: pulse.newCount,
+              label: "new this week",
+            },
+            {
+              icon: CheckCircle2,
+              count: pulse.completedCount,
+              label: "completed",
+            },
+          ]}
+        />
+      </div>
+
+      <div className="animate-fade-up stagger-2">
+        <CoachTrainingDashboard
+          assigned={dashboard.assigned}
+          inProgress={dashboard.in_progress}
+          completed={dashboard.completed}
+        />
+      </div>
     </div>
   );
 }

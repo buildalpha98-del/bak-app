@@ -134,11 +134,20 @@ function teamAvgDisplayValue(
 function ScoreHero({
   score,
   percentile,
+  priorScore,
+  teamAvg,
 }: {
   score: number;
   percentile: number;
+  priorScore: number | null;
+  teamAvg: number | null;
 }) {
   const { ring, text, bg, label } = scoreColour(score);
+  const delta =
+    priorScore != null ? Math.round(score - priorScore) : null;
+  const trendUp = delta != null && delta > 0;
+  const trendDown = delta != null && delta < 0;
+  const trendFlat = delta != null && delta === 0;
 
   return (
     <div className="flex flex-col items-center gap-3 py-4">
@@ -156,13 +165,41 @@ function ScoreHero({
           {label}
         </span>
       </div>
-      <div className="text-center">
+      <div className="text-center space-y-1">
         <p className="text-sm font-semibold text-foreground">
           Top {100 - percentile}% of coaches
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-xs text-muted-foreground">
           Overall performance score
         </p>
+        <div className="flex items-center justify-center gap-2 text-[11px]">
+          {delta != null && (
+            <span
+              className={[
+                "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-semibold tabular-nums",
+                trendUp
+                  ? "bg-emerald-50 text-emerald-700"
+                  : trendDown
+                    ? "bg-red-50 text-red-700"
+                    : "bg-muted text-muted-foreground",
+              ].join(" ")}
+            >
+              {trendUp ? (
+                <TrendingUp className="size-3" />
+              ) : trendDown ? (
+                <TrendingDown className="size-3" />
+              ) : null}
+              {trendUp ? "+" : ""}
+              {delta} vs prior
+              {trendFlat ? " (flat)" : ""}
+            </span>
+          )}
+          {teamAvg != null && teamAvg > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-muted/60 px-2 py-0.5 text-muted-foreground tabular-nums">
+              Team avg {Math.round(teamAvg)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -185,7 +222,7 @@ function MetricCard({ metricKey, normValue, teamAvg, snapshot }: MetricCardProps
   const teamDisplay = teamAvgDisplayValue(metricKey, { [metricKey]: teamAvg });
 
   return (
-    <Card className="border-border/60">
+    <Card className="rounded-2xl border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-sm">
       <CardContent className="pt-4 pb-3 px-4 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {formatMetricName(metricKey)}
@@ -252,15 +289,23 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
   const hasSnapshot = snapshot !== null;
   const metricKeys = normalised ? Object.keys(normalised) : [];
 
+  // Trend: compare latest snapshot to the second-most-recent one.
+  const priorScore =
+    snapshots.length >= 2
+      ? snapshots[snapshots.length - 2].overall_score
+      : null;
+
   return (
     <div className="space-y-6 max-w-2xl">
       {/* ── Score Hero ──────────────────────────────────────────────── */}
-      <Card className="border-border/60">
+      <Card className="rounded-2xl border-border/60">
         <CardContent className="pt-2 pb-4">
           {hasSnapshot ? (
             <ScoreHero
               score={snapshot!.overall_score}
               percentile={percentile}
+              priorScore={priorScore}
+              teamAvg={teamAverages.overall_score ?? null}
             />
           ) : (
             <div className="py-8 flex flex-col items-center gap-2 text-center">
@@ -278,7 +323,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
       </Card>
 
       {/* ── Badges ──────────────────────────────────────────────────── */}
-      <Card className="border-border/60">
+      <Card className="rounded-2xl border-border/60">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-base flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />
@@ -321,7 +366,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
 
       {/* ── Monthly Trend Chart ─────────────────────────────────────── */}
       {monthlyTrend.length >= 2 && (
-        <Card className="border-border/60">
+        <Card className="rounded-2xl border-border/60">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
@@ -402,7 +447,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
 
       {/* ── Empty state for highlights ───────────────────────────────── */}
       {hasSnapshot && feedbackHighlights.length === 0 && (
-        <Card className="border-border/60 bg-muted/30">
+        <Card className="rounded-2xl border-border/60 bg-muted/30">
           <CardContent className="px-4 py-5 flex items-center gap-3">
             <TrendingDown className="w-8 h-8 text-muted-foreground/40 shrink-0" />
             <div>

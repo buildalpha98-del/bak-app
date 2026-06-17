@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCoachAssignedKits } from "@/lib/equipment/actions";
+import { getCoachEquipmentPulse } from "@/lib/coach/page-pulses";
 import { CoachEquipmentView } from "@/components/equipment/coach-equipment-view";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { Package, AlertTriangle } from "lucide-react";
 
 export default async function CoachEquipmentPage() {
   const supabase = await createSupabaseServerClient();
@@ -11,15 +14,40 @@ export default async function CoachEquipmentPage() {
 
   if (!user) redirect("/login");
 
-  const { data, error } = await getCoachAssignedKits();
+  const [{ data, error }, pulse] = await Promise.all([
+    getCoachAssignedKits(),
+    getCoachEquipmentPulse(user.id),
+  ]);
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         {error}
       </div>
     );
   }
 
-  return <CoachEquipmentView initialKits={data ?? []} />;
+  return (
+    <div className="space-y-4 animate-fade-up">
+      <CoachPulseStrip
+        items={[
+          {
+            icon: Package,
+            count: pulse.kitsAssignedCount,
+            label:
+              pulse.kitsAssignedCount === 1
+                ? "kit assigned"
+                : "kits assigned",
+          },
+          {
+            icon: AlertTriangle,
+            count: pulse.issuesOpenCount,
+            label: pulse.issuesOpenCount === 1 ? "issue open" : "issues open",
+            accent: true,
+          },
+        ]}
+      />
+      <CoachEquipmentView initialKits={data ?? []} />
+    </div>
+  );
 }

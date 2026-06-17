@@ -1,7 +1,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTasks, getTaskColumns } from "@/lib/tasks/actions";
+import { getCoachTasksPulse } from "@/lib/coach/page-pulses";
 import { CoachTasksClient } from "./client";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 export default async function CoachTasksPage() {
   const supabase = await createSupabaseServerClient();
@@ -21,25 +24,49 @@ export default async function CoachTasksPage() {
     redirect("/");
   }
 
-  const [columnsResult, tasksResult] = await Promise.all([
+  const [columnsResult, tasksResult, pulse] = await Promise.all([
     getTaskColumns(),
     getTasks({ myTasksOnly: true }),
+    getCoachTasksPulse(user.id),
   ]);
 
   const firstError = columnsResult.error || tasksResult.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         Failed to load page data. Please try refreshing.
       </div>
     );
   }
 
   return (
-    <CoachTasksClient
-      columns={columnsResult.data ?? []}
-      tasks={tasksResult.data ?? []}
-      currentUserId={user.id}
-    />
+    <div className="space-y-4 animate-fade-up">
+      <CoachPulseStrip
+        items={[
+          {
+            icon: AlertTriangle,
+            count: pulse.overdueCount,
+            label: "overdue",
+            accent: true,
+          },
+          {
+            icon: Clock,
+            count: pulse.dueTodayCount,
+            label: "due today",
+            accent: pulse.dueTodayCount > 0,
+          },
+          {
+            icon: CheckCircle2,
+            count: pulse.completedThisWeekCount,
+            label: "done this week",
+          },
+        ]}
+      />
+      <CoachTasksClient
+        columns={columnsResult.data ?? []}
+        tasks={tasksResult.data ?? []}
+        currentUserId={user.id}
+      />
+    </div>
   );
 }

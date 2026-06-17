@@ -4,7 +4,10 @@ import {
   getCoachAvailableTemplates,
   getCoachSubmissions,
 } from "@/lib/forms/actions";
+import { getCoachFormsPulse } from "@/lib/coach/page-pulses";
 import { CoachFormsView } from "@/components/forms/coach-forms-view";
+import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 export default async function CoachFormsPage() {
   const supabase = await createSupabaseServerClient();
@@ -23,25 +26,49 @@ export default async function CoachFormsPage() {
 
   const coachName = profile?.name ?? user.email ?? "Coach";
 
-  const [templatesResult, submissionsResult] = await Promise.all([
+  const [templatesResult, submissionsResult, pulse] = await Promise.all([
     getCoachAvailableTemplates(),
     getCoachSubmissions(),
+    getCoachFormsPulse(user.id),
   ]);
 
   const firstError = templatesResult.error || submissionsResult.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         Failed to load page data. Please try refreshing.
       </div>
     );
   }
 
   return (
-    <CoachFormsView
-      templates={templatesResult.data ?? []}
-      submissions={submissionsResult.data ?? []}
-      coachName={coachName}
-    />
+    <div className="mx-auto max-w-2xl space-y-4 px-4 py-6 animate-fade-up">
+      <CoachPulseStrip
+        items={[
+          {
+            icon: AlertTriangle,
+            count: pulse.overdueCount,
+            label: "overdue",
+            accent: true,
+          },
+          {
+            icon: Clock,
+            count: pulse.dueTodayCount,
+            label: "due today",
+            accent: pulse.dueTodayCount > 0,
+          },
+          {
+            icon: CheckCircle2,
+            count: pulse.completedThisWeekCount,
+            label: "completed this week",
+          },
+        ]}
+      />
+      <CoachFormsView
+        templates={templatesResult.data ?? []}
+        submissions={submissionsResult.data ?? []}
+        coachName={coachName}
+      />
+    </div>
   );
 }

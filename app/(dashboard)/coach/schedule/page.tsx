@@ -6,12 +6,14 @@ import {
   getCoachSessionsForTerm,
   getCoachPendingSessions,
 } from "@/lib/sessions/coach-actions";
+import { getCoachSchedulePulse } from "@/lib/coach/status-pulse-actions";
 import { getActiveTerm } from "@/lib/terms/actions";
 import { getMonday } from "@/lib/utils/roster";
 import { ScheduleTabsWrapper } from "@/components/coach/schedule/schedule-tabs-wrapper";
 import { TodayView } from "@/components/coach/schedule/today-view";
 import { WeekView } from "@/components/coach/schedule/week-view";
 import { TermView } from "@/components/coach/schedule/term-view";
+import { CoachSchedulePulseStrip } from "@/components/coach/schedule/coach-schedule-pulse";
 
 interface SchedulePageProps {
   searchParams: Promise<{ tab?: string; date?: string }>;
@@ -37,19 +39,21 @@ export default async function SchedulePage({
   const mondayStr =
     date ?? getMonday(today).toISOString().split("T")[0];
 
-  // Fetch data based on active tab + always fetch pending sessions for bulk confirm
-  const [todayRes, weekRes, termRes, pendingRes] = await Promise.all([
-    activeTab === "today"
-      ? getCoachSessionsForDate(user.id, dateStr)
-      : Promise.resolve({ data: null, error: null }),
-    activeTab === "week"
-      ? getCoachSessionsForWeek(user.id, mondayStr)
-      : Promise.resolve({ data: null, error: null }),
-    activeTab === "term"
-      ? getActiveTerm()
-      : Promise.resolve({ data: null, error: null }),
-    getCoachPendingSessions(user.id),
-  ]);
+  // Fetch data based on active tab + always fetch pending sessions for bulk confirm + pulse
+  const [todayRes, weekRes, termRes, pendingRes, schedulePulse] =
+    await Promise.all([
+      activeTab === "today"
+        ? getCoachSessionsForDate(user.id, dateStr)
+        : Promise.resolve({ data: null, error: null }),
+      activeTab === "week"
+        ? getCoachSessionsForWeek(user.id, mondayStr)
+        : Promise.resolve({ data: null, error: null }),
+      activeTab === "term"
+        ? getActiveTerm()
+        : Promise.resolve({ data: null, error: null }),
+      getCoachPendingSessions(user.id),
+      getCoachSchedulePulse(user.id),
+    ]);
 
   const firstError = todayRes.error || weekRes.error || termRes.error || pendingRes.error;
   if (firstError) {
@@ -74,7 +78,11 @@ export default async function SchedulePage({
 
   return (
     <div className="mx-auto max-w-lg space-y-4 animate-fade-up">
-      <h1 className="text-xl font-semibold font-heading text-foreground">Schedule</h1>
+      <h1 className="text-xl font-semibold font-heading text-foreground">
+        Schedule
+      </h1>
+
+      <CoachSchedulePulseStrip pulse={schedulePulse} />
 
       <ScheduleTabsWrapper
         activeTab={activeTab}
