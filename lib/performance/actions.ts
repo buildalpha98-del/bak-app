@@ -6,6 +6,41 @@ import { normaliseMetrics, calculateOverallScore, METRIC_WEIGHTS } from "@/lib/u
 import { getCoachBadges, BADGE_DEFINITIONS, type BadgeKey } from "@/lib/utils/performance/badges";
 
 // ============================================================
+// Team performance row type — shared with the view component so
+// the leaderboard / table both render the same shape.
+// ============================================================
+
+export interface TeamPerformanceCoach {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  overall_score: number;
+  metrics: CoachMetrics;
+  normalised: Record<string, number>;
+  badge_count: number;
+  /**
+   * The 3 most-recently-earned badges (by `earned_at` desc). Used by
+   * the leaderboard card grid + the new per-row chip group.
+   */
+  badges: Array<{ key: string; earned_at: string }>;
+  /**
+   * Score from the immediately-preceding period of the same length.
+   * `null` when the prior period has no snapshot for this coach (new
+   * coach, or first period of cron coverage). The view renders
+   * `prior_overall_score - overall_score` as the trend delta.
+   */
+  prior_overall_score: number | null;
+  /** Region label — derived from `profiles.region_ids[0]` if set. */
+  region_id: string | null;
+  region_name: string | null;
+}
+
+export interface TeamPerformanceData {
+  coaches: TeamPerformanceCoach[];
+  averages: Record<string, number>;
+}
+
+// ============================================================
 // Internal helpers
 // ============================================================
 
@@ -60,79 +95,140 @@ function teamAverageForKey(
 export async function getTeamPerformanceData(
   periodStart: string,
   periodEnd: string
-): Promise<{
-  coaches: Array<{
-    id: string;
-    name: string;
-    photo_url: string | null;
-    overall_score: number;
-    metrics: CoachMetrics;
-    normalised: Record<string, number>;
-    badge_count: number;
-  }>;
-  averages: Record<string, number>;
-}> {
+): Promise<TeamPerformanceData> {
   const supabase = await createSupabaseServerClient();
 
-  // Fetch all active coach profiles
-  const { data: activeCoaches } = await supabase
+  // Fetch all active coach profiles (region_ids cast through a
+  // record-shape because the typed Profile interface doesn't include
+  // region_ids yet — same pattern used in lib/staff/actions.ts).
+  const { data: activeCoachesRaw } = await supabase
     .from("profiles")
-    .select("id, name, photo_url")
+    .select("id, name, photo_url, region_ids")
     .eq("role", "coach")
     .eq("status", "active");
 
-  if (!activeCoaches || activeCoaches.length === 0) {
+  if (!activeCoachesRaw || activeCoachesRaw.length === 0) {
     return { coaches: [], averages: {} };
   }
 
+  const activeCoaches = activeCoachesRaw.map((c) => {
+    const regionIds = ((c as Record<string, unknown>).region_ids ?? null) as
+      | string[]
+      | null;
+    return {
+      id: c.id as string,
+      name: c.name as string,
+      photo_url: (c.photo_url as string | null) ?? null,
+      region_id:
+        Array.isArray(regionIds) && regionIds.length > 0 ? regionIds[0] : null,
+    };
+  });
+
   const coachIds = activeCoaches.map((c) => c.id);
 
-  // Fetch the latest snapshot per coach within the period
-  const { data: snapshots } = await supabase
-    .from("coach_performance_snapshots")
-    .select("*")
-    .in("coach_id", coachIds)
-    .gte("period_start", periodStart)
-    .lte("period_end", periodEnd)
-    .order("created_at", { ascending: false });
+  // Prior period — same length, immediately preceding. e.g. picking
+  // 1–17 May 2026 makes the prior window 14–30 April 2026. We compute
+  // it here so the view doesn't have to know about it.
+  const { priorStart, priorEnd } = computePriorPeriod(periodStart, periodEnd);
+
+  // Fan out: current snapshots, prior snapshots, badges, regions.
+  const [
+    snapshotsRes,
+    priorSnapshotsRes,
+    badgeRowsRes,
+    regionsRes,
+  ] = await Promise.all([
+    supabase
+      .from("coach_performance_snapshots")
+      .select("*")
+      .in("coach_id", coachIds)
+      .gte("period_start", periodStart)
+      .lte("period_end", periodEnd)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("coach_performance_snapshots")
+      .select("coach_id, overall_score, metrics_json, created_at")
+      .in("coach_id", coachIds)
+      .gte("period_start", priorStart)
+      .lte("period_end", priorEnd)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("coach_badges")
+      .select("coach_id, badge_key, earned_at")
+      .in("coach_id", coachIds)
+      .order("earned_at", { ascending: false }),
+    supabase.from("regions").select("id, name"),
+  ]);
+
+  const snapshots = snapshotsRes.data ?? [];
+  const priorSnapshots = priorSnapshotsRes.data ?? [];
+  const badgeRows = badgeRowsRes.data ?? [];
+  const regionRows = regionsRes.data ?? [];
+
+  const regionNameById = new Map<string, string>();
+  for (const r of regionRows) {
+    regionNameById.set(r.id as string, r.name as string);
+  }
 
   // Deduplicate — keep only the latest snapshot per coach
   const seenCoachIds = new Set<string>();
   const latestByCoach = new Map<string, CoachPerformanceSnapshot>();
-  for (const snapshot of snapshots ?? []) {
+  for (const snapshot of snapshots) {
     if (!seenCoachIds.has(snapshot.coach_id)) {
       seenCoachIds.add(snapshot.coach_id);
       latestByCoach.set(snapshot.coach_id, snapshot as CoachPerformanceSnapshot);
     }
   }
 
-  // Fetch badge counts for all coaches in one query
-  const { data: badgeRows } = await supabase
-    .from("coach_badges")
-    .select("coach_id")
-    .in("coach_id", coachIds);
+  // Prior-period scores — same dedup logic.
+  const seenPriorCoachIds = new Set<string>();
+  const priorScoreByCoach = new Map<string, number>();
+  for (const snap of priorSnapshots) {
+    if (seenPriorCoachIds.has(snap.coach_id)) continue;
+    seenPriorCoachIds.add(snap.coach_id);
+    const metrics = snap.metrics_json as CoachMetrics;
+    const score =
+      snap.overall_score ?? calculateOverallScore(normaliseMetrics(metrics));
+    priorScoreByCoach.set(snap.coach_id, score);
+  }
 
+  // Badges — bucket by coach, ordered desc by earned_at (query already
+  // returned them that way).
+  const badgesByCoach = new Map<
+    string,
+    Array<{ key: string; earned_at: string }>
+  >();
   const badgeCountByCoach: Record<string, number> = {};
-  for (const row of badgeRows ?? []) {
+  for (const row of badgeRows) {
     badgeCountByCoach[row.coach_id] = (badgeCountByCoach[row.coach_id] ?? 0) + 1;
+    const list = badgesByCoach.get(row.coach_id) ?? [];
+    list.push({ key: row.badge_key as string, earned_at: row.earned_at as string });
+    badgesByCoach.set(row.coach_id, list);
   }
 
   // Build per-coach result entries (only include coaches with a snapshot)
-  const coachEntries = activeCoaches
+  const coachEntries: TeamPerformanceCoach[] = activeCoaches
     .filter((coach) => latestByCoach.has(coach.id))
     .map((coach) => {
       const snapshot = latestByCoach.get(coach.id)!;
       const metrics = snapshot.metrics_json as CoachMetrics;
       const normalised = normaliseMetrics(metrics);
-      const overall_score = snapshot.overall_score ?? calculateOverallScore(normalised);
+      const overall_score =
+        snapshot.overall_score ?? calculateOverallScore(normalised);
       return {
         id: coach.id,
         name: coach.name,
-        photo_url: coach.photo_url ?? null,
+        photo_url: coach.photo_url,
         overall_score,
         metrics,
         normalised,
         badge_count: badgeCountByCoach[coach.id] ?? 0,
+        badges: (badgesByCoach.get(coach.id) ?? []).slice(0, 3),
+        prior_overall_score: priorScoreByCoach.get(coach.id) ?? null,
+        region_id: coach.region_id,
+        region_name: coach.region_id
+          ? (regionNameById.get(coach.region_id) ?? null)
+          : null,
       };
     });
 
@@ -150,6 +246,33 @@ export async function getTeamPerformanceData(
   averages.overall_score = average(coachEntries.map((c) => c.overall_score));
 
   return { coaches: coachEntries, averages };
+}
+
+/**
+ * Compute the immediately-preceding window of the same length. Used
+ * for the trend arrow next to each coach's overall score.
+ *
+ * Example: picking 2026-05-01 → 2026-05-17 (17 days) returns
+ * priorStart 2026-04-14, priorEnd 2026-04-30.
+ */
+function computePriorPeriod(
+  start: string,
+  end: string,
+): { priorStart: string; priorEnd: string } {
+  const startDate = new Date(start + "T00:00:00Z");
+  const endDate = new Date(end + "T00:00:00Z");
+  const lengthDays =
+    Math.round(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    ) + 1;
+  const priorEndDate = new Date(startDate);
+  priorEndDate.setUTCDate(priorEndDate.getUTCDate() - 1);
+  const priorStartDate = new Date(priorEndDate);
+  priorStartDate.setUTCDate(priorStartDate.getUTCDate() - (lengthDays - 1));
+  return {
+    priorStart: priorStartDate.toISOString().slice(0, 10),
+    priorEnd: priorEndDate.toISOString().slice(0, 10),
+  };
 }
 
 // ============================================================

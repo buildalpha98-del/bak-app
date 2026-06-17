@@ -474,3 +474,80 @@ The child-record cockpit, especially during enrolment cycles and parent handover
 **Out of scope:** `ChildDetailView`'s individual cards (separate review); `CsvImportView` (already shipped and not regressing); the assessments engine itself lives at `/admin/assessments` — covered when we hit that tab.
 
 ---
+
+### 1.7 `/admin/performance` — Team Performance
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/performance/page.tsx` (38 lines) batches `getTeamPerformanceData(periodStart, periodEnd)` (default period = first-of-month → today) → `TeamPerformanceView` (~700+ lines).
+
+**Surface — list page:**
+- "Analytics" eyebrow + **"Team Performance"** h1 + tagline
+- **Period selector**: native `<input type="month">` + "Last 3 months" / "Last 6 months" quick buttons + period text + "Export CSV"
+- **4 summary cards** — Team Avg Score (border tinted by score) · Total Sessions · Avg Feedback Rating · Avg Form Completion
+- **Coach performance table** — sortable columns (Overall Score / Sessions / Feedback / Forms / Punctuality / Reliability / Attendance / Equipment / etc.), expandable rows revealing the full 8-metric breakdown
+- Empty state when no coaches/sessions in period
+
+**Sub-page:**
+- `/admin/performance/[coachId]/page.tsx` — individual coach detail (full per-metric breakdown + earned badges)
+
+**Backed by:**
+- `getTeamPerformanceData(start, end)`
+- `getCoachPerformanceDetail(coachId)`
+- `getCoachSelfPerformance()` — coach portal
+- `exportTeamPerformanceCsv(start, end)`
+- `getPerformanceWidgetData()` — admin home widget
+
+**CLAUDE.md context** — 8 weighted metrics: feedback (25%) · reliability (20%) · forms (15%) · punctuality (15%) · volume (10%) · attendance (10%) · equipment (5%). Badges: 50 Sessions, Century Coach, Five Star, Perfect Punctuality, Form Champion, Reliability Rock, Multi-Sport Master.
+
+✅ **What works**
+
+- Period switching is smooth (`useTransition` with subtle "Refreshing…" indicator)
+- Sortable columns + expandable rows reveal per-metric drilldowns
+- Score colour-coded summary cards
+- Empty state copy adapts to period selection
+- CSV export end-to-end
+- Coach detail sub-page (separate review territory)
+
+⚠️ **Gaps**
+
+1. **No URL persistence** — period selection resets every nav; can't bookmark "Last 6 months" or share a specific month with the team
+2. **No status pulse strip** — should surface: underperforming coaches (overall score <60) / top performers this period / coaches with no feedback this period / new badges earned this period
+3. **No filter chips** — can't slice by Region, Sport (when a coach is multi-sport), or "above/below team benchmark"
+4. **No view toggle** — only table view. A **leaderboard card grid** (photo + score + earned badges + trend arrow + click to detail) would be more motivating for ops to share in standups
+5. **No region indicator** on rows — `region_ids[0]` surfaced in /admin/staff after Wave A; same join should bring it here for triage
+6. **No badges shown on the row** — CLAUDE.md says 7 badge types exist (`coach_badges` table from migration 029); should be visible on each row as small chip group
+7. **No trend indicator** — "is this coach improving or declining vs prior period?". A small `ArrowUp` / `ArrowDown` next to the Overall Score would be powerful for spotting trajectory
+8. **No quick-link from row → coach's roster / schedule** — ops sees "low overall score, low session volume" and the next click should be "show me their roster". Currently you go: row → detail page → click back → /admin/roster?…
+9. **Period selector is a native HTML control** — visually inconsistent with the polished `MonthCalendarPopover` we just shipped on `/admin/roster`. Could share that component
+10. **Summary card icons all use the same default tint** — Team Avg Score should be brand-orange (the marquee number); others stay neutral
+11. **No "Performance leaders" inline widget** — top 3 coaches highlighted at the top would make a great daily standup visual
+12. **UI doesn't match the recent design language** — `rounded-lg`, dashed border on empty state, no `rounded-2xl`, no hover-lift, no `useCountUp` on summary numbers
+13. **No mobile redesign** — table scrolls horizontally on phones; should compress to a 1-column card list under `md`
+14. **Coach detail sub-page (`/[coachId]`) — separate review territory** — the linkthrough works but the page itself needs its own tab review
+
+🎯 **Final-state target**
+
+The team performance command center. Status Pulse strip (underperforming · top performers · no feedback · new badges this period). Filter chip row (Region · Sport · Above/Below benchmark) URL-persisted alongside the period. **Period picker replaced with the shared `MonthCalendarPopover`** from the roster. **Leaderboard card grid alternative** (photo + score + top badge + trend) with view toggle. Each table row shows earned badges + trend arrow + quick `Roster` / `Detail` link buttons. Region badge on row. "Top 3 performers" inline widget above the table for team-standup visibility. `useCountUp` on summary numbers. Mobile-responsive list under `md`. UI matches `/admin` home + the rest.
+
+📋 **Open items**
+
+- [x] **Performance Status Pulse** strip at top — underperforming coaches (<60) / top performers (≥80) / coaches with zero feedback this period / new badges earned this period
+- [x] **Filter chip row** with URL persistence: period (also lives in URL `?from=...&to=...`) / **Region** / **Sport** / **Benchmark** (above/below team avg)
+- [x] **Replace period selector** with the shared `MonthCalendarPopover` from `components/roster/month-calendar-popover.tsx` (extract / generalise if needed)
+- [x] **Leaderboard card grid** alternative + view toggle (`?view=cards|table` URL-persisted)
+- [x] **Badges chip group** per row (`coach_badges` table) — visible on table + grid view
+- [x] **Trend indicator** per row — small `ArrowUp` / `ArrowDown` with delta vs prior period (e.g. "+4" / "-2")
+- [x] **Region badge** per row (from `profiles.region_ids[0]` → `regions.name`)
+- [x] **Quick-action buttons** in the actions cell — "View detail" + "View roster" (deep-link to `/admin/roster?coach=<id>`)
+- [x] **"Top 3 performers" widget** above the table — 3 inline cards with photo + score + headline badge
+- [x] **`useCountUp`** on the 4 summary card numbers; brand-orange tint on Team Avg Score (marquee), neutral on others
+- [x] **Mobile responsive** — collapse the table to a 1-column card list under `md` with overall score + 2-3 top metrics
+- [x] **UI refresh**: `rounded-2xl` on all summary cards + container, restrained brand orange (Team Avg Score + active filter chip + Top performer card + Export CSV CTA only), `gap-6` between sections, subtle hover-lift on grid cards / `hover:bg-muted/30` on table rows
+- [x] **Period text** rendered as a polished "From 1 May – 17 May 2026" with Sydney-local date format instead of `2026-05-01 → 2026-05-17`
+- [ ] **(Optional, post-beta)** Snapshot archive — show a "View this period's snapshot" pill for past months that have a generated `coach_performance_snapshots` row (the monthly cron creates these)
+- [ ] **(Optional, post-beta)** Side-by-side compare picker — select 2 coaches → compact compare view across all 8 metrics
+
+**Out of scope:** Coach detail sub-page `/[coachId]` (separate mini-review when we drill in); the underlying performance scoring logic (lives in `lib/performance/`); badge-issue trigger logic.
+
+---

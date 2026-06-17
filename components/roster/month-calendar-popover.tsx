@@ -5,27 +5,36 @@
 // ============================================================
 //
 // A small hand-rolled month-grid popover that replaces the native
-// `<input type="date">` in the roster toolbar. The native control is
+// `<input type="date">` / `<input type="month">` controls. Both are
 // styling-hostile and visually inconsistent with the rest of the
-// page; this popover gives us full control over the chrome and the
+// platform; this popover gives us full control over the chrome and the
 // keyboard model.
 //
-// Behaviour summary
-//   - Renders the formatted week label (e.g. "9 – 13 Jun 2026") as
-//     the trigger button.
-//   - Popover content is a month grid: month/year header with
-//     prev/next arrows, weekday columns (M T W T F S S), and 6 rows
-//     × 7 cells of day numbers.
-//   - Clicking any day calls `onSelect(date)` with that day's *Monday*
-//     (via `getMonday`) and closes the popover.
-//   - Today's cell is ringed in brand orange; the currently-selected
-//     week is row-highlighted; the focused cell is ringed.
-//   - Keyboard: arrow keys navigate, Enter selects, Page Up/Down jump
-//     a month, Home/End jump to row start/end, Escape closes.
+// Modes
+//   - `mode="week"` (default — used by /admin/roster + /ops/roster):
+//     selecting any day snaps to the Monday of that week and the row
+//     for that week is highlighted. Used to navigate a week-based grid.
+//   - `mode="month"` (used by /admin/performance): selecting any day
+//     snaps to the 1st of that month and the whole calendar month is
+//     highlighted. A header row of presets (This month / Last 3 months
+//     / Last 6 months) is rendered above the grid in this mode.
 //
-// No new dependencies; vanilla `Date` math throughout. Designed to
-// work for both /admin/roster and /ops/roster since `RosterPage`
-// already owns the week-navigation logic.
+// Behaviour summary
+//   - Renders the formatted period label as the trigger button.
+//   - Popover content is a month grid: month/year header with prev/next
+//     arrows, weekday columns (M T W T F S S), and 6 rows x 7 cells of
+//     day numbers.
+//   - Clicking any day calls `onSelect(date)` with the normalised period
+//     boundary (Monday for week mode, 1st of month for month mode) and
+//     closes the popover.
+//   - Today's cell is ringed in brand orange; the currently-selected
+//     period is row-highlighted; the focused cell is ringed.
+//   - Keyboard: arrow keys navigate, Enter selects, Page Up/Down jump a
+//     month, Home/End jump to row start/end, Escape closes.
+//
+// No new dependencies; vanilla `Date` math throughout. Designed to work
+// for both /admin/roster (week mode) and /admin/performance (month mode)
+// without forking the component.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
@@ -37,15 +46,42 @@ import {
 } from "@/components/ui/popover";
 import { formatWeekLabel, getMonday } from "@/lib/utils/roster";
 
+type Mode = "week" | "month";
+
 interface MonthCalendarPopoverProps {
-  /** The currently-selected Monday (YYYY-MM-DD). Highlights the
-   *  whole week that contains this date. */
+  /**
+   * The currently-selected anchor date (YYYY-MM-DD).
+   *
+   * In week mode this is the Monday of the active week; in month mode
+   * it's the first day of the active month. The grid highlights every
+   * cell that falls inside the selected period.
+   */
   weekStart: string;
   /**
-   * Called with the Monday of whichever day the user picked. The
-   * caller is responsible for any subsequent navigation.
+   * Called with the normalised period anchor:
+   *   - week mode: Monday of the picked day's week
+   *   - month mode: first day of the picked day's month
    */
-  onSelect: (monday: Date) => void;
+  onSelect: (date: Date) => void;
+  /** "week" (default) or "month". See file header. */
+  mode?: Mode;
+  /**
+   * Optional override for the trigger label. Defaults to the formatted
+   * week / month label derived from `weekStart`.
+   */
+  label?: string;
+  /**
+   * Month-mode only: render the preset row (This month / Last 3 / Last
+   * 6 months). Each preset calls `onPresetSelect(months)` with the
+   * number of months back to anchor the period. Defaults to off.
+   */
+  presets?: Array<{ label: string; months: number }>;
+  /**
+   * Month-mode only: called when the operator clicks a preset chip. The
+   * caller derives the start/end from `months` since the popover only
+   * knows about an anchor date, not the end of the period.
+   */
+  onPresetSelect?: (months: number) => void;
 }
 
 const MONTH_NAMES = [
@@ -88,6 +124,10 @@ function isSameYmd(a: Date, b: Date): boolean {
   );
 }
 
+function firstOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
 /**
  * Build the 6×7 day grid for a given (year, month). Each cell is a
  * concrete Date — cells outside the displayed month are still real
@@ -98,45 +138,56 @@ function isSameYmd(a: Date, b: Date): boolean {
  * paging between months.
  */
 function buildMonthGrid(year: number, month: number): Date[] {
-  const firstOfMonth = new Date(year, month, 1);
+  const firstOfMonthDate = new Date(year, month, 1);
   // JS getDay: Sun=0, Mon=1, ..., Sat=6. We want Mon=0 ... Sun=6 so
   // the column order matches the WEEKDAY_LABELS array.
-  const firstWeekday = (firstOfMonth.getDay() + 6) % 7;
+  const firstWeekday = (firstOfMonthDate.getDay() + 6) % 7;
   const start = new Date(year, month, 1 - firstWeekday);
 
   const cells: Date[] = [];
   for (let i = 0; i < 42; i++) {
-    cells.push(new Date(start.getFullYear(), start.getMonth(), start.getDate() + i));
+    cells.push(
+      new Date(start.getFullYear(), start.getMonth(), start.getDate() + i),
+    );
   }
   return cells;
+}
+
+function formatMonthLabel(d: Date): string {
+  // e.g. "May 2026"
+  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export function MonthCalendarPopover({
   weekStart,
   onSelect,
+  mode = "week",
+  label,
+  presets,
+  onPresetSelect,
 }: MonthCalendarPopoverProps) {
-  const selectedMonday = useMemo(
+  const selectedAnchor = useMemo(
     () => new Date(weekStart + "T00:00:00"),
     [weekStart],
   );
 
-  // View month is local UI state — separate from selectedMonday so the
+  // View month is local UI state — separate from selectedAnchor so the
   // operator can page through months without committing a selection.
   const [open, setOpen] = useState(false);
-  const [viewYear, setViewYear] = useState(selectedMonday.getFullYear());
-  const [viewMonth, setViewMonth] = useState(selectedMonday.getMonth());
-  const [focusedDate, setFocusedDate] = useState<Date>(selectedMonday);
+  const [viewYear, setViewYear] = useState(selectedAnchor.getFullYear());
+  const [viewMonth, setViewMonth] = useState(selectedAnchor.getMonth());
+  const [focusedDate, setFocusedDate] = useState<Date>(selectedAnchor);
 
   // Reset the view to the selected month whenever the popover opens —
   // makes "open the picker" feel reliable rather than picking up wherever
   // the operator last paged to.
   useEffect(() => {
     if (open) {
-      setViewYear(selectedMonday.getFullYear());
-      setViewMonth(selectedMonday.getMonth());
-      setFocusedDate(selectedMonday);
+      setViewYear(selectedAnchor.getFullYear());
+      setViewMonth(selectedAnchor.getMonth());
+      setFocusedDate(selectedAnchor);
     }
-  }, [open, selectedMonday]);
+  }, [open, selectedAnchor]);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -149,17 +200,25 @@ export function MonthCalendarPopover({
     [viewYear, viewMonth],
   );
 
-  // Pre-compute the Mon-bookended range of the selected week so we can
-  // row-highlight in O(1) per cell rather than calling getMonday on
-  // every render. Friday is intentional — the staff view's Mon–Fri
-  // scope means weekend cells should NOT light up as "selected".
-  const weekStartYmd = toYmd(getMonday(selectedMonday));
-  const weekEndDate = (() => {
-    const d = getMonday(selectedMonday);
-    d.setDate(d.getDate() + 4);
-    return d;
-  })();
-  const weekEndYmd = toYmd(weekEndDate);
+  // Compute the highlight range based on mode.
+  //   - week: Mon → Fri of the selected anchor's week.
+  //   - month: 1st → last day of the selected anchor's month.
+  const { rangeStartYmd, rangeEndYmd } = useMemo(() => {
+    if (mode === "month") {
+      const start = firstOfMonth(selectedAnchor);
+      const end = new Date(
+        selectedAnchor.getFullYear(),
+        selectedAnchor.getMonth() + 1,
+        0,
+      );
+      return { rangeStartYmd: toYmd(start), rangeEndYmd: toYmd(end) };
+    }
+    // week mode
+    const monStart = getMonday(selectedAnchor);
+    const monEnd = new Date(monStart);
+    monEnd.setDate(monStart.getDate() + 4);
+    return { rangeStartYmd: toYmd(monStart), rangeEndYmd: toYmd(monEnd) };
+  }, [mode, selectedAnchor]);
 
   function goPrevMonth() {
     setViewMonth((m) => {
@@ -182,12 +241,13 @@ export function MonthCalendarPopover({
   }
 
   function commitSelection(day: Date) {
-    // Always normalise to the Monday — the roster grid is week-based
-    // and the parent expects Mondays. Picking Thursday or Sunday lands
-    // on the same week.
-    const monday = getMonday(day);
+    // Snap to the canonical anchor for the chosen mode.
+    //   - week → Monday
+    //   - month → 1st of month
+    const anchor =
+      mode === "month" ? firstOfMonth(day) : getMonday(day);
     setOpen(false);
-    onSelect(monday);
+    onSelect(anchor);
   }
 
   function handleCellKeyDown(e: React.KeyboardEvent, date: Date) {
@@ -261,6 +321,12 @@ export function MonthCalendarPopover({
     el?.focus();
   }, [focusedDate, open]);
 
+  const triggerLabel =
+    label ??
+    (mode === "month"
+      ? formatMonthLabel(selectedAnchor)
+      : formatWeekLabel(getMonday(selectedAnchor)));
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -269,12 +335,14 @@ export function MonthCalendarPopover({
             variant="outline"
             size="sm"
             className="min-h-[44px] gap-2"
-            aria-label={`Select week. Currently showing week of ${formatWeekLabel(getMonday(selectedMonday))}`}
+            aria-label={
+              mode === "month"
+                ? `Select month. Currently showing ${triggerLabel}.`
+                : `Select week. Currently showing week of ${triggerLabel}.`
+            }
           >
             <CalendarDays className="size-4" />
-            <span className="tabular-nums">
-              {formatWeekLabel(getMonday(selectedMonday))}
-            </span>
+            <span className="tabular-nums">{triggerLabel}</span>
           </Button>
         }
       />
@@ -284,6 +352,25 @@ export function MonthCalendarPopover({
         // Trap focus inside so arrow navigation never escapes mid-pick.
         // Base-ui's Popover already handles outside-click + Escape.
       >
+        {/* Presets (month mode only) */}
+        {mode === "month" && presets && presets.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {presets.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onPresetSelect?.(p.months);
+                }}
+                className="rounded-full border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground transition hover:border-[#E8712A] hover:text-[#E8712A]"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Month / year header */}
         <div className="mb-2 flex items-center justify-between">
           <button
@@ -330,9 +417,10 @@ export function MonthCalendarPopover({
             const inMonth = d.getMonth() === viewMonth;
             const ymd = toYmd(d);
             const isToday = isSameYmd(d, today);
-            // Highlight every Mon–Fri cell in the currently-selected
-            // week so the row reads as the active period at a glance.
-            const inSelectedWeek = ymd >= weekStartYmd && ymd <= weekEndYmd;
+            // Highlight every cell inside the selected period (week or
+            // month, depending on mode).
+            const inSelectedRange =
+              ymd >= rangeStartYmd && ymd <= rangeEndYmd;
             const isFocused = isSameYmd(d, focusedDate);
 
             return (
@@ -351,13 +439,11 @@ export function MonthCalendarPopover({
                   year: "numeric",
                 })}
                 aria-current={isToday ? "date" : undefined}
-                aria-selected={inSelectedWeek}
+                aria-selected={inSelectedRange}
                 className={[
                   "relative flex h-8 items-center justify-center rounded-md text-xs tabular-nums transition-colors focus:outline-none",
                   inMonth ? "text-foreground" : "text-muted-foreground/50",
-                  inSelectedWeek
-                    ? "bg-secondary"
-                    : "hover:bg-muted",
+                  inSelectedRange ? "bg-secondary" : "hover:bg-muted",
                   isToday
                     ? "ring-1 ring-[#E8712A] ring-offset-1 ring-offset-background"
                     : "",
@@ -374,7 +460,9 @@ export function MonthCalendarPopover({
 
         {/* Footer hint — keeps the keyboard model discoverable. */}
         <p className="mt-2 text-[10px] text-muted-foreground">
-          Arrows to navigate · Enter to select · selecting any day picks that week.
+          {mode === "month"
+            ? "Arrows to navigate · Enter selects · picking any day picks that month."
+            : "Arrows to navigate · Enter to select · selecting any day picks that week."}
         </p>
       </PopoverContent>
     </Popover>
