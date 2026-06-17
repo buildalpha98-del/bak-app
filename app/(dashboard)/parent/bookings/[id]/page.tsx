@@ -18,7 +18,9 @@ import {
   Package,
   AlertTriangle,
   ArrowLeft,
+  Megaphone,
 } from "lucide-react";
+import { SessionStatusTimeline } from "@/components/roster/session-status-timeline";
 
 type BookingWithSession = Booking & { session: BookableSession };
 
@@ -277,6 +279,17 @@ export default function BookingDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Status timeline (coach broadcasts) */}
+      {session.session_id && (
+        <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm">
+          <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
+            <Megaphone className="h-5 w-5 text-[#E8712A]" />
+            Status updates
+          </h2>
+          <SessionStatusTimeline sessionId={session.session_id} />
+        </div>
+      )}
 
       {/* Children Attending */}
       {booking.children_json && booking.children_json.length > 0 && (

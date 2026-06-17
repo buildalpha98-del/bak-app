@@ -49,6 +49,8 @@ export interface ParentStatusPulse {
   newInsightsCount: number;
   /** Active package balances expiring in next 7 days or with <=1 session left. */
   expiringPackagesCount: number;
+  /** Coach status broadcasts touching this parent's kids today. */
+  statusUpdatesTodayCount: number;
 }
 
 export interface ParentBookingPulse {
@@ -127,6 +129,7 @@ export async function getParentStatusPulse(): Promise<ParentStatusPulse> {
         waitlistOffersCount: 0,
         newInsightsCount: 0,
         expiringPackagesCount: 0,
+        statusUpdatesTodayCount: 0,
       };
     }
 
@@ -205,12 +208,33 @@ export async function getParentStatusPulse(): Promise<ParentStatusPulse> {
       return expiringSoon || almostUsedUp;
     }).length;
 
+    // statusUpdatesTodayCount — count notifications of type
+    // `coach_session_status_broadcast` delivered to this user today.
+    // notifications.user_id is the auth.users id (not parent_profiles.id),
+    // so we re-fetch it from the session — cheap because RLS guarantees
+    // we're already authenticated here.
+    let statusUpdatesTodayCount = 0;
+    const startOfDay = `${today}T00:00:00.000Z`;
+    const {
+      data: { user: parentUser },
+    } = await supabase.auth.getUser();
+    if (parentUser) {
+      const { count: broadcastCount } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", parentUser.id)
+        .eq("type", "coach_session_status_broadcast")
+        .gte("created_at", startOfDay);
+      statusUpdatesTodayCount = broadcastCount ?? 0;
+    }
+
     return {
       nextSessionDays,
       unpaidBookingsCount: unpaidBookingsRes.count ?? 0,
       waitlistOffersCount: waitlistOffersRes.count ?? 0,
       newInsightsCount: newInsightsRes.count ?? 0,
       expiringPackagesCount,
+      statusUpdatesTodayCount,
     };
   } catch (err) {
     console.error("getParentStatusPulse error:", err);
@@ -220,6 +244,7 @@ export async function getParentStatusPulse(): Promise<ParentStatusPulse> {
       waitlistOffersCount: 0,
       newInsightsCount: 0,
       expiringPackagesCount: 0,
+      statusUpdatesTodayCount: 0,
     };
   }
 }

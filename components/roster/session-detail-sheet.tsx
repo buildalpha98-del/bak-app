@@ -45,6 +45,7 @@ import {
 } from "./coach-chip-multiselect";
 import { ReplacementPanel } from "./replacement-panel";
 import { SessionNotesPopover } from "./session-notes-popover";
+import { SessionStatusTimeline } from "./session-status-timeline";
 import { SessionAttendanceList } from "@/components/attendance/session-attendance-list";
 import { formatDateShort, formatTime12 } from "@/lib/utils/roster";
 import { toast } from "sonner";
@@ -441,6 +442,14 @@ export function SessionDetailSheet({
             ) : (
               <p className="text-xs italic text-muted-foreground">No notes for this shift.</p>
             )}
+          </div>
+
+          <Separator />
+
+          {/* Status timeline (3-tap broadcasts) */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-foreground">Status timeline</h3>
+            <SessionStatusTimeline sessionId={session.id} />
           </div>
 
           <Separator />

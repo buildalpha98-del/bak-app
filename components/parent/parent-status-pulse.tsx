@@ -28,6 +28,7 @@ import {
   BellRing,
   Sparkles,
   Package,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 import { useCountUp } from "@/components/launch/use-count-up";
@@ -97,6 +98,17 @@ export function ParentHomePulseStrip({ pulse }: ParentHomePulseStripProps) {
               : "packs ending soon"
           }
           href="/parent/packages"
+        />
+        <Divider />
+        <PulseStat
+          icon={Megaphone}
+          count={pulse.statusUpdatesTodayCount}
+          label={
+            pulse.statusUpdatesTodayCount === 1
+              ? "status update today"
+              : "status updates today"
+          }
+          href="/parent/bookings"
         />
       </ul>
     </div>

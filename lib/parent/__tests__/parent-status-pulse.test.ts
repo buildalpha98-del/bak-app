@@ -36,6 +36,8 @@ interface PulseFixture {
   waitlistOffers?: number;
   newInsights?: number;
   packageRows?: Array<{ expires_at: string; remaining_sessions: number }>;
+  /** Count of coach_session_status_broadcast notifications today. */
+  statusUpdatesToday?: number;
 }
 
 function isoIn(days: number): string {
@@ -54,6 +56,7 @@ function installFixture(opts: PulseFixture) {
   const waitlistOffers = opts.waitlistOffers ?? 0;
   const newInsights = opts.newInsights ?? 0;
   const packageRows = opts.packageRows ?? [];
+  const statusUpdatesToday = opts.statusUpdatesToday ?? 0;
 
   supabaseMock.auth.getUser.mockResolvedValue({
     data: { user: { id: "user-1" } },
@@ -158,6 +161,23 @@ function installFixture(opts: PulseFixture) {
         }),
       };
     }
+    if (table === "notifications") {
+      // Used by the statusUpdatesToday count — `.eq(user_id).eq(type).gte(created_at)`.
+      return {
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              gte: () =>
+                Promise.resolve({
+                  count: statusUpdatesToday,
+                  data: null,
+                  error: null,
+                }),
+            }),
+          }),
+        }),
+      };
+    }
     throw new Error(`unexpected table ${table}`);
   });
 }
@@ -176,6 +196,7 @@ describe("getParentStatusPulse", () => {
       waitlistOffersCount: 0,
       newInsightsCount: 0,
       expiringPackagesCount: 0,
+      statusUpdatesTodayCount: 0,
     });
   });
 
@@ -191,6 +212,7 @@ describe("getParentStatusPulse", () => {
       waitlistOffersCount: 0,
       newInsightsCount: 0,
       expiringPackagesCount: 0,
+      statusUpdatesTodayCount: 0,
     });
   });
 
@@ -258,6 +280,7 @@ describe("getParentStatusPulse", () => {
       waitlistOffersCount: 0,
       newInsightsCount: 0,
       expiringPackagesCount: 0,
+      statusUpdatesTodayCount: 0,
     });
   });
 });

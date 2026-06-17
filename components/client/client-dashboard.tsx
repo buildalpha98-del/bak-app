@@ -21,6 +21,7 @@ import { useCountUp } from "@/components/launch/use-count-up";
 import { ClientHomePulseStrip } from "@/components/client/client-status-pulse";
 import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
 import { MultiCentreRollUp } from "@/components/client/multi-centre-roll-up";
+import { NextSessionBroadcastPill } from "@/components/client/next-session-broadcast-pill";
 import type { ClientDashboardData } from "@/lib/client/portal-actions";
 import type { ClientStatusPulse } from "@/lib/client/status-pulse-actions";
 import type { ClientUserCentreSummary } from "@/lib/client/actions";
@@ -172,6 +173,7 @@ export function ClientDashboard({
                 <p className="text-sm text-muted-foreground">
                   Coach: {nextSession.coach_name}
                 </p>
+                <NextSessionBroadcastPill sessionId={nextSession.id} />
               </div>
 
               <div className="flex flex-col items-center rounded-2xl bg-white px-3 py-2 shadow-sm">
