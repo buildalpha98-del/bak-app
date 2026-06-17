@@ -73,7 +73,7 @@ export function SharedPortalView({
           </p>
           <a
             href="/client-login"
-            className="inline-block mt-2 text-sm font-medium text-cyan-600 hover:underline"
+            className="inline-block mt-2 text-sm font-medium text-[#E8712A] hover:underline"
           >
             Sign in for full access
           </a>
@@ -83,10 +83,10 @@ export function SharedPortalView({
           {placeholderSections.map((section) => {
             const Icon = section.icon;
             return (
-              <Card key={section.title}>
+              <Card key={section.title} className="rounded-2xl transition-shadow hover:shadow-md">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-cyan-600" />
+                    <Icon className="h-5 w-5 text-[#E8712A]" />
                     <CardTitle>{section.title}</CardTitle>
                   </div>
                 </CardHeader>

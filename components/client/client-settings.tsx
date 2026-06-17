@@ -106,7 +106,7 @@ export function ClientSettings({
     return (
       <div className="animate-fade-up">
         <h1 className="text-2xl font-bold font-heading text-foreground">Settings</h1>
-        <Card className="mt-6">
+        <Card className="mt-6 rounded-2xl">
           <CardContent className="flex flex-col items-center py-12 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               <ShieldAlert className="h-6 w-6 text-muted-foreground" />
@@ -131,17 +131,17 @@ export function ClientSettings({
       </p>
 
       {/* Shared Links */}
-      <Card className="mt-6">
+      <Card className="mt-6 rounded-2xl transition-shadow hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4 text-cyan-600" />
+            <Link2 className="h-4 w-4 text-[#E8712A]" />
             Shared Links
           </CardTitle>
           <Button
             onClick={handleCreate}
             disabled={isCreating}
             size="sm"
-            className="bg-cyan-600 hover:bg-cyan-700 text-white"
+            className="rounded-2xl bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             {isCreating ? "Creating..." : "Create New Link"}
@@ -150,8 +150,8 @@ export function ClientSettings({
         <CardContent>
           {links.length === 0 ? (
             <div className="py-8 text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-cyan-50">
-                <Link2 className="h-5 w-5 text-cyan-600" />
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#E8712A]/10">
+                <Link2 className="h-5 w-5 text-[#E8712A]" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 No active shared links. Create one to share read-only portal access.
@@ -166,7 +166,7 @@ export function ClientSettings({
                 return (
                   <div
                     key={link.id}
-                    className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export function ClientSettings({
                           className={
                             isExpiringSoon
                               ? "border-amber-200 bg-amber-50 text-amber-700"
-                              : "border-cyan-200 bg-cyan-50 text-cyan-700"
+                              : "border-[#E8712A]/30 bg-[#E8712A]/10 text-[#E8712A]"
                           }
                         >
                           {days > 0 ? `${days} day${days === 1 ? "" : "s"} left` : "Expires today"}

@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
-import { Calendar } from "lucide-react";
+import { Calendar, FileText, CalendarDays, TrendingUp } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientReports } from "@/lib/client/portal-actions";
+import { getClientPortalPulse } from "@/lib/client/status-pulse-actions";
 import { ClientReports } from "@/components/client/client-reports";
+import { ClientPortalPulseStrip } from "@/components/client/client-status-pulse";
 
 export default async function ClientReportsPage({
   params,
@@ -15,7 +17,10 @@ export default async function ClientReportsPage({
   if (authError || !clientUser) redirect("/client-login");
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
-  const { data, error } = await getClientReports(centreId);
+  const [{ data, error }, pulse] = await Promise.all([
+    getClientReports(centreId),
+    getClientPortalPulse(centreId),
+  ]);
 
   if (error) {
     return (
@@ -24,7 +29,7 @@ export default async function ClientReportsPage({
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-2xl border border-[#E8712A]/30 bg-[#E8712A]/5 px-3 py-2 text-sm font-medium text-[#E8712A] transition-colors hover:bg-[#E8712A]/10"
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar
@@ -37,5 +42,29 @@ export default async function ClientReportsPage({
     );
   }
 
-  return <ClientReports reports={data} centreId={centreId} />;
+  return (
+    <div className="animate-fade-up space-y-6">
+      <ClientPortalPulseStrip
+        stats={[
+          {
+            icon: FileText,
+            count: pulse.reportsNewThisWeekCount,
+            label: pulse.reportsNewThisWeekCount === 1 ? "new this week" : "new this week",
+            href: `/client/${centreId}/reports`,
+          },
+          {
+            icon: CalendarDays,
+            count: pulse.reportsThisTermCount,
+            label: "reports this term",
+          },
+          {
+            icon: TrendingUp,
+            count: data.length,
+            label: "total available",
+          },
+        ]}
+      />
+      <ClientReports reports={data} centreId={centreId} />
+    </div>
+  );
 }

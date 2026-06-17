@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getClientPortalPulse } from "@/lib/client/status-pulse-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { ClientPortalPulseStrip } from "@/components/client/client-status-pulse";
 import { cn } from "@/lib/utils";
 import {
   Shield,
@@ -12,6 +14,8 @@ import {
   Download,
   ExternalLink,
   FolderOpen,
+  Sparkles,
+  BookMarked,
 } from "lucide-react";
 
 interface Document {
@@ -69,13 +73,16 @@ export default async function ResourcesPage({
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
   const supabase = await createSupabaseServerClient();
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("id, title, category, file_url, file_type, tags, created_at")
-    .eq("visibility", "all")
-    .in("category", ["risk_assessment", "policy", "centre_doc"])
-    .order("category")
-    .order("title");
+  const [{ data: documents }, pulse] = await Promise.all([
+    supabase
+      .from("documents")
+      .select("id, title, category, file_url, file_type, tags, created_at")
+      .eq("visibility", "all")
+      .in("category", ["risk_assessment", "policy", "centre_doc"])
+      .order("category")
+      .order("title"),
+    getClientPortalPulse(centreId),
+  ]);
 
   const docs: Document[] = documents ?? [];
 
@@ -94,7 +101,7 @@ export default async function ResourcesPage({
   const hasAny = docs.length > 0;
 
   return (
-    <div className="animate-fade-up space-y-8">
+    <div className="animate-fade-up space-y-6">
       <div>
         <h1 className="text-2xl font-bold font-heading text-foreground">
           Resources &amp; Documents
@@ -103,6 +110,21 @@ export default async function ResourcesPage({
           Risk assessments, policies, and documents shared by Build Alpha Kids.
         </p>
       </div>
+
+      <ClientPortalPulseStrip
+        stats={[
+          {
+            icon: Sparkles,
+            count: pulse.resourcesNewThisMonthCount,
+            label: pulse.resourcesNewThisMonthCount === 1 ? "new this month" : "new this month",
+          },
+          {
+            icon: BookMarked,
+            count: pulse.resourcesPoliciesCount,
+            label: pulse.resourcesPoliciesCount === 1 ? "policy on file" : "policies on file",
+          },
+        ]}
+      />
 
       {!hasAny ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -132,7 +154,7 @@ export default async function ResourcesPage({
                 ) : (
                   <div className="space-y-3">
                     {sectionDocs.map((doc) => (
-                      <Card key={doc.id} className="shadow-sm">
+                      <Card key={doc.id} className="rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                         <CardHeader className="pb-2 pt-4 px-4">
                           <div className="flex items-start justify-between gap-4">
                             <CardTitle className="text-base font-medium leading-snug">

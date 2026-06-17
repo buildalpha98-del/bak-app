@@ -10,15 +10,22 @@ import {
   ArrowRight,
   Activity,
   CalendarDays,
+  FileText,
+  MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCountUp } from "@/components/launch/use-count-up";
+import { ClientHomePulseStrip } from "@/components/client/client-status-pulse";
 import type { ClientDashboardData } from "@/lib/client/portal-actions";
+import type { ClientStatusPulse } from "@/lib/client/status-pulse-actions";
 
 interface ClientDashboardProps {
   data: ClientDashboardData;
   centreId: string;
+  pulse: ClientStatusPulse;
 }
 
 function formatDateNice(dateStr: string): string {
@@ -71,7 +78,7 @@ function renderStars(rating: number | null) {
   return <span className="inline-flex items-center gap-0.5">{stars}</span>;
 }
 
-export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
+export function ClientDashboard({ data, centreId, pulse }: ClientDashboardProps) {
   const { centreName, nextSession, stats, recentSessions } = data;
   const days = nextSession ? daysUntil(nextSession.date) : null;
 
@@ -80,18 +87,47 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold font-heading text-foreground">
-          Welcome back
+          Welcome, {centreName}
         </h1>
-        <p className="mt-1 text-muted-foreground">{centreName}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Here&apos;s what&apos;s on at your centre this week.
+        </p>
+      </div>
+
+      {/* Status pulse */}
+      <ClientHomePulseStrip pulse={pulse} centreId={centreId} />
+
+      {/* Quick actions row */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <QuickAction
+          href={`/client/${centreId}/schedule`}
+          icon={Calendar}
+          label="View Schedule"
+        />
+        <QuickAction
+          href={`/client/${centreId}/reports`}
+          icon={FileText}
+          label="Open Reports"
+        />
+        <QuickAction
+          href={`/client/${centreId}/feedback`}
+          icon={Star}
+          label="Submit Feedback"
+        />
+        <QuickAction
+          href={`/client/${centreId}/children`}
+          icon={Users}
+          label="View Children"
+        />
       </div>
 
       {/* Next session card */}
       {nextSession ? (
-        <Card className="border-cyan-200 bg-gradient-to-br from-cyan-50 to-white">
+        <Card className="rounded-2xl border-[#E8712A]/20 bg-gradient-to-br from-[#FFF3EA] to-white transition-shadow hover:shadow-md">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-cyan-600">
+                <p className="text-xs font-medium uppercase tracking-wider text-[#E8712A]">
                   Next Session
                 </p>
                 <p className="text-lg font-semibold text-foreground">
@@ -104,7 +140,7 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
                   </span>
                   <Badge
                     variant="secondary"
-                    className="bg-cyan-100 text-cyan-700 hover:bg-cyan-100"
+                    className="bg-white text-[#E8712A] hover:bg-white border border-[#E8712A]/30"
                   >
                     {nextSession.sport}
                   </Badge>
@@ -114,16 +150,18 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
                 </p>
               </div>
 
-              <div className="flex flex-col items-center rounded-lg bg-white px-3 py-2 shadow-sm">
+              <div className="flex flex-col items-center rounded-2xl bg-white px-3 py-2 shadow-sm">
                 {days !== null && days >= 0 ? (
                   <>
-                    <span className="text-2xl font-bold text-cyan-600">{days}</span>
+                    <span className="text-2xl font-bold tabular-nums text-[#E8712A]">
+                      {days}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {days === 1 ? "day" : "days"}
                     </span>
                   </>
                 ) : (
-                  <span className="text-sm font-medium text-cyan-600">Today</span>
+                  <span className="text-sm font-medium text-[#E8712A]">Today</span>
                 )}
               </div>
             </div>
@@ -132,7 +170,7 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 -ml-2"
+                className="-ml-2 text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
                 render={<Link href={`/client/${centreId}/schedule`} />}
               >
                 View full schedule
@@ -142,7 +180,7 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-dashed">
+        <Card className="rounded-2xl border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
             <CalendarDays className="h-10 w-10 text-muted-foreground/40" />
             <p className="mt-3 text-sm font-medium text-muted-foreground">
@@ -157,75 +195,32 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-cyan-50 p-2">
-                <Calendar className="h-4 w-4 text-cyan-600" />
-              </div>
-            </div>
-            <p className="mt-3 text-2xl font-bold text-foreground">
-              {stats.sessionsThisTerm}
-            </p>
-            <p className="text-xs text-muted-foreground">Sessions this term</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-cyan-50 p-2">
-                <Users className="h-4 w-4 text-cyan-600" />
-              </div>
-            </div>
-            <p className="mt-3 text-2xl font-bold text-foreground">
-              {stats.totalChildren}
-            </p>
-            <p className="text-xs text-muted-foreground">Total children</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-amber-50 p-2">
-                <Star className="h-4 w-4 text-amber-500" />
-              </div>
-            </div>
-            <p className="mt-3 text-2xl font-bold text-foreground">
-              {stats.averageRating !== null ? stats.averageRating.toFixed(1) : "--"}
-            </p>
-            <p className="text-xs text-muted-foreground">Average rating</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-emerald-50 p-2">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
-              </div>
-            </div>
-            <p className="mt-3 text-2xl font-bold text-foreground">
-              {stats.attendanceRate !== null ? `${stats.attendanceRate}%` : "--"}
-            </p>
-            <p className="text-xs text-muted-foreground">Attendance rate</p>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          icon={Calendar}
+          value={stats.sessionsThisTerm}
+          label="Sessions this term"
+        />
+        <SummaryCard
+          icon={Users}
+          value={stats.totalChildren}
+          label="Total children"
+        />
+        <RatingCard rating={stats.averageRating} />
+        <AttendanceCard rate={stats.attendanceRate} />
       </div>
 
       {/* Recent activity */}
-      <Card>
+      <Card className="rounded-2xl transition-shadow hover:shadow-md">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4 text-cyan-600" />
+              <Activity className="h-4 w-4 text-[#E8712A]" />
               Recent Sessions
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
-              className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50"
+              className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
               render={<Link href={`/client/${centreId}/schedule`} />}
             >
               View all
@@ -239,10 +234,10 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
                 <Link
                   key={session.id}
                   href={`/client/${centreId}/schedule/${session.id}`}
-                  className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50"
+                  className="flex items-center justify-between rounded-2xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="hidden sm:block shrink-0 text-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="hidden shrink-0 text-center sm:block">
                       <p className="text-xs font-medium text-muted-foreground">
                         {formatDateShort(session.date)}
                       </p>
@@ -251,26 +246,26 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant="secondary"
-                          className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50 shrink-0"
+                          className="shrink-0 bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
                         >
                           {session.sport}
                         </Badge>
-                        <span className="text-sm text-muted-foreground truncate sm:hidden">
+                        <span className="truncate text-sm text-muted-foreground sm:hidden">
                           {formatDateShort(session.date)}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground truncate">
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
                         {session.coach_name}
                         {session.headcount !== null && (
                           <span className="ml-2">
-                            <Users className="inline h-3 w-3 mr-0.5" />
+                            <Users className="mr-0.5 inline h-3 w-3" />
                             {session.headcount}
                           </span>
                         )}
                       </p>
                     </div>
                   </div>
-                  <div className="shrink-0 ml-2">{renderStars(session.rating)}</div>
+                  <div className="ml-2 shrink-0">{renderStars(session.rating)}</div>
                 </Link>
               ))}
             </div>
@@ -288,5 +283,95 @@ export function ClientDashboard({ data, centreId }: ClientDashboardProps) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// ============================================================
+// Subcomponents
+// ============================================================
+
+function QuickAction({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: typeof Calendar;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2 rounded-2xl border bg-background p-3 text-sm font-medium text-foreground transition-all hover:-translate-y-0.5 hover:border-[#E8712A]/40 hover:shadow-sm"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-[#E8712A]" />
+      <span className="truncate">{label}</span>
+    </Link>
+  );
+}
+
+function SummaryCard({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: typeof Calendar;
+  value: number;
+  label: string;
+}) {
+  const ticked = useCountUp(value);
+  return (
+    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="rounded-2xl bg-[#E8712A]/10 p-2">
+            <Icon className="h-4 w-4 text-[#E8712A]" />
+          </div>
+        </div>
+        <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+          {ticked}
+        </p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RatingCard({ rating }: { rating: number | null }) {
+  const tenths = Math.round((rating ?? 0) * 10);
+  const ticked = useCountUp(tenths);
+  return (
+    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="rounded-2xl bg-amber-50 p-2">
+            <Star className="h-4 w-4 text-amber-500" />
+          </div>
+        </div>
+        <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+          {rating === null ? "--" : (ticked / 10).toFixed(1)}
+        </p>
+        <p className="text-xs text-muted-foreground">Average rating</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AttendanceCard({ rate }: { rate: number | null }) {
+  const ticked = useCountUp(rate ?? 0);
+  return (
+    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="rounded-2xl bg-emerald-50 p-2">
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          </div>
+        </div>
+        <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+          {rate === null ? "--" : `${ticked}%`}
+        </p>
+        <p className="text-xs text-muted-foreground">Attendance rate</p>
+      </CardContent>
+    </Card>
   );
 }

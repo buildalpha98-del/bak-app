@@ -1587,3 +1587,56 @@ A single `lib/coach/page-pulses.ts` module exposes one server action per page; a
 **Verification:** `npx vitest run lib/coach/` → 18/18 pass; `npx tsc --noEmit` → clean; `npm run build` → ✓ Compiled successfully (pre-existing CRM dynamic-server warnings unchanged).
 
 ---
+
+## 4. Client
+
+Centre-director portal at `/client/[centreId]` — read-only by design, single-centre scope. Closed in one commit alongside `lib/client/status-pulse-actions.ts`.
+
+### 4.1 `/client/[centreId]` — Home
+
+🎯 **Final-state delivered**
+
+Welcome header now names the centre. Status pulse strip surfaces four signals: next session (in N days / today / none), new reports in the last 14 days, unpaid invoices, feedback submitted in the last 90 days. Active counts use restrained brand orange (`#E8712A`); muted when zero so the strip stays calm. Quick-actions row (View Schedule / Open Reports / Submit Feedback / View Children) lives directly under the pulse. Next-session hero card is now brand-orange tinted instead of cyan, with `rounded-2xl` and tabular-num day counter. Summary cards (sessions / children / rating / attendance) use `useCountUp` so numbers tick into place. Recent sessions list lifted to `rounded-2xl` with hover-lift.
+
+**No URL filters / no bulk actions** — single-centre scope, read-only role, both unnecessary.
+
+### 4.2 `/client/[centreId]/reports` + `/invoices`
+
+🎯 **Final-state delivered**
+
+**Reports:** pulse strip with new-this-week / reports-this-term / total-available. Each report card lifted to `rounded-2xl` with hover-lift. Sync-Calendar CTA recoloured to brand orange. Empty-state icon recoloured.
+
+**Invoices:** pulse strip with overdue / unpaid / paid-this-month. Outstanding-balance summary tile in the header uses `useCountUp` on the dollar total. The financial-access gate doesn't apply here — these are the centre's own bills, not coach payroll. Desktop table now `rounded-2xl`; mobile cards lift on hover. Both substantive surfaces now pull `getClientPortalPulse(centreId)` server-side alongside the data fetch.
+
+### 4.3 `/client/[centreId]/feedback`
+
+🎯 **Final-state delivered**
+
+Pulse strip (submitted-this-term / awaiting-your-rating) sits above the existing summary card. New **"Recent submissions"** card lists the last 5 rated sessions with star displays — so directors can see the loop is closed without scrolling through the rate-stack. Feedback form button + accent buttons recoloured to brand orange. Session-feedback cards lifted to `rounded-2xl` with hover-lift. Progress bar inside the summary card switched to brand orange. The `feedback_source` column doesn't exist in `feedback_ratings`, so the pulse uses last-90-day submission volume as the participation proxy — documented inline in the action.
+
+### 4.4 Other client surfaces (light refresh, aggregated)
+
+- **`/schedule`, `/programs`, `/children`, `/staff`, `/curriculum`** — cards lifted to `rounded-2xl` with subtle hover-lift; cyan accents on cards / view buttons / filter pills recoloured to restrained brand orange. Empty-state icons now sit in `bg-[#E8712A]/10` circles.
+- **`/impact`** — chart palette converted to the 2-tone admin-home approach (`#E8712A` + `#F4A87B`) for the attendance area; pie chart now leads with orange + peach and falls back to neutrals so the brand colour stays restrained. All chart containers lifted to `rounded-2xl`.
+- **`/messages`** — own-bubble switched from cyan to brand orange; outer scroll container and send button rounded; sender labels recoloured.
+- **`/resources`** — pulse strip with new-this-month + policies-on-file counts; document cards lifted to `rounded-2xl` with hover-lift; empty-state icon recoloured.
+- **`/settings`** — primary CTA and link badges recoloured to brand orange; cards and link rows lifted to `rounded-2xl`. Non-primary restricted view also rounded.
+- **`/client/shared/[token]`** — read-only token view: card sections lifted to `rounded-2xl`; sign-in CTA recoloured to brand orange. The token validation + expiry check in `validateSharedLink` is untouched.
+
+📋 **Closed:**
+
+- [x] `lib/client/status-pulse-actions.ts` — `getClientStatusPulse(centreId)` (4 fields) + `getClientPortalPulse(centreId)` (10 fields for the per-page strips)
+- [x] `components/client/client-status-pulse.tsx` — `ClientHomePulseStrip` (home) + `ClientPortalPulseStrip` (generic, stats array) with `useCountUp` + restrained orange
+- [x] `components/client/client-dashboard.tsx` — rewritten with welcome header, pulse, quick-actions row, brand-orange next-session card, `useCountUp` summary cards
+- [x] `components/client/client-reports.tsx`, `client-invoices.tsx`, `client-programs.tsx`, `client-children.tsx`, `client-schedule.tsx`, `client-messages.tsx`, `client-settings.tsx`, `staff-card.tsx`, `shared-portal-view.tsx`, `impact-charts.tsx` — UI refresh
+- [x] `app/client/[centreId]/feedback/page-client.tsx` — pulse + recent-submissions list + brand orange progress
+- [x] `app/client/[centreId]/resources/page.tsx` — pulse fan-out
+- [x] All `centre_id` scoping preserved end-to-end — no cross-centre reads added
+
+📋 **Tests added:** 16 cases across 2 files —
+- `lib/client/__tests__/client-status-pulse.test.ts` — `getClientStatusPulse` (7: calm zeros / days-until future / same-day / unread-reports / unpaid-invoices / new-feedback / defensive error)
+- `lib/client/__tests__/portal-pulse.test.ts` — `getClientPortalPulse` (9: calm zeros / invoices-overdue / invoices-paid / reports-this-term + week / feedback-pending compute / feedback-pending clamp-at-zero / resources / messages-unread / defensive error)
+
+**Verification:** `npx vitest run lib/client/` → 16/16 pass; `npx tsc --noEmit` → clean; `npm run build` → ✓ Compiled successfully.
+
+---

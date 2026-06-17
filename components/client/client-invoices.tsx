@@ -4,6 +4,7 @@ import { Receipt, FileDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCountUp } from "@/components/launch/use-count-up";
 import type { ClientInvoice } from "@/lib/client/portal-actions";
 
 interface ClientInvoicesProps {
@@ -90,9 +91,9 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
         <h1 className="text-2xl font-bold font-heading text-foreground">
           Invoices
         </h1>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
-            <Receipt className="h-6 w-6 text-cyan-600" />
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
+            <Receipt className="h-6 w-6 text-[#E8712A]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">
             No invoices yet
@@ -106,17 +107,39 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
     );
   }
 
+  // Totals for header summary
+  const dollars = (invoice: ClientInvoice) =>
+    invoice.total_cents != null ? invoice.total_cents / 100 : invoice.amount;
+  const totalOutstanding = invoices
+    .filter((inv) => ["sent", "partially_paid", "overdue"].includes(inv.status))
+    .reduce((sum, inv) => sum + dollars(inv), 0);
+  const outstandingTicked = useCountUp(Math.round(totalOutstanding));
+
   return (
     <div className="animate-fade-up">
-      <h1 className="text-2xl font-bold font-heading text-foreground">
-        Invoices
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Invoice history for your centre.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold font-heading text-foreground">
+            Invoices
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Invoice history for your centre.
+          </p>
+        </div>
+        {totalOutstanding > 0 && (
+          <div className="rounded-2xl border bg-background px-3 py-2 text-right">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Outstanding
+            </p>
+            <p className="text-lg font-semibold tabular-nums text-[#E8712A]">
+              {formatCurrency(outstandingTicked)}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Desktop table */}
-      <div className="mt-6 hidden overflow-hidden rounded-lg border bg-white sm:block">
+      <div className="mt-6 hidden overflow-hidden rounded-2xl border bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -170,7 +193,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
       {/* Mobile card list */}
       <div className="mt-6 space-y-3 sm:hidden">
         {invoices.map((invoice) => (
-          <Card key={invoice.id}>
+          <Card key={invoice.id} className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
               <CardTitle className="text-sm font-medium text-gray-900">
                 {invoice.invoice_number ?? "Invoice"}

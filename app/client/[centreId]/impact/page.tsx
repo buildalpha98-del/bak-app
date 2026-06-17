@@ -111,9 +111,9 @@ export default async function ImpactDashboardPage({
       <div className="animate-fade-up">
         <h1 className="text-2xl font-bold font-heading text-foreground">Impact Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">{termName}</p>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
-            <BarChart3 className="h-6 w-6 text-cyan-600" />
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
+            <BarChart3 className="h-6 w-6 text-[#E8712A]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No data yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -138,7 +138,7 @@ export default async function ImpactDashboardPage({
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="bg-white">
+            <Card key={stat.label} className="rounded-2xl bg-white transition-all hover:-translate-y-0.5 hover:shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div
@@ -168,7 +168,7 @@ export default async function ImpactDashboardPage({
       {/* Charts section */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Attendance Trend — full width on mobile, spans 1 col on lg */}
-        <Card className="bg-white">
+        <Card className="rounded-2xl bg-white transition-shadow hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Attendance Trend
@@ -187,7 +187,7 @@ export default async function ImpactDashboardPage({
         </Card>
 
         {/* Session Ratings */}
-        <Card className="bg-white">
+        <Card className="rounded-2xl bg-white transition-shadow hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Session Ratings
@@ -206,7 +206,7 @@ export default async function ImpactDashboardPage({
         </Card>
 
         {/* Sport Breakdown — full width */}
-        <Card className="bg-white lg:col-span-2">
+        <Card className="rounded-2xl bg-white transition-shadow hover:shadow-md lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Sport Breakdown

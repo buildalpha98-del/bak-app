@@ -66,15 +66,15 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-2xl border border-[#E8712A]/30 bg-[#E8712A]/5 px-3 py-2 text-sm font-medium text-[#E8712A] transition-colors hover:bg-[#E8712A]/10"
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar
           </a>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
-            <FileText className="h-6 w-6 text-cyan-600" />
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
+            <FileText className="h-6 w-6 text-[#E8712A]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No reports yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -108,7 +108,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
           const content = report.content_json as Record<string, string | number | string[] | null>;
 
           return (
-            <Card key={report.id} className="overflow-hidden">
+            <Card key={report.id} className="overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
               <button
                 type="button"
                 className="w-full text-left"

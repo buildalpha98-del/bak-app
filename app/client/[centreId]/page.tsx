@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientDashboard } from "@/lib/client/portal-actions";
+import { getClientStatusPulse } from "@/lib/client/status-pulse-actions";
 import { ClientDashboard } from "@/components/client/client-dashboard";
 
 export default async function ClientDashboardPage({
@@ -14,7 +15,10 @@ export default async function ClientDashboardPage({
   if (authError || !clientUser) redirect("/client-login");
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
-  const { data, error } = await getClientDashboard(centreId);
+  const [{ data, error }, pulse] = await Promise.all([
+    getClientDashboard(centreId),
+    getClientStatusPulse(centreId),
+  ]);
 
   if (error || !data) {
     return (
@@ -27,5 +31,5 @@ export default async function ClientDashboardPage({
     );
   }
 
-  return <ClientDashboard data={data} centreId={centreId} />;
+  return <ClientDashboard data={data} centreId={centreId} pulse={pulse} />;
 }

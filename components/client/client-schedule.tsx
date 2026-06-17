@@ -119,7 +119,7 @@ function SessionCard({
   showMeta: boolean;
 }) {
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-2">
@@ -181,7 +181,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="sm"
-              className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50"
+              className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
               render={
                 <Link href={`/client/${centreId}/schedule/${session.id}`} />
               }

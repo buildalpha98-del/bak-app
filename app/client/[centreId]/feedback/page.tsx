@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getSessionsForFeedback } from "@/lib/client/feedback-actions";
+import { getClientPortalPulse } from "@/lib/client/status-pulse-actions";
 import { FeedbackPageClient } from "./page-client";
 
 export default async function FeedbackPage({
@@ -14,7 +15,10 @@ export default async function FeedbackPage({
   if (authError || !clientUser) redirect("/client-login");
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
-  const sessions = await getSessionsForFeedback(centreId);
+  const [sessions, pulse] = await Promise.all([
+    getSessionsForFeedback(centreId),
+    getClientPortalPulse(centreId),
+  ]);
 
   const ratedCount = sessions.filter((s) => s.existingRating !== null).length;
 
@@ -24,6 +28,7 @@ export default async function FeedbackPage({
       centreId={centreId}
       ratedCount={ratedCount}
       totalCount={sessions.length}
+      pulse={pulse}
     />
   );
 }

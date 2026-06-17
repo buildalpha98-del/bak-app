@@ -49,9 +49,9 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
     return (
       <div className="animate-fade-up">
         <h1 className="text-2xl font-bold font-heading text-foreground">Programs</h1>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
-            <BookOpen className="h-6 w-6 text-cyan-600" />
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
+            <BookOpen className="h-6 w-6 text-[#E8712A]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No programs yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -74,7 +74,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
         {programs.map((program) => (
           <Card
             key={program.id}
-            className="group transition-shadow hover:shadow-md"
+            className="group rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
@@ -110,7 +110,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full border-cyan-200 text-cyan-700 hover:bg-cyan-50"
+                className="w-full rounded-2xl border-[#E8712A]/30 text-[#E8712A] hover:bg-[#E8712A]/10"
                 render={(props) => (
                   <Link
                     {...props}

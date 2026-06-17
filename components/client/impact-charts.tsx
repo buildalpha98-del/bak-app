@@ -79,11 +79,11 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
         <Area
           type="monotone"
           dataKey="sessions"
-          stroke="#0891b2"
+          stroke="#F4A87B"
           strokeWidth={2}
           fill="none"
-          dot={{ fill: "#0891b2", r: 3, strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: "#0891b2" }}
+          dot={{ fill: "#F4A87B", r: 3, strokeWidth: 0 }}
+          activeDot={{ r: 5, fill: "#F4A87B" }}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -156,16 +156,19 @@ interface SportPieChartProps {
   data: SportDataPoint[];
 }
 
+// Two-tone brand palette mirrors the admin home dashboard. We let
+// other sports fall back to a quieter neutral chain so the brand
+// colour stays restrained and the pie reads as "Build Alpha Kids".
 const SPORT_COLOURS = [
   "#E8712A",
+  "#F4A87B",
+  "#1F2937",
+  "#4B5563",
+  "#6B7280",
+  "#9CA3AF",
+  "#D1D5DB",
   "#0891b2",
   "#10b981",
-  "#8b5cf6",
-  "#f59e0b",
-  "#ef4444",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
   "#6366f1",
 ];
 

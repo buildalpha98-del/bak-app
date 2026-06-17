@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MessageSquare, CheckCircle } from "lucide-react";
+import {
+  Star,
+  MessageSquare,
+  CheckCircle,
+  Send,
+  Hourglass,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedbackForm } from "@/components/client/feedback-form";
+import { ClientPortalPulseStrip } from "@/components/client/client-status-pulse";
 import type { SessionForFeedback } from "@/lib/client/feedback-actions";
+import type { ClientPortalPulse } from "@/lib/client/status-pulse-actions";
 
 interface FeedbackPageClientProps {
   sessions: SessionForFeedback[];
   centreId: string;
   ratedCount: number;
   totalCount: number;
+  pulse: ClientPortalPulse;
 }
 
 function formatDateNice(dateStr: string): string {
@@ -88,7 +97,7 @@ function SessionFeedbackCard({
   const isRated = session.existingRating !== null;
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
@@ -125,7 +134,7 @@ function SessionFeedbackCard({
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50"
+                className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
               >
                 {expanded ? "Close" : "Edit"}
               </Button>
@@ -133,7 +142,7 @@ function SessionFeedbackCard({
               <Button
                 size="sm"
                 onClick={onToggle}
-                className="bg-cyan-600 text-white hover:bg-cyan-700"
+                className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
               >
                 {expanded ? "Close" : "Rate this session"}
               </Button>
@@ -160,6 +169,7 @@ export function FeedbackPageClient({
   centreId,
   ratedCount,
   totalCount,
+  pulse,
 }: FeedbackPageClientProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   // Track locally submitted sessions so rated count updates after submission
@@ -188,6 +198,11 @@ export function FeedbackPageClient({
     setTimeout(() => setExpandedId(null), 1800);
   }
 
+  // Build "recent submissions" list — sessions that have a rating.
+  const recentSubmissions = sessions
+    .filter((s) => s.existingRating !== null)
+    .slice(0, 5);
+
   return (
     <div className="animate-fade-up space-y-6">
       {/* Page title */}
@@ -198,21 +213,37 @@ export function FeedbackPageClient({
         </p>
       </div>
 
+      {/* Pulse strip */}
+      <ClientPortalPulseStrip
+        stats={[
+          {
+            icon: Send,
+            count: pulse.feedbackSubmittedThisTermCount,
+            label: "submitted this term",
+          },
+          {
+            icon: Hourglass,
+            count: pulse.feedbackPendingCount,
+            label: "awaiting your rating",
+          },
+        ]}
+      />
+
       {/* Summary card */}
-      <Card>
+      <Card className="rounded-2xl transition-shadow hover:shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">Feedback Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Sessions rated</span>
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold tabular-nums text-foreground">
               {currentRatedCount} of {totalCount}
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
             <div
-              className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+              className="h-full rounded-full bg-[#E8712A] transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -222,13 +253,62 @@ export function FeedbackPageClient({
             </p>
           )}
           {totalCount > 0 && currentRatedCount === totalCount && (
-            <p className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+            <p className="flex items-center gap-1 text-xs font-medium text-emerald-600">
               <CheckCircle className="h-3.5 w-3.5" />
               All sessions rated — thanks!
             </p>
           )}
         </CardContent>
       </Card>
+
+      {/* Recent submissions — proves the loop closed */}
+      {recentSubmissions.length > 0 && (
+        <Card className="rounded-2xl transition-shadow hover:shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CheckCircle className="h-4 w-4 text-[#E8712A]" />
+              Recent submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {recentSubmissions.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-2 rounded-2xl border bg-background px-3 py-2 text-sm"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="secondary"
+                      className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                    >
+                      {s.sport}
+                    </Badge>
+                    <span className="text-muted-foreground">
+                      {formatDateNice(s.date)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      · Coach {s.coach_name}
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-3.5 w-3.5 ${
+                          star <= (s.existingRating ?? 0)
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Sessions grouped by week */}
       {sortedWeeks.length === 0 ? (

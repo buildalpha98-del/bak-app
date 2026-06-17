@@ -67,8 +67,8 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
               onClick={() => setAgeFilter(group)}
               className={
                 ageFilter === group
-                  ? "bg-cyan-600 text-white hover:bg-cyan-700"
-                  : "text-muted-foreground"
+                  ? "rounded-2xl bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                  : "rounded-2xl text-muted-foreground"
               }
             >
               {group === "All" ? "All Ages" : `${group} yrs`}
@@ -79,9 +79,9 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
 
       {/* Children list */}
       {filtered.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50">
-            <Users className="h-6 w-6 text-cyan-600" />
+        <Card className="flex flex-col items-center justify-center rounded-2xl p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
+            <Users className="h-6 w-6 text-[#E8712A]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-foreground">
             {children.length === 0 ? "No children enrolled" : "No children match your filters"}
@@ -100,7 +100,7 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
               href={`/client/${centreId}/children/${child.id}`}
               className="block"
             >
-              <Card className="p-4 transition-shadow hover:shadow-md active:shadow-sm">
+              <Card className="rounded-2xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-md active:shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-foreground truncate">
