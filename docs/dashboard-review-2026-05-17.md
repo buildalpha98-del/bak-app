@@ -772,3 +772,195 @@ The training-library command center. Status Pulse strip surfaces what's blocking
 **Plumbing verified:** `coach-training-dashboard.tsx` + `training-compliance-widget.tsx` + `training-compliance-badge.tsx` + `assignment-manager.tsx` + `autoAssignOnboarding` all read the unchanged `training_modules` / `training_pathways` / `training_assignments` / `training_completions` surfaces — additive `bulk*` server actions + the new `requireAdminOrOps()` helper don't touch their contract. The soft-gated rostering eligibility check reads the same `training_assignments` + `training_completions` rows that the bulk actions write to, so the publish + assign actions feed the existing eligibility logic without a new contract.
 
 ---
+
+### 1.11 `/admin/equipment` — Equipment (Kits + Inventory)
+
+📋 **Open items** — closed in the `feat(equipment+documents+forms)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/equipment/page.tsx` batches `getKits()` + `getInventoryItems()` + `getEquipmentStatusPulse()` + `getCentresSimple()` → renders `EquipmentStatusPulseStrip` above `EquipmentPageTabs` (URL-persisted `?tab=kits|inventory`). Same shape mirrored at `/ops/equipment`. Coach surface at `/coach/equipment` (`coach-equipment-view.tsx`, `coach-equipment-checkin.tsx`) untouched.
+
+**Surface — list page:**
+- **Status Pulse strip** above the tabs — damaged or missing (inventory `condition IN ('poor','retired')` + kits `condition IN ('needs_attention','needs_replacement')`) · low-stock kits (any `equipment_items.quantity = 0`) · overdue check-ins (`location_type='coach'` with last `check_out` log > 14 days and no `check_in` since) · unassigned kits (`location_type='storage' AND condition='good'` with no upcoming session link); each jumps to the right tab+filter combo
+- **Filter chip row** (URL-persisted) per tab — Kits: search · Condition · Location · Clear all; Inventory: search · Condition · Item Type · Clear all
+- **Bulk-select on Inventory** with sticky orange action bar — Mark as damaged · Move to centre (Dialog with centre Select) · Export CSV (admin-only on the destructive paths, admin/ops for CSV)
+- **Row → `<Link>`** overlay on Kits cards for keyboard + open-in-new-tab nav
+- **Mobile** — inventory table collapses to compact card list under `md`
+
+**Backed by:**
+- `getEquipmentStatusPulse()` — 4-count pulse with parallel fan-out + zero-fallback on error
+- `bulkMarkInventoryDamaged(ids)` / `bulkMoveInventoryToCentre(ids, location)` / `exportInventoryCsv(ids)` — `requireAdminOrOps()` helper gates destructive + export paths, per-id error capture, `activity_log` entries; CSV escapes commas/quotes/newlines
+- Kit + inventory CRUD (`getKits`, `createKit`, `getInventoryItems`, etc.) unchanged
+
+**CLAUDE.md context** — `equipment_kits` + `equipment_items` + `equipment_logs` (kit-level) plus `equipment_inventory` per-centre item tracking (migration 041). Standard equipment picker preserved.
+
+✅ **What works**
+
+- Live pulse counts with `useCountUp` + brand-orange tint when > 0
+- URL-persisted filters survive refresh + shareable as deep links
+- Bulk Mark damaged + Move to centre + Export CSV with partial-failure tolerance
+- Restrained brand orange: Create CTA (Add Kit / Add Item), active jump chips, pulse counts, Save CTA on kit detail + check-out confirmation
+- Plumbing safe: `/coach/equipment` reads the same `getCoachAssignedKits` + `coachCheckIn` surfaces — additive `bulk*` server actions + new pulse don't touch their contract; `equipment-card.tsx` `onClick` made optional so the Link wrapper handles nav
+
+⚠️ **Gaps**
+
+1. **No bulk move-to-coach** — current Move-to-centre is scoped to centre locations; coach handoff still uses the per-kit check-out flow
+2. **No kit-level bulk actions** — only inventory has bulk-select; kit-level (Bulk reassign · Bulk mark needs_attention) deferred
+3. **Overdue check-in heuristic** uses 14 days flat — should be configurable per-coach (or per-centre) but post-beta
+
+🎯 **Final-state target**
+
+The equipment command center. Status Pulse strip surfaces what's blocking sessions (damaged · low-stock · overdue · unassigned). Filter chip row per tab + bulk inventory actions with safety. UI matches the rest — `rounded-2xl`, restrained orange, hover-lift, `useCountUp`, mobile cards under `md`.
+
+📋 **Open items**
+
+- [x] **Equipment Status Pulse** strip — damaged or missing · low-stock kits · overdue check-ins · unassigned kits
+- [x] **URL-persisted filter chip row** per tab (search / Condition / Location / Item Type)
+- [x] **URL tab state** — `?tab=kits|inventory` persisted across refresh
+- [x] **Bulk-select on Inventory** with sticky orange action bar — Mark as damaged + Move to centre + Export CSV
+- [x] **Mobile responsive** — inventory table → 1-column card list under `md`
+- [x] **UI refresh** — `rounded-2xl`, restrained orange (Create CTA · active chip · pulse > 0 · Save), hover-lift, `gap-6`, `useCountUp`
+- [x] **Row → `<Link>`** overlay on Kits cards for keyboard / open-in-new-tab
+- [x] **Empty state** styling — centred icon + heading + `rounded-2xl border bg-muted/20`
+- [x] **Kit detail refresh** — `rounded-2xl` Cards, restrained orange CTAs
+- [x] **Plumbing** — `/coach/equipment` (`coach-equipment-view.tsx`, `coach-equipment-checkin.tsx`) untouched, signatures preserved
+- [x] **Tests** — `lib/equipment/__tests__/equipment-status-pulse.test.ts` (5 cases: shape, zero-state, damaged sum, scope of unassigned, error swallow) + `lib/equipment/__tests__/bulk-actions.test.ts` (14 cases: empty / role gate / happy / partial failure across the three bulk actions)
+- [ ] **(Optional, post-beta)** Kit-level bulk actions (bulk reassign / bulk mark needs_attention)
+- [ ] **(Optional, post-beta)** Configurable overdue check-in threshold per centre/coach
+- [ ] **(Optional, post-beta)** Bulk move-to-coach
+
+**Plumbing verified:** `getKits()` enrichment + `KitListItem` shape unchanged; `equipment-card.tsx` `onClick` made optional rather than removed; `coachCheckIn`, `getCoachAssignedKits`, `reportIssue`, `assignKitToSession` signatures untouched — `/coach/equipment` + roster kit-assignment flow continue to read the same surfaces.
+
+---
+
+### 1.12 `/admin/documents` — Documents
+
+📋 **Open items** — closed in the `feat(equipment+documents+forms)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/documents/page.tsx` batches `getDocuments()` + `getCategoryCounts()` + `getDocumentsStatusPulse()` → renders `DocumentsStatusPulseStrip` above `DocumentHub`. Same shape at `/ops/documents` and `/coach/docs`. Programs auto-file path preserved (`autoFileDocument` signature untouched).
+
+**Surface — list page:**
+- **Status Pulse strip** above the layout — uploaded this week (`created_at >= Monday`) · pending review (tag `needs_review`) · expiring soon (`category='compliance' AND created_at < today - 90 days`) · no tags (empty / null `tags`); each jumps to the right filter combo
+- **Category sidebar** with URL-persisted state (`?category=…`) and active item in restrained brand orange
+- **Filter chip row** (URL-persisted) on the main list — search · Tag · Visibility · Clear all
+- **Grid / Table view toggle** in the toolbar (`?view=grid|table`) — grid is 3-col on `lg`, 2-col on `md`, 1-col mobile, each card is `rounded-2xl` with hover-lift
+- **Bulk-select** with sticky orange action bar — Archive (idempotent `[Archived]` prefix + `admin_only` visibility) · Tag (Dialog input) · Change visibility (Dialog select) · Export CSV · Delete (AlertDialog confirm, **admin-only**)
+- **Row → `<Link>`** overlay with stop-propagation onto the detail sheet + "Open in new tab" icon button to actually launch the file URL
+
+**Backed by:**
+- `getDocumentsStatusPulse()` — 4-count pulse with parallel fan-out + zero-fallback
+- `bulkArchiveDocuments` / `bulkTagDocuments` / `bulkSetVisibility` (admin/ops) + `bulkDeleteDocuments` (admin-only) + `exportDocumentsCsv` — per-id error capture, `activity_log` entries
+- Document CRUD + `autoFileDocument` unchanged; upload pipeline preserved
+
+**CLAUDE.md context** — `documents` table with category enum (program · policy · risk_assessment · onboarding · centre_doc · compliance · template · other), tags text[], version + parent_document_id chain, 3-tier visibility (all / admin_ops / admin_only). Programs save flow auto-creates `category='program'` rows via `autoFileDocument`.
+
+✅ **What works**
+
+- Live pulse counts with `useCountUp` + brand-orange tint when > 0
+- URL-persisted category + filter chips + view toggle survive refresh + shareable
+- Bulk Archive / Tag / Visibility / Delete / Export CSV with partial-failure tolerance
+- Restrained brand orange: Upload CTA, drag-drop zone hover ring, active sidebar, pulse counts, Save CTA on detail sheet
+- Drag-drop upload affordance — dashed `rounded-2xl` border with brand-orange ring on hover
+- Plumbing safe: `autoFileDocument` signature preserved → programs `saveProgram()` flow continues to auto-file `category='program'` rows unchanged
+
+⚠️ **Gaps**
+
+1. **No bulk move-to-category** — Archive is the only category-changing bulk path; full re-categorise needs the per-doc edit flow
+2. **Expiring-soon heuristic** is 90 days flat on `compliance` category — proper expiry should use an `expires_at` column (post-beta)
+3. **No drag-drop bulk upload** — single-file upload only; multi-file deferred
+
+🎯 **Final-state target**
+
+The documents command center. Status Pulse strip surfaces what to look at first (this week's uploads · pending review · expiring · untagged). Bulk Archive + Tag + Visibility + Delete + Export CSV. Grid + Table view toggle. UI matches the rest — `rounded-2xl`, restrained orange, hover-lift, `useCountUp`, mobile-first.
+
+📋 **Open items**
+
+- [x] **Documents Status Pulse** strip — uploaded this week · pending review · expiring soon · no tags
+- [x] **URL-persisted filter chip row** (search · Category · Tag · Visibility)
+- [x] **URL category state** — `?category=…` persisted across refresh
+- [x] **Bulk-select** with sticky orange action bar — Archive · Tag · Change visibility · Delete (admin-only) · Export CSV
+- [x] **Grid / Table view toggle** — `?view=grid|table` URL-persisted
+- [x] **Mobile responsive** — grid → 1-col under `md`, sidebar wraps above main
+- [x] **UI refresh** — `rounded-2xl`, restrained orange, hover-lift, `gap-6`, `useCountUp`
+- [x] **Row → `<Link>`** overlay + open-in-new-tab icon button
+- [x] **Empty state** styling — centred icon + heading inside `rounded-2xl border bg-muted/20`
+- [x] **Upload flow refresh** — dashed drag-drop zone with brand-orange ring on hover, `rounded-2xl`
+- [x] **Plumbing** — `autoFileDocument` signature preserved; programs auto-file path unchanged
+- [x] **Tests** — `lib/documents/__tests__/documents-status-pulse.test.ts` (6 cases: shape, zero-state, this-week scope, pending-review tag scope, expiring scope, error swallow) + `lib/documents/__tests__/bulk-actions.test.ts` (19 cases: empty / role gate / happy / partial failure across Archive · Tag · Visibility · Delete · Export CSV)
+- [ ] **(Optional, post-beta)** Bulk move-to-category
+- [ ] **(Optional, post-beta)** Proper `expires_at` column (migration) replacing the 90-day heuristic
+- [ ] **(Optional, post-beta)** Multi-file drag-drop upload
+
+**Plumbing verified:** `autoFileDocument` signature untouched; `uploadDocument`, `uploadNewVersion`, `getDocuments`, `getDocumentById`, `getDocumentVersionHistory`, `updateDocument`, `deleteDocument`, `getCategoryCounts` all unchanged. Programs `saveProgram()` flow continues to call `autoFileDocument` with the same args — verified by walking the program-save → document-creation path. `/coach/docs` wired with the same pulse + props for parity.
+
+---
+
+### 1.13 `/admin/forms` — Forms (Templates + Submissions)
+
+📋 **Open items** — closed in the `feat(equipment+documents+forms)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/forms/page.tsx` batches `getFormTemplates()` + `getFormSubmissions()` + `getSubmissionCountsByTemplate()` + `getFormsStatusPulse()` → renders `FormsStatusPulseStrip` above `FormTemplateList` (URL-persisted `?tab=templates|submissions`). Same shape at `/ops/forms`. Coach surface at `/coach/forms` + in-shift form completion (`form-renderer.tsx`) untouched — public signatures preserved.
+
+**Surface — list page:**
+- **Status Pulse strip** above the tabs — drafts pending (templates with `is_default=false AND no submissions ever`) · submitted this week (`form_submissions.submitted_at >= Monday`) · overdue (completed sessions in last 7d minus distinct session_ids in submissions in same window) · archived this week (templates whose name starts with `[Archived]` AND `updated_at >= Monday`)
+- **URL-persisted Tabs** — Templates / Submissions, with per-tab filter param scoping
+- **Filter chip row** (URL-persisted) — Templates: search · Form Type · Status (draft / published / archived via `[Archived]` prefix) · Centre · Clear all; Submissions: Form Type · Centre · date range · Clear all
+- **Bulk-select on Templates** with sticky orange action bar — Publish (strips `[Archived]` prefix) · Archive (adds prefix, refuses defaults) · Duplicate · Export CSV
+- **Submission-count badge** per template row (via `useCountUp`)
+- **Row → `<Link>`** wrappers on both tabs for keyboard + open-in-new-tab nav
+
+**Backed by:**
+- `getFormsStatusPulse()` — 4-count pulse with parallel fan-out + zero-fallback
+- `bulkPublishTemplates` / `bulkArchiveTemplates` / `bulkDuplicateTemplates` / `exportTemplatesCsv` — admin/ops gated via shared `requireAdminOrOps()` helper, per-id error capture, `activity_log` entries; CSV escapes commas/quotes/newlines
+- `getSubmissionCountsByTemplate()` — `Record<string, number>` helper, batched at page level
+- Template + submission CRUD + coach surface unchanged (signatures preserved: `getFormTemplates`, `getCoachAvailableTemplates`, `getTemplateForSession`, `submitForm`, `getFormSubmissions`)
+
+**Schema note** — `form_templates` has no `status` column (verified). Archive encoded via `[Archived] ` name-prefix convention, idempotent on both publish + archive paths.
+
+**CLAUDE.md context** — 5 form types (attendance · incident · session_feedback · risk_assessment · compliance), `is_default` defaults vs custom, `centre_id` for per-centre overrides. Forms appear on shift detail for completion in the coach surface.
+
+✅ **What works**
+
+- Live pulse counts with `useCountUp` + brand-orange tint when > 0
+- URL-persisted tabs + filter chips survive refresh + shareable; per-tab filter param scoping prevents cross-tab bleed
+- Bulk Publish + Archive + Duplicate + Export CSV with partial-failure tolerance (per-id error array, toast counts both successes and skips)
+- Archive refuses defaults — preserves the "every form type has at least one default" invariant
+- Restrained brand orange: Create CTA, active jump chips, pulse counts, Save CTA on template editor, submission-count badges when > 0
+- Plumbing safe: `/coach/forms` (`coach-forms-view.tsx`) + in-shift form completion (`form-renderer.tsx`) untouched; `getCoachAvailableTemplates` + `getTemplateForSession` + `submitForm` signatures preserved
+
+⚠️ **Gaps**
+
+1. **No `status` column** — Archive uses a `[Archived]` name-prefix convention. A proper migration adding `status enum` would be cleaner but is out of scope
+2. **No submission bulk actions** — only templates have bulk-select; submissions are read-only on the list
+3. **Overdue heuristic** counts completed sessions minus covered, which assumes 1 submission per session — works for the common case but doesn't differentiate by form type
+
+🎯 **Final-state target**
+
+The forms command center. Status Pulse strip surfaces what's blocking (drafts pending · overdue) and what's flowing (submitted this week · archived). Templates / Submissions tabs with filter chip rows. Bulk Publish + Archive + Duplicate + Export CSV with safety. UI matches the rest.
+
+📋 **Open items**
+
+- [x] **Forms Status Pulse** strip — drafts pending · submitted this week · overdue · archived this week
+- [x] **URL-persisted filter chip row** (search · Status · Form Type · Centre) per tab
+- [x] **URL tab state** — `?tab=templates|submissions` persisted with per-tab filter scoping
+- [x] **Bulk-select on Templates** with sticky orange action bar — Publish · Archive · Duplicate · Export CSV
+- [x] **Mobile responsive** — table → card list under `md`
+- [x] **UI refresh** — `rounded-2xl`, restrained orange (Create CTA · active chip · pulse > 0 · Save), hover-lift, `gap-6`, `useCountUp` on submission counts
+- [x] **Row → `<Link>`** wrappers on both tabs
+- [x] **Empty state** styling — centred icon + heading inside `rounded-2xl border bg-muted/20`
+- [x] **Submission view per template** — `getSubmissionCountsByTemplate()` powers the per-row count badges; full submission list on the Submissions tab
+- [x] **Form-builder refresh** — `rounded-2xl` canvas + field cards, restrained orange Save CTA
+- [x] **Plumbing** — `/coach/forms` + `form-renderer.tsx` untouched, coach + in-shift submission signatures preserved
+- [x] **Tests** — `lib/forms/__tests__/forms-status-pulse.test.ts` (6 cases: shape, zero-state, this-week scope, drafts scope, archived scope, error swallow) + `lib/forms/__tests__/bulk-actions.test.ts` (15 cases: empty / role gate / happy / partial failure across Publish · Archive · Duplicate · Export CSV)
+- [ ] **(Optional, post-beta)** Migration adding `form_templates.status enum` (replaces name-prefix Archive)
+- [ ] **(Optional, post-beta)** Submission bulk actions (Export CSV at minimum)
+- [ ] **(Optional, post-beta)** Per-form-type overdue calculation
+
+**Plumbing verified:** `coach-forms-view.tsx` + `form-renderer.tsx` + roster shift-detail forms surface all read the unchanged `getFormTemplates` / `getCoachAvailableTemplates` / `getTemplateForSession` / `submitForm` / `getFormSubmissions` signatures — additive `bulk*` server actions + the new `requireAdminOrOps()` gate + `getSubmissionCountsByTemplate()` helper don't touch their contract.
+
+---

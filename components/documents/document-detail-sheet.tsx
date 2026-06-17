@@ -211,10 +211,10 @@ export function DocumentDetailSheet({
           </div>
         </SheetHeader>
 
-        <div className="space-y-6 px-4 pb-4">
+        <div className="space-y-6 gap-6 px-4 pb-4">
           {/* Preview */}
           {previewType === "pdf" && (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="rounded-2xl border border-border overflow-hidden">
               <iframe
                 src={`${doc.file_url}#toolbar=0`}
                 className="h-[300px] w-full"
@@ -224,7 +224,7 @@ export function DocumentDetailSheet({
           )}
 
           {previewType === "image" && (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="rounded-2xl border border-border overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={doc.file_url}
@@ -235,7 +235,7 @@ export function DocumentDetailSheet({
           )}
 
           {!previewType && (
-            <div className="rounded-lg border border-border bg-secondary p-8 text-center">
+            <div className="rounded-2xl border border-border bg-secondary p-8 text-center">
               {getFileIcon(doc.file_name)}
               <p className="mt-2 text-sm text-muted-foreground">
                 Preview not available for this file type.
@@ -372,6 +372,7 @@ export function DocumentDetailSheet({
                     size="sm"
                     disabled={saving}
                     onClick={handleSaveEdits}
+                    className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
                   >
                     {saving && (
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -441,7 +442,7 @@ export function DocumentDetailSheet({
                     {versions.map((v) => (
                       <div
                         key={v.id}
-                        className={`flex items-center justify-between rounded-md px-2 py-1.5 text-xs ${
+                        className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-xs ${
                           v.id === doc.id
                             ? "bg-[var(--brand-orange-light)] text-primary"
                             : "text-muted-foreground"

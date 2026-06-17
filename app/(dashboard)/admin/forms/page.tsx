@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getFormTemplates } from "@/lib/forms/actions";
+import {
+  getFormTemplates,
+  getFormSubmissions,
+  getSubmissionCountsByTemplate,
+} from "@/lib/forms/actions";
+import { getFormsStatusPulse } from "@/lib/forms/status-pulse-actions";
 import { FormTemplateList } from "@/components/forms/form-template-list";
 
 export default async function AdminFormsPage() {
@@ -11,19 +16,32 @@ export default async function AdminFormsPage() {
 
   if (!user) redirect("/login");
 
-  const { data, error } = await getFormTemplates();
+  const [
+    templatesRes,
+    submissionsRes,
+    countsRes,
+    pulse,
+  ] = await Promise.all([
+    getFormTemplates(),
+    getFormSubmissions({}),
+    getSubmissionCountsByTemplate(),
+    getFormsStatusPulse(),
+  ]);
 
-  if (error) {
+  if (templatesRes.error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+        {templatesRes.error}
       </div>
     );
   }
 
   return (
     <FormTemplateList
-      initialTemplates={data ?? []}
+      initialTemplates={templatesRes.data ?? []}
+      initialSubmissions={submissionsRes.data ?? []}
+      submissionCounts={countsRes.data ?? {}}
+      pulse={pulse}
       basePath="/admin/forms"
     />
   );

@@ -319,7 +319,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
 
       {/* Check-out form */}
       {showCheckout && (
-        <Card className="mt-4 border-primary/30">
+        <Card className="mt-4 rounded-2xl border-primary/30">
           <CardContent className="p-4">
             <h3 className="text-sm font-medium text-foreground mb-3">
               Check Out Kit
@@ -396,6 +396,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
                 size="sm"
                 onClick={handleCheckOut}
                 disabled={checkingOut}
+                className="bg-[#E8712A] hover:bg-[#E8712A]/90"
               >
                 {checkingOut && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -416,7 +417,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
 
       {/* Linked Session */}
       {kit.linked_session && (
-        <Card className="mt-4 border-blue-200 bg-blue-50/50">
+        <Card className="mt-4 rounded-2xl border-blue-200 bg-blue-50/50">
           <CardContent className="flex items-center gap-3 p-3">
             <Calendar className="h-4 w-4 text-blue-600" />
             <span className="text-sm text-blue-800">
@@ -432,7 +433,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
         {/* Left column: Details + Items */}
         <div className="space-y-6">
           {/* Kit Details */}
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm">Details</CardTitle>
               {!editing && (
@@ -482,7 +483,12 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleSaveEdit} disabled={saving}>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveEdit}
+                      disabled={saving}
+                      className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+                    >
                       {saving && (
                         <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                       )}
@@ -522,7 +528,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
           </Card>
 
           {/* Items */}
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">
                 Kit Contents ({items.length} item type{items.length !== 1 ? "s" : ""})
@@ -615,7 +621,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
 
           {/* Delete */}
           {userRole === "admin" && (
-            <Card>
+            <Card className="rounded-2xl">
               <CardContent className="p-4">
                 {!confirmDelete ? (
                   <Button
@@ -656,7 +662,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
 
         {/* Right column: Audit Log */}
         <div>
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Activity Log</CardTitle>
             </CardHeader>

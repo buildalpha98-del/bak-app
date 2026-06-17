@@ -563,3 +563,419 @@ export async function getCategoryCounts(): Promise<{
     return { data: null, error: "Failed to count documents." };
   }
 }
+
+// ============================================================
+// Auth gates — bulk + destructive operations
+// ============================================================
+
+async function requireAdminOrOps(): Promise<
+  | { ok: true; userId: string; role: "admin" | "ops" }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { ok: false, error: "Not authorised." };
+  }
+
+  return { ok: true, userId: user.id, role: profile.role };
+}
+
+async function requireAdminOnly(): Promise<
+  | { ok: true; userId: string }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "admin") {
+    return { ok: false, error: "Only admins can perform this action." };
+  }
+
+  return { ok: true, userId: user.id };
+}
+
+// ============================================================
+// bulkArchiveDocuments
+// ============================================================
+//
+// Soft-archive each selected document by prefixing the title with
+// "[Archived]" (idempotent) and setting visibility to admin_only.
+// Keeps the row + file in storage so version history isn't lost —
+// just hides from non-admin views.
+
+export async function bulkArchiveDocuments(
+  ids: string[],
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No documents selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+
+  // Pull titles so we can prefix idempotently.
+  const { data: rows, error: fetchError } = await supabase
+    .from("documents")
+    .select("id, title")
+    .in("id", ids);
+  if (fetchError) {
+    return { updated: 0, errors: [], error: fetchError.message };
+  }
+
+  const titleById = new Map<string, string>();
+  for (const r of rows ?? []) {
+    titleById.set(
+      (r as { id: string }).id,
+      (r as { title: string }).title,
+    );
+  }
+
+  for (const id of ids) {
+    const existingTitle = titleById.get(id) ?? "";
+    const nextTitle = existingTitle.startsWith("[Archived]")
+      ? existingTitle
+      : `[Archived] ${existingTitle}`.trim();
+
+    const { error } = await supabase
+      .from("documents")
+      .update({
+        title: nextTitle,
+        visibility: "admin_only",
+      })
+      .eq("id", id);
+
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "document_bulk_archived",
+        entity_type: "document",
+        entity_id: id,
+      });
+    }
+  }
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to archive documents."
+        : errors.length
+          ? "Some documents failed to archive."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkTagDocuments
+// ============================================================
+//
+// Append a tag to each selected document. Skips duplicates so the
+// action is idempotent — calling twice with the same tag doesn't
+// double-add. Admin or ops only.
+
+export async function bulkTagDocuments(
+  ids: string[],
+  tag: string,
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No documents selected." };
+  }
+  const cleanTag = tag.trim();
+  if (!cleanTag) {
+    return { updated: 0, errors: [], error: "Tag cannot be empty." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+
+  // Pull existing tags so we can append idempotently per row.
+  const { data: rows, error: fetchError } = await supabase
+    .from("documents")
+    .select("id, tags")
+    .in("id", ids);
+  if (fetchError) {
+    return { updated: 0, errors: [], error: fetchError.message };
+  }
+
+  const tagsById = new Map<string, string[]>();
+  for (const r of rows ?? []) {
+    const rec = r as { id: string; tags: string[] | null };
+    tagsById.set(rec.id, rec.tags ?? []);
+  }
+
+  for (const id of ids) {
+    const existing = tagsById.get(id) ?? [];
+    if (existing.includes(cleanTag)) {
+      updated += 1; // already present — count as success, no-op
+      continue;
+    }
+    const nextTags = [...existing, cleanTag];
+
+    const { error } = await supabase
+      .from("documents")
+      .update({ tags: nextTags })
+      .eq("id", id);
+
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "document_bulk_tagged",
+        entity_type: "document",
+        entity_id: id,
+        metadata: { tag: cleanTag },
+      });
+    }
+  }
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to tag documents."
+        : errors.length
+          ? "Some documents failed to tag."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkSetVisibility
+// ============================================================
+//
+// Flip visibility for each selected document. Admin or ops only.
+
+export async function bulkSetVisibility(
+  ids: string[],
+  visibility: DocumentVisibility,
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No documents selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+
+  for (const id of ids) {
+    const { error } = await supabase
+      .from("documents")
+      .update({ visibility })
+      .eq("id", id);
+
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "document_bulk_visibility_changed",
+        entity_type: "document",
+        entity_id: id,
+        metadata: { visibility },
+      });
+    }
+  }
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to update visibility."
+        : errors.length
+          ? "Some documents failed to update."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkDeleteDocuments — admin only
+// ============================================================
+//
+// Hard-delete each selected document row. Mirrors deleteDocument's
+// admin-only role check. Storage files are left in place (Supabase
+// lifecycle policy reaps them) so deletion is recoverable in the
+// short term.
+
+export async function bulkDeleteDocuments(
+  ids: string[],
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No documents selected." };
+  }
+  const gate = await requireAdminOnly();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+
+  for (const id of ids) {
+    const { error } = await supabase.from("documents").delete().eq("id", id);
+
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "document_bulk_deleted",
+        entity_type: "document",
+        entity_id: id,
+      });
+    }
+  }
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to delete documents."
+        : errors.length
+          ? "Some documents failed to delete."
+          : null,
+  };
+}
+
+// ============================================================
+// exportDocumentsCsv
+// ============================================================
+//
+// Returns a CSV string of the selected documents for admin review
+// or accountant hand-off. Columns: title, category, tags,
+// visibility, version, uploader, created.
+
+export async function exportDocumentsCsv(
+  ids: string[],
+): Promise<{ csv: string | null; error: string | null }> {
+  if (!ids.length) {
+    return { csv: null, error: "No documents selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { csv: null, error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: rows, error } = await supabase
+    .from("documents")
+    .select(
+      "id, title, category, tags, visibility, version, created_at, profiles:uploaded_by(name)",
+    )
+    .in("id", ids);
+  if (error) return { csv: null, error: error.message };
+
+  const header = [
+    "Title",
+    "Category",
+    "Tags",
+    "Visibility",
+    "Version",
+    "Uploader",
+    "Created",
+  ];
+
+  function escape(value: string): string {
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  const lines: string[] = [header.map(escape).join(",")];
+  for (const row of rows ?? []) {
+    const r = row as unknown as {
+      title: string;
+      category: string;
+      tags: string[] | null;
+      visibility: string;
+      version: number;
+      created_at: string;
+      profiles: { name: string } | null;
+    };
+    lines.push(
+      [
+        escape(r.title),
+        escape(r.category),
+        escape(
+          r.tags && r.tags.length > 0 ? r.tags.join("; ") : "",
+        ),
+        escape(r.visibility),
+        escape(String(r.version)),
+        escape(r.profiles?.name ?? ""),
+        escape(r.created_at.slice(0, 10)),
+      ].join(","),
+    );
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: gate.userId,
+    action: "documents_exported_csv",
+    entity_type: "document",
+    entity_id: ids[0],
+    metadata: { count: ids.length },
+  });
+
+  return { csv: lines.join("\n"), error: null };
+}

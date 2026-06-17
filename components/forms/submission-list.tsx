@@ -245,12 +245,12 @@ export function SubmissionList({
       </div>
 
       {/* Submissions list */}
-      <div className="mt-6 space-y-2">
+      <div className="mt-6 flex flex-col gap-6">
         {displayed.length > 0 ? (
           displayed.map((sub) => (
             <Card
               key={sub.id}
-              className="cursor-pointer transition-shadow hover:shadow-md card-hover"
+              className="cursor-pointer rounded-2xl transition-shadow hover:shadow-md card-hover"
               onClick={() => handleViewSubmission(sub)}
             >
               <CardContent className="flex items-center justify-between p-4">

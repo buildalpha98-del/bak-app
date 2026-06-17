@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,7 @@ import type { KitListItem } from "@/lib/equipment/types";
 import type { EquipmentLocationType, EquipmentCondition } from "@/lib/types/enums";
 
 // ============================================================
-// Equipment List — main grid with filters + add kit
+// Equipment List — main grid with URL-persisted filters + add kit
 // ============================================================
 
 interface EquipmentListProps {
@@ -29,6 +30,9 @@ interface EquipmentListProps {
   hideHeader?: boolean;
 }
 
+type LocationFilter = EquipmentLocationType | "all";
+type ConditionFilter = EquipmentCondition | "all" | "damaged";
+
 export function EquipmentList({
   initialKits,
   userRole,
@@ -36,36 +40,66 @@ export function EquipmentList({
   hideHeader = false,
 }: EquipmentListProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [kits, setKits] = useState(initialKits);
-  const [search, setSearch] = useState("");
-  const [locationFilter, setLocationFilter] = useState<
-    EquipmentLocationType | "all"
-  >("all");
-  const [conditionFilter, setConditionFilter] = useState<
-    EquipmentCondition | "all"
-  >("all");
   const [addOpen, setAddOpen] = useState(false);
 
-  // Client-side filtering for responsiveness
-  const filtered = kits.filter((kit) => {
-    if (
-      search &&
-      !kit.name.toLowerCase().includes(search.toLowerCase()) &&
-      !(kit.assigned_coach_name ?? "")
-        .toLowerCase()
-        .includes(search.toLowerCase()) &&
-      !(kit.assigned_centre_name ?? "")
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    ) {
-      return false;
-    }
-    if (locationFilter !== "all" && kit.location_type !== locationFilter)
-      return false;
-    if (conditionFilter !== "all" && kit.condition !== conditionFilter)
-      return false;
-    return true;
-  });
+  // URL-persisted state — chip row reflects ?search=&condition=&location=
+  const search = searchParams.get("search") ?? "";
+  const locationFilter = (searchParams.get("location") as LocationFilter) || "all";
+  const conditionFilter =
+    (searchParams.get("condition") as ConditionFilter) || "all";
+  const stockFilter = searchParams.get("stock"); // "low" — surfaced from pulse
+  const checkinFilter = searchParams.get("checkin"); // "overdue"
+  const assignedFilter = searchParams.get("assigned"); // "no"
+
+  const updateParam = useCallback(
+    (key: string, value: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === null || value === "" || value === "all") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+      const query = params.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ""}`, {
+        scroll: false,
+      });
+    },
+    [router, pathname, searchParams],
+  );
+
+  const filtered = useMemo(() => {
+    return kits.filter((kit) => {
+      if (search) {
+        const q = search.toLowerCase();
+        const matchesName = kit.name.toLowerCase().includes(q);
+        const matchesCoach = (kit.assigned_coach_name ?? "")
+          .toLowerCase()
+          .includes(q);
+        const matchesCentre = (kit.assigned_centre_name ?? "")
+          .toLowerCase()
+          .includes(q);
+        if (!matchesName && !matchesCoach && !matchesCentre) return false;
+      }
+      if (locationFilter !== "all" && kit.location_type !== locationFilter)
+        return false;
+      if (
+        conditionFilter !== "all" &&
+        conditionFilter !== "damaged" &&
+        kit.condition !== conditionFilter
+      )
+        return false;
+      if (
+        conditionFilter === ("damaged" as ConditionFilter) &&
+        kit.condition !== "needs_attention" &&
+        kit.condition !== "needs_replacement"
+      )
+        return false;
+      return true;
+    });
+  }, [kits, search, locationFilter, conditionFilter]);
 
   async function refreshKits() {
     const { data } = await getKits();
@@ -73,9 +107,13 @@ export function EquipmentList({
     router.refresh();
   }
 
-  function handleKitClick(kit: KitListItem) {
-    router.push(`${basePath}/${kit.id}`);
-  }
+  const activeChipCount =
+    (search ? 1 : 0) +
+    (locationFilter !== "all" ? 1 : 0) +
+    (conditionFilter !== "all" ? 1 : 0) +
+    (stockFilter ? 1 : 0) +
+    (checkinFilter ? 1 : 0) +
+    (assignedFilter ? 1 : 0);
 
   return (
     <div className={hideHeader ? "" : "mx-auto max-w-6xl px-4 py-6"}>
@@ -88,80 +126,124 @@ export function EquipmentList({
               Track and manage equipment kits across coaches and centres.
             </p>
           </div>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button
+            onClick={() => setAddOpen(true)}
+            className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             Add Kit
           </Button>
         </div>
       )}
 
-      {/* Filters */}
-      <div className={`${hideHeader ? "" : "mt-4"} flex flex-col gap-3 sm:flex-row sm:items-center`}>
+      {/* Filter chip row */}
+      <div
+        className={`${hideHeader ? "" : "mt-4"} flex flex-col gap-3 sm:flex-row sm:items-center`}
+      >
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
           <Input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => updateParam("search", e.target.value)}
             placeholder="Search kits, coaches, centres..."
-            className="pl-9"
+            className="rounded-2xl pl-9"
           />
         </div>
         {hideHeader && (
-          <Button onClick={() => setAddOpen(true)}>
+          <Button
+            onClick={() => setAddOpen(true)}
+            className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             Add Kit
           </Button>
         )}
         <Select
           value={locationFilter}
-          onValueChange={(v) =>
-            setLocationFilter(v as EquipmentLocationType | "all")
-          }
+          onValueChange={(v) => updateParam("location", v)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px] rounded-2xl">
             <SelectValue placeholder="Location" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
+            <SelectItem value="all">All locations</SelectItem>
             <SelectItem value="storage">Storage</SelectItem>
-            <SelectItem value="coach">With Coach</SelectItem>
-            <SelectItem value="centre">At Centre</SelectItem>
+            <SelectItem value="coach">With coach</SelectItem>
+            <SelectItem value="centre">At centre</SelectItem>
           </SelectContent>
         </Select>
         <Select
           value={conditionFilter}
-          onValueChange={(v) =>
-            setConditionFilter(v as EquipmentCondition | "all")
-          }
+          onValueChange={(v) => updateParam("condition", v)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] rounded-2xl">
             <SelectValue placeholder="Condition" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Conditions</SelectItem>
+            <SelectItem value="all">All conditions</SelectItem>
             <SelectItem value="good">Good</SelectItem>
-            <SelectItem value="needs_attention">Needs Attention</SelectItem>
-            <SelectItem value="needs_replacement">Needs Replacement</SelectItem>
+            <SelectItem value="needs_attention">Needs attention</SelectItem>
+            <SelectItem value="needs_replacement">Needs replacement</SelectItem>
+            <SelectItem value="damaged">Damaged or missing</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
+      {/* Active filter chips (from pulse jump-links) */}
+      {activeChipCount > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          {stockFilter === "low" && (
+            <FilterChip
+              label="Low stock"
+              onClear={() => updateParam("stock", null)}
+            />
+          )}
+          {checkinFilter === "overdue" && (
+            <FilterChip
+              label="Overdue check-in"
+              onClear={() => updateParam("checkin", null)}
+            />
+          )}
+          {assignedFilter === "no" && (
+            <FilterChip
+              label="Unassigned"
+              onClear={() => updateParam("assigned", null)}
+            />
+          )}
+          {activeChipCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                router.replace(pathname, { scroll: false });
+              }}
+              className="text-xs text-muted-foreground/80 hover:text-foreground"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Grid */}
       {filtered.length > 0 ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((kit) => (
-            <EquipmentCard
+            <Link
               key={kit.id}
-              kit={kit}
-              onClick={handleKitClick}
-            />
+              href={`${basePath}/${kit.id}`}
+              className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] rounded-2xl"
+            >
+              <EquipmentCard kit={kit} />
+            </Link>
           ))}
         </div>
       ) : (
-        <div className="mt-12 flex flex-col items-center justify-center text-center">
+        <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border bg-muted/20 px-6 py-12 text-center">
           <Package className="h-12 w-12 text-muted-foreground/30" />
           <h3 className="mt-3 text-sm font-medium text-foreground">
-            {kits.length === 0 ? "No equipment kits yet" : "No kits match filters"}
+            {kits.length === 0
+              ? "No equipment kits yet"
+              : "No kits match filters"}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
             {kits.length === 0
@@ -178,5 +260,27 @@ export function EquipmentList({
         onSuccess={refreshKits}
       />
     </div>
+  );
+}
+
+function FilterChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-0.5">
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="text-muted-foreground/60 hover:text-foreground"
+        aria-label={`Clear ${label} filter`}
+      >
+        ×
+      </button>
+    </span>
   );
 }

@@ -174,14 +174,20 @@ export function DocumentUploadDialog({
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
-              className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+              className={`group cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
                 dragOver
-                  ? "border-primary bg-[var(--brand-orange-light)]"
-                  : "border-border hover:border-border"
+                  ? "border-[#E8712A] bg-[#E8712A]/5 ring-2 ring-[#E8712A]/20"
+                  : "border-border hover:border-[#E8712A]/60 hover:ring-2 hover:ring-[#E8712A]/10"
               }`}
             >
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground/60" />
-              <p className="mt-2 text-sm text-muted-foreground">
+              <Upload
+                className={`mx-auto h-10 w-10 transition ${
+                  dragOver
+                    ? "text-[#E8712A]"
+                    : "text-muted-foreground/60 group-hover:text-[#E8712A]/80"
+                }`}
+              />
+              <p className="mt-3 text-sm font-medium text-foreground">
                 Drag & drop a file here, or click to browse
               </p>
               <p className="mt-1 text-xs text-muted-foreground/60">
@@ -199,7 +205,7 @@ export function DocumentUploadDialog({
               />
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-muted/20 p-3">
               {getFileIcon(file.name)}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
@@ -327,6 +333,7 @@ export function DocumentUploadDialog({
             <Button
               onClick={handleUpload}
               disabled={!file || !title.trim() || uploading}
+              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
             >
               {uploading && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
               Upload

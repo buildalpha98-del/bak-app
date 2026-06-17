@@ -172,7 +172,11 @@ export function TemplateEditor({ template, basePath }: TemplateEditorProps) {
             </p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+        >
           {saving ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
           ) : (
@@ -185,7 +189,7 @@ export function TemplateEditor({ template, basePath }: TemplateEditorProps) {
       <div className="flex gap-6">
         {/* Left: Field Palette */}
         <div className="w-48 shrink-0">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs uppercase text-muted-foreground tracking-wide">
                 Add Field
@@ -211,7 +215,7 @@ export function TemplateEditor({ template, basePath }: TemplateEditorProps) {
 
         {/* Centre: Field List Preview */}
         <div className="flex-1 min-w-0">
-          <Card>
+          <Card className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Form Fields</CardTitle>
             </CardHeader>
@@ -331,7 +335,7 @@ export function TemplateEditor({ template, basePath }: TemplateEditorProps) {
               onClose={() => setSelectedFieldId(null)}
             />
           ) : (
-            <Card>
+            <Card className="rounded-2xl">
               <CardContent className="p-6 text-center text-sm text-muted-foreground/60">
                 Select a field to edit its properties.
               </CardContent>
@@ -369,7 +373,7 @@ function FieldPropertiesPanel({
   const otherFields = allFields.filter((f) => f.id !== field.id && f.type !== "heading");
 
   return (
-    <Card>
+    <Card className="rounded-2xl">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xs uppercase text-muted-foreground tracking-wide">
           Field Properties

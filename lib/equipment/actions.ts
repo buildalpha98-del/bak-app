@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { revalidatePath } from "next/cache";
 import type {
   EquipmentLocationType,
   EquipmentCondition,
@@ -893,4 +894,246 @@ export async function deleteInventoryItem(
   });
 
   return { error: null };
+}
+
+// ============================================================
+// Auth gate — admin/ops only for bulk + destructive operations
+// ============================================================
+
+async function requireAdminOrOps(): Promise<
+  | { ok: true; userId: string; role: "admin" | "ops" }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { ok: false, error: "Not authorised." };
+  }
+
+  return { ok: true, userId: user.id, role: profile.role };
+}
+
+// ============================================================
+// bulkMarkInventoryDamaged
+// ============================================================
+//
+// Flips each selected inventory row to `condition='poor'` — the
+// "stocktake found this item is not fit for use" flow. Per-id
+// failures don't sink the whole batch; admins only.
+
+export async function bulkMarkInventoryDamaged(
+  ids: string[],
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No items selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+  if (gate.role !== "admin") {
+    return { updated: 0, errors: [], error: "Not authorised." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+
+  for (const id of ids) {
+    const { error } = await supabase
+      .from("equipment_inventory")
+      .update({ condition: "poor", updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "inventory_bulk_marked_damaged",
+        entity_type: "equipment_inventory",
+        entity_id: id,
+      });
+    }
+  }
+
+  revalidatePath("/admin/equipment");
+  revalidatePath("/ops/equipment");
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to mark items as damaged."
+        : errors.length
+          ? "Some items failed to update."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkMoveInventoryToCentre
+// ============================================================
+//
+// Updates the `location` text on each selected inventory row to
+// the supplied location (typically a centre name). Per-id failures
+// don't sink the whole batch; admins only.
+
+export async function bulkMoveInventoryToCentre(
+  ids: string[],
+  location: string,
+): Promise<{
+  updated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { updated: 0, errors: [], error: "No items selected." };
+  }
+  if (!location || !location.trim()) {
+    return { updated: 0, errors: [], error: "Destination is required." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { updated: 0, errors: [], error: gate.error };
+  }
+  if (gate.role !== "admin") {
+    return { updated: 0, errors: [], error: "Not authorised." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const errors: { id: string; error: string }[] = [];
+  let updated = 0;
+  const trimmedLocation = location.trim();
+
+  for (const id of ids) {
+    const { error } = await supabase
+      .from("equipment_inventory")
+      .update({
+        location: trimmedLocation,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "inventory_bulk_moved",
+        entity_type: "equipment_inventory",
+        entity_id: id,
+        metadata: { location: trimmedLocation },
+      });
+    }
+  }
+
+  revalidatePath("/admin/equipment");
+  revalidatePath("/ops/equipment");
+
+  return {
+    updated,
+    errors,
+    error:
+      errors.length && updated === 0
+        ? "Failed to move items."
+        : errors.length
+          ? "Some items failed to move."
+          : null,
+  };
+}
+
+// ============================================================
+// exportInventoryCsv
+// ============================================================
+//
+// Returns a CSV string of the selected inventory items for admin
+// review or stocktake. Columns: Name, Sport, Quantity, Condition,
+// Location, Notes, Created. Admin/ops gate.
+
+export async function exportInventoryCsv(
+  ids: string[],
+): Promise<{ csv: string | null; error: string | null }> {
+  if (!ids.length) {
+    return { csv: null, error: "No items selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { csv: null, error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: rows, error } = await supabase
+    .from("equipment_inventory")
+    .select("id, name, sport, quantity, condition, location, notes, created_at")
+    .in("id", ids);
+  if (error) return { csv: null, error: error.message };
+
+  const header = [
+    "Name",
+    "Sport",
+    "Quantity",
+    "Condition",
+    "Location",
+    "Notes",
+    "Created",
+  ];
+
+  function escape(value: string): string {
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  const lines: string[] = [header.map(escape).join(",")];
+  for (const row of rows ?? []) {
+    const r = row as unknown as {
+      name: string;
+      sport: string[] | null;
+      quantity: number;
+      condition: string;
+      location: string;
+      notes: string | null;
+      created_at: string;
+    };
+    lines.push(
+      [
+        escape(r.name),
+        escape(
+          r.sport && r.sport.length > 0 ? r.sport.join("; ") : "",
+        ),
+        escape(String(r.quantity)),
+        escape(r.condition),
+        escape(r.location),
+        escape(r.notes ?? ""),
+        escape(r.created_at.slice(0, 10)),
+      ].join(","),
+    );
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: gate.userId,
+    action: "inventory_exported_csv",
+    entity_type: "equipment_inventory",
+    entity_id: ids[0],
+    metadata: { count: ids.length },
+  });
+
+  return { csv: lines.join("\n"), error: null };
 }

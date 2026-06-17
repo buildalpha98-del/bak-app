@@ -1,7 +1,12 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getFormSubmissions } from "@/lib/forms/actions";
-import { SubmissionList } from "@/components/forms/submission-list";
+import {
+  getFormTemplates,
+  getFormSubmissions,
+  getSubmissionCountsByTemplate,
+} from "@/lib/forms/actions";
+import { getFormsStatusPulse } from "@/lib/forms/status-pulse-actions";
+import { FormTemplateList } from "@/components/forms/form-template-list";
 
 export default async function OpsFormsPage() {
   const supabase = await createSupabaseServerClient();
@@ -11,20 +16,33 @@ export default async function OpsFormsPage() {
 
   if (!user) redirect("/login");
 
-  const { data, error } = await getFormSubmissions({});
+  const [
+    templatesRes,
+    submissionsRes,
+    countsRes,
+    pulse,
+  ] = await Promise.all([
+    getFormTemplates(),
+    getFormSubmissions({}),
+    getSubmissionCountsByTemplate(),
+    getFormsStatusPulse(),
+  ]);
 
-  if (error) {
+  if (templatesRes.error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+        {templatesRes.error}
       </div>
     );
   }
 
   return (
-    <SubmissionList
-      initialSubmissions={data ?? []}
-      userRole="ops"
+    <FormTemplateList
+      initialTemplates={templatesRes.data ?? []}
+      initialSubmissions={submissionsRes.data ?? []}
+      submissionCounts={countsRes.data ?? {}}
+      pulse={pulse}
+      basePath="/ops/forms"
     />
   );
 }

@@ -2,7 +2,62 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { revalidatePath } from "next/cache";
 import type { FormField, FormTemplate, FormSubmission } from "@/lib/types/database";
+
+// ============================================================
+// Archive convention
+// ============================================================
+//
+// `form_templates` has no `status` column (see migration 003).
+// We encode archive state via a `[Archived] ` prefix on the
+// template `name`. The prefix is idempotent: bulk-archiving a
+// template that already has it is a no-op (no DB write).
+// Publishing strips the prefix back off. The forms list filters
+// on this prefix to derive draft / published / archived views.
+
+const ARCHIVED_PREFIX = "[Archived] ";
+
+function isArchivedName(name: string): boolean {
+  return name.startsWith(ARCHIVED_PREFIX);
+}
+
+function unarchivedName(name: string): string {
+  if (!isArchivedName(name)) return name;
+  return name.slice(ARCHIVED_PREFIX.length);
+}
+
+function archivedName(name: string): string {
+  if (isArchivedName(name)) return name;
+  return ARCHIVED_PREFIX + name;
+}
+
+// ============================================================
+// Admin-or-ops role gate (mirrors training/actions.ts pattern)
+// ============================================================
+
+async function requireAdminOrOps(): Promise<
+  | { ok: true; userId: string; role: "admin" | "ops" }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { ok: false, error: "Not authorised." };
+  }
+
+  return { ok: true, userId: user.id, role: profile.role };
+}
 
 // ============================================================
 // Types
@@ -644,4 +699,398 @@ export async function getCentresForFilter(): Promise<{
     data: (data ?? []).map((c) => ({ id: c.id, name: c.name })),
     error: null,
   };
+}
+
+// ============================================================
+// getSubmissionCountsByTemplate
+// ============================================================
+//
+// Returns a `Record<templateId, count>` lookup so the list view
+// can show "N submissions" per row without firing one query
+// per template card. Single aggregation pass.
+
+export async function getSubmissionCountsByTemplate(): Promise<{
+  data: Record<string, number>;
+  error: string | null;
+}> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: {}, error: "Not authenticated" };
+
+  const { data: rows, error } = await supabase
+    .from("form_submissions")
+    .select("form_template_id");
+
+  if (error) return { data: {}, error: error.message };
+
+  const counts: Record<string, number> = {};
+  for (const row of rows ?? []) {
+    const r = row as { form_template_id: string };
+    counts[r.form_template_id] = (counts[r.form_template_id] ?? 0) + 1;
+  }
+  return { data: counts, error: null };
+}
+
+// ============================================================
+// bulkPublishTemplates
+// ============================================================
+//
+// `form_templates` has no `status` column. "Publishing" means
+// stripping the `[Archived] ` name prefix (if present). On a
+// template that was never archived this is a no-op write. Per-id
+// errors don't sink the batch.
+
+export async function bulkPublishTemplates(
+  ids: string[],
+): Promise<{
+  published: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { published: 0, errors: [], error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { published: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  // Load current names — we only need to strip the prefix where
+  // it actually exists. Skips an unnecessary update otherwise.
+  const { data: templates, error: fetchError } = await supabase
+    .from("form_templates")
+    .select("id, name")
+    .in("id", ids);
+  if (fetchError) {
+    return { published: 0, errors: [], error: fetchError.message };
+  }
+
+  const errors: { id: string; error: string }[] = [];
+  let published = 0;
+
+  for (const t of templates ?? []) {
+    const row = t as { id: string; name: string };
+    const newName = unarchivedName(row.name);
+
+    if (newName === row.name) {
+      // Already published (no [Archived] prefix). Still count it
+      // and log so the activity feed reflects the intent.
+      published += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "form_template_bulk_published",
+        entity_type: "form_template",
+        entity_id: row.id,
+        metadata: { name: row.name, no_op: true },
+      });
+      continue;
+    }
+
+    const { error } = await supabase
+      .from("form_templates")
+      .update({ name: newName })
+      .eq("id", row.id);
+    if (error) {
+      errors.push({ id: row.id, error: error.message });
+    } else {
+      published += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "form_template_bulk_published",
+        entity_type: "form_template",
+        entity_id: row.id,
+        metadata: { name: newName },
+      });
+    }
+  }
+
+  revalidatePath("/admin/forms");
+  revalidatePath("/ops/forms");
+
+  return {
+    published,
+    errors,
+    error:
+      errors.length && published === 0
+        ? "Failed to publish templates."
+        : errors.length
+          ? "Some templates failed to publish."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkArchiveTemplates
+// ============================================================
+//
+// Adds the `[Archived] ` prefix to each selected template's name.
+// Idempotent — a template that already has the prefix counts as
+// archived without a DB write. Existing submissions stay intact;
+// archival only hides the template from the active library.
+
+export async function bulkArchiveTemplates(
+  ids: string[],
+): Promise<{
+  archived: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { archived: 0, errors: [], error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { archived: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data: templates, error: fetchError } = await supabase
+    .from("form_templates")
+    .select("id, name, is_default")
+    .in("id", ids);
+  if (fetchError) {
+    return { archived: 0, errors: [], error: fetchError.message };
+  }
+
+  const errors: { id: string; error: string }[] = [];
+  let archived = 0;
+
+  for (const t of templates ?? []) {
+    const row = t as { id: string; name: string; is_default: boolean };
+    if (row.is_default) {
+      errors.push({
+        id: row.id,
+        error: "Cannot archive a default template.",
+      });
+      continue;
+    }
+    const newName = archivedName(row.name);
+    if (newName === row.name) {
+      // Already archived — no-op DB write but still counts.
+      archived += 1;
+      continue;
+    }
+
+    const { error } = await supabase
+      .from("form_templates")
+      .update({ name: newName })
+      .eq("id", row.id);
+    if (error) {
+      errors.push({ id: row.id, error: error.message });
+    } else {
+      archived += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "form_template_bulk_archived",
+        entity_type: "form_template",
+        entity_id: row.id,
+        metadata: { name: newName },
+      });
+    }
+  }
+
+  revalidatePath("/admin/forms");
+  revalidatePath("/ops/forms");
+
+  return {
+    archived,
+    errors,
+    error:
+      errors.length && archived === 0
+        ? "Failed to archive templates."
+        : errors.length
+          ? "Some templates failed to archive."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkDuplicateTemplates
+// ============================================================
+//
+// For each selected template, create a new template that mirrors
+// the original (fields, form_type) under "(Copy)" naming and
+// scoped globally (centre_id = null). Per-id errors don't sink
+// the batch. Activity log per-id.
+
+export async function bulkDuplicateTemplates(
+  ids: string[],
+): Promise<{
+  duplicated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!ids.length) {
+    return { duplicated: 0, errors: [], error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { duplicated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data: templates, error: fetchError } = await supabase
+    .from("form_templates")
+    .select("id, name, form_type, fields_json")
+    .in("id", ids);
+  if (fetchError) {
+    return { duplicated: 0, errors: [], error: fetchError.message };
+  }
+
+  const errors: { id: string; error: string }[] = [];
+  let duplicated = 0;
+
+  for (const t of templates ?? []) {
+    const row = t as {
+      id: string;
+      name: string;
+      form_type: string;
+      fields_json: FormField[];
+    };
+    const newName = `${unarchivedName(row.name)} (Copy)`;
+
+    const { data: inserted, error } = await supabase
+      .from("form_templates")
+      .insert({
+        name: newName,
+        form_type: row.form_type,
+        fields_json: row.fields_json,
+        is_default: false,
+        centre_id: null,
+        created_by: gate.userId,
+      })
+      .select("id")
+      .single();
+    if (error) {
+      errors.push({ id: row.id, error: error.message });
+    } else {
+      duplicated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "form_template_bulk_duplicated",
+        entity_type: "form_template",
+        entity_id: (inserted as { id: string }).id,
+        metadata: { source_id: row.id, name: newName },
+      });
+    }
+  }
+
+  revalidatePath("/admin/forms");
+  revalidatePath("/ops/forms");
+
+  return {
+    duplicated,
+    errors,
+    error:
+      errors.length && duplicated === 0
+        ? "Failed to duplicate templates."
+        : errors.length
+          ? "Some templates failed to duplicate."
+          : null,
+  };
+}
+
+// ============================================================
+// exportTemplatesCsv
+// ============================================================
+//
+// Returns a CSV string of the selected templates. Columns:
+// Name, Type, Field count (excluding locked auto-populated
+// fields), Default, Centre, Created.
+
+export async function exportTemplatesCsv(
+  ids: string[],
+): Promise<{ csv: string | null; error: string | null }> {
+  if (!ids.length) {
+    return { csv: null, error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { csv: null, error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: rows, error } = await supabase
+    .from("form_templates")
+    .select("id, name, form_type, fields_json, is_default, centre_id, created_at")
+    .in("id", ids);
+  if (error) return { csv: null, error: error.message };
+
+  // Fetch centre names in one pass for the CSV "Centre" column.
+  const centreIds = Array.from(
+    new Set(
+      (rows ?? [])
+        .map((r) => (r as { centre_id: string | null }).centre_id)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  const centreNames = new Map<string, string>();
+  if (centreIds.length > 0) {
+    const { data: centres } = await supabase
+      .from("centres")
+      .select("id, name")
+      .in("id", centreIds);
+    for (const c of centres ?? []) {
+      const cr = c as { id: string; name: string };
+      centreNames.set(cr.id, cr.name);
+    }
+  }
+
+  const header = [
+    "Name",
+    "Type",
+    "Field count",
+    "Default",
+    "Centre",
+    "Created",
+  ];
+
+  function escape(value: string): string {
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  const lines: string[] = [header.map(escape).join(",")];
+  for (const row of rows ?? []) {
+    const r = row as {
+      name: string;
+      form_type: string;
+      fields_json: FormField[] | null;
+      is_default: boolean;
+      centre_id: string | null;
+      created_at: string;
+    };
+    const fieldCount = (r.fields_json ?? []).filter(
+      (f: FormField) => !f.locked,
+    ).length;
+    const centre = r.centre_id ? (centreNames.get(r.centre_id) ?? "") : "";
+    lines.push(
+      [
+        escape(r.name),
+        escape(r.form_type),
+        escape(String(fieldCount)),
+        escape(r.is_default ? "Yes" : "No"),
+        escape(centre),
+        escape(r.created_at.slice(0, 10)),
+      ].join(","),
+    );
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: gate.userId,
+    action: "form_templates_exported_csv",
+    entity_type: "form_template",
+    entity_id: ids[0],
+    metadata: { count: ids.length },
+  });
+
+  return { csv: lines.join("\n"), error: null };
 }

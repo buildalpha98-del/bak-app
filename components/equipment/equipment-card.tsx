@@ -16,10 +16,15 @@ import type { KitListItem } from "@/lib/equipment/types";
 // ============================================================
 // Equipment Kit Card — grid display for kit overview
 // ============================================================
+//
+// The card itself is presentational. Wrap it in a <Link> at the
+// call site for navigation + keyboard accessibility. The legacy
+// onClick prop is kept optional for any caller that still needs
+// it, but Link is the primary path.
 
 interface EquipmentCardProps {
   kit: KitListItem;
-  onClick: (kit: KitListItem) => void;
+  onClick?: (kit: KitListItem) => void;
 }
 
 const CONDITION_CONFIG: Record<
@@ -62,24 +67,25 @@ function getLocationLabel(kit: KitListItem): string {
 
 export function EquipmentCard({ kit, onClick }: EquipmentCardProps) {
   const condition = CONDITION_CONFIG[kit.condition] ?? CONDITION_CONFIG.good;
+  const itemActive = kit.item_count > 0;
 
   return (
     <Card
-      className="cursor-pointer transition-shadow hover:shadow-md card-hover"
-      onClick={() => onClick(kit)}
+      className={`card-hover rounded-2xl transition hover:-translate-y-0.5 ${onClick ? "cursor-pointer" : ""}`}
+      onClick={onClick ? () => onClick(kit) : undefined}
     >
       <CardContent className="p-4">
         {/* Header row */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Package className="h-5 w-5 shrink-0 text-primary" />
-            <h3 className="text-sm font-medium text-foreground truncate">
+          <div className="flex min-w-0 items-center gap-2">
+            <Package className="h-5 w-5 shrink-0 text-[#E8712A]" />
+            <h3 className="truncate text-sm font-medium text-foreground">
               {kit.name}
             </h3>
           </div>
           <Badge
             variant={condition.variant}
-            className="shrink-0 text-[10px] gap-1"
+            className="shrink-0 gap-1 text-[10px]"
           >
             {condition.icon}
             {condition.label}
@@ -93,13 +99,17 @@ export function EquipmentCard({ kit, onClick }: EquipmentCardProps) {
         </div>
 
         {/* Item count */}
-        <div className="mt-1.5 text-xs text-muted-foreground">
+        <div
+          className={`mt-1.5 text-xs tabular-nums ${itemActive ? "text-[#E8712A] font-medium" : "text-muted-foreground"}`}
+        >
           {kit.item_count} item type{kit.item_count !== 1 ? "s" : ""}
         </div>
 
         {/* Notes preview */}
         {kit.notes && (
-          <p className="mt-2 text-xs text-muted-foreground/60 line-clamp-2">{kit.notes}</p>
+          <p className="mt-2 line-clamp-2 text-xs text-muted-foreground/60">
+            {kit.notes}
+          </p>
         )}
       </CardContent>
     </Card>
