@@ -1,13 +1,15 @@
-import { getTrainingModules } from "@/lib/training/actions";
-import { getTrainingPathways } from "@/lib/training/actions";
+import { getTrainingModules, getTrainingPathways } from "@/lib/training/actions";
+import { getTrainingStatusPulse } from "@/lib/training/status-pulse-actions";
 import { ModuleListView } from "@/components/training/module-list-view";
 import { PathwayListView } from "@/components/training/pathway-list-view";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrainingStatusPulseStrip } from "@/components/training/training-status-pulse";
+import { TrainingTabsShell } from "@/components/training/training-tabs-shell";
 
 export default async function TrainingPage() {
-  const [modules, pathways] = await Promise.all([
+  const [modules, pathways, pulse] = await Promise.all([
     getTrainingModules(),
     getTrainingPathways(),
+    getTrainingStatusPulse(),
   ]);
 
   return (
@@ -24,20 +26,17 @@ export default async function TrainingPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="modules">
-        <TabsList>
-          <TabsTrigger value="modules">Modules</TabsTrigger>
-          <TabsTrigger value="pathways">Pathways</TabsTrigger>
-        </TabsList>
+      <TrainingStatusPulseStrip pulse={pulse} basePath="/admin/training" />
 
-        <TabsContent value="modules" className="mt-4">
-          <ModuleListView initialModules={modules} basePath="/admin/training" />
-        </TabsContent>
-
-        <TabsContent value="pathways" className="mt-4">
-          <PathwayListView pathways={pathways} />
-        </TabsContent>
-      </Tabs>
+      <TrainingTabsShell
+        modulesPanel={
+          <ModuleListView
+            initialModules={modules}
+            basePath="/admin/training"
+          />
+        }
+        pathwaysPanel={<PathwayListView pathways={pathways} />}
+      />
     </div>
   );
 }

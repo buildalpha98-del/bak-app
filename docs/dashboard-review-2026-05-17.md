@@ -701,3 +701,74 @@ The programme-library command center. Status Pulse strip surfaces what's half-bu
 **Plumbing verified:** `sessions.program_id` consumers (`getSessionsForWeek` + SessionDetailSheet program-render) still call the unchanged `getProgramById` and `getProgramsForSport` — the new `session_count` / `last_used_at` / `has_skills` fields are additive on `ProgramListItem`, populated server-side in `getPrograms()`, and the existing roster + coach reads ignore them.
 
 ---
+
+### 1.10 `/admin/training` — Training (Modules + Pathways)
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/training/page.tsx` batches `getTrainingModules()` + `getTrainingPathways()` + `getTrainingStatusPulse()` → renders `TrainingStatusPulseStrip` above a `TrainingTabsShell` (URL-persisted `?tab=modules|pathways`) → `ModuleListView` and `PathwayListView`. Same shape mirrored at `/ops/training`.
+
+**Surface — list page (Modules tab):**
+- **Status Pulse strip** above the tabs (spans both) — overdue assignments (`training_assignments.due_date < CURRENT_DATE AND status != 'completed'`) · unassigned mandatory (active coach × mandatory published module pairs without an open assignment) · coaches with zero completions · new this week (each chip jumps via URL param)
+- **Filter chip row** (URL-persisted): search (title / description) · Type (video / document / quiz / checklist) · Status (draft / published / archived) · Required (all / required only / optional only) · Clear all
+- **Bulk-select on Modules** with sticky orange action bar — Publish · Assign to coaches · Export CSV · Archive (every active coach gets an assignment per published module, skipping coaches who already hold an open `assigned` / `in_progress` row for that module)
+- **Row → `<Link>`** overlay for keyboard + open-in-new-tab nav
+- **"Required" badge** on mandatory modules (restrained orange tint + ring on mobile cards)
+- **Mobile** — table collapses to 1-column card list under `md`
+
+**Surface — list page (Pathways tab):** URL-persisted search + Status filter, restrained orange Create CTA + Required pill, row-as-link, mobile card list. No bulk actions (pathways are referenced by `training_pathway_modules` + assignments — destructive bulk operations not safe at this tier).
+
+**Backed by:**
+- `getTrainingStatusPulse()` — 4-count pulse with parallel fan-out + zero-fallback on error
+- `bulkPublishTrainingModules(ids)` / `bulkArchiveTrainingModules(ids)` / `bulkAssignTrainingModulesToAllCoaches(ids, dueDate?)` / `exportTrainingModulesCsv(ids)` — admin/ops gated via shared `requireAdminOrOps()` helper, per-id error capture, `activity_log` entries; CSV escapes commas/quotes/newlines
+- Module + pathway CRUD (`getTrainingModules`, `createTrainingModule`, etc.) unchanged
+- `TrainingTabsShell` client wrapper — URL-persists `?tab=`, strips per-tab filter params when switching tabs so a `?type=video` from Modules doesn't bleed into Pathways
+
+**CLAUDE.md context** — LMS with 4 module types (video, document, quiz, checklist). Pathways chain modules with auto-advance. Soft-gates rostering (`/coach/training` compliance check feeds shift eligibility). `autoAssignOnboarding()` seeds mandatory modules + pathways on new coach. Certificates on completion. Migration 030 + 029 (badges) + 032 (AI usage); RLS confirmed in Wave A Item 7.
+
+✅ **What works**
+
+- Live pulse counts (overdue · unassigned mandatory · zero completions · new this week) with `useCountUp` + brand-orange tint when > 0
+- URL-persisted filters survive refresh + can be shared as a deep link; `?tab=` strips orphan filter params on tab switch
+- Bulk Publish + Archive + Assign-to-all-coaches + Export CSV with partial-failure tolerance (per-id error array, toast counts both successes and skips)
+- Assign-to-coaches dedupes against open assignments (`assigned` / `in_progress`) — re-clicking the action is idempotent
+- "Required" tag on mandatory modules — surfaced in the table title cell + as a ring on mobile cards
+- Restrained brand orange: Create CTA, Save Draft CTA on the module + pathway editors, active jump chips, "Required" pill, bulk-action bar, pulse counts
+- Plumbing safe: `/coach/training` (`coach-training-dashboard.tsx`), `training-compliance-widget.tsx`, `training-compliance-badge.tsx`, `assignment-manager.tsx`, and `autoAssignOnboarding` all read the same `training_modules` / `training_pathways` / `training_assignments` / `training_completions` surfaces — additive `bulk*` server actions don't touch their contract
+
+⚠️ **Gaps**
+
+1. **No per-module assignee panel inline** — admins still click into the module editor to see who's assigned. The detail-page surface (assignment-manager) covers this; an inline drawer was deferred to keep this commit focused
+2. **No bulk Assign with custom due-date picker** — current bulk Assign uses no due-date. Per-coach due-dates require the single-module assignment-manager flow
+3. **No region filter** — modules are org-wide. Out of scope (would require a migration)
+4. **Pathway bulk actions deferred** — pathways carry pathway_modules + open assignments. A safe Pathway bulk Publish / Archive would need a pre-flight enrolment check; not in scope for this close-out
+5. **Soft-gated rostering remains roster-side** — this close-out is additive on the library admin surface. The roster's eligibility check still reads the same `training_assignments` + `training_completions` rows
+
+🎯 **Final-state target**
+
+The training-library command center. Status Pulse strip surfaces what's blocking compliance (overdue) and what's about to (unassigned mandatory · coaches with zero completions). Filter chip row (Type · Status · Required) plus search across title / description, URL-persisted with `?tab=`-aware filter scoping. Bulk Publish + Archive + Assign-to-all-coaches + Export CSV with safety (partial-failure tolerance, dedupes against open assignments). UI matches `/admin` home and the rest — `rounded-2xl` containers, restrained brand orange (Create CTA / pulse counts > 0 / Save / Required / bulk bar), hover-lift on table rows, `useCountUp` on the pulse numbers, mobile card list under `md`.
+
+📋 **Open items**
+
+- [x] **Training Status Pulse** strip at top — overdue assignments · unassigned mandatory · coaches with zero completions · new modules this week
+- [x] **Filter chip row** with URL persistence on Modules: search · Type · Status · Required · Clear all
+- [x] **Filter chip row** with URL persistence on Pathways: search · Status · Clear all
+- [x] **Bulk-select on Modules** with sticky orange action bar — Publish + Archive + Assign to coaches + Export CSV (admin/ops gated via `requireAdminOrOps()`, partial-failure tolerant, `activity_log` rows per id, assign dedupes against open `assigned` / `in_progress` rows)
+- [x] **Tabs URL state** — `?tab=modules|pathways` persisted, with per-tab filter param stripping on switch
+- [x] **Module + Pathway editors design refresh** — restrained orange Save Draft CTA on both
+- [x] **Mobile responsive** — both list views' tables collapse to 1-column card list under `md`
+- [x] **UI refresh** — `rounded-2xl` everywhere, restrained orange (Create CTA · active chip · pulse > 0 · Save · Required pill · bulk bar), hover-lift, `gap-6`, `useCountUp`
+- [x] **Row → `<Link>`** overlay anchor for keyboard / right-click / open-in-new-tab nav (Modules table + cards, Pathways table + cards)
+- [x] **Empty state** styling — `rounded-2xl border py-16` with `BookOpen` / `GitMerge` icon + orange Create CTA on the org-zero state
+- [x] **"Required" badge** on mandatory modules — restrained orange in the title cell + ring on mobile cards
+- [x] **Tests** — `lib/training/__tests__/training-status-pulse.test.ts` (5 cases: shape, zero-state, overdue head, scope of unassigned-mandatory pairs, role-gate / hard-fail) + `lib/training/__tests__/bulk-actions.test.ts` (14 cases: role gate, empty selection, happy path, partial-failure capture across publish + archive + assign + CSV export)
+- [ ] **(Optional, post-beta)** Inline assignee panel per module on the list (today requires the detail page)
+- [ ] **(Optional, post-beta)** Bulk-assign with custom due-date picker
+- [ ] **(Optional, post-beta)** Region scoping on modules
+- [ ] **(Optional, post-beta)** Pathway bulk actions (gated on pre-flight enrolment + ordering check)
+
+**Out of scope:** Compliance widgets (`training-compliance-widget.tsx`, `training-compliance-badge.tsx`) — left untouched; `/coach/training` surface (`coach-training-dashboard.tsx`) — left untouched; `autoAssignOnboarding` — left untouched; AI assistant integration (`ai_assistant_*`) — separate close-out; certificate generation — separate close-out.
+
+**Plumbing verified:** `coach-training-dashboard.tsx` + `training-compliance-widget.tsx` + `training-compliance-badge.tsx` + `assignment-manager.tsx` + `autoAssignOnboarding` all read the unchanged `training_modules` / `training_pathways` / `training_assignments` / `training_completions` surfaces — additive `bulk*` server actions + the new `requireAdminOrOps()` helper don't touch their contract. The soft-gated rostering eligibility check reads the same `training_assignments` + `training_completions` rows that the bulk actions write to, so the publish + assign actions feed the existing eligibility logic without a new contract.
+
+---

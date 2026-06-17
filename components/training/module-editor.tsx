@@ -367,7 +367,11 @@ export function ModuleEditor({ mode, module }: Props) {
 
       {/* Footer actions */}
       <div className="flex items-center gap-3 pb-8">
-        <Button onClick={handleSave} disabled={saving || publishing}>
+        <Button
+          onClick={handleSave}
+          disabled={saving || publishing}
+          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+        >
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Save Draft
         </Button>
