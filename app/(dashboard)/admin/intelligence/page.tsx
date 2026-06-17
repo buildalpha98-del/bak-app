@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Brain,
@@ -15,10 +16,9 @@ import {
   Minus,
   Loader2,
   BarChart3,
-  PieChart,
   Activity,
-  UserCheck,
 } from "lucide-react";
+import { useCountUp } from "@/components/launch/use-count-up";
 import {
   Card,
   CardContent,
@@ -47,6 +47,9 @@ import {
   getCoachUtilisation,
   getGrowthMetrics,
 } from "@/lib/intelligence/actions";
+import {
+  getIntelligenceStatusPulse,
+} from "@/lib/intelligence/status-pulse-actions";
 import type {
   OverviewKPIs,
   CohortRow,
@@ -59,6 +62,8 @@ import type {
   CoachUtilRow,
   GrowthPoint,
 } from "@/lib/intelligence/actions";
+import type { IntelligenceStatusPulse } from "@/lib/intelligence/status-pulse-actions";
+import { IntelligenceStatusPulseStrip } from "@/components/intelligence/intelligence-status-pulse";
 
 // ============================================================
 // Constants
@@ -158,23 +163,35 @@ function KpiCard({
   icon,
   current,
   previous,
+  animateRaw,
+  prefix,
+  suffix,
 }: {
   title: string;
   value: string;
   icon: React.ReactNode;
   current: number;
   previous: number;
+  animateRaw?: number;
+  prefix?: string;
+  suffix?: string;
 }) {
   const change = changeIndicator(current, previous);
+  const ticked = useCountUp(animateRaw ?? Math.round(current));
+  const display = animateRaw !== undefined
+    ? `${prefix ?? ""}${ticked.toLocaleString()}${suffix ?? ""}`
+    : value;
   return (
-    <Card>
+    <Card className="rounded-2xl card-hover">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-[#666666]">{title}</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">{value}</p>
+            <p className="text-2xl font-bold text-[#1A1A1A] tabular-nums">
+              {display}
+            </p>
           </div>
-          <div className="rounded-lg bg-[#E8712A]/10 p-2.5 text-[#E8712A]">
+          <div className="rounded-xl bg-[#E8712A]/10 p-2.5 text-[#E8712A]">
             {icon}
           </div>
         </div>
@@ -193,13 +210,15 @@ function KpiCard({
 
 function OverviewTab({ kpis }: { kpis: OverviewKPIs }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <KpiCard
         title="Revenue (This Month)"
         value={formatCurrency(kpis.totalRevenue)}
         icon={<DollarSign className="h-5 w-5" />}
         current={kpis.totalRevenue}
         previous={kpis.prevTotalRevenue}
+        animateRaw={Math.round(kpis.totalRevenue)}
+        prefix="$"
       />
       <KpiCard
         title="Active Centres"
@@ -207,6 +226,7 @@ function OverviewTab({ kpis }: { kpis: OverviewKPIs }) {
         icon={<Building2 className="h-5 w-5" />}
         current={kpis.activeCentres}
         previous={kpis.prevActiveCentres}
+        animateRaw={kpis.activeCentres}
       />
       <KpiCard
         title="Active Parents"
@@ -214,6 +234,7 @@ function OverviewTab({ kpis }: { kpis: OverviewKPIs }) {
         icon={<Users className="h-5 w-5" />}
         current={kpis.activeParents}
         previous={kpis.prevActiveParents}
+        animateRaw={kpis.activeParents}
       />
       <KpiCard
         title="Avg Sessions / Week"
@@ -221,6 +242,7 @@ function OverviewTab({ kpis }: { kpis: OverviewKPIs }) {
         icon={<Calendar className="h-5 w-5" />}
         current={kpis.avgSessionsPerWeek}
         previous={kpis.prevAvgSessionsPerWeek}
+        animateRaw={Math.round(kpis.avgSessionsPerWeek)}
       />
       <KpiCard
         title="Avg Rating"
@@ -235,6 +257,8 @@ function OverviewTab({ kpis }: { kpis: OverviewKPIs }) {
         icon={<Target className="h-5 w-5" />}
         current={kpis.conversionRate}
         previous={kpis.prevConversionRate}
+        animateRaw={kpis.conversionRate}
+        suffix="%"
       />
     </div>
   );
@@ -949,15 +973,35 @@ function EmptyState({ message }: { message: string }) {
 }
 
 // ============================================================
-// Main Page
+// Main Page (client component — runs on /admin/intelligence)
 // ============================================================
+//
+// The financial gate is enforced by layout.tsx → requireFinancialAccess().
+// Status pulse data is fetched client-side here to keep the page a
+// single client tree (the pre-existing pattern).
 
 export default function IntelligencePage() {
-  const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as Tab | null;
+  const initialTab: Tab = tabParam && TABS.includes(tabParam) ? tabParam : "Overview";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  function setTab(tab: Tab) {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "Overview") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+
   // Data state
+  const [pulse, setPulse] = useState<IntelligenceStatusPulse | null>(null);
   const [kpis, setKpis] = useState<OverviewKPIs | null>(null);
   const [cohorts, setCohorts] = useState<CohortRow[]>([]);
   const [demandData, setDemandData] = useState<{
@@ -982,8 +1026,9 @@ export default function IntelligencePage() {
     setLoading(true);
     setError(null);
     try {
-      const [kpiRes, cohortRes, demandRes, financialRes, coachRes, growthRes] =
+      const [pulseRes, kpiRes, cohortRes, demandRes, financialRes, coachRes, growthRes] =
         await Promise.all([
+          getIntelligenceStatusPulse(),
           getOverviewKPIs(),
           getCohortAnalysis(),
           getDemandAnalysis(),
@@ -991,6 +1036,8 @@ export default function IntelligencePage() {
           getCoachUtilisation(),
           getGrowthMetrics(),
         ]);
+
+      setPulse(pulseRes);
 
       // Check for errors
       const errors = [
@@ -1029,14 +1076,17 @@ export default function IntelligencePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-[#E8712A]/10 p-2 text-[#E8712A]">
+          <div className="rounded-xl bg-[#E8712A]/10 p-2 text-[#E8712A]">
             <Brain className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#1A1A1A]">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-0.5">
+              Intelligence
+            </p>
+            <h1 className="text-3xl font-bold font-heading text-[#1A1A1A] tracking-tight">
               Business Intelligence
             </h1>
-            <p className="text-sm text-[#666666]">
+            <p className="mt-1 text-sm text-[#666666]">
               Analytics, cohorts, demand patterns, and financial insights
             </p>
           </div>
@@ -1045,17 +1095,25 @@ export default function IntelligencePage() {
 
       {/* Error banner */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Tab navigation */}
+      {/* Status pulse strip */}
+      {pulse && (
+        <IntelligenceStatusPulseStrip
+          pulse={pulse}
+          basePath="/admin/intelligence"
+        />
+      )}
+
+      {/* Tab navigation — URL-persisted */}
       <div className="flex gap-1 overflow-x-auto border-b border-gray-200">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => setTab(tab)}
             className={`flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? "border-b-2 border-[#E8712A] text-[#E8712A]"

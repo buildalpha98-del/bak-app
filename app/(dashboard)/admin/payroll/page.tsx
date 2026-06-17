@@ -1,9 +1,14 @@
-import { getPaymentBatches, createOrGetPaymentBatch } from "@/lib/invoicing/payroll-actions";
+import { getPaymentBatches } from "@/lib/invoicing/payroll-actions";
+import { getPayrollStatusPulse } from "@/lib/invoicing/payroll-status-pulse-actions";
 import { getFortnightlyPeriod } from "@/lib/utils/payRates";
 import { PayrollDashboard } from "@/components/payroll/payroll-dashboard";
+import { PayrollStatusPulseStrip } from "@/components/payroll/payroll-status-pulse";
 
 export default async function AdminPayrollPage() {
-  const { data: batches, error } = await getPaymentBatches();
+  const [{ data: batches, error }, pulse] = await Promise.all([
+    getPaymentBatches(),
+    getPayrollStatusPulse(),
+  ]);
 
   // Compute current + previous fortnightly periods
   const current = getFortnightlyPeriod(new Date());
@@ -23,11 +28,14 @@ export default async function AdminPayrollPage() {
   };
 
   return (
-    <PayrollDashboard
-      batches={batches ?? []}
-      error={error}
-      currentPeriod={currentPeriod}
-      previousPeriod={previousPeriod}
-    />
+    <div className="space-y-6 animate-fade-up">
+      <PayrollStatusPulseStrip pulse={pulse} basePath="/admin/payroll" />
+      <PayrollDashboard
+        batches={batches ?? []}
+        error={error}
+        currentPeriod={currentPeriod}
+        previousPeriod={previousPeriod}
+      />
+    </div>
   );
 }

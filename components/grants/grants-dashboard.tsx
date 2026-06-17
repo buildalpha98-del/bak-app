@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  DollarSign, TrendingUp, Wallet, Calendar, AlertTriangle, Plus, Edit2, ArrowRight, Award,
+  DollarSign, TrendingUp, Wallet, Calendar, AlertTriangle, Plus, Edit2, Award, X,
 } from "lucide-react";
 import {
   createGrantApplication, updateApplicationStatus,
 } from "@/lib/grants/actions";
+import { useCountUp } from "@/components/launch/use-count-up";
 import type { GrantApplicationWithCentre, GrantOverview } from "@/lib/grants/actions";
 import type { Grant, GrantApplicationStatus } from "@/lib/types/database";
 
@@ -66,12 +67,37 @@ function statusVariant(status: string): "default" | "secondary" | "destructive" 
 
 export function GrantsDashboard({ overview, applications, grants, schools }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Filters
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [schoolFilter, setSchoolFilter] = useState<string>("all");
-  const [yearFilter, setYearFilter] = useState<string>("all");
+  // URL-persisted filters
+  const statusFilter = searchParams.get("status") ?? "all";
+  const schoolFilter = searchParams.get("school") ?? "all";
+  const yearFilter = searchParams.get("year") ?? "all";
+  const expiringFilter = searchParams.get("expiring");
+  const staleFilter = searchParams.get("stale");
+  const approvedThisWeek = searchParams.get("approved") === "this_week";
+
+  function updateParam(key: string, value: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null || value === "all" || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+
+  // Animated totals
+  const approvedAnimated = useCountUp(Math.round(overview.totalApproved));
+  const usedAnimated = useCountUp(Math.round(overview.totalUsed));
+  const remainingAnimated = useCountUp(Math.round(overview.totalRemaining));
+  const activeAnimated = useCountUp(overview.activeApplications);
+
+  // Toast when pulse jumps deny-list
+  useEffect(() => {
+    // (Side-effect free; included for future hooks)
+  }, [statusFilter]);
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
@@ -95,14 +121,56 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
     applicationReference: "",
   });
 
-  const filtered = applications.filter((a) => {
-    if (statusFilter !== "all" && a.status !== statusFilter) return false;
-    if (schoolFilter !== "all" && a.centre_id !== schoolFilter) return false;
-    if (yearFilter !== "all" && String(a.application_year) !== yearFilter) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const today = new Date();
+    const thirtyDaysOut = new Date(today);
+    thirtyDaysOut.setDate(today.getDate() + 30);
+    const fourteenDaysAgo = new Date(today);
+    fourteenDaysAgo.setDate(today.getDate() - 14);
+    const monday = new Date(today);
+    const day = monday.getDay();
+    monday.setDate(monday.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    return applications.filter((a) => {
+      if (statusFilter !== "all" && a.status !== statusFilter) return false;
+      if (schoolFilter !== "all" && a.centre_id !== schoolFilter) return false;
+      if (yearFilter !== "all" && String(a.application_year) !== yearFilter)
+        return false;
+      if (expiringFilter === "30") {
+        if (a.status !== "funded") return false;
+        if (!a.funding_end_date) return false;
+        const end = new Date(a.funding_end_date);
+        if (end < today || end > thirtyDaysOut) return false;
+        if (a.amount_remaining <= 0) return false;
+      }
+      if (staleFilter === "14") {
+        if (a.status !== "planning") return false;
+        if (new Date(a.created_at) >= fourteenDaysAgo) return false;
+      }
+      if (approvedThisWeek) {
+        if (a.status !== "approved") return false;
+        if (!a.approved_date || new Date(a.approved_date) < monday) return false;
+      }
+      return true;
+    });
+  }, [
+    applications,
+    statusFilter,
+    schoolFilter,
+    yearFilter,
+    expiringFilter,
+    staleFilter,
+    approvedThisWeek,
+  ]);
 
   const years = [...new Set(applications.map((a) => a.application_year))].sort((a, b) => b - a);
+  const hasActiveJumpFilter = !!(expiringFilter || staleFilter || approvedThisWeek);
+  const hasAnyFilter =
+    statusFilter !== "all" ||
+    schoolFilter !== "all" ||
+    yearFilter !== "all" ||
+    hasActiveJumpFilter;
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -160,85 +228,98 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="animate-fade-up">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">Funding</p>
-          <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight page-header-sport">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+            Funding
+          </p>
+          <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
             Grants
           </h1>
-          <p className="mt-3 text-muted-foreground max-w-xl">
+          <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             Track Sporting Schools grants across schools, manage applications, and allocate grant funding to invoices.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+        >
           <Plus className="size-4 mr-1" />
           New Application
         </Button>
       </div>
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-2xl card-hover">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Award className="size-5 text-primary" />
+              <div className="rounded-xl bg-[#E8712A]/10 p-2">
+                <Award className="size-5 text-[#E8712A]" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Approved (YTD)</p>
-                <p className="text-2xl font-bold">{formatAUD(overview.totalApproved)}</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  ${approvedAnimated.toLocaleString()}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2">
+              <div className="rounded-xl bg-blue-500/10 p-2">
                 <Wallet className="size-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Used</p>
-                <p className="text-2xl font-bold">{formatAUD(overview.totalUsed)}</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  ${usedAnimated.toLocaleString()}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <DollarSign className="size-5 text-green-600" />
+              <div className="rounded-xl bg-emerald-500/10 p-2">
+                <DollarSign className="size-5 text-emerald-600" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Remaining</p>
-                <p className="text-2xl font-bold">{formatAUD(overview.totalRemaining)}</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  ${remainingAnimated.toLocaleString()}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-orange-500/10 p-2">
-                <TrendingUp className="size-5 text-orange-600" />
+              <div className="rounded-xl bg-muted p-2">
+                <TrendingUp className="size-5 text-foreground" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Active Applications</p>
-                <p className="text-2xl font-bold">{overview.activeApplications}</p>
+                <p className="text-2xl font-bold tabular-nums">{activeAnimated}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alerts */}
-      {(overview.upcomingExpiries.length > 0 || overview.staleApplications.length > 0) && (
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* Alerts — collapse into the pulse strip in most cases, but keep the
+          full list visible since each one is a specific call-to-action. */}
+      {(overview.upcomingExpiries.length > 0 ||
+        overview.staleApplications.length > 0) && (
+        <div className="grid gap-6 md:grid-cols-2">
           {overview.upcomingExpiries.length > 0 && (
-            <Card className="border-amber-500/50">
+            <Card className="rounded-2xl border-amber-500/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Calendar className="size-4 text-amber-500" />
@@ -265,10 +346,10 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
             </Card>
           )}
           {overview.staleApplications.length > 0 && (
-            <Card className="border-orange-500/50">
+            <Card className="rounded-2xl border-orange-500/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertTriangle className="size-4 text-orange-500" />
+                  <AlertTriangle className="size-4 text-[#E8712A]" />
                   Stuck in Planning (14+ days)
                 </CardTitle>
               </CardHeader>
@@ -295,13 +376,18 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
       )}
 
       {/* Filters + applications table */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-base">All Applications</CardTitle>
             <div className="flex flex-wrap gap-2">
-              <Select value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v); }}>
-                <SelectTrigger className="h-8 text-sm w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => updateParam("status", v)}
+              >
+                <SelectTrigger className="h-9 text-sm w-[140px] rounded-2xl">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   {STATUS_OPTIONS.map((s) => (
@@ -309,8 +395,13 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={schoolFilter} onValueChange={(v) => { if (v) setSchoolFilter(v); }}>
-                <SelectTrigger className="h-8 text-sm w-[180px]"><SelectValue placeholder="School" /></SelectTrigger>
+              <Select
+                value={schoolFilter}
+                onValueChange={(v) => updateParam("school", v)}
+              >
+                <SelectTrigger className="h-9 text-sm w-[180px] rounded-2xl">
+                  <SelectValue placeholder="School" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Schools</SelectItem>
                   {schools.map((s) => (
@@ -318,8 +409,13 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={yearFilter} onValueChange={(v) => { if (v) setYearFilter(v); }}>
-                <SelectTrigger className="h-8 text-sm w-[100px]"><SelectValue placeholder="Year" /></SelectTrigger>
+              <Select
+                value={yearFilter}
+                onValueChange={(v) => updateParam("year", v)}
+              >
+                <SelectTrigger className="h-9 text-sm w-[100px] rounded-2xl">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
                   {years.map((y) => (
@@ -327,8 +423,45 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
                   ))}
                 </SelectContent>
               </Select>
+              {hasAnyFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    updateParam("status", null);
+                    updateParam("school", null);
+                    updateParam("year", null);
+                    updateParam("expiring", null);
+                    updateParam("stale", null);
+                    updateParam("approved", null);
+                  }}
+                  className="text-muted-foreground"
+                >
+                  <X className="size-3.5 mr-1" />
+                  Clear
+                </Button>
+              )}
             </div>
           </div>
+          {hasActiveJumpFilter && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {expiringFilter === "30" && (
+                <Badge className="bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15">
+                  Expiring within 30 days
+                </Badge>
+              )}
+              {staleFilter === "14" && (
+                <Badge className="bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15">
+                  Stuck in planning (14+ days)
+                </Badge>
+              )}
+              {approvedThisWeek && (
+                <Badge className="bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15">
+                  Approved this week
+                </Badge>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (

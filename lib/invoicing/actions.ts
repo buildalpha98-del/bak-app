@@ -778,3 +778,218 @@ export async function updateCoachGSTRegistration(
     return { error: "Failed to update GST status." };
   }
 }
+
+// ============================================================
+// Bulk actions — admin only
+// ============================================================
+//
+// Both bulk helpers run sequentially over the supplied ids so a single
+// per-row failure doesn't sink the whole batch. The shape mirrors the
+// established bulk-action contract from training/programs/equipment:
+//   { processed: N, errors: [{ id, error }], error: string | null }
+// `error` is a top-level fatal (empty selection / role gate). Per-row
+// failures land in `errors` so the UI can toast a partial summary.
+
+export async function bulkMarkInvoicesPaid(
+  invoiceIds: string[]
+): Promise<{
+  paid: number;
+  errors: Array<{ id: string; error: string }>;
+  error: string | null;
+}> {
+  if (invoiceIds.length === 0) {
+    return { paid: 0, errors: [], error: "No invoices selected." };
+  }
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { paid: 0, errors: [], error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      return { paid: 0, errors: [], error: "Not authorised." };
+    }
+
+    const errors: Array<{ id: string; error: string }> = [];
+    let paid = 0;
+
+    for (const id of invoiceIds) {
+      // Each invoice goes through markInvoicePaid's validations
+      // (only sent → paid allowed). Errors don't sink the batch.
+      const { error } = await markInvoicePaid(id);
+      if (error) {
+        errors.push({ id, error });
+      } else {
+        paid += 1;
+      }
+    }
+
+    revalidatePath("/admin/invoicing");
+    revalidatePath("/ops/invoicing");
+    return { paid, errors, error: null };
+  } catch (err) {
+    console.error("bulkMarkInvoicesPaid:", err);
+    return { paid: 0, errors: [], error: "Failed to mark invoices paid." };
+  }
+}
+
+export async function bulkResolveFlaggedInvoices(
+  invoiceIds: string[],
+  resolutionNote: string
+): Promise<{
+  resolved: number;
+  errors: Array<{ id: string; error: string }>;
+  error: string | null;
+}> {
+  if (invoiceIds.length === 0) {
+    return { resolved: 0, errors: [], error: "No invoices selected." };
+  }
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { resolved: 0, errors: [], error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || !["admin", "ops"].includes(profile.role)) {
+      return { resolved: 0, errors: [], error: "Not authorised." };
+    }
+
+    const errors: Array<{ id: string; error: string }> = [];
+    let resolved = 0;
+
+    for (const id of invoiceIds) {
+      // For bulk-resolve we accept the existing line items as-is.
+      // Use case: a batch of flagged invoices where the resolution
+      // is "yes, these are fine" (no edits to amounts).
+      const { data: invoice } = await supabase
+        .from("coach_invoices")
+        .select("line_items_json, status")
+        .eq("id", id)
+        .single();
+
+      if (!invoice || invoice.status !== "flagged") {
+        errors.push({ id, error: "Not flagged" });
+        continue;
+      }
+
+      const { error } = await resolveInvoiceFlags(
+        id,
+        invoice.line_items_json as InvoiceLineItem[],
+        resolutionNote
+      );
+      if (error) {
+        errors.push({ id, error });
+      } else {
+        resolved += 1;
+      }
+    }
+
+    revalidatePath("/admin/invoicing");
+    revalidatePath("/ops/invoicing");
+    return { resolved, errors, error: null };
+  } catch (err) {
+    console.error("bulkResolveFlaggedInvoices:", err);
+    return { resolved: 0, errors: [], error: "Failed to resolve invoices." };
+  }
+}
+
+export async function exportInvoicesCsv(invoiceIds: string[]): Promise<{
+  csv: string | null;
+  error: string | null;
+}> {
+  if (invoiceIds.length === 0) {
+    return { csv: null, error: "No invoices selected." };
+  }
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { csv: null, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || !["admin", "ops"].includes(profile.role)) {
+      return { csv: null, error: "Not authorised." };
+    }
+
+    const { data, error } = await supabase
+      .from("coach_invoices")
+      .select("*, profiles!coach_invoices_coach_id_fkey(name, email)")
+      .in("id", invoiceIds);
+
+    if (error) return { csv: null, error: error.message };
+    if (!data || data.length === 0) {
+      return { csv: null, error: "No matching invoices found." };
+    }
+
+    const headers = [
+      "Invoice #",
+      "Coach",
+      "Email",
+      "Period Start",
+      "Period End",
+      "Subtotal",
+      "GST",
+      "Total",
+      "Status",
+      "Sent At",
+      "Created At",
+    ];
+    const rows = data.map((row: Record<string, unknown>) => {
+      const profile = row.profiles as { name: string; email: string } | null;
+      const lineItems = (row.line_items_json as InvoiceLineItem[]) ?? [];
+      const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
+      return [
+        String(row.invoice_number ?? ""),
+        profile?.name ?? "Unknown",
+        profile?.email ?? "",
+        String(row.period_start ?? ""),
+        String(row.period_end ?? ""),
+        subtotal.toFixed(2),
+        Number(row.gst_amount ?? 0).toFixed(2),
+        Number(row.total_amount ?? 0).toFixed(2),
+        String(row.status ?? ""),
+        String(row.sent_at ?? ""),
+        String(row.created_at ?? ""),
+      ]
+        .map((c) =>
+          c.includes(",") || c.includes("\n") || c.includes('"')
+            ? `"${c.replace(/"/g, '""')}"`
+            : c,
+        )
+        .join(",");
+    });
+
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "coach_invoices_exported_csv",
+      entity_type: "coach_invoice",
+      entity_id: null,
+      metadata: { count: data.length },
+    });
+
+    return { csv: [headers.join(","), ...rows].join("\n"), error: null };
+  } catch (err) {
+    console.error("exportInvoicesCsv:", err);
+    return { csv: null, error: "Failed to export invoices." };
+  }
+}

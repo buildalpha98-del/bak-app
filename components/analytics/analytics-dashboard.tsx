@@ -2,6 +2,7 @@
 
 import { useTransition, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   TrendingUp,
   TrendingDown,
@@ -12,6 +13,7 @@ import {
   BarChart3,
   ArrowUpRight,
   Settings,
+  X,
 } from "lucide-react";
 import {
   LineChart,
@@ -38,6 +40,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -46,6 +55,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 // ============================================================
 // Helpers
@@ -102,8 +112,24 @@ export function AnalyticsDashboard({
   monthly,
   quarterly,
 }: AnalyticsDashboardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // URL-persisted view filters
+  const periodFilter = searchParams.get("period") ?? "monthly";
+  const focusFilter = searchParams.get("focus");
+
+  function updateParam(key: string, value: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null || value === "" || value === "all") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
 
   // ── Summary metrics ──
   const thisMonth = monthly[0] ?? null;
@@ -112,6 +138,15 @@ export function AnalyticsDashboard({
   const thisMargin = thisMonth
     ? margin(thisMonth.total_projected_revenue, thisMonth.projected_profit)
     : 0;
+
+  // Animated counts
+  const thisMonthAnimated = useCountUp(
+    Math.round(thisMonth?.total_projected_revenue ?? 0),
+  );
+  const nextMonthAnimated = useCountUp(
+    Math.round(nextMonth?.total_projected_revenue ?? 0),
+  );
+  const marginAnimated = useCountUp(Math.round(thisMargin));
 
   const trend =
     thisMonth && nextMonth
@@ -238,18 +273,19 @@ export function AnalyticsDashboard({
   // ── Empty state ──
   if (monthly.length === 0 && quarterly.length === 0) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold font-heading text-foreground">
-              Revenue Analytics
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              No forecast data available yet.
-            </p>
-          </div>
+      <div className="space-y-6 animate-fade-up">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+            Analytics
+          </p>
+          <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
+            Revenue Analytics
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground max-w-xl">
+            No forecast data available yet.
+          </p>
         </div>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="py-12 text-center">
             <BarChart3 className="mx-auto size-12 text-muted-foreground/40" />
             <p className="mt-4 text-muted-foreground">
@@ -257,7 +293,7 @@ export function AnalyticsDashboard({
               analysis, and pipeline insights.
             </p>
             <Button
-              className="mt-6"
+              className="mt-6 rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
               onClick={handleRegenerate}
               disabled={isRegenerating}
             >
@@ -275,14 +311,17 @@ export function AnalyticsDashboard({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* ── Header ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-heading text-foreground">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+            Analytics
+          </p>
+          <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
             Revenue Analytics
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             Projected revenue, costs, and pipeline analysis
           </p>
         </div>
@@ -290,6 +329,7 @@ export function AnalyticsDashboard({
           <Button
             variant="outline"
             size="sm"
+            className="rounded-2xl"
             render={<Link href="/admin/settings/forecasting" />}
           >
             <Settings className="size-4" />
@@ -298,6 +338,7 @@ export function AnalyticsDashboard({
           <Button
             variant="outline"
             size="sm"
+            className="rounded-2xl"
             onClick={handleExportCsv}
             disabled={isPending}
           >
@@ -306,6 +347,7 @@ export function AnalyticsDashboard({
           </Button>
           <Button
             size="sm"
+            className="rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
             onClick={handleRegenerate}
             disabled={isRegenerating}
           >
@@ -319,13 +361,41 @@ export function AnalyticsDashboard({
         </div>
       </div>
 
+      {/* ── Filter chip row ── */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Select
+          value={periodFilter}
+          onValueChange={(v) => updateParam("period", v)}
+        >
+          <SelectTrigger className="h-9 w-[180px] rounded-2xl">
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="monthly">Monthly</SelectItem>
+            <SelectItem value="quarterly">Quarterly</SelectItem>
+          </SelectContent>
+        </Select>
+        {focusFilter && (
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-[#E8712A]/10 px-3 py-1 text-xs font-medium text-[#E8712A]">
+            Focus: {focusFilter === "loss" ? "loss months" : "overperforming"}
+            <button
+              type="button"
+              onClick={() => updateParam("focus", null)}
+              className="opacity-70 hover:opacity-100"
+            >
+              <X className="size-3" />
+            </button>
+          </span>
+        )}
+      </div>
+
       {/* ── Summary cards ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-2xl card-hover">
           <CardHeader>
             <CardDescription>This Month Revenue</CardDescription>
-            <CardTitle className="text-2xl">
-              {thisMonth ? fmtCurrency(thisMonth.total_projected_revenue) : "--"}
+            <CardTitle className="text-2xl tabular-nums">
+              {thisMonth ? `$${thisMonthAnimated.toLocaleString()}` : "--"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -335,11 +405,11 @@ export function AnalyticsDashboard({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardHeader>
             <CardDescription>Next Month Revenue</CardDescription>
-            <CardTitle className="text-2xl">
-              {nextMonth ? fmtCurrency(nextMonth.total_projected_revenue) : "--"}
+            <CardTitle className="text-2xl tabular-nums">
+              {nextMonth ? `$${nextMonthAnimated.toLocaleString()}` : "--"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -349,11 +419,11 @@ export function AnalyticsDashboard({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardHeader>
             <CardDescription>Profit Margin</CardDescription>
-            <CardTitle className="text-2xl">
-              {thisMonth ? fmtPercent(thisMargin) : "--"}
+            <CardTitle className="text-2xl tabular-nums">
+              {thisMonth ? `${marginAnimated}%` : "--"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -363,14 +433,14 @@ export function AnalyticsDashboard({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl card-hover">
           <CardHeader>
             <CardDescription>Trend</CardDescription>
             <CardTitle className="flex items-center gap-2 text-2xl">
               {trend === "up" && (
                 <>
-                  <TrendingUp className="size-6 text-green-600" />
-                  <span className="text-green-600">Up</span>
+                  <TrendingUp className="size-6 text-emerald-600" />
+                  <span className="text-emerald-600">Up</span>
                 </>
               )}
               {trend === "down" && (
@@ -396,7 +466,7 @@ export function AnalyticsDashboard({
       </div>
 
       {/* ── Revenue Projection Chart ── */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="size-5" />
@@ -456,7 +526,7 @@ export function AnalyticsDashboard({
       </Card>
 
       {/* ── Revenue vs Costs Chart ── */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="size-5" />
@@ -512,7 +582,7 @@ export function AnalyticsDashboard({
       </Card>
 
       {/* ── Breakdown Tables ── */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Revenue Breakdown</CardTitle>
           <CardDescription>
@@ -621,7 +691,7 @@ export function AnalyticsDashboard({
       </Card>
 
       {/* ── Pipeline Funnel ── */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ArrowUpRight className="size-5" />
@@ -666,7 +736,7 @@ export function AnalyticsDashboard({
       </Card>
 
       {/* ── Coach Cost Breakdown ── */}
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Coach Cost Breakdown</CardTitle>
           <CardDescription>

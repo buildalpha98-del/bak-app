@@ -964,3 +964,130 @@ The forms command center. Status Pulse strip surfaces what's blocking (drafts pe
 **Plumbing verified:** `coach-forms-view.tsx` + `form-renderer.tsx` + roster shift-detail forms surface all read the unchanged `getFormTemplates` / `getCoachAvailableTemplates` / `getTemplateForSession` / `submitForm` / `getFormSubmissions` signatures — additive `bulk*` server actions + the new `requireAdminOrOps()` gate + `getSubmissionCountsByTemplate()` helper don't touch their contract.
 
 ---
+
+### 1.14 `/admin/invoicing` — Coach invoicing
+
+📋 **Open items** — closed in the `feat(finance)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/invoicing/page.tsx` + `/ops/invoicing/page.tsx` batch `getAllCoachInvoices()` + `getInvoicingStatusPulse()` (ops also batches `getFlaggedInvoices()`). Pulse strip renders above the admin list / ops Tabs. `AdminInvoiceList` rewritten with URL-persisted filter chips, bulk-select, mobile cards, animated totals.
+
+✅ **What works** — Status pulse (overdue · awaiting payment · flagged · sent this week); URL-persisted status + coach filters; bulk Mark Paid (admin) + Resolve Flagged (admin/ops) + Export CSV via `bulkMarkInvoicesPaid` / `bulkResolveFlaggedInvoices` / `exportInvoicesCsv`; sticky orange action bar on selection; mobile-responsive cards under `md`; `useCountUp` on total amount; `rounded-2xl` everywhere; financial gate at layout level preserved.
+
+⚠️ **Gaps** — Pulse "overdue" is `outbound_invoices` only (AR side, intentional); coach invoices age via the resolve flow. Bulk Mark Paid is admin-only (matches `markInvoicePaid` server contract).
+
+🎯 **Final-state target** — The collections command center: pulse surfaces overdue + flagged immediately, bulk actions clear backlog in batches, design matches the rest.
+
+📋 **Open items**
+- [x] **Invoicing Status Pulse** strip — overdue invoices · awaiting payment · flagged for review · sent this week
+- [x] **URL-persisted filter chip row** (status · coach)
+- [x] **Bulk-select** with sticky orange action bar — Mark Paid (admin) · Resolve Flagged · Export CSV
+- [x] **Mobile responsive** — table → card list under `md`
+- [x] **UI refresh** — `rounded-2xl`, restrained orange, hover-lift, `gap-6`, `useCountUp` on total
+- [x] **Tests** — `lib/invoicing/__tests__/invoicing-status-pulse.test.ts` (5 cases: shape · overdue scope · awaiting scope · flagged independence · error swallow) + `lib/invoicing/__tests__/bulk-actions.test.ts` (6 cases: empty · role gate × 3 · CSV header + row)
+
+**Plumbing verified:** `/coach/invoicing` (read-only InvoicingDashboard) untouched; existing `markInvoicePaid` / `resolveInvoiceFlags` reused inside the bulk path; `getFlaggedInvoices` / `getAllCoachInvoices` signatures preserved; `/ops/invoicing` shares the AdminInvoiceList with `showMarkPaid={false}` and `basePath="/ops/invoicing"` so URL persistence + CSV scope correctly.
+
+---
+
+### 1.15 `/admin/grants` — Grants
+
+📋 **Open items** — closed in the `feat(finance)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/grants/page.tsx` batches `getGrantOverview()` + `listApplications()` + `listGrants()` + `getCentreList()` + `getGrantsStatusPulse()`. Pulse strip renders above `GrantsDashboard`. Dashboard refactored: URL-persisted filters + jump chip badges + animated stat cards + alert cards with consistent rounding.
+
+✅ **What works** — Status pulse (awaiting submission · expiring within 30 days · stuck in planning · approved this week); URL-persisted status / school / year filters + `?expiring=30` / `?stale=14` / `?approved=this_week` jump-chip filters; pulse stat cards animate via `useCountUp` (approved YTD · used · remaining · active); `rounded-2xl` everywhere; alert cards (Expiring Within 30 / Stuck in Planning) retain their inline Edit buttons; financial gate at layout level preserved.
+
+⚠️ **Gaps** — No bulk actions on grants (status updates are per-application via Update dialog — intentional, each row is a careful judgement). Grant amounts feed the `grant_invoice_allocations` join table — banner display contract on invoices unchanged.
+
+🎯 **Final-state target** — Funding command center: pulse surfaces expiring + stale funding, filter chips scope to a school / year, alert cards drive specific next actions.
+
+📋 **Open items**
+- [x] **Grants Status Pulse** strip — awaiting submission · expiring within 30 days · stuck in planning · approved this week
+- [x] **URL-persisted filter chip row** (status · school · year)
+- [x] **Jump chip filters** (`?expiring=30` · `?stale=14` · `?approved=this_week`) with visible chip badges + Clear all
+- [x] **UI refresh** — `rounded-2xl`, restrained orange CTA (New Application), hover-lift on stat cards, `gap-6`, `useCountUp` on stat totals
+- [x] **Tests** — `lib/grants/__tests__/grants-status-pulse.test.ts` (5 cases: shape · head-count passthrough · remaining-balance scope · null cast · error swallow)
+
+**Plumbing verified:** `getGrantOverview` / `createGrantApplication` / `updateApplicationStatus` / `allocateInvoiceToGrant` signatures preserved; the `InvoiceGrantBanner` rendered on `/admin/invoicing` reads the same `getAllocationsForInvoice` contract.
+
+---
+
+### 1.16 `/admin/payroll` — Coach payroll
+
+📋 **Open items** — closed in the `feat(finance)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/payroll/page.tsx` batches `getPaymentBatches()` + `getPayrollStatusPulse()`. Pulse strip renders above the refactored `PayrollDashboard`. URL-persisted status filter chip, animated Paid-YTD card, mobile-responsive batch cards.
+
+✅ **What works** — Status pulse (awaiting calculation · awaiting approval · approved unpaid · paid this fortnight); URL-persisted `?status` filter on the batches table; Paid-YTD card with `useCountUp`; previous-period CTA card grows to span 2/3 width on `md`; mobile-responsive cards under `md`; `Link`-wrapped period rows for keyboard / open-in-new-tab; `rounded-2xl` everywhere; financial gate at layout level preserved.
+
+⚠️ **Gaps** — Bulk approve/calculate not added at the list level (each batch flows through `calculatePeriodPayroll` → `approvePaymentBatch` → `markBatchAsPaid` per-batch in detail view — already linear). Status filter doesn't gain extra bulk surface here.
+
+🎯 **Final-state target** — Payroll cadence command center: pulse surfaces what's awaiting action this fortnight, batches table is shareable via URL state.
+
+📋 **Open items**
+- [x] **Payroll Status Pulse** strip — awaiting calculation · awaiting approval · approved unpaid · paid this fortnight
+- [x] **URL-persisted filter chip** (status)
+- [x] **Paid YTD** stat card with `useCountUp`
+- [x] **Mobile responsive** — table → card list under `md`
+- [x] **UI refresh** — `rounded-2xl`, restrained orange Create Batch CTA + pulse chips, hover-lift, `gap-6`
+- [x] **Tests** — `lib/invoicing/__tests__/payroll-status-pulse.test.ts` (4 cases: shape · per-status passthrough · null-count cast · error swallow)
+
+**Plumbing verified:** `PayrollSnapshot` (consumed by `/admin` home dashboard's PayrollSnapshot widget) unchanged; `getPaymentBatches` / `createOrGetPaymentBatch` signatures preserved; batch detail page (`/admin/payroll/[batchId]`) untouched.
+
+---
+
+### 1.17 `/admin/analytics` — Revenue analytics
+
+📋 **Open items** — closed in the `feat(finance)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/analytics/page.tsx` batches `getLatestForecasts()` + `getAnalyticsStatusPulse()`. Pulse strip renders above `AnalyticsDashboard`. Dashboard refactored: URL-persisted period filter chip + focus chip, animated KPI cards, `rounded-2xl` across all charts + tables, restrained orange Regenerate CTA.
+
+✅ **What works** — Status pulse (days since refresh / fresh · loss months ahead · overperforming · months projected); URL-persisted `?period=monthly|quarterly` + `?focus=loss|overperforming` filters; `useCountUp` on This Month / Next Month / Margin KPI cards; restrained orange Regenerate CTA; chart Cards all `rounded-2xl`; empty state refreshed; financial gate at layout level preserved.
+
+⚠️ **Gaps** — Focus chip is display-only (jumps from pulse, surfaces as a badge) — it doesn't reorder/filter the breakdown tables. Full drill-through deferred to post-beta.
+
+🎯 **Final-state target** — Forecast command center: pulse surfaces stale-forecast + loss-months immediately, KPIs animate in, design matches the rest.
+
+📋 **Open items**
+- [x] **Analytics Status Pulse** strip — forecast freshness · loss months · overperforming · months projected
+- [x] **URL-persisted filter chip row** (period · focus)
+- [x] **`useCountUp`** on KPI cards (This Month · Next Month · Margin)
+- [x] **UI refresh** — `rounded-2xl` Cards across summary + charts + breakdown + funnel + coach-cost, restrained orange Regenerate CTA + pulse chips, hover-lift on KPIs, `gap-6`
+- [x] **Tests** — `lib/forecasting/__tests__/analytics-status-pulse.test.ts` (5 cases: shape on empty · stale flag · fresh flag · loss + overperforming counts · error swallow)
+
+**Plumbing verified:** `getLatestForecasts` / `getForecastDashboardWidget` / `getForecastConfig` / `updateForecastConfig` / `exportForecastsCsv` signatures preserved; `/admin/settings/forecasting` (ForecastConfigView) + the home dashboard ForecastWidget read the same unchanged contracts.
+
+---
+
+### 1.18 `/admin/intelligence` — Business intelligence
+
+📋 **Open items** — closed in the `feat(finance)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/intelligence/page.tsx` (5-tab client component — Overview / Cohorts / Demand / Financial / Growth) extended with: pulse data fetched alongside other data via `useEffect`, URL-persisted `?tab=…` state, `useCountUp` on monetary + count KPI cards, refreshed header with brand-orange overline + larger typography.
+
+✅ **What works** — Status pulse (open churn risks · low-utilisation coaches · new centres this month · new parents this month) — pulse strip jumps to `/admin/churn` for risks and to `?tab=Financial|Growth` for the intelligence tabs; URL-persisted tab state via `?tab=…` (Overview defaults to no param); `useCountUp` on Revenue / Active Centres / Active Parents / Avg Sessions / Conversion KPI cards; `rounded-xl` icon containers; restrained orange overline; financial gate at layout level preserved.
+
+⚠️ **Gaps** — Charts / Cards inside individual tab components keep their existing rounding (no `rounded-2xl`) — chart-heavy tabs read better with the current density; refresh deferred to post-beta. No bulk actions (read-only analytics surface).
+
+🎯 **Final-state target** — Intelligence command center: pulse surfaces churn + utilisation immediately, URL-persisted tabs make the deep-dive shareable, KPI cards animate in.
+
+📋 **Open items**
+- [x] **Intelligence Status Pulse** strip — open churn risks · low-utilisation coaches · new centres this month · new parents this month
+- [x] **URL tab state** — `?tab=Overview|Cohorts|Demand|Financial|Growth` persisted (Overview = default, no param)
+- [x] **`useCountUp`** on KPI cards (5 of 6 cards animate; Avg Rating left static as it's a "/ 5" composite)
+- [x] **UI refresh** — refreshed page header with brand-orange overline + larger typography, KPI cards `rounded-2xl card-hover`, tab bar tints active tab brand orange
+- [x] **Tests** — `lib/intelligence/__tests__/intelligence-status-pulse.test.ts` (5 cases: shape · churn-row dedupe · new-centres + new-parents passthrough · low-utilisation 30% threshold · error swallow)
+
+**Plumbing verified:** `getOverviewKPIs` / `getCohortAnalysis` / `getDemandAnalysis` / `getFinancialIntelligence` / `getCoachUtilisation` / `getGrowthMetrics` signatures preserved — every tab still reads the same data contract.
+
+---
