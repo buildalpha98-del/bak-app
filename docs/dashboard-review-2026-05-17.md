@@ -310,3 +310,167 @@ The daily sales/account-growth cockpit. Status Pulse strip at top (stale leads �
 **Out of scope:** `LeadDetailView` (1504 lines — separate review when we drill into a lead); the 7 sub-pages (`/list`, `/metrics`, `/sequences`, `/proposal-templates`, `/embed`, `/import`) each warrant a mini review if/when we expand the dashboard walkthrough.
 
 ---
+
+### 1.5 `/admin/staff` — Staff (the team)
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/staff/page.tsx` (17 lines) → `getStaffList()` → `StaffListView` (`components/staff/staff-list-view.tsx`, 243 lines).
+
+**Surface — list page:**
+- Header: "Staff" + member count + "Add Staff" primary CTA
+- Filter bar: search (name/email) + Role select (Admin/Ops/Coach) + Status select (Active/Inactive/Onboarding)
+- Single view: a `Table` with rows = members, columns = Name + Avatar / Email / Role badge / Status pill / Compliance indicator / View link
+- Compliance indicator: 🟢 All verified / 🟡 N pending / 🔴 N expired / muted "No docs"
+- Empty state: filter-aware copy
+
+**Sub-pages:**
+- `/admin/staff/new` (254-line `AddStaffForm`) — create flow, the literal-credentials onboarding (per CLAUDE.md): `BAK-xxxxxxxx` temp password → Resend email
+- `/admin/staff/[id]` (`StaffDetailView`, 1224 lines!) — 6 tabs:
+  1. **Overview** — basics
+  2. **Compliance** — WWCC + First Aid docs
+  3. **Pay Rates** — per-session-type rates
+  4. **Availability** — Mon–Fri slot grid (seeded with P1 defaults on create)
+  5. **Sessions** — lazy-loaded session history
+  6. **Feedback** — `feedback_ratings` for this coach
+  
+  Plus the header action row from Wave A: Edit / Reset Password / **Grant/Revoke financial access** (admin-only toggle, commit `51a5e7d`) / Deactivate.
+- `/admin/staff/rate-card` (310-line `RateCardView`) — org-wide rate matrix across coaches
+
+**`/ops/staff`** mirrors the list but doesn't expose the financial-access toggle (per Wave A).
+
+✅ **What works**
+
+- Filter combinations apply cleanly
+- Compliance indicator gives at-a-glance pulse — best signal in the row
+- Detail view's 6 tabs all load real data; sessions tab lazy-loads to keep TTFB fast
+- Create flow generates temp password + sends Resend email (full literal-credentials standard)
+- P1 defaults seed Mon–Fri 8:00–16:30 availability automatically (no extra clicks)
+- Financial access toggle wired (Wave A) with activity_log entries per flip
+- Archive / reactivate (deactivate) flow bans the auth user — they actually can't log in
+
+⚠️ **Gaps**
+
+1. **No URL persistence** — search/role/status reset every nav (same pattern as other tabs now closed)
+2. **No status pulse strip** — should surface: expired certs (count) / pending verifications / coaches not rostered this week / staff in onboarding
+3. **No "utilisation" or "next session" column** — Abdul's #1 daily question is "is this coach over- or under-rostered?". The data is one join away from `sessions`
+4. **No region filter / region indicator** — once you have 8+ coaches across 5 regions, this is a missing signal
+5. **No bulk actions** — to message every coach, reset passwords on 5 onboarding accounts, or bulk-mark someone as active — open one at a time
+6. **`Grid` view absent** — the table is dense but a card-grid alternative with photo + status + 1-line compliance summary would scan faster
+7. **Compliance indicator is "WWCC OR First Aid" agnostic** — when 1 of 2 is expired, the summary says "1 expired" but doesn't tell you which
+8. **No "Last shift / next shift" timestamps** on rows — "active staff" who haven't worked in 30 days deserve a flag
+9. **No financial-access badge on rows** — the row doesn't show who has $ visibility (Jayden + Abdul-status). For audit ops a column would help
+10. **Compliance indicator is not click-through** — clicking "1 expired" should jump straight to that coach's Compliance tab
+11. **Detail view's 6 tabs (1224 lines)** — works but the "Sessions" tab loads on click, which is fine; the rest could batch in a single fetch instead of multiple roundtrips
+12. **UI doesn't match the home + centres + roster + CRM language** — `rounded-lg`, no hover-lift, no status pulse, no `rounded-2xl` containers
+13. **Rate Card sub-page (`/admin/staff/rate-card`, 310 lines) is financial-sensitive** — currently accessible from /admin (admin-only route) but no `financial_access` gate. Should redirect when ops with `financial_access=false` lands there
+14. **Add Staff form (254 lines) doesn't surface "financial access" on create** — defaults to false for ops (per migration 050) but you can't tick it on the create form; admins have to create then toggle in detail. Two-step workflow when one would do
+
+🎯 **Final-state target**
+
+The team-management home base. Status pulse at top (expired certs · pending verifications · coaches not rostered this week · onboarding). Filter chip row adds Region. URL persistence everywhere. List view augmented with: utilisation column (hours rostered this week vs 30hr full-time benchmark), next-session column, financial-access badge, click-through compliance. Grid view alternative. Bulk-select bar (reset passwords / send announcement / bulk archive / bulk export). Rate Card gated by `financial_access` (redirect when off). Create form gets a "Grant financial access" checkbox. UI matches the rest.
+
+📋 **Open items**
+
+- [ ] **Staff Status Pulse** at top — expired certs / pending verifications / not rostered this week / staff in onboarding
+- [ ] **Filter chip row** with URL persistence: search / Role / Status / Region — mirror the centres/roster/CRM pattern
+- [ ] **Utilisation column** — hours rostered this week (compute via `getSessionsForWeek` aggregated by coach), tooltip shows last 4 weeks
+- [ ] **Next-shift column / last-shift timestamp** — surfaces stale-active staff
+- [ ] **Compliance indicator click-through** — clicking "1 expired" deep-links to `/admin/staff/<id>?tab=compliance`
+- [ ] **Region indicator** on each row + filter chip (joins coach's home suburb → regions table)
+- [ ] **Financial-access badge** on row — small `Banknote` icon when on, muted Lock when off
+- [ ] **Grid view alternative** — card grid with photo + status pill + 1-line compliance + utilisation
+- [ ] **Bulk-select on table** — sticky action bar with: Reset passwords / Send announcement / Archive / Export CSV (admin-only)
+- [ ] **Rate Card financial gate** — `/admin/staff/rate-card` redirects via `requireFinancialAccess()` when off; sidebar still shows the link but the layout catches it
+- [ ] **"Grant financial access" checkbox** on `AddStaffForm` — defaults to false; admin can tick to grant on create rather than 2-step
+- [ ] **UI refresh**: `rounded-2xl` everywhere, restrained orange (Add Staff CTA + active chip + pulse > 0 only), subtle hover-lift on rows / cards, `gap-6` between sections
+- [ ] **(Optional)** Inline "send announcement" per-row action (DM via shift_threads or notifications insert) — small win, post-Wave A
+- [ ] **(Optional)** "Coaches who haven't completed onboarding training" surfaced from `training_assignments` — once the training module is more populated
+
+**Out of scope:** `StaffDetailView` (1224 lines, full tab-by-tab review of its own); the `AddStaffForm` form fields (separate ergonomic review); `/admin/staff/rate-card` is referenced for the gate but a full re-design is its own task.
+
+---
+
+### 1.6 `/admin/children` — Children
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/children/page.tsx` (30 lines) batches `getChildrenList()` + `getCentreList()` → `ChildrenListView` (`components/children/children-list-view.tsx`, 534 lines).
+
+**Surface — list page:**
+- Header: "Children" + total count + "Import CSV" link + **"Add Child" primary CTA** (opens a `Dialog` with name, age_group select, centres multi-select)
+- Filter bar: search by name + Centre select + Age Group select (3-5 / 5-8 / 8-12) + Status select (Active / Inactive)
+- Single **Table** view: Name / Age Group badge / Centres badges (hidden on mobile) / Status badge — whole row clicks through to `/admin/children/[id]`
+- Empty state with filter-aware copy
+- "Showing N of M children" tail count
+
+**Sub-pages:**
+- `/admin/children/import` — `CsvImportView` (592 lines) — the polished multi-step bulk-import wizard (already wired and confirmed in Wave A inventory)
+- `/admin/children/[id]` — `ChildDetailView` (477 lines) — **3 stacked Cards** (no Tabs):
+  1. Basics card (name, DOB, gender, medical notes)
+  2. Centres card (linked centres with link/unlink actions)
+  3. Assessments card (via `ChildAssessmentDisplay`)
+
+**`/ops/children`** mirrors via same `ChildrenListView` with `basePath="/ops/children"`.
+
+**Schema context (CLAUDE.md):**
+- `children` — global record (one per kid)
+- `centre_children` — link table (one kid can attend multiple centres)
+- `parent_children` — parent ↔ child link
+- `session_attendances` — named attendance + headcount fallback
+- `child_insights` — AI developmental insights at term end + on-demand
+- `child_observations` — coach notes (post-Wave-8 launch foundation)
+- `skill_ratings` — per-term skill assessments
+
+✅ **What works**
+
+- 4 filters compose cleanly (search + Centre + Age Group + Status)
+- Multi-centre linking on create AND from the detail view
+- CSV import flow (`csv-import-view.tsx`, 592 lines) is polished — flexible column mapping, duplicate detection, per-row error display
+- Status enum + visible badges
+- Empty state copy adapts to whether filters or absence is the cause
+- Inline "Add Child" dialog — no full-page navigation needed
+
+⚠️ **Gaps**
+
+1. **No URL persistence** — search/centre/age/status reset on every nav (same pattern as the recently-closed tabs)
+2. **No status pulse strip** — should surface: new children added this week / children with no centre linked / assessments overdue / inactive 30+ days
+3. **No bulk actions** — to mark inactive, link 10 kids to a new centre, message all parents at a centre — open one at a time
+4. **No region filter / region indicator** — children inherit a region via their centres, but it's invisible here
+5. **No parent-linked indicator** — kids can have a parent (via `parent_children`) or just a raw `parent_name` text field; the row gives no signal of which
+6. **No "needs assessment" flag** — `skill_ratings` per term is tracked but only visible from `/admin/assessments`. A kid with no rating this term should be flagged here too
+7. **No "Last attended" timestamp** — Did this kid actually come last week? `session_attendances` carries the answer but it's invisible on the list
+8. **No grid/card view alternative** — table is fine for ops but a card grid (photo + centres + age + last-attended + assessment status) would scan faster for term-end reviews
+9. **No `child_insights` surfacing on the list** — AI-generated developmental insights are calculated but only visible in the detail view. A subtle "Insight ready" badge would draw the parent-handover workflow
+10. **Detail view uses 3 stacked Cards (no Tabs)** — fine at the current data density but as `child_insights` + `child_observations` + `session_attendances` get more content, it'll get long. Should group into tabs: Engagement (sessions, attendance, observations) / Assessments (skill ratings + AI insights) / Family (parent contact, medical, emergency)
+11. **No duplicate detection on create** — two "Jack Smith"s in the same centre? The CSV import handles it but the inline dialog doesn't even warn
+12. **UI doesn't match the recent design language** — uses `rounded-md`, `rounded-lg`, dashed border on empty state; should be `rounded-2xl`, hover-lift on rows, restrained orange (Add CTA + active chip + pulse > 0 only)
+13. **No parent contact column on the list** — parents are the practical "who do you call about this kid" surface; even a small avatar + name when linked would help
+14. **Row click → push** uses `router.push` directly; no `Link` for accessibility (keyboard / right-click → open in new tab)
+
+🎯 **Final-state target**
+
+The child-record cockpit, especially during enrolment cycles and parent handover. Status pulse at top (new this week / no centre / assessments overdue / inactive 30+d). Filter chip row adds Region + Parent-linked (yes/no/all). URL persistence everywhere. Table augmented with: Last-attended timestamp, parent-link indicator (small parent avatar), assessment-status pill (✅ done / ⏳ pending / ⚠️ overdue), region badge. Grid view alternative with photo + key signals. Bulk-select bar (link to centre / change status / message parents / export). Detail view's 3 cards become 4 tabs (Engagement / Assessments / Family / Insights) with count badges. Inline duplicate detection on Add Child. UI matches the rest.
+
+📋 **Open items**
+
+- [ ] **Children Status Pulse** strip at top — new this week / no centre linked / assessments overdue / inactive 30+ days
+- [ ] **Filter chip row** with URL persistence: search / Centre / Age Group / Status / **Region** / **Parent-linked** — mirror the centres/roster/CRM/staff pattern
+- [ ] **Last-attended column** on the table — pulled from `session_attendances` aggregated per child
+- [ ] **Parent-link indicator** on each row — small parent avatar + name when `parent_children` row exists; muted "No parent" otherwise
+- [ ] **Assessment-status column** — ✅ verified done this term / ⏳ pending / ⚠️ overdue
+- [ ] **Region indicator** on each row + filter chip (joined via centre's region)
+- [ ] **`child_insights` surfacing** — small "✨ Insight ready" badge when there's an unread insight for the parent or centre
+- [ ] **Grid view alternative** — card grid with photo + centres + age + last-attended + assessment status (`?view=grid|table` URL-persisted)
+- [ ] **Bulk-select on table** — sticky action bar: Link to centre / Change status / Message parents / Export CSV
+- [ ] **Detail view → tabs** (Engagement / Assessments / Family / Insights) with count badges, mirroring centres-detail
+- [ ] **Inline duplicate detection** on Add Child dialog — warn when name + age_group + a selected centre already exists
+- [ ] **Parent contact column** (or condensed avatar+initial in the existing Centres column area)
+- [ ] **Row → `<Link>` not `router.push`** — accessibility + open-in-new-tab support
+- [ ] **UI refresh**: `rounded-2xl` everywhere, restrained orange (Add CTA + active chip + pulse > 0 + assessment-overdue badge only), subtle hover-lift on cards / `hover:bg-muted/30` on rows, `gap-6` between sections
+- [ ] **(Optional)** Quick-attendance widget per centre — "today's session at <centre>: tap to mark"
+- [ ] **(Optional)** Child→parent magic-link invite from the row (one-click "Invite parent to register")
+
+**Out of scope:** `ChildDetailView`'s individual cards (separate review); `CsvImportView` (already shipped and not regressing); the assessments engine itself lives at `/admin/assessments` — covered when we hit that tab.
+
+---
