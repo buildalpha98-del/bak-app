@@ -13,6 +13,12 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 export interface LeadWithOwner extends Lead {
   owner_name: string | null;
+  /**
+   * Auto-assigned by suburb (migration 039 added `leads.region_id`);
+   * null when no region matches. Surfaced here so the pipeline board's
+   * Region filter chip can scope client-side without a follow-up join.
+   */
+  region_id: string | null;
 }
 
 export interface LeadActivityWithUser extends LeadActivity {
@@ -86,6 +92,10 @@ export async function getLeads(filters?: {
       data: (data ?? []).map((lead) => ({
         ...lead,
         owner_name: lead.owner_id ? (ownerMap.get(lead.owner_id) ?? null) : null,
+        // region_id is on the row but not in the Lead interface (column
+        // added in migration 039). Surface it explicitly so the board
+        // can render the Region filter chip without a follow-up query.
+        region_id: ((lead as unknown as { region_id?: string | null }).region_id) ?? null,
       } as LeadWithOwner)),
       error: null,
     };
@@ -146,7 +156,12 @@ export async function getLeadDetail(leadId: string): Promise<{
 
     return {
       data: {
-        lead: { ...lead, owner_name: ownerName } as LeadWithOwner,
+        lead: {
+          ...lead,
+          owner_name: ownerName,
+          region_id:
+            ((lead as unknown as { region_id?: string | null }).region_id) ?? null,
+        } as LeadWithOwner,
         activities: (activities ?? []).map((a) => ({
           ...a,
           user_name: a.created_by ? (userMap.get(a.created_by) ?? null) : null,
@@ -659,6 +674,29 @@ export async function getCrmStaffMembers(): Promise<{
   } catch (err) {
     console.error("getCrmStaffMembers error:", err);
     return { data: [], error: "Failed to load staff." };
+  }
+}
+
+// ============================================================
+// Get active email sequences (used by bulk "Add to sequence" picker)
+// ============================================================
+
+export async function getActiveSequences(): Promise<{
+  data: { id: string; name: string }[];
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("email_sequences")
+      .select("id, name")
+      .eq("is_active", true)
+      .order("name");
+    if (error) return { data: [], error: error.message };
+    return { data: data ?? [], error: null };
+  } catch (err) {
+    console.error("getActiveSequences error:", err);
+    return { data: [], error: "Failed to load sequences." };
   }
 }
 

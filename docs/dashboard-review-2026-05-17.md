@@ -230,3 +230,83 @@ The roster is the daily operational cockpit. Top of page: a **Roster Pulse** str
 **Out of scope:** P4 drag-and-drop (deferred per master spec); `/admin/roster/terms` and template editor get their own review when we hit that branch of the navigation.
 
 ---
+
+### 1.4 `/admin/crm` — CRM Pipeline
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/crm/page.tsx` (25 lines) batches `getLeads()` + `getPipelineSummary()` → `PipelineBoard` (`components/crm/pipeline-board.tsx`, 675 lines).
+
+**Surface — main board:**
+- Header: "CRM Pipeline" + "Email Sequences" outline button + "Add Lead" primary CTA
+- **Summary bar**: 4 metric cards — Total Leads · Pipeline Value ($) · Won · Active
+- Search input (single filter)
+- **Drag-and-drop kanban** via @dnd-kit:
+  - 5 active columns: Cold Lead · Contacted · Interested · Free Trial · Proposal Sent
+  - 2 outcome columns: Won (default) · Lost (destructive) — also `churned` exists but isn't a column
+  - Drag cards between columns → calls `changeLeadStage(leadId, newStage, reason)` — reason required for won/lost/churned
+- Required-reason dialog before destination flip
+- Realtime via `useTransition` for optimistic UI
+
+**Sub-pages (8):**
+- `/admin/crm/list` — alternative `LeadListView` (696 lines)
+- `/admin/crm/metrics` — `PipelineMetricsView` (conversion funnel, age-in-stage)
+- `/admin/crm/import` — CSV import (already wired — Wave A inventory)
+- `/admin/crm/sequences` + `/sequences/[id]` — email sequence builder (Resend-wired in commit `6c8b5ee`)
+- `/admin/crm/proposal-templates` — AI proposal template editor
+- `/admin/crm/embed` — embeddable web form for public lead capture
+- `/admin/crm/[id]` — `LeadDetailView` (1504 lines!) with Timeline / Demos / Documents tabs
+- `/admin/crm/[id]/proposal` — AI-generated proposal PDF preview
+
+Plus `getCrmDashboardData()`, `bulkChangeStage`, `bulkAssignOwner`, `bulkDeleteLeads`, `addLeadActivity` server actions already exist.
+
+✅ **What works**
+
+- Drag-and-drop column changes with stage-change reasons captured
+- Email sequences wired to Resend (replied/clicked/opened tracked in `lead_activities`)
+- CSV import surface live and polished
+- 7 sub-routes for deep workflows (metrics, sequences, templates, embed, etc.)
+- `LeadDetailView` carries a full timeline, demos, documents
+- Bulk actions exist in server actions (just not exposed in the board UI)
+- Pipeline Value calculated from active stages only (excludes won/lost/churned)
+
+⚠️ **Gaps**
+
+1. **Search is the only filter** — no chips for Stage / Owner / Region / Source / Value-range. For a multi-rep ops team that's a serious limit
+2. **No URL persistence** — board state resets on every navigation
+3. **No status pulse strip** — same pattern as home + centres + roster, missing here. Should surface: stale leads (no activity > 7d) / overdue follow-ups / trials ending this week / hot leads (active sequence, recent open)
+4. **Pipeline Value + Won card show $ unconditionally** — should be `financial_access`-gated (defensive)
+5. **No bulk actions exposed in the board UI** — server actions exist (`bulkChangeStage`, `bulkAssignOwner`, `bulkDeleteLeads`) but no multi-select on cards
+6. **Won/Lost columns clutter the active board** — could be collapsed by default with a "Show closed" toggle
+7. **No "aging in stage" highlight on cards** — `daysInStage()` is calculated but only used by metrics; should surface as a tint or warning on stale cards
+8. **No region filter** — centres and roster have it; same need here
+9. **Mobile UX** — horizontal-scroll kanban with 7 columns is rough on phones. Mobile should default to a single-column scroll or a stage-picker swipe view
+10. **Email Sequences link is buried** — it's a small outline button in the header; given how central sequences are to the funnel, it should be more prominent
+11. **No "Hot leads" surface** — cards with recent sequence activity (opened/clicked) deserve a flame icon to draw the rep's eye
+12. **UI doesn't match the home + centres + roster design language** — summary cards use `Card className="p-4"` default `rounded-lg`; needs `rounded-2xl`, hover-lift, restrained orange (only on primary CTA + active filter chip)
+13. **No "owner" badge on cards in board view** — once multiple reps exist, you can't see at-a-glance who owns each lead from the board
+14. **`LeadDetailView` (1504 lines) deserves its own future review** — beyond scope of this tab
+
+🎯 **Final-state target**
+
+The daily sales/account-growth cockpit. Status Pulse strip at top (stale leads · overdue follow-ups · trials ending this week · hot leads with recent opens). Filter chip row (Stage · Owner · Region · Source · Value range) URL-persisted; combinable with the existing search. Pipeline Value + Won $ gated behind `financial_access`. Won/Lost columns collapsible. Aging-in-stage tint on cards (subtle amber after 7d, red after 14d in the same stage). Multi-select bulk bar on the board (reassign owner / move to stage / add to sequence). Owner avatar chips on every card. Mobile defaults to a stacked single-column view with a horizontal stage-picker. UI matches home/centres/roster — `rounded-2xl`, restrained orange (active chip, primary CTA, hot-lead flame), hover-lift.
+
+📋 **Open items**
+
+- [x] **CRM Status Pulse** strip at top — stale leads / overdue follow-ups / trials ending this week / hot leads
+- [x] **Filter chip row**: Stage / Owner / Region / Source / Value range — URL-persisted (mirror centres + roster pattern)
+- [x] **`financial_access` gate** on Pipeline Value summary card + Won $ aggregate (whatever shows currency)
+- [x] **Aging-in-stage tint** on cards — amber after 7d in stage, red after 14d. Tooltip shows exact "12d in this stage"
+- [x] **Bulk-select on board** — checkbox on cards (visible on hover or always), sticky action bar with: Reassign owner / Change stage / Add to sequence / Delete (already exist server-side)
+- [x] **Collapsible Won / Lost columns** — default hidden, "Show closed (N won, M lost)" toggle to reveal
+- [x] **Owner avatar chip on each card** — `getInitials(owner.name)` mini avatar in the card footer
+- [x] **"Hot lead" flame indicator** — when `lead_activities` shows email opened/clicked in the last 48h
+- [x] **Email Sequences as a primary header card** — promote from outline button to a callout card showing "N sequences running, K emails sent this week"
+- [x] **Region filter** added to the chip row (regions table exists; `leads.region_id` confirmed via migration 039 — used directly, no centre-name join needed)
+- [x] **Mobile responsive layout** — single-column scroll with a horizontal stage-picker chip row; the kanban is a tablet+ experience
+- [x] **UI refresh**: `rounded-2xl` on summary cards + lead cards + column containers, restrained orange (active chip / hot lead / primary CTA only), subtle hover-lift on cards, `gap-6` between sections
+- [ ] **(Optional)** Saved board views (`?stage=interested&owner=me` → "My interested leads") — pattern from centres
+
+**Out of scope:** `LeadDetailView` (1504 lines — separate review when we drill into a lead); the 7 sub-pages (`/list`, `/metrics`, `/sequences`, `/proposal-templates`, `/embed`, `/import`) each warrant a mini review if/when we expand the dashboard walkthrough.
+
+---

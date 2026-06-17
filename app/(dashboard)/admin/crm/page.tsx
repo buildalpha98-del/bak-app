@@ -1,15 +1,37 @@
-import { getLeads, getPipelineSummary } from "@/lib/crm/actions";
+import { getLeads, getPipelineSummary, getCrmStaffMembers } from "@/lib/crm/actions";
+import {
+  getCrmStatusPulse,
+  getHotLeadIds,
+  getSequencesSummary,
+} from "@/lib/crm/status-pulse-actions";
+import { getFinancialAccess } from "@/lib/auth/financial-access";
+import { getRegions } from "@/lib/regions/actions";
 import { PipelineBoard } from "@/components/crm/pipeline-board";
 
 export default async function AdminCrmPage() {
-  const [leadsResult, summaryResult] = await Promise.all([
+  const [
+    leadsResult,
+    summaryResult,
+    pulse,
+    hotLeadIds,
+    sequencesSummary,
+    financialAccess,
+    staffResult,
+    regionsResult,
+  ] = await Promise.all([
     getLeads(),
     getPipelineSummary(),
+    getCrmStatusPulse(),
+    getHotLeadIds(),
+    getSequencesSummary(),
+    getFinancialAccess(),
+    getCrmStaffMembers(),
+    getRegions(),
   ]);
 
   if (leadsResult.error || summaryResult.error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         {leadsResult.error ?? summaryResult.error}
       </div>
     );
@@ -20,6 +42,16 @@ export default async function AdminCrmPage() {
       leads={leadsResult.data}
       summary={summaryResult.data!}
       basePath="/admin/crm"
+      pulse={pulse}
+      hotLeadIds={hotLeadIds}
+      sequencesSummary={sequencesSummary}
+      financialAccess={financialAccess}
+      staff={staffResult.data}
+      regions={(regionsResult.data ?? []).map((r) => ({
+        id: r.id,
+        name: r.name,
+        suburbs: r.suburbs,
+      }))}
     />
   );
 }
