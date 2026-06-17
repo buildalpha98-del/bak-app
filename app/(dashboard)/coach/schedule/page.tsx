@@ -14,6 +14,8 @@ import { TodayView } from "@/components/coach/schedule/today-view";
 import { WeekView } from "@/components/coach/schedule/week-view";
 import { TermView } from "@/components/coach/schedule/term-view";
 import { CoachSchedulePulseStrip } from "@/components/coach/schedule/coach-schedule-pulse";
+import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
+import { getCalendarToken } from "@/lib/calendar/actions";
 
 interface SchedulePageProps {
   searchParams: Promise<{ tab?: string; date?: string }>;
@@ -76,11 +78,24 @@ export default async function SchedulePage({
     termSessions = termSessionsRes.data;
   }
 
+  const { token: coachCalToken } = await getCalendarToken("coach", user.id);
+  const feedUrl = coachCalToken
+    ? `https://buildalphakids.app/api/calendar/coach/${coachCalToken}.ics`
+    : null;
+
   return (
     <div className="mx-auto max-w-lg space-y-4 animate-fade-up">
-      <h1 className="text-xl font-semibold font-heading text-foreground">
-        Schedule
-      </h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold font-heading text-foreground">
+          Schedule
+        </h1>
+        {feedUrl && (
+          <CalendarSubscribeButton
+            feedUrl={feedUrl}
+            label="your sessions"
+          />
+        )}
+      </div>
 
       <CoachSchedulePulseStrip pulse={schedulePulse} />
 

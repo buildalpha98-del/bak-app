@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientDashboard } from "@/lib/client/portal-actions";
 import { getClientStatusPulse } from "@/lib/client/status-pulse-actions";
+import { getCalendarToken } from "@/lib/calendar/actions";
 import { ClientDashboard } from "@/components/client/client-dashboard";
 
 export default async function ClientDashboardPage({
@@ -15,9 +16,10 @@ export default async function ClientDashboardPage({
   if (authError || !clientUser) redirect("/client-login");
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
-  const [{ data, error }, pulse] = await Promise.all([
+  const [{ data, error }, pulse, { token: calToken }] = await Promise.all([
     getClientDashboard(centreId),
     getClientStatusPulse(centreId),
+    getCalendarToken("centre", centreId),
   ]);
 
   if (error || !data) {
@@ -31,5 +33,16 @@ export default async function ClientDashboardPage({
     );
   }
 
-  return <ClientDashboard data={data} centreId={centreId} pulse={pulse} />;
+  const calendarFeedUrl = calToken
+    ? `https://buildalphakids.app/api/calendar/centre/${calToken}.ics`
+    : null;
+
+  return (
+    <ClientDashboard
+      data={data}
+      centreId={centreId}
+      pulse={pulse}
+      calendarFeedUrl={calendarFeedUrl}
+    />
+  );
 }

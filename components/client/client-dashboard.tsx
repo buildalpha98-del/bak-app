@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCountUp } from "@/components/launch/use-count-up";
 import { ClientHomePulseStrip } from "@/components/client/client-status-pulse";
+import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
 import type { ClientDashboardData } from "@/lib/client/portal-actions";
 import type { ClientStatusPulse } from "@/lib/client/status-pulse-actions";
 
@@ -26,6 +27,8 @@ interface ClientDashboardProps {
   data: ClientDashboardData;
   centreId: string;
   pulse: ClientStatusPulse;
+  /** Calendar feed URL (null when token couldn't be issued — hides button). */
+  calendarFeedUrl?: string | null;
 }
 
 function formatDateNice(dateStr: string): string {
@@ -78,20 +81,33 @@ function renderStars(rating: number | null) {
   return <span className="inline-flex items-center gap-0.5">{stars}</span>;
 }
 
-export function ClientDashboard({ data, centreId, pulse }: ClientDashboardProps) {
+export function ClientDashboard({
+  data,
+  centreId,
+  pulse,
+  calendarFeedUrl,
+}: ClientDashboardProps) {
   const { centreName, nextSession, stats, recentSessions } = data;
   const days = nextSession ? daysUntil(nextSession.date) : null;
 
   return (
     <div className="animate-fade-up space-y-6">
-      {/* Welcome */}
-      <div>
-        <h1 className="text-2xl font-bold font-heading text-foreground">
-          Welcome, {centreName}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s what&apos;s on at your centre this week.
-        </p>
+      {/* Welcome + calendar subscribe */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold font-heading text-foreground">
+            Welcome, {centreName}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Here&apos;s what&apos;s on at your centre this week.
+          </p>
+        </div>
+        {calendarFeedUrl && (
+          <CalendarSubscribeButton
+            feedUrl={calendarFeedUrl}
+            label={`${centreName}'s schedule`}
+          />
+        )}
       </div>
 
       {/* Status pulse */}

@@ -19,6 +19,8 @@ import { ParentHomePulseStrip } from "@/components/parent/parent-status-pulse";
 import { ParentHomeSummaryCards } from "@/components/parent/parent-home-summary-cards";
 import { ParentChildAvatarsRow } from "@/components/parent/parent-child-avatars-row";
 import { getParentStatusPulse } from "@/lib/parent/status-pulse-actions";
+import { getCalendarToken } from "@/lib/calendar/actions";
+import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
 import type {
   BookableSession,
   Booking,
@@ -179,16 +181,32 @@ export default async function ParentDashboard() {
 
   const recentActivity = pastBookings.slice(0, 3);
 
+  const { token: parentCalToken } = await getCalendarToken(
+    "parent",
+    parentProfile.id,
+  );
+  const parentFeedUrl = parentCalToken
+    ? `https://buildalphakids.app/api/calendar/parent/${parentCalToken}.ics`
+    : null;
+
   return (
     <div className="space-y-6 pb-8">
-      {/* Greeting */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">
-          Hi {parentProfile.first_name}!
-        </h1>
-        <p className="text-[#666666]">
-          Here&apos;s what&apos;s happening with your kids&apos; sessions.
-        </p>
+      {/* Greeting + calendar subscribe */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+            Hi {parentProfile.first_name}!
+          </h1>
+          <p className="text-[#666666]">
+            Here&apos;s what&apos;s happening with your kids&apos; sessions.
+          </p>
+        </div>
+        {parentFeedUrl && (
+          <CalendarSubscribeButton
+            feedUrl={parentFeedUrl}
+            label="your family bookings"
+          />
+        )}
       </div>
 
       {/* Status pulse */}
