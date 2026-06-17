@@ -1,8 +1,23 @@
-import { getCentreList } from "@/lib/centres/actions";
+import {
+  getCentreList,
+  getCentresStatusPulse,
+} from "@/lib/centres/actions";
+import { getRegions } from "@/lib/regions/actions";
+import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { CentreListView } from "@/components/centres/centre-list-view";
+import { CentresStatusPulseStrip } from "@/components/admin/centres-status-pulse";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminCentresPage() {
-  const { data, error } = await getCentreList();
+  // Fan out — pulse, list, regions, financial gate all in parallel so
+  // the LCP is bottlenecked by the slowest one, not the sum.
+  const [{ data, error }, pulse, regionsRes, hasFinancial] = await Promise.all([
+    getCentreList(),
+    getCentresStatusPulse(),
+    getRegions(),
+    getFinancialAccess(),
+  ]);
 
   if (error) {
     return (
@@ -12,5 +27,18 @@ export default async function AdminCentresPage() {
     );
   }
 
-  return <CentreListView initialData={data ?? []} basePath="/admin/centres" />;
+  const regions =
+    (regionsRes.data ?? []).map((r) => ({ id: r.id, name: r.name })) ?? [];
+
+  return (
+    <div className="space-y-6">
+      <CentresStatusPulseStrip pulse={pulse} basePath="/admin/centres" />
+      <CentreListView
+        initialData={data ?? []}
+        basePath="/admin/centres"
+        regions={regions}
+        hasFinancialAccess={hasFinancial}
+      />
+    </div>
+  );
 }

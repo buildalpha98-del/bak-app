@@ -77,3 +77,75 @@ The admin home is the daily morning landing pad: "what shipped overnight, what n
 **Verification:** 20/20 launch tests pass, typecheck clean, build green, all 18 modified files committed under `80ce5a5`.
 
 ---
+
+### 1.2 `/admin/centres` — Centres & Schools
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/centres/page.tsx` (16 lines) → `getCentreList()` → `CentreListView` (`components/centres/centre-list-view.tsx`, 322 lines).
+
+**List page surface**:
+- Header: "Centres & Schools" + count of venues + "Add Centre" button
+- Filter bar: search input, **Type** select (Childcare / School), **Status** select (Active / Trial / Paused / Churned), **Pricing** select (Centre Funded / Parent Funded / Per Head), **Sort** (Name / Status / Newest), Grid ↔ Table view toggle
+- Body: 3-column grid of `CentreCard` (164 lines) — name, status badge, pricing badge — OR table view
+- Empty state with helpful hint ("Try adjusting filters" vs "Add your first centre")
+
+**Detail page** `app/(dashboard)/admin/centres/[id]/page.tsx` → `CentreDetailView` (962 lines) — **10 tabs**:
+1. **Overview** — basics, address, contacts
+2. **Sessions** — past + upcoming
+3. **Notes** (`centre_notes` with author)
+4. **Equipment** (per-centre inventory)
+5. **Invoices** — outbound invoice summary ($ — **should be financial-gated**)
+6. **Feedback** — `feedback_ratings` for this centre
+7. **Children** — `centre_children` link table
+8. **Reports** — `centre_reports` (per-term)
+9. **Portal Access** — client-portal magic-link controls
+10. **Grants** (conditional — only shows when grants exist)
+
+Plus `/admin/centres/[id]/onboarding/page.tsx` — the 10-step wizard (now wired to DB after Wave A Item 6).
+
+`/admin/centres/add/page.tsx` — `AddCentreForm` for create flow (centre OR school, since `centres.type='school'` covers both).
+
+✅ **What works**
+
+- Filter combinations work cleanly (case-insensitive search, multi-filter compose)
+- Grid/table view toggle persists for the session
+- Empty state copy is well-tuned
+- Detail tabs all load real data — notes with author, sessions joined to coaches, equipment per-centre
+- Add flow lands valid rows in `centres` with regions auto-assigned
+- Onboarding wizard is now end-to-end (migration 049 + write actions)
+
+⚠️ **Gaps**
+
+1. **No `health_score` or `churn_risk` indicator on the list** — both columns are populated daily by cron (`/api/cron/churn-risk`), but the list/card UI doesn't surface them. You can't see at-a-glance which centres are amber/red from this page.
+2. **No "Profile checklist complete" badge on the card** — `profile_checklist_complete: boolean` is in the schema (migration 040+) but invisible here. New centres should show "Onboarding ⏳" until the checklist completes.
+3. **No region filter** — `regions` table exists (Wave 6+) and centres auto-assign to one on create, but the list has no `Region` filter chip. Once you have 40+ centres across 5+ regions, this is essential.
+4. **Filter persistence** — search, type, status, pricing, sort, view all reset on navigation away. URL query params would let you bookmark filtered views ("?status=trial&region=south-west").
+5. **No bulk actions** — to invoice 10 centres, change pricing on 5, or send announcements to a region, you have to open each one. A checkbox column on table view + bulk-action bar would unlock ops workflows.
+6. **Detail view is 962 lines, 10 tabs, no in-tab indicator counts** — the tab bar reads "Sessions / Notes (3) / Equipment / Invoices (12) / Feedback / Children / Reports / Portal Access" — only Notes/Equipment/Invoices show counts. Sessions/Feedback/Children/Reports counts would speed scanning ("does this centre have any pending reports?").
+7. **Detail Invoices tab leaks $ without `financial_access` gate** — the tab renders `OutboundInvoiceSummary` (amount + status). Should be hidden or replaced with "Financial visibility restricted" placeholder for ops viewers without the flag.
+8. **No "Last activity" sort** — you can sort by name/status/newest, but not by "last session date" or "last note added". For at-risk-centre triage, that's the first signal you'd want.
+9. **No saved views** — power-ops would benefit from "Save this filter combo" → name it → access from a dropdown.
+10. **UI inconsistency with the new `/admin` home design language** — list uses `rounded-xl border-dashed` for empty state, but `rounded-lg`/`rounded-md` elsewhere; the new home dashboard uses `rounded-2xl` universally. Cards should match.
+
+🎯 **Final-state target**
+
+The centres list is **the operational heartbeat surface** — Abdul opens it 5+ times a day to triage health. Top of the page: a Status Pulse strip (centres at risk / overdue invoices / onboarding behind schedule). Filter bar adds a Region chip and persists to URL query params so views are bookmarkable. Cards surface health (green/amber/red dot + score), churn risk, onboarding progress, and "last session" date. Bulk actions on table view (checkbox column + actions bar). Detail view's Invoices tab gets the `financial_access` gate, every tab gets a count in the trigger, and the tab bar groups into logical sections (Engagement: Sessions/Feedback/Notes/Reports — Operations: Equipment/Invoices/Children — Access: Portal/Grants). UI matches the home page's `rounded-2xl` + restrained-orange feel.
+
+📋 **Open items**
+
+- [x] Surface `health_score` + status colour on `CentreCard` (green ≥80, amber 60–79, red <60)
+- [x] Add `churn_risk` warning badge when `churn_risk=true`
+- [x] Add "Onboarding ⏳ N/10" badge when `profile_checklist_complete=false`
+- [x] Add **Region** filter chip + auto-derive from `regions` table
+- [x] Persist all filter state to URL query params (`?search=...&type=...&status=...&region=...`)
+- [x] Add **"Last activity"** sort option (last session date or last note added)
+- [x] Bulk-select column on table view + a bulk-action bar (invoice / announce / change status / export)
+- [x] **Financial gate** on the Invoices tab inside `CentreDetailView` — hide or stub for ops viewers without `financial_access`
+- [x] Add counts to every tab trigger (Sessions/Feedback/Children/Reports)
+- [x] Group `CentreDetailView`'s 10 tabs into 3 logical groups OR convert to a scrollable horizontal nav with section dividers
+- [x] Match `/admin` home design language: `rounded-2xl` cards, restrained-orange accents, subtle hover-lift, `gap-6` between sections
+- [x] Status Pulse strip at top of the list (at-risk count / overdue invoices / onboarding behind)
+- [ ] (Optional) Saved views — name + recall filter combinations
+
+---

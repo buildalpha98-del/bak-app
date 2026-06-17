@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type {
   CentreType,
   PricingModel,
@@ -23,12 +24,20 @@ export interface CentreFilters {
   type?: CentreType | "all";
   contractStatus?: ContractStatus | "all";
   pricingModel?: PricingModel | "all";
-  sortBy?: "name" | "contract_status" | "created_at";
+  sortBy?: "name" | "contract_status" | "created_at" | "last_activity";
 }
 
 export interface CentreListItem extends Centre {
   note_count: number;
   session_count: number;
+  /** Auto-assigned by suburb; null when no region matches. */
+  region_id: string | null;
+  /** Latest checklist row's completed step count (null when no row exists yet). */
+  onboarding_steps_completed: number | null;
+  /** Latest checklist row's total step count (always 10 per current schema). */
+  onboarding_steps_total: number | null;
+  /** ISO timestamp of the most recent session date OR centre_note created_at. */
+  last_activity_at: string | null;
 }
 
 export interface CentreNoteWithAuthor extends CentreNote {
@@ -51,6 +60,31 @@ export interface CentreDetail {
   sessions: (Session & { coach_name: string | null })[];
   equipment_kits: EquipmentKit[];
   outbound_invoices: OutboundInvoiceSummary[];
+  /** Total sessions (mirrors `sessions.length` but precomputed for tab badges). */
+  sessions_count: number;
+  /** Feedback rating rows for this centre. */
+  feedback_count: number;
+  /** Active centre_children rows for this centre (status='active'). */
+  children_count: number;
+  /** centre_reports rows for this centre. */
+  reports_count: number;
+}
+
+// ============================================================
+// Status pulse — counts for inline pulse strip on /admin/centres
+// ============================================================
+
+export interface CentresStatusPulse {
+  /** Centres flagged as churn-risk by the daily cron. */
+  atRiskCount: number;
+  /** Outbound invoices stamped `overdue` (covers all centres). */
+  overdueInvoiceCount: number;
+  /**
+   * Active centres whose onboarding checklist is older than 14 days
+   * AND has fewer than 5 steps completed. The 14-day grace window lets
+   * us not light up on legitimately fresh checklists.
+   */
+  behindOnboardingCount: number;
 }
 
 export interface CoachCentreDetail {
@@ -121,46 +155,125 @@ export async function getCentreList(): Promise<{
   try {
     const supabase = await createSupabaseServerClient();
 
+    // Pull centres + region_id (region_id was added in migration 039 but
+    // isn't yet on the Centre TS interface — we select * and overlay it).
     const { data: centres, error: centresError } = await supabase
       .from("centres")
-      .select("*")
+      .select("*, region_id")
       .order("name");
 
     if (centresError) throw centresError;
     if (!centres) return { data: [], error: null };
 
-    // Get note counts
-    const { data: noteCounts, error: noteError } = await supabase
+    // Notes — pull centre_id + created_at so we can both count rows AND
+    // surface the most recent note timestamp for last-activity sort.
+    const { data: noteRows, error: noteError } = await supabase
       .from("centre_notes")
-      .select("centre_id");
+      .select("centre_id, created_at");
 
     if (noteError) throw noteError;
 
-    // Get session counts
-    const { data: sessionCounts, error: sessionError } = await supabase
+    // Sessions — same shape, using `date` for the activity signal.
+    const { data: sessionRows, error: sessionError } = await supabase
       .from("sessions")
-      .select("centre_id");
+      .select("centre_id, date");
 
     if (sessionError) throw sessionError;
 
+    // Latest onboarding checklist per centre + step completion counts.
+    // We accept any checklist row (even completed) and read the latest
+    // by started_at so the badge shows "10/10" for already-finished
+    // onboarding instead of disappearing into a null state.
+    const { data: checklistRows, error: checklistError } = await supabase
+      .from("centre_onboarding_checklists")
+      .select("id, centre_id, started_at")
+      .order("started_at", { ascending: false });
+
+    if (checklistError) throw checklistError;
+
+    const latestChecklistByCentre = new Map<string, { id: string }>();
+    for (const row of checklistRows ?? []) {
+      if (!latestChecklistByCentre.has(row.centre_id)) {
+        latestChecklistByCentre.set(row.centre_id, { id: row.id });
+      }
+    }
+
+    const checklistIds = Array.from(latestChecklistByCentre.values()).map(
+      (c) => c.id
+    );
+    const stepsByChecklist = new Map<
+      string,
+      { completed: number; total: number }
+    >();
+
+    if (checklistIds.length > 0) {
+      const { data: stepRows, error: stepError } = await supabase
+        .from("centre_onboarding_steps")
+        .select("checklist_id, status")
+        .in("checklist_id", checklistIds);
+
+      if (stepError) throw stepError;
+
+      for (const s of stepRows ?? []) {
+        const cur = stepsByChecklist.get(s.checklist_id) ?? {
+          completed: 0,
+          total: 0,
+        };
+        cur.total += 1;
+        if (s.status === "completed") cur.completed += 1;
+        stepsByChecklist.set(s.checklist_id, cur);
+      }
+    }
+
     const noteCountMap = new Map<string, number>();
-    for (const n of noteCounts ?? []) {
+    const lastNoteByCentre = new Map<string, string>();
+    for (const n of noteRows ?? []) {
       noteCountMap.set(n.centre_id, (noteCountMap.get(n.centre_id) ?? 0) + 1);
+      const prev = lastNoteByCentre.get(n.centre_id);
+      if (!prev || n.created_at > prev) {
+        lastNoteByCentre.set(n.centre_id, n.created_at);
+      }
     }
 
     const sessionCountMap = new Map<string, number>();
-    for (const s of sessionCounts ?? []) {
+    const lastSessionByCentre = new Map<string, string>();
+    for (const s of sessionRows ?? []) {
       sessionCountMap.set(
         s.centre_id,
         (sessionCountMap.get(s.centre_id) ?? 0) + 1
       );
+      const prev = lastSessionByCentre.get(s.centre_id);
+      if (!prev || s.date > prev) {
+        lastSessionByCentre.set(s.centre_id, s.date);
+      }
     }
 
-    const items: CentreListItem[] = centres.map((c) => ({
-      ...c,
-      note_count: noteCountMap.get(c.id) ?? 0,
-      session_count: sessionCountMap.get(c.id) ?? 0,
-    }));
+    const items: CentreListItem[] = centres.map((c) => {
+      const checklist = latestChecklistByCentre.get(c.id);
+      const stepCounts = checklist ? stepsByChecklist.get(checklist.id) : null;
+
+      // Pick the more-recent of last_session.date vs last_note.created_at.
+      // Note dates are timestamps; session dates are date-only strings.
+      // ISO 8601 lexicographic compare works for both.
+      const lastSession = lastSessionByCentre.get(c.id);
+      const lastNote = lastNoteByCentre.get(c.id);
+      const lastActivity =
+        lastSession && lastNote
+          ? lastSession > lastNote
+            ? lastSession
+            : lastNote
+          : (lastSession ?? lastNote ?? null);
+
+      return {
+        ...c,
+        region_id: (c.region_id as string | null) ?? null,
+        note_count: noteCountMap.get(c.id) ?? 0,
+        session_count: sessionCountMap.get(c.id) ?? 0,
+        onboarding_steps_completed: stepCounts?.completed ?? null,
+        onboarding_steps_total: stepCounts?.total ?? null,
+        last_activity_at: lastActivity,
+      };
+    });
 
     return { data: items, error: null };
   } catch (err) {
@@ -240,6 +353,26 @@ export async function getCentreDetail(
 
     if (invoiceError) throw invoiceError;
 
+    // Tab counts — three lightweight head-only count() queries in
+    // parallel. Feedback/children/reports each power a small badge on
+    // the corresponding tab trigger; doing them as `head: true` keeps
+    // the round-trip cheap (no row data crosses the wire).
+    const [feedbackRes, childrenRes, reportsRes] = await Promise.all([
+      supabase
+        .from("feedback_ratings")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", id),
+      supabase
+        .from("centre_children")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", id)
+        .eq("status", "active"),
+      supabase
+        .from("centre_reports")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", id),
+    ]);
+
     return {
       data: {
         centre,
@@ -247,6 +380,10 @@ export async function getCentreDetail(
         sessions,
         equipment_kits: equipmentKits ?? [],
         outbound_invoices: invoices ?? [],
+        sessions_count: sessions.length,
+        feedback_count: feedbackRes.count ?? 0,
+        children_count: childrenRes.count ?? 0,
+        reports_count: reportsRes.count ?? 0,
       },
       error: null,
     };
@@ -487,5 +624,326 @@ export async function addCentreNote(
   } catch (err) {
     console.error("addCentreNote error:", err);
     return { data: null, error: "Failed to add note." };
+  }
+}
+
+// ============================================================
+// getCentresStatusPulse — counts powering the inline pulse strip
+// ============================================================
+//
+// Cheap counts, computed in parallel. Mirrors the home dashboard's
+// `getAdminStatusPulse` shape (three head:true counts), scoped to
+// centre signals: churn risk, overdue invoices, behind-onboarding.
+
+export async function getCentresStatusPulse(): Promise<CentresStatusPulse> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    // 14-day cutoff for "behind on onboarding" — checklists that have
+    // been sitting open longer than two weeks with low progress are the
+    // real risk, not fresh ones that just got created.
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    const cutoffIso = fourteenDaysAgo.toISOString();
+
+    const [atRiskRes, overdueRes, oldChecklistsRes] = await Promise.all([
+      supabase
+        .from("centres")
+        .select("id", { count: "exact", head: true })
+        .eq("churn_risk", true)
+        .neq("contract_status", "churned"),
+      supabase
+        .from("outbound_invoices")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "overdue"),
+      // Pull the checklist ids older than 14 days; we'll then check
+      // their step-completion count and only flag ones with <5 done.
+      supabase
+        .from("centre_onboarding_checklists")
+        .select("id, status")
+        .neq("status", "completed")
+        .lt("started_at", cutoffIso),
+    ]);
+
+    let behindOnboardingCount = 0;
+    const candidateIds = (oldChecklistsRes.data ?? []).map(
+      (c: { id: string }) => c.id
+    );
+
+    if (candidateIds.length > 0) {
+      const { data: stepRows } = await supabase
+        .from("centre_onboarding_steps")
+        .select("checklist_id, status")
+        .in("checklist_id", candidateIds);
+
+      const completedByChecklist = new Map<string, number>();
+      for (const row of stepRows ?? []) {
+        if (row.status === "completed") {
+          completedByChecklist.set(
+            row.checklist_id,
+            (completedByChecklist.get(row.checklist_id) ?? 0) + 1
+          );
+        }
+      }
+      // A checklist counts as "behind" if it's older than the cutoff
+      // AND has fewer than 5 completed steps (half the 10-step plan).
+      for (const id of candidateIds) {
+        if ((completedByChecklist.get(id) ?? 0) < 5) behindOnboardingCount++;
+      }
+    }
+
+    return {
+      atRiskCount: atRiskRes.count ?? 0,
+      overdueInvoiceCount: overdueRes.count ?? 0,
+      behindOnboardingCount,
+    };
+  } catch (err) {
+    console.error("getCentresStatusPulse error:", err);
+    return {
+      atRiskCount: 0,
+      overdueInvoiceCount: 0,
+      behindOnboardingCount: 0,
+    };
+  }
+}
+
+// ============================================================
+// bulkUpdateCentreStatus — admin/ops only; writes activity log
+// ============================================================
+//
+// Used by the table-view bulk-action bar. Each affected centre gets
+// its own activity_log row so the audit trail is granular (mirrors
+// what the per-centre Edit dialog would produce). Continues on
+// per-row failures so a single bad row doesn't sink the whole batch.
+
+export async function bulkUpdateCentreStatus(
+  centreIds: string[],
+  status: ContractStatus
+): Promise<{ updated: number; error: string | null }> {
+  try {
+    if (centreIds.length === 0) {
+      return { updated: 0, error: "No centres selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    // Auth: only admin/ops may bulk-update.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { updated: 0, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { updated: 0, error: "Not authorised." };
+    }
+
+    let updated = 0;
+    let lastError: string | null = null;
+    const nowIso = new Date().toISOString();
+
+    for (const centreId of centreIds) {
+      const { error: upErr } = await supabase
+        .from("centres")
+        .update({ contract_status: status, status_changed_at: nowIso })
+        .eq("id", centreId);
+
+      if (upErr) {
+        console.error(
+          "bulkUpdateCentreStatus per-row error:",
+          centreId,
+          upErr
+        );
+        lastError = upErr.message;
+        continue;
+      }
+
+      // Activity log per centre — best-effort, don't fail the
+      // whole call if logging hiccups.
+      const { error: logErr } = await supabase.from("activity_log").insert({
+        user_id: user.id,
+        action: "centre_status_bulk_updated",
+        entity_type: "centre",
+        entity_id: centreId,
+        metadata: { new_status: status },
+      });
+      if (logErr) {
+        console.error("bulkUpdateCentreStatus log error:", centreId, logErr);
+      }
+
+      updated += 1;
+    }
+
+    if (updated === 0) {
+      return {
+        updated: 0,
+        error: lastError ?? "Failed to update any centres.",
+      };
+    }
+
+    return {
+      updated,
+      error:
+        updated < centreIds.length
+          ? `Updated ${updated} of ${centreIds.length}. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkUpdateCentreStatus error:", err);
+    return { updated: 0, error: "Failed to update centres." };
+  }
+}
+
+// ============================================================
+// exportCentresCsv — financial fields gated by financial_access
+// ============================================================
+//
+// Returns the CSV string for the client to wrap in a Blob and
+// download. We keep the field set small and consistent; the financial
+// column (`agreed_rate`) is omitted entirely — not just blanked — when
+// the viewer doesn't have financial_access, so the resulting file
+// can't be re-shared with the data still embedded.
+
+const CSV_FIELDS_BASE = [
+  "id",
+  "name",
+  "type",
+  "address",
+  "primary_contact_name",
+  "primary_contact_email",
+  "contract_status",
+  "pricing_model",
+  "health_score",
+  "health_status",
+  "churn_risk",
+] as const;
+
+function escapeCsvCell(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  // Quote any cell containing comma, quote, or newline — and double up
+  // embedded quotes per RFC 4180.
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+export async function exportCentresCsv(
+  centreIds: string[]
+): Promise<{ csv: string | null; error: string | null }> {
+  try {
+    if (centreIds.length === 0) {
+      return { csv: null, error: "No centres selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const hasFinancial = await getFinancialAccess();
+
+    const fields = hasFinancial
+      ? [...CSV_FIELDS_BASE, "agreed_rate"]
+      : [...CSV_FIELDS_BASE];
+
+    // Select only what we need. agreed_rate is selected only when the
+    // viewer is allowed to see it.
+    const selectCols = [
+      "id",
+      "name",
+      "type",
+      "address",
+      "primary_contact_name",
+      "primary_contact_email",
+      "contract_status",
+      "pricing_model",
+      "health_score",
+      "health_status",
+      "churn_risk",
+      ...(hasFinancial ? ["agreed_rate"] : []),
+    ].join(", ");
+
+    const { data: rows, error } = await supabase
+      .from("centres")
+      .select(selectCols)
+      .in("id", centreIds)
+      .order("name");
+
+    if (error) throw error;
+
+    const header = fields.join(",");
+    const lines = (rows ?? []).map((r) =>
+      fields
+        .map((f) =>
+          escapeCsvCell((r as unknown as Record<string, unknown>)[f])
+        )
+        .join(",")
+    );
+
+    return { csv: [header, ...lines].join("\n"), error: null };
+  } catch (err) {
+    console.error("exportCentresCsv error:", err);
+    return { csv: null, error: "Failed to export centres." };
+  }
+}
+
+// ============================================================
+// bulkAddCentreNote — used by the "Send announcement" bulk action
+// ============================================================
+//
+// The `announcements` table is staff-targeted (audience enum), not
+// centre-targeted, so the bulk-action bar's "Send announcement" maps
+// onto centre_notes instead: one row per selected centre, category
+// `client_relationship`. Same UX outcome — operators record an
+// outreach against each centre — but uses the schema we have.
+
+export async function bulkAddCentreNote(
+  centreIds: string[],
+  content: string
+): Promise<{ added: number; error: string | null }> {
+  try {
+    if (centreIds.length === 0) {
+      return { added: 0, error: "No centres selected." };
+    }
+    if (!content.trim()) {
+      return { added: 0, error: "Note content is required." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { added: 0, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { added: 0, error: "Not authorised." };
+    }
+
+    const trimmed = content.trim();
+    const rows = centreIds.map((cid) => ({
+      centre_id: cid,
+      category: "client_relationship" as const,
+      content: trimmed,
+      created_by: user.id,
+    }));
+
+    const { error: insErr } = await supabase
+      .from("centre_notes")
+      .insert(rows);
+
+    if (insErr) throw insErr;
+
+    return { added: centreIds.length, error: null };
+  } catch (err) {
+    console.error("bulkAddCentreNote error:", err);
+    return { added: 0, error: "Failed to add notes." };
   }
 }

@@ -19,6 +19,7 @@ import {
   Plus,
   Loader2,
   MessageSquare,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -204,9 +205,19 @@ function formatCurrency(amount: number): string {
 interface CentreDetailViewProps {
   data: CentreDetail;
   basePath: string;
+  /**
+   * Viewer's role + financial_access flag — drives the Invoices tab
+   * gate. Optional so older callers don't crash; when omitted, the
+   * gate defaults to closed (no financial visibility).
+   */
+  profile?: { role: string; financial_access: boolean } | null;
 }
 
-export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
+export function CentreDetailView({
+  data,
+  basePath,
+  profile,
+}: CentreDetailViewProps) {
   const router = useRouter();
   const { centre } = data;
   const [notes, setNotes] = useState<CentreNoteWithAuthor[]>(data.notes);
@@ -214,6 +225,8 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
+
+  const hasFinancial = !!profile?.financial_access;
 
   async function handleArchive() {
     setArchiving(true);
@@ -250,6 +263,33 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
               <Badge variant={contractStatusVariant(centre.contract_status)}>
                 {formatContractStatus(centre.contract_status)}
               </Badge>
+              {centre.churn_risk && (
+                <Badge variant="destructive">At risk</Badge>
+              )}
+              {centre.health_score !== null && (
+                <span
+                  className={
+                    "inline-flex items-center gap-1 text-xs font-medium " +
+                    (centre.health_score >= 80
+                      ? "text-emerald-700"
+                      : centre.health_score >= 60
+                        ? "text-amber-700"
+                        : "text-red-700")
+                  }
+                >
+                  <span
+                    className={
+                      "inline-block size-2 rounded-full " +
+                      (centre.health_score >= 80
+                        ? "bg-emerald-500"
+                        : centre.health_score >= 60
+                          ? "bg-amber-500"
+                          : "bg-red-500")
+                    }
+                  />
+                  Health {centre.health_score}/100
+                </span>
+              )}
               <span className="text-sm text-muted-foreground">
                 {formatCentreType(centre.type)}
               </span>
@@ -295,23 +335,38 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — grouped into Engagement / Operations / Access with
+          quiet uppercase subheaders, all inside one TabsList so the
+          shared underline-active state still works. */}
       <Tabs defaultValue="overview">
-        <TabsList variant="line">
+        <TabsList variant="line" className="flex-wrap gap-x-1 gap-y-2">
+          <GroupLabel>Engagement</GroupLabel>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sessions">
-            Sessions ({data.sessions.length})
+            Sessions ({data.sessions_count})
+          </TabsTrigger>
+          <TabsTrigger value="feedback">
+            Feedback ({data.feedback_count})
           </TabsTrigger>
           <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
+          <TabsTrigger value="reports">
+            Reports ({data.reports_count})
+          </TabsTrigger>
+
+          <GroupLabel>Operations</GroupLabel>
           <TabsTrigger value="equipment">
             Equipment ({data.equipment_kits.length})
           </TabsTrigger>
           <TabsTrigger value="invoices">
-            Invoices ({data.outbound_invoices.length})
+            {hasFinancial
+              ? `Invoices (${data.outbound_invoices.length})`
+              : "Invoices"}
           </TabsTrigger>
-          <TabsTrigger value="feedback">Feedback</TabsTrigger>
-          <TabsTrigger value="children">Children</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="children">
+            Children ({data.children_count})
+          </TabsTrigger>
+
+          <GroupLabel>Access</GroupLabel>
           <TabsTrigger value="portal">Portal Access</TabsTrigger>
           {centre.type === "school" && (
             <TabsTrigger value="grants">Grants</TabsTrigger>
@@ -322,7 +377,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2">
             {/* Contact & Location */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle>Contact & Location</CardTitle>
               </CardHeader>
@@ -368,8 +423,10 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
               </CardContent>
             </Card>
 
-            {/* Commercial */}
-            <Card>
+            {/* Commercial — rate row gated by financial access so
+                non-financial viewers see the pricing model but not
+                the dollar figure. */}
+            <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle>Commercial</CardTitle>
               </CardHeader>
@@ -381,7 +438,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
                     {formatPricingModel(centre.pricing_model)}
                   </span>
                 </div>
-                {centre.agreed_rate !== null && (
+                {centre.agreed_rate !== null && hasFinancial && (
                   <div className="flex items-center gap-2">
                     <DollarSign className="size-4 text-muted-foreground" />
                     <span>
@@ -407,7 +464,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
             </Card>
 
             {/* Session Preferences */}
-            <Card className="md:col-span-2">
+            <Card className="md:col-span-2 rounded-2xl">
               <CardHeader>
                 <CardTitle>Session Preferences</CardTitle>
               </CardHeader>
@@ -460,7 +517,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
           {data.sessions.length === 0 ? (
             <EmptyState icon={Calendar} message="No sessions recorded" />
           ) : (
-            <div className="rounded-xl border">
+            <div className="rounded-2xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -508,7 +565,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
             ) : (
               <div className="space-y-3">
                 {notes.map((note) => (
-                  <Card key={note.id} size="sm">
+                  <Card key={note.id} size="sm" className="rounded-2xl">
                     <CardHeader>
                       <div className="flex items-center gap-2">
                         <Badge variant={noteCategoryVariant(note.category)}>
@@ -544,7 +601,7 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {data.equipment_kits.map((kit) => (
-                <Card key={kit.id} size="sm">
+                <Card key={kit.id} size="sm" className="rounded-2xl transition hover:shadow-md hover:-translate-y-0.5">
                   <CardHeader>
                     <CardTitle>{kit.name}</CardTitle>
                     <CardDescription>
@@ -580,10 +637,17 @@ export function CentreDetailView({ data, basePath }: CentreDetailViewProps) {
 
         {/* ==================== Invoices Tab ==================== */}
         <TabsContent value="invoices">
-          {data.outbound_invoices.length === 0 ? (
+          {!hasFinancial ? (
+            <Card className="rounded-2xl">
+              <CardContent className="flex items-center gap-3 p-6 text-sm text-muted-foreground">
+                <Lock className="size-4" />
+                Financial visibility is restricted on this account. Ask an admin for access.
+              </CardContent>
+            </Card>
+          ) : data.outbound_invoices.length === 0 ? (
             <EmptyState icon={FileText} message="No invoices generated" />
           ) : (
-            <div className="rounded-xl border">
+            <div className="rounded-2xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -664,10 +728,29 @@ function EmptyState({
   message: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
       <Icon className="mb-3 size-10 text-muted-foreground/50" />
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>
+  );
+}
+
+// ============================================================
+// GroupLabel — quiet uppercase header for tab groups
+// ============================================================
+//
+// Rendered as a non-interactive span inside TabsList. Uses the same
+// muted typography as the AdminContextStrip date label so the visual
+// rhythm carries over from the home dashboard.
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      aria-hidden
+      className="ml-1 mr-0.5 text-xs font-medium uppercase tracking-widest text-muted-foreground/70 select-none [&:not(:first-child)]:ml-3"
+    >
+      {children}
+    </span>
   );
 }
 
