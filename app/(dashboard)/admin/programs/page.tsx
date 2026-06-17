@@ -1,8 +1,13 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPrograms } from "@/lib/programs/actions";
+import { getProgramsStatusPulse } from "@/lib/programs/status-pulse-actions";
 import { ProgramLibrary } from "@/components/programs/program-library";
+import { ProgramsStatusPulseStrip } from "@/components/programs/programs-status-pulse";
+
+export const metadata = {
+  title: "Programmes | Build Alpha Kids",
+};
 
 export default async function AdminProgramsPage() {
   const supabase = await createSupabaseServerClient();
@@ -12,36 +17,36 @@ export default async function AdminProgramsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: programs, error } = await getPrograms();
+  const [{ data: programs, error }, pulse] = await Promise.all([
+    getPrograms(),
+    getProgramsStatusPulse(),
+  ]);
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+      <div className="container max-w-6xl py-6">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
       </div>
     );
   }
 
+  const list = programs ?? [];
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 animate-fade-up">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold font-heading text-foreground">Programmes</h1>
-          <p className="text-sm text-muted-foreground">
-            AI-generated coaching session plans.
-          </p>
-        </div>
-        <Link
-          href="/admin/programs/generate"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-        >
-          Generate Programme
-        </Link>
+    <div className="container max-w-6xl space-y-6 py-6 animate-fade-up">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Programmes</h1>
+        <p className="text-sm text-muted-foreground">
+          {list.length} programme{list.length === 1 ? "" : "s"} in the library.
+          Generate session plans with AI or compose your own.
+        </p>
       </div>
 
-      <div className="mt-6">
-        <ProgramLibrary programs={programs ?? []} basePath="/admin/programs" />
-      </div>
+      <ProgramsStatusPulseStrip pulse={pulse} basePath="/admin/programs" />
+
+      <ProgramLibrary programs={list} basePath="/admin/programs" />
     </div>
   );
 }

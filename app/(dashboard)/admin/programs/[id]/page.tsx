@@ -1,9 +1,10 @@
 import { redirect, notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  getLinkedCentresForProgramme,
   getProgramDetail,
-  getProgramVersionHistory,
   getProgramUsageStats,
+  getProgramVersionHistory,
 } from "@/lib/programs/actions";
 import { ProgramDetailView } from "@/components/programs/program-detail";
 
@@ -20,11 +21,13 @@ export default async function AdminProgramDetailPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const [programResult, versionsResult, usageResult] = await Promise.all([
-    getProgramDetail(id),
-    getProgramVersionHistory(id),
-    getProgramUsageStats(id),
-  ]);
+  const [programResult, versionsResult, usageResult, linkedCentresResult] =
+    await Promise.all([
+      getProgramDetail(id),
+      getProgramVersionHistory(id),
+      getProgramUsageStats(id),
+      getLinkedCentresForProgramme(id),
+    ]);
 
   if (!programResult.data) notFound();
 
@@ -32,7 +35,10 @@ export default async function AdminProgramDetailPage({ params }: Props) {
     <ProgramDetailView
       program={programResult.data}
       versions={versionsResult.data ?? []}
-      usage={usageResult.data ?? { sessionCount: 0, centresUsed: [], lastUsedAt: null }}
+      usage={
+        usageResult.data ?? { sessionCount: 0, centresUsed: [], lastUsedAt: null }
+      }
+      linkedCentres={linkedCentresResult.data ?? []}
       basePath="/admin/programs"
     />
   );

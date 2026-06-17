@@ -26,12 +26,16 @@ import {
 } from "@/lib/programs/custom-taxonomy-actions";
 import { type AgeBand } from "@/lib/utils/programs/age-bands";
 import {
-  saveProgram,
-  getCentreListSimple,
+  checkProgrammeDuplicate,
   getCentreEquipment,
+  getCentreListSimple,
   getRecentProgramsForCentre,
+  saveProgram,
 } from "@/lib/programs/actions";
+import type { ProgrammeDuplicateMatch } from "@/lib/programs/actions";
 import type { ProgramContentJson, SessionDuration } from "@/lib/ai/types";
+import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 
 // ============================================================
 // Programme Generation Form
@@ -67,6 +71,12 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   const [centreEquipmentItems, setCentreEquipmentItems] = useState<string[]>([]);
   const [recentPrograms, setRecentPrograms] = useState<
     { title: string; sport: string; skillFocus: string | null }[]
+  >([]);
+  // Inline duplicate-warning surface — programmes already in the
+  // library that match this sport + at least one of the selected
+  // age bands. Admin can open the existing one rather than re-seed.
+  const [duplicateMatches, setDuplicateMatches] = useState<
+    ProgrammeDuplicateMatch[]
   >([]);
 
   // Generation state
@@ -113,6 +123,21 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
       if (data) setRecentPrograms(data);
     });
   }, [centreId, sport]);
+
+  // Duplicate-warn check — runs whenever sport + ageGroups change.
+  useEffect(() => {
+    if (!sport || ageGroups.length === 0) {
+      setDuplicateMatches([]);
+      return;
+    }
+    let cancelled = false;
+    checkProgrammeDuplicate(sport, ageGroups).then(({ matches }) => {
+      if (!cancelled) setDuplicateMatches(matches.slice(0, 3));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sport, ageGroups]);
 
   // Equipment list to display
   const equipmentItems = centreId && centreId !== "none"
@@ -378,11 +403,48 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
             </CardContent>
           </Card>
 
+          {/* Duplicate warning — programmes already in the library
+              that overlap on sport + at least one selected age band. */}
+          {duplicateMatches.length > 0 && (
+            <div className="rounded-2xl border border-[#E8712A]/40 bg-[#E8712A]/10 p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[#E8712A]" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-[#E8712A]">
+                    {duplicateMatches.length === 1
+                      ? "A similar programme already exists"
+                      : `${duplicateMatches.length} similar programmes already exist`}
+                  </p>
+                  <p className="mt-0.5 text-xs text-foreground">
+                    Open an existing one to extend it as a new version, or keep
+                    generating to add a fresh entry.
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {duplicateMatches.map((m) => (
+                      <li key={m.id} className="text-xs">
+                        <Link
+                          href={`${basePath}/${m.id}`}
+                          className="font-medium text-[#E8712A] hover:underline"
+                        >
+                          {m.title}
+                        </Link>
+                        <span className="ml-1 text-muted-foreground">
+                          · Ages {m.age_groups.join(", ")} · {m.duration_minutes}{" "}
+                          min
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Generate button */}
           <Button
             onClick={handleGenerate}
             disabled={!isFormValid || !canGenerate || status === "generating"}
-            className="w-full bg-primary hover:bg-primary/90 text-white"
+            className="w-full bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
             size="lg"
           >
             {status === "generating" ? (
