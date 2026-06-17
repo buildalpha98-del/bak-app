@@ -32,6 +32,7 @@ import {
   FileBarChart,
   Compass,
   Award,
+  Inbox,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types/enums";
 
@@ -65,6 +66,7 @@ export function filterNavByAccess(
 export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   admin: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard, mobileOrder: 1 },
+    { label: "Inbox", href: "/admin/inbox", icon: Inbox },
     { label: "Centres & Schools", href: "/admin/centres", icon: Building2, mobileOrder: 2 },
     { label: "Roster", href: "/admin/roster", icon: Calendar, mobileOrder: 3 },
     { label: "CRM", href: "/admin/crm", icon: Target },
@@ -96,6 +98,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   ],
   ops: [
     { label: "Command Centre", href: "/ops", icon: LayoutDashboard, mobileOrder: 1 },
+    { label: "Inbox", href: "/ops/inbox", icon: Inbox },
     { label: "Centres & Schools", href: "/ops/centres", icon: Building2, mobileOrder: 2 },
     { label: "Roster", href: "/ops/roster", icon: Calendar, mobileOrder: 3 },
     { label: "CRM", href: "/ops/crm", icon: Target },

@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { NAV_CONFIG, filterNavByAccess, isNavItemActive } from "./nav-config";
 import { useSidebar } from "./sidebar-context";
 import type { UserRole } from "@/lib/types/enums";
+import { InboxBadge } from "@/components/inbox/inbox-badge";
 
 interface SidebarProps {
   role: UserRole;
@@ -57,6 +58,7 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
         {items.map((item) => {
           const active = isNavItemActive(item.href, pathname);
           const Icon = item.icon;
+          const isInbox = item.href.endsWith("/inbox");
 
           const linkClasses = cn(
             "group flex items-center gap-3 h-10 rounded-lg px-3 text-sm font-medium transition-all duration-200 relative",
@@ -82,6 +84,11 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
                     <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
                   )}
                   <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
+                  {isInbox && (
+                    <span className="absolute -top-0.5 -right-0.5">
+                      <InboxBadge variant="collapsed" />
+                    </span>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>
                   {item.label}
@@ -98,8 +105,12 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
               )}
               <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
               <span className="truncate">{item.label}</span>
-              {active && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-warm" />
+              {isInbox ? (
+                <InboxBadge variant="expanded" />
+              ) : (
+                active && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-warm" />
+                )
               )}
             </Link>
           );
