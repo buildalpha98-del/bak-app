@@ -87,9 +87,9 @@ export default function ParentPackagesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Session Packs</h1>
+        <h1 className="text-2xl font-bold text-foreground">Session packs</h1>
         <p className="text-muted-foreground mt-1">
-          Purchase session packs for great savings on your bookings
+          Bundle sessions ahead of time for nicer per-session pricing.
         </p>
       </div>
 
@@ -135,7 +135,7 @@ export default function ParentPackagesPage() {
               return (
                 <div
                   key={balance.id}
-                  className="rounded-xl border border-orange-100 bg-white p-5 space-y-3"
+                  className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <h3 className="font-semibold text-foreground">
@@ -194,7 +194,7 @@ export default function ParentPackagesPage() {
         </h2>
 
         {packages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-white border border-orange-100">
+          <div className="flex flex-col items-center justify-center py-12 rounded-2xl bg-white border border-orange-100 shadow-sm">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#E8712A] mb-3">
               <PackageIcon className="h-7 w-7" />
             </div>
@@ -207,7 +207,7 @@ export default function ParentPackagesPage() {
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="rounded-xl border border-orange-100 bg-white p-5 space-y-4 flex flex-col"
+                className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 flex flex-col shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
                 <div className="flex items-start justify-between">
                   <h3 className="font-semibold text-foreground">{pkg.name}</h3>
@@ -245,7 +245,7 @@ export default function ParentPackagesPage() {
 
                 <div className="mt-auto pt-2">
                   <Button
-                    className="w-full bg-[#E8712A] hover:bg-[#D4641F] text-white"
+                    className="w-full bg-[#E8712A] hover:bg-[#D4641F] text-white rounded-xl min-h-[44px]"
                     onClick={() => {
                       setSelectedPackage(pkg);
                       setError(null);
@@ -253,7 +253,7 @@ export default function ParentPackagesPage() {
                     }}
                     disabled={selectedPackage !== null}
                   >
-                    Buy Package
+                    Buy now
                   </Button>
                 </div>
               </div>

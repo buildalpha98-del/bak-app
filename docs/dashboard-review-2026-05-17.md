@@ -1639,4 +1639,82 @@ Pulse strip (submitted-this-term / awaiting-your-rating) sits above the existing
 
 **Verification:** `npx vitest run lib/client/` → 16/16 pass; `npx tsc --noEmit` → clean; `npm run build` → ✓ Compiled successfully.
 
+## 5. Parent portal (`/parent/*`)
+
+The parent portal is the warmer, end-user consumer surface — magic-link auth, mobile-first, and friendlier copy than the ops/admin tables. The closure pass keeps all data strictly scoped to the calling parent (`parent_profiles.user_id`) and never touches the Square payment integration logic, only the UI around it.
+
+### 5.1 `/parent` (home)
+
+🎯 **Final-state delivered**
+
+Server component fans out 6 parallel queries: `getParentStatusPulse()` + waitlist offers + upcoming bookings + past bookings + linked children + month-to-date payments. The render order is greeting → pulse → child avatars row → summary cards → quick actions → waitlist offers → upcoming → recent activity → footer surfaces (referrals + insights).
+
+- **Greeting**: `Hi {first_name}!` in 24px bold with a one-line subtitle.
+- **Pulse strip** (`ParentHomePulseStrip`): next session label · waitlist offers · unpaid bookings · new insights · packs ending soon. Restrained orange on active fields; muted otherwise.
+- **Child avatars row** (`ParentChildAvatarsRow`): horizontal scroll of initials avatars with name + age, plus a dashed "+ Add kid" pill that deep-links to `/parent/kids`.
+- **Summary cards** (`ParentHomeSummaryCards`): four `useCountUp` cards — sessions booked (lifetime) / sessions completed / spend this month / kids on profile. `rounded-2xl` + hover-lift.
+- **Quick actions** (4-up): the brand-orange "Book a session" tile leads, followed by My bookings / My kids / Session packs as neutral white cards.
+- **Waitlist offers**: kept the orange `border-2` urgent treatment with the time-until label and "Confirm spot" CTA — these are the most time-sensitive items a parent sees.
+- **Upcoming sessions**: first 6 bookings rendered as warm cards with sport chip, days-until pill (today = filled orange, ≤2 days = light orange, else neutral), and a "View details" affordance. Cards lift on hover.
+- **Footer surfaces**: Refer-a-friend CTA (per CLAUDE.md: $5 credit + free session after 3 conversions) and a deep link to the first child's insights when kids exist.
+
+### 5.2 `/parent/book` + `/parent/bookings` (+ `/bookings/[id]`)
+
+🎯 **Final-state delivered**
+
+**`/parent/book`** is now a thin server wrapper that loads `getParentBookingPulse()` and hands it to `ParentBookClient`. The pulse strip surfaces sessions-available-today / next-opening / on-waitlist / packs-ending. Filter row (suburb search + sport + type + age-suitability toggle) sits above a `gap-6` 3-column grid of warm session cards: title, sport chip, friendly date / time / location / age band rows, prominent price, spots-left state (red/amber/muted), and either a brand-orange "Book now" CTA or a peer "Join waitlist" outline. Cards `rounded-2xl` + hover-lift.
+
+**`/parent/bookings`** uses the same warmer card treatment across the 4 tabs (Upcoming / Past / Cancelled / Waitlist) with **URL persistence** on `?tab=`. A derived `ParentPulseStrip` rides at the top with sessions-today / this-week / waitlist-offers / refunds-pending — all computed client-side from the loaded data so cancel/cancel-waitlist updates the strip without a refetch. Empty-states are friendlier (custom title + body + optional CTA via the `EmptyTab` helper). Each booking card lifts on hover; past-session cards now offer "View {child}'s insights" rather than "progress".
+
+**`/parent/bookings/[id]`** got a targeted `rounded-2xl` + shadow refresh on every card. Cancel flow + payment summary unchanged — Square logic untouched.
+
+### 5.3 `/parent/kids` + `/parent/kids/[childId]` + `/parent/kids/[childId]/insights`
+
+🎯 **Final-state delivered**
+
+**`/parent/kids`**: server wrapper loads `getParentKidsPulse()` (insights-ready / sessions-this-week / new assessments) and renders `ParentKidsClient`. The list switched from the 1-up row of `ChildCard` to a `gap-6` 3-column grid of `KidPhotoCard` tiles — big circular initials avatar, age-group badge, child name, optional medical-notes flag, and a 2-up footer with an "Insights" pill + "View profile →" affordance. Add-child form lifted to `rounded-2xl`.
+
+**`/parent/kids/[childId]`**: cards lifted to `rounded-2xl` + shadow; added a dedicated **Development insights** teaser link at the top of the body so parents can jump straight to the AI insights without scrolling past the edit form. The "remove from profile" danger zone is unchanged.
+
+**`/parent/kids/[childId]/insights`**: insight cards lifted to `rounded-2xl` with hover-lift. Generate-on-demand and term-end auto-generate flow unchanged.
+
+### 5.4 `/parent/packages` + `/parent/referrals`
+
+🎯 **Final-state delivered**
+
+**Packages**: title softened to "Session packs" with a friendlier subtitle. Active balance + available package cards `rounded-2xl` + hover-lift. CTA copy refined to "Buy now" with a 44px tap target. **Square integration logic untouched** — only the UI chrome around `<SquarePayment />`.
+
+**Referrals**: kept the existing referral-code card, share buttons, milestone-progress bar, stats trio, rewards + history lists; lifted every card to `rounded-2xl` + hover-shadow. Header copy now spells out the offer per CLAUDE.md ($5 credit per signup + free session at 3 conversions). New **`ParentPulseStrip`** above the milestone surfaces: friends-signed-up / converted / rewards-ready.
+
+### 5.5 `/parent/account` + `/parent/register`
+
+🎯 **Final-state delivered**
+
+**Account**: profile card / linked-children card / packages card / payment-history card / settings card / sign-out CTA — every card lifted to `rounded-2xl` + shadow-hover. Square payment-method receipt links untouched. Marketing opt-in toggle preserved.
+
+**Register**: warmer welcome copy on the step header ("We're glad you're here — three quick steps and you're ready to book."). All cards `rounded-2xl`. Magic-link auth flow + `completeParentRegistration` server action untouched.
+
+📋 **Closed:**
+
+- [x] `lib/parent/status-pulse-actions.ts` — `getParentStatusPulse()` (5 fields) + `getParentBookingPulse()` (4 fields) + `getParentKidsPulse()` (3 fields). Every query scoped via the shared `resolveParentContext()` helper.
+- [x] `components/parent/parent-status-pulse.tsx` — `ParentHomePulseStrip` / `ParentBookingPulseStrip` / `ParentPulseStrip` (generic) with `useCountUp` and restrained orange.
+- [x] `components/parent/parent-home-summary-cards.tsx` + `parent-child-avatars-row.tsx` — new warm consumer pieces.
+- [x] `app/(dashboard)/parent/page.tsx` — rebuilt as a server component (greeting + pulse + avatars + summary cards + quick actions + warm session cards + footer surfaces).
+- [x] `app/(dashboard)/parent/book/page.tsx` + `book-client.tsx` — server wrapper + warmer client surface.
+- [x] `app/(dashboard)/parent/bookings/page.tsx` + `bookings-client.tsx` — URL-persisted tabs + derived pulse + UI refresh.
+- [x] `app/(dashboard)/parent/bookings/[id]/page.tsx` — `rounded-2xl` refresh.
+- [x] `app/(dashboard)/parent/kids/page.tsx` + `kids-client.tsx` — server wrapper + big photo cards + pulse.
+- [x] `app/(dashboard)/parent/kids/[childId]/page.tsx` — insights teaser + UI refresh.
+- [x] `app/(dashboard)/parent/kids/[childId]/insights/page.tsx` — UI refresh.
+- [x] `app/(dashboard)/parent/packages/page.tsx` — UI refresh; Square logic untouched.
+- [x] `app/(dashboard)/parent/referrals/page.tsx` — pulse strip + UI refresh.
+- [x] `app/(dashboard)/parent/account/page.tsx` + `register/page.tsx` — UI refresh; magic-link + Square paths untouched.
+- [x] `parent_profiles.user_id` scoping preserved end-to-end — no cross-parent reads added.
+
+📋 **Tests added:** 17 cases across 2 files —
+- `lib/parent/__tests__/parent-status-pulse.test.ts` — `getParentStatusPulse` (10: calm zeros / no-auth / days-until-next / unpaid / waitlist / new-insights / expiring-by-date / expiring-by-remaining / empty-childIds short-circuit / defensive error).
+- `lib/parent/__tests__/parent-booking-pulse.test.ts` — `getParentBookingPulse` (7: calm zeros / no-auth / sessions-today-with-spots / days-to-next-available / waitlist count / packages-ending-soon / defensive error).
+
+**Verification:** `npx vitest run lib/parent/` → 29/29 pass (includes the 12 import-parents cases); `npx tsc --noEmit` → clean; `npm run build` → ✓ Compiled successfully (only pre-existing unrelated dynamic-rendering warnings).
+
 ---

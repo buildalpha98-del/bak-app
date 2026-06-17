@@ -175,10 +175,10 @@ export default function BookingDetailPage() {
         <Link href="/parent/bookings">
           <Button variant="ghost" size="sm" className="min-h-[44px]">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bookings
+            Back to bookings
           </Button>
         </Link>
-        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-white border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-white border border-orange-100">
           <AlertTriangle className="h-10 w-10 text-[#E8712A] mb-3" />
           <h2 className="text-lg font-semibold text-[#1A1A1A]">
             {error ?? "Booking not found"}
@@ -210,7 +210,7 @@ export default function BookingDetailPage() {
       <Link href="/parent/bookings">
         <Button variant="ghost" size="sm" className="min-h-[44px] -ml-2">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Bookings
+          Back to bookings
         </Button>
       </Link>
 
@@ -223,7 +223,7 @@ export default function BookingDetailPage() {
       </div>
 
       {/* Session Info */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="font-semibold text-[#1A1A1A]">Session Details</h2>
 
         {session.description && (
@@ -280,7 +280,7 @@ export default function BookingDetailPage() {
 
       {/* Children Attending */}
       {booking.children_json && booking.children_json.length > 0 && (
-        <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-3">
+        <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
           <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
             <Users className="h-5 w-5 text-[#E8712A]" />
             Children Attending
@@ -304,7 +304,7 @@ export default function BookingDetailPage() {
       )}
 
       {/* Payment Details */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-3">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
           {booking.payment_type === "package_redemption" ? (
             <Package className="h-5 w-5 text-[#E8712A]" />
@@ -339,7 +339,7 @@ export default function BookingDetailPage() {
 
       {/* Status-specific sections */}
       {upcoming && isConfirmed && !showCancelSection && (
-        <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-3">
+        <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
           <h2 className="font-semibold text-[#1A1A1A]">
             Cancel This Booking
           </h2>
@@ -359,7 +359,7 @@ export default function BookingDetailPage() {
       )}
 
       {showCancelSection && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5 space-y-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 space-y-4">
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
             <div className="space-y-1">

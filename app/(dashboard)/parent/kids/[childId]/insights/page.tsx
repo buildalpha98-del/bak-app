@@ -136,7 +136,7 @@ export default function ChildInsightsPage() {
 
       {/* Empty state */}
       {insights.length === 0 && !error && (
-        <div className="rounded-xl border border-orange-100 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-orange-100 bg-white p-8 text-center shadow-sm">
           <Sparkles className="mx-auto h-10 w-10 text-[#E8712A] mb-3" />
           <h3 className="text-lg font-semibold text-[#1A1A1A]">
             No insights yet
@@ -177,7 +177,7 @@ function InsightCard({
     )?.sport_highlights ?? [];
 
   return (
-    <div className="rounded-xl border border-orange-100 bg-white overflow-hidden">
+    <div className="rounded-2xl border border-orange-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {/* Card header */}
       <button
         onClick={() => setExpanded(!expanded)}

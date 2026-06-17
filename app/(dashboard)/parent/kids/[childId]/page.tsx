@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Child } from "@/lib/types/database";
-import { Loader2, ChevronLeft, Save, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, ChevronLeft, Save, Trash2, AlertCircle, Sparkles, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function ChildDetailPage() {
   const params = useParams();
@@ -150,7 +151,26 @@ export default function ChildDetailPage() {
         </div>
       )}
 
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      {/* Insights teaser */}
+      <Link
+        href={`/parent/kids/${child.id}/insights`}
+        className="group flex items-center gap-3 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] flex-shrink-0">
+          <Sparkles className="h-5 w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-[#1A1A1A] text-sm">
+            Development insights
+          </p>
+          <p className="text-xs text-muted-foreground">
+            AI-powered notes from {child.first_name}&apos;s coaches.
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-[#E8712A] transition-colors" />
+      </Link>
+
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="firstName">First name</Label>

@@ -11,11 +11,13 @@ import {
   UserCheck,
   Trophy,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getParentReferralData } from "@/lib/referrals/actions";
+import { ParentPulseStrip } from "@/components/parent/parent-status-pulse";
 
 type ReferralCode = { id: string; code: string };
 type Referral = {
@@ -185,16 +187,38 @@ export default function ParentReferralsPage() {
           <Gift className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Refer a Friend</h1>
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Refer a friend</h1>
           <p className="text-sm text-[#666666]">
-            Share the love and earn rewards
+            $5 credit per signup, plus a free session at 3 conversions.
           </p>
         </div>
       </div>
 
+      {/* Pulse — sign-ups this month, pending rewards, free sessions earned */}
+      <ParentPulseStrip
+        stats={[
+          {
+            icon: UserCheck,
+            count: stats.registeredCount,
+            label:
+              stats.registeredCount === 1 ? "friend signed up" : "friends signed up",
+          },
+          {
+            icon: Trophy,
+            count: stats.convertedCount,
+            label: "converted",
+          },
+          {
+            icon: Sparkles,
+            count: availableRewards.length,
+            label: availableRewards.length === 1 ? "reward ready" : "rewards ready",
+          },
+        ]}
+      />
+
       {/* Referral Code Card */}
       {code && (
-        <div className="rounded-xl border border-orange-100 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-sm font-medium text-[#666666] mb-2">
             Your referral code
           </p>
@@ -246,7 +270,7 @@ export default function ParentReferralsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm text-center">
+        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
             <Users className="h-5 w-5 text-[#E8712A]" />
           </div>
@@ -255,7 +279,7 @@ export default function ParentReferralsPage() {
           </p>
           <p className="text-xs text-[#666666] mt-1">Referred</p>
         </div>
-        <div className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm text-center">
+        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
             <UserCheck className="h-5 w-5 text-[#E8712A]" />
           </div>
@@ -264,7 +288,7 @@ export default function ParentReferralsPage() {
           </p>
           <p className="text-xs text-[#666666] mt-1">Registered</p>
         </div>
-        <div className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm text-center">
+        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
             <Trophy className="h-5 w-5 text-[#E8712A]" />
           </div>
@@ -276,7 +300,7 @@ export default function ParentReferralsPage() {
       </div>
 
       {/* Milestone Progress */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-sm font-semibold text-[#1A1A1A] mb-3">
           Milestone Progress
         </h2>
@@ -309,7 +333,7 @@ export default function ParentReferralsPage() {
           {availableRewards.map((reward) => (
             <div
               key={reward.id}
-              className="rounded-xl border-2 border-[#E8712A] bg-orange-50 p-5 shadow-sm"
+              className="rounded-2xl border-2 border-[#E8712A] bg-orange-50 p-5 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -340,7 +364,7 @@ export default function ParentReferralsPage() {
             {rewards.map((reward) => (
               <div
                 key={reward.id}
-                className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm flex items-center justify-between gap-3"
+                className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A] truncate">
@@ -368,7 +392,7 @@ export default function ParentReferralsPage() {
             {referrals.map((referral) => (
               <div
                 key={referral.id}
-                className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm flex items-center justify-between gap-3"
+                className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A]">
@@ -387,7 +411,7 @@ export default function ParentReferralsPage() {
       )}
 
       {referrals.length === 0 && (
-        <div className="rounded-xl border border-orange-100 bg-white p-8 shadow-sm text-center">
+        <div className="rounded-2xl border border-orange-100 bg-white p-8 shadow-sm text-center">
           <Gift className="h-10 w-10 text-orange-200 mx-auto mb-3" />
           <p className="text-[#1A1A1A] font-medium">No referrals yet</p>
           <p className="text-sm text-[#666666] mt-1">

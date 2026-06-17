@@ -207,7 +207,7 @@ export default function ParentAccountPage() {
       )}
 
       {/* ── Profile Details ── */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Your Details
         </h2>
@@ -286,7 +286,7 @@ export default function ParentAccountPage() {
 
       {/* ── Children ── */}
       <Link href="/parent/kids" className="block">
-        <div className="rounded-xl border border-orange-100 bg-white p-5 flex items-center justify-between hover:border-[#E8712A]/40 transition-colors">
+        <div className="rounded-2xl border border-orange-100 bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md hover:border-[#E8712A]/40 transition-all">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
               <Users className="h-5 w-5 text-[#E8712A]" />
@@ -307,7 +307,7 @@ export default function ParentAccountPage() {
       </Link>
 
       {/* ── Packages ── */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Packages
@@ -372,7 +372,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Payment History ── */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -432,7 +432,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Settings ── */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4">
+      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Settings
         </h2>

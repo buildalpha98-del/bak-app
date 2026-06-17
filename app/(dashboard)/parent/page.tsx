@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -9,17 +10,23 @@ import {
   Trophy,
   ArrowRight,
   AlertCircle,
+  Gift,
+  Sparkles,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ParentHomePulseStrip } from "@/components/parent/parent-status-pulse";
+import { ParentHomeSummaryCards } from "@/components/parent/parent-home-summary-cards";
+import { ParentChildAvatarsRow } from "@/components/parent/parent-child-avatars-row";
+import { getParentStatusPulse } from "@/lib/parent/status-pulse-actions";
 import type {
   BookableSession,
   Booking,
   BookingChildEntry,
-  PackageBalance,
-  Package as PackageType,
   WaitlistEntry,
+  Child,
+  ParentChild,
+  Payment,
 } from "@/lib/types/database";
 
 function formatDate(dateStr: string): string {
@@ -82,15 +89,19 @@ export default async function ParentDashboard() {
 
   const today = new Date().toISOString().split("T")[0];
   const now = new Date().toISOString();
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
 
-  // Fetch all data in parallel
   const [
+    pulse,
     waitlistResult,
     upcomingResult,
     pastResult,
-    packageBalancesResult,
+    childrenResult,
+    monthPaymentsResult,
   ] = await Promise.all([
-    // Waitlist offers
+    getParentStatusPulse(),
     supabase
       .from("waitlist")
       .select("*, bookable_sessions(*)")
@@ -98,8 +109,6 @@ export default async function ParentDashboard() {
       .eq("status", "offered")
       .gt("offer_expires_at", now)
       .order("offer_expires_at", { ascending: true }),
-
-    // Upcoming bookings
     supabase
       .from("bookings")
       .select("*, bookable_sessions(*)")
@@ -107,8 +116,6 @@ export default async function ParentDashboard() {
       .eq("status", "confirmed")
       .gte("bookable_sessions.date", today)
       .order("created_at", { ascending: true }),
-
-    // Past bookings (for stats + recent activity)
     supabase
       .from("bookings")
       .select("*, bookable_sessions(*)")
@@ -116,13 +123,17 @@ export default async function ParentDashboard() {
       .eq("status", "confirmed")
       .lt("bookable_sessions.date", today)
       .order("created_at", { ascending: false }),
-
-    // Package balances
     supabase
-      .from("package_balances")
-      .select("*, packages(*)")
+      .from("parent_children")
+      .select("*, children(*)")
       .eq("parent_id", parentProfile.id)
-      .eq("status", "active"),
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("payments")
+      .select("amount_cents, status, refund_amount_cents")
+      .eq("parent_id", parentProfile.id)
+      .eq("status", "completed")
+      .gte("created_at", monthStart.toISOString()),
   ]);
 
   const waitlistOffers = (waitlistResult.data ?? []) as Array<
@@ -134,54 +145,133 @@ export default async function ParentDashboard() {
   const allPast = (pastResult.data ?? []) as Array<
     Record<string, unknown> & Booking
   >;
-  const packageBalances = (packageBalancesResult.data ?? []) as Array<
-    Record<string, unknown> & PackageBalance
+  const parentChildren = (childrenResult.data ?? []) as Array<
+    Record<string, unknown> & ParentChild
+  >;
+  const monthPayments = (monthPaymentsResult.data ?? []) as Array<
+    Pick<Payment, "amount_cents" | "status" | "refund_amount_cents">
   >;
 
-  // Filter upcoming to only those with a valid future session date
   const upcomingBookings = allUpcoming.filter((b) => {
-    const session = (b as Record<string, unknown>).bookable_sessions as BookableSession | null;
+    const session = (b as Record<string, unknown>).bookable_sessions as
+      | BookableSession
+      | null;
     return session && session.date >= today;
   });
 
-  // Filter past to only those with a valid past session date
   const pastBookings = allPast.filter((b) => {
-    const session = (b as Record<string, unknown>).bookable_sessions as BookableSession | null;
+    const session = (b as Record<string, unknown>).bookable_sessions as
+      | BookableSession
+      | null;
     return session && session.date < today;
   });
 
-  // Quick stats
-  const totalAttended = pastBookings.length;
-  const uniqueSports = new Set(
-    pastBookings
-      .map((b) => {
-        const session = (b as Record<string, unknown>).bookable_sessions as BookableSession | null;
-        return session?.sport;
-      })
-      .filter(Boolean)
+  // Summary stats — booked, completed, spend this month, child count
+  const totalBooked = allUpcoming.length + allPast.length;
+  const totalCompleted = pastBookings.length;
+  const totalSpendMonthCents = monthPayments.reduce(
+    (sum, p) => sum + p.amount_cents - (p.refund_amount_cents ?? 0),
+    0,
   );
+  const children = parentChildren
+    .map((pc) => (pc as Record<string, unknown>).children as Child | null)
+    .filter((c): c is Child => Boolean(c));
 
-  // Recent activity (last 3 completed)
   const recentActivity = pastBookings.slice(0, 3);
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Welcome */}
-      <div>
+      {/* Greeting */}
+      <div className="space-y-1">
         <h1 className="text-2xl font-bold text-[#1A1A1A]">
           Hi {parentProfile.first_name}!
         </h1>
-        <p className="text-[#666666] mt-1">
-          Here&apos;s what&apos;s happening with your kids&apos; sessions
+        <p className="text-[#666666]">
+          Here&apos;s what&apos;s happening with your kids&apos; sessions.
         </p>
       </div>
 
-      {/* Waitlist Offers */}
+      {/* Status pulse */}
+      <ParentHomePulseStrip pulse={pulse} />
+
+      {/* Child avatars row */}
+      {children.length > 0 && (
+        <ParentChildAvatarsRow children={children} />
+      )}
+
+      {/* Summary cards (count-up) */}
+      <ParentHomeSummaryCards
+        sessionsBooked={totalBooked}
+        sessionsCompleted={totalCompleted}
+        spendMonthCents={totalSpendMonthCents}
+        childCount={children.length}
+      />
+
+      {/* Quick action row */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link
+          href="/parent/book"
+          className="group flex items-center gap-3 rounded-2xl bg-[#E8712A] p-4 text-white shadow-sm hover:shadow-md transition-all min-h-[44px]"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 flex-shrink-0">
+            <Calendar className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm">Book a session</p>
+            <p className="text-xs text-white/80">Browse what&apos;s on</p>
+          </div>
+          <ArrowRight className="h-4 w-4 flex-shrink-0" />
+        </Link>
+
+        <Link
+          href="/parent/bookings"
+          className="group flex items-center gap-3 rounded-2xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
+            <Calendar className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-[#1A1A1A] text-sm">My bookings</p>
+            <p className="text-xs text-[#666666]">Upcoming & past</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
+        </Link>
+
+        <Link
+          href="/parent/kids"
+          className="group flex items-center gap-3 rounded-2xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-[#1A1A1A] text-sm">My kids</p>
+            <p className="text-xs text-[#666666]">Profiles & progress</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
+        </Link>
+
+        <Link
+          href="/parent/packages"
+          className="group flex items-center gap-3 rounded-2xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
+            <Package className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-[#1A1A1A] text-sm">Session packs</p>
+            <p className="text-xs text-[#666666]">Save when you bundle</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
+        </Link>
+      </div>
+
+      {/* Waitlist Offers — urgent surface */}
       {waitlistOffers.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[#E8712A]">
             <AlertCircle className="inline h-4 w-4 mr-1 -mt-0.5" />
-            Spots Available — Act Fast!
+            Spots available — act fast
           </h2>
           {waitlistOffers.map((entry) => {
             const session = (entry as Record<string, unknown>)
@@ -190,7 +280,7 @@ export default async function ParentDashboard() {
             return (
               <div
                 key={entry.id}
-                className="rounded-xl border-2 border-[#E8712A] bg-orange-50 p-5 shadow-sm"
+                className="rounded-2xl border-2 border-[#E8712A] bg-orange-50 p-5 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="space-y-1">
@@ -214,12 +304,17 @@ export default async function ParentDashboard() {
                         : "Limited time"}
                     </p>
                   </div>
-                  <Link href={`/parent/book/${session.id}?waitlist=${entry.id}`}>
-                    <Button className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px] min-w-[44px]">
-                      Confirm Spot
-                      <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </Link>
+                  <Button
+                    className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px] min-w-[44px]"
+                    render={
+                      <Link
+                        href={`/parent/book/${session.id}?waitlist=${entry.id}`}
+                      />
+                    }
+                  >
+                    Confirm spot
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
               </div>
             );
@@ -227,11 +322,11 @@ export default async function ParentDashboard() {
         </div>
       )}
 
-      {/* Upcoming Bookings */}
+      {/* Upcoming sessions */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Upcoming Sessions
+            Upcoming sessions
           </h2>
           <Link
             href="/parent/bookings"
@@ -242,32 +337,35 @@ export default async function ParentDashboard() {
         </div>
 
         {upcomingBookings.length === 0 ? (
-          <div className="rounded-xl border border-orange-100 bg-white p-8 shadow-sm text-center">
-            <Calendar className="h-10 w-10 text-orange-200 mx-auto mb-3" />
+          <div className="rounded-2xl border border-orange-100 bg-white p-8 shadow-sm text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#E8712A] mx-auto mb-3">
+              <Calendar className="h-7 w-7" />
+            </div>
             <p className="text-[#1A1A1A] font-medium">No upcoming sessions</p>
             <p className="text-sm text-[#666666] mt-1 mb-4">
-              Browse available sessions and book a spot for your kids
+              Browse available sessions and book a spot for your kids.
             </p>
-            <Link href="/parent/book">
-              <Button className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px]">
-                Browse &amp; Book
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </Link>
+            <Button
+              className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px]"
+              render={<Link href="/parent/book" />}
+            >
+              Browse &amp; book
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {upcomingBookings.map((booking) => {
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingBookings.slice(0, 6).map((booking) => {
               const session = (booking as Record<string, unknown>)
                 .bookable_sessions as BookableSession;
-              const children = booking.children_json as BookingChildEntry[];
+              const childrenArr = booking.children_json as BookingChildEntry[];
               const days = daysUntil(session.date);
 
               return (
                 <Link
                   key={booking.id}
                   href={`/parent/bookings/${booking.id}`}
-                  className="group rounded-xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all"
+                  className="group rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 hover:-translate-y-0.5 transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="space-y-1 flex-1 min-w-0">
@@ -316,18 +414,18 @@ export default async function ParentDashboard() {
                         </span>
                       </div>
                     )}
-                    {children.length > 0 && (
+                    {childrenArr.length > 0 && (
                       <div className="flex items-center gap-2">
                         <Users className="h-3.5 w-3.5 flex-shrink-0" />
                         <span className="truncate">
-                          {children.map((c) => c.child_name).join(", ")}
+                          {childrenArr.map((c) => c.child_name).join(", ")}
                         </span>
                       </div>
                     )}
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-orange-50 flex items-center justify-end text-xs font-medium text-[#E8712A] group-hover:underline">
-                    View Details
+                    View details
                     <ArrowRight className="h-3.5 w-3.5 ml-1" />
                   </div>
                 </Link>
@@ -337,164 +435,22 @@ export default async function ParentDashboard() {
         )}
       </div>
 
-      {/* Package Balances + Quick Stats Row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Package Balances */}
-        {packageBalances.length > 0 ? (
-          packageBalances.map((bal) => {
-            const pkg = (bal as Record<string, unknown>).packages as PackageType | null;
-            const expiresDate = new Date(bal.expires_at);
-            const daysToExpiry = Math.ceil(
-              (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            );
-            const expiringSoon = daysToExpiry <= 7 && daysToExpiry > 0;
-            const pct =
-              bal.total_sessions > 0
-                ? Math.round(
-                    (bal.remaining_sessions / bal.total_sessions) * 100
-                  )
-                : 0;
-
-            return (
-              <div
-                key={bal.id}
-                className={`rounded-xl border bg-white p-5 shadow-sm ${
-                  expiringSoon
-                    ? "border-amber-300 bg-amber-50/30"
-                    : "border-orange-100"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="h-5 w-5 text-[#E8712A]" />
-                  <h3 className="font-semibold text-[#1A1A1A] text-sm">
-                    {pkg?.name ?? "Session Package"}
-                  </h3>
-                </div>
-                <p className="text-2xl font-bold text-[#1A1A1A]">
-                  {bal.remaining_sessions}
-                  <span className="text-sm font-normal text-[#666666]">
-                    {" "}
-                    / {bal.total_sessions} sessions
-                  </span>
-                </p>
-                {/* Progress bar */}
-                <div className="mt-2 h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      expiringSoon ? "bg-amber-400" : "bg-[#E8712A]"
-                    }`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <p
-                  className={`text-xs mt-2 ${
-                    expiringSoon
-                      ? "text-amber-600 font-medium"
-                      : "text-[#666666]"
-                  }`}
-                >
-                  {expiringSoon && (
-                    <AlertCircle className="inline h-3 w-3 mr-1 -mt-0.5" />
-                  )}
-                  Expires{" "}
-                  {expiresDate.toLocaleDateString("en-AU", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            );
-          })
-        ) : (
-          <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Package className="h-5 w-5 text-orange-200" />
-              <h3 className="font-semibold text-[#1A1A1A] text-sm">
-                Session Packages
-              </h3>
-            </div>
-            <p className="text-sm text-[#666666] mb-3">
-              Save with multi-session packages
-            </p>
-            <Link href="/parent/packages">
-              <Button
-                variant="outline"
-                className="border-[#E8712A] text-[#E8712A] hover:bg-orange-50 min-h-[44px] text-sm"
-              >
-                Buy a Package
-              </Button>
-            </Link>
-          </div>
-        )}
-
-        {/* Quick Stat: Sessions Attended */}
-        <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-5 w-5 text-[#E8712A]" />
-            <h3 className="font-semibold text-[#1A1A1A] text-sm">
-              Sessions Attended
-            </h3>
-          </div>
-          <p className="text-3xl font-bold text-[#1A1A1A] mt-2">
-            {totalAttended}
-          </p>
-          <p className="text-xs text-[#666666] mt-1">Total completed sessions</p>
-        </div>
-
-        {/* Quick Stat: Sports Tried */}
-        <div className="rounded-xl border border-orange-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Trophy className="h-5 w-5 text-[#E8712A]" />
-            <h3 className="font-semibold text-[#1A1A1A] text-sm">
-              Sports Tried
-            </h3>
-          </div>
-          <p className="text-3xl font-bold text-[#1A1A1A] mt-2">
-            {uniqueSports.size}
-          </p>
-          {uniqueSports.size > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {Array.from(uniqueSports)
-                .slice(0, 4)
-                .map((sport) => (
-                  <Badge
-                    key={sport as string}
-                    variant="secondary"
-                    className="bg-orange-50 text-[#E8712A] border-orange-200 text-xs"
-                  >
-                    {sport as string}
-                  </Badge>
-                ))}
-              {uniqueSports.size > 4 && (
-                <Badge
-                  variant="secondary"
-                  className="bg-gray-100 text-[#666666] text-xs"
-                >
-                  +{uniqueSports.size - 4} more
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
+      {/* Recent activity */}
       {recentActivity.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Recent Activity
+            Recent activity
           </h2>
           <div className="space-y-2">
             {recentActivity.map((booking) => {
               const session = (booking as Record<string, unknown>)
                 .bookable_sessions as BookableSession;
-              const children = booking.children_json as BookingChildEntry[];
+              const childrenArr = booking.children_json as BookingChildEntry[];
 
               return (
                 <div
                   key={booking.id}
-                  className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm flex items-center gap-4"
+                  className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] flex-shrink-0">
                     <Trophy className="h-5 w-5" />
@@ -506,9 +462,9 @@ export default async function ParentDashboard() {
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-[#666666]">
                       <span>{formatDate(session.date)}</span>
                       {session.sport && <span>{session.sport}</span>}
-                      {children.length > 0 && (
+                      {childrenArr.length > 0 && (
                         <span>
-                          {children.map((c) => c.child_name).join(", ")}
+                          {childrenArr.map((c) => c.child_name).join(", ")}
                         </span>
                       )}
                     </div>
@@ -520,53 +476,45 @@ export default async function ParentDashboard() {
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      {/* Friendly footer surfaces — referrals + insights */}
+      <div className="grid gap-4 sm:grid-cols-2">
         <Link
-          href="/parent/book"
-          className="group flex items-center gap-3 rounded-xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
+          href="/parent/referrals"
+          className="group flex items-start gap-3 rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 hover:-translate-y-0.5 transition-all"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
-            <Calendar className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] flex-shrink-0">
+            <Gift className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[#1A1A1A] text-sm">
-              Book a Session
+            <p className="font-semibold text-[#1A1A1A]">
+              Refer a friend, earn rewards
             </p>
-            <p className="text-xs text-[#666666]">Browse available sessions</p>
+            <p className="text-sm text-[#666666] mt-0.5">
+              $5 credit per referral plus a free session after 3 sign-ups.
+            </p>
           </div>
-          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
+          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors mt-1.5 flex-shrink-0" />
         </Link>
 
-        <Link
-          href="/parent/kids"
-          className="group flex items-center gap-3 rounded-xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
-            <Users className="h-5 w-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[#1A1A1A] text-sm">My Kids</p>
-            <p className="text-xs text-[#666666]">Manage profiles</p>
-          </div>
-          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
-        </Link>
-
-        <Link
-          href="/parent/bookings"
-          className="group flex items-center gap-3 rounded-xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all min-h-[44px]"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] group-hover:bg-[#E8712A] group-hover:text-white transition-colors flex-shrink-0">
-            <Calendar className="h-5 w-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[#1A1A1A] text-sm">
-              All Bookings
-            </p>
-            <p className="text-xs text-[#666666]">View booking history</p>
-          </div>
-          <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
-        </Link>
+        {children.length > 0 && (
+          <Link
+            href={`/parent/kids/${children[0].id}/insights`}
+            className="group flex items-start gap-3 rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A] flex-shrink-0">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-[#1A1A1A]">
+                See how your kids are growing
+              </p>
+              <p className="text-sm text-[#666666] mt-0.5">
+                AI-powered development insights from our coaches.
+              </p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-[#666666] group-hover:text-[#E8712A] transition-colors mt-1.5 flex-shrink-0" />
+          </Link>
+        )}
       </div>
     </div>
   );

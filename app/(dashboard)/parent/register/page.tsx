@@ -108,7 +108,8 @@ export default function ParentRegistrationPage() {
           Welcome to Build Alpha Kids
         </h1>
         <p className="text-muted-foreground mt-1">
-          Let's get you set up in a few quick steps
+          We&apos;re glad you&apos;re here — three quick steps and you&apos;re ready
+          to book.
         </p>
       </div>
 
@@ -262,7 +263,7 @@ export default function ParentRegistrationPage() {
           <h2 className="text-lg font-semibold">Confirm Your Details</h2>
 
           {/* Parent summary */}
-          <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-2">
+          <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-2 shadow-sm">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Your Details
             </h3>
@@ -278,7 +279,7 @@ export default function ParentRegistrationPage() {
           </div>
 
           {/* Children summary */}
-          <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-3">
+          <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Children
             </h3>
@@ -302,7 +303,7 @@ export default function ParentRegistrationPage() {
           </div>
 
           {/* Terms */}
-          <div className="flex items-start gap-3 rounded-xl bg-orange-50 p-4">
+          <div className="flex items-start gap-3 rounded-2xl bg-orange-50 p-4">
             <Checkbox
               id="terms"
               checked={termsAccepted}
