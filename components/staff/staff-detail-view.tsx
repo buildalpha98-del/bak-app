@@ -67,6 +67,7 @@ import {
 import { sendSms } from "@/lib/sms/actions";
 import type { StaffDetail } from "@/lib/staff/actions";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
+import { PushOptInToggle } from "@/components/push/push-opt-in-toggle";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
 import type {
   UserRole,
@@ -168,11 +169,21 @@ interface StaffDetailViewProps {
    * page.tsx is the source of truth.
    */
   canEditFinancialAccess?: boolean;
+  /**
+   * When non-null the viewer IS this staff member (admin/ops viewing
+   * their own row in /admin/staff/[id] or /ops/staff/[id]). We render
+   * the push opt-in card with this count as the starting state. The
+   * card is hidden when null because push subscriptions are
+   * per-browser -- an admin can't enable push for someone else's
+   * device.
+   */
+  selfPushCount?: number | null;
 }
 
 export function StaffDetailView({
   data: initialData,
   canEditFinancialAccess = false,
+  selfPushCount = null,
 }: StaffDetailViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -379,21 +390,30 @@ export function StaffDetailView({
 
         {/* Tab 1: Overview */}
         <TabsContent value="overview">
-          <div className="mt-4 rounded-lg border bg-card p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoRow label="Email" value={profile.email} />
-              <InfoRow label="Phone" value={profile.phone} />
-              <InfoRow label="Address" value={profile.address} />
-              <InfoRow label="Date of Birth" value={formatDate(profile.date_of_birth)} />
-              <InfoRow label="Emergency Contact" value={profile.emergency_contact_name} />
-              <InfoRow label="Emergency Phone" value={profile.emergency_contact_phone} />
-              <InfoRow label="ABN" value={profile.abn} />
-              <InfoRow
-                label="Default Pay Rate"
-                value={profile.default_pay_rate ? `$${profile.default_pay_rate.toFixed(2)}` : null}
-              />
-              <InfoRow label="Account Created" value={formatDate(profile.created_at)} />
+          <div className="mt-4 space-y-4">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Email" value={profile.email} />
+                <InfoRow label="Phone" value={profile.phone} />
+                <InfoRow label="Address" value={profile.address} />
+                <InfoRow label="Date of Birth" value={formatDate(profile.date_of_birth)} />
+                <InfoRow label="Emergency Contact" value={profile.emergency_contact_name} />
+                <InfoRow label="Emergency Phone" value={profile.emergency_contact_phone} />
+                <InfoRow label="ABN" value={profile.abn} />
+                <InfoRow
+                  label="Default Pay Rate"
+                  value={profile.default_pay_rate ? `$${profile.default_pay_rate.toFixed(2)}` : null}
+                />
+                <InfoRow label="Account Created" value={formatDate(profile.created_at)} />
+              </div>
             </div>
+            {selfPushCount !== null && (
+              <PushOptInToggle
+                initialCount={selfPushCount}
+                heading="Push notifications -- this device"
+                description="You're viewing your own profile. Enable push to receive urgent shift swaps and waitlist offers on this browser."
+              />
+            )}
           </div>
         </TabsContent>
 

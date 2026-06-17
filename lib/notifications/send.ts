@@ -1,5 +1,6 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { sendPushToUser } from "./push-send";
+import { sendPushToUser as sendPushToUserLegacy } from "./push-send";
+import { sendPushToUser as sendPushToUserNative } from "@/lib/push/actions";
 import { sendEmail } from "@/lib/email/send";
 import { genericNotificationEmail } from "@/lib/email/templates";
 import { getNotificationUrl } from "./url-builder";
@@ -69,18 +70,36 @@ export async function triggerNotification(
         (tier === "important" && preference === "push"); // fallback email for important
 
       // 5. Push notification
+      //
+      // Two dispatchers run in parallel:
+      //   - legacy `push-send.ts` uses the `web-push` package and
+      //     encrypts the payload so the SW shows the actual title;
+      //   - native `lib/push/actions.ts` uses the WebCrypto VAPID
+      //     signer and dispatches without an encrypted body so the
+      //     SW falls back to default content. The in-app row carries
+      //     the actual title regardless.
+      //
+      // Both share the `push_subscriptions` table. Each fails
+      // silently so a push outage cannot block the in-app + email
+      // path, and the SMS fallback only kicks in elsewhere
+      // (lib/sms/actions.ts::sendUrgentNotificationViaSms) when
+      // push + in-app both miss.
       if (shouldPush) {
         const url = getNotificationUrl(
           event.entityType,
           event.entityId,
           recipient.role ?? "coach"
         );
-        await sendPushToUser(recipient.userId, {
+        const payload = {
           title: event.title,
           body: event.body,
           url,
           tag: event.type,
-        });
+        };
+        await sendPushToUserLegacy(recipient.userId, payload);
+        if (tier === "urgent" || tier === "important") {
+          await sendPushToUserNative(recipient.userId, { ...payload, tier });
+        }
       }
 
       // 6. Email notification

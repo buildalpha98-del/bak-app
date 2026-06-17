@@ -5,6 +5,8 @@ import { CoachPayRates } from "@/components/pay-rates/coach-pay-rates";
 import { GSTToggle } from "@/components/invoicing/gst-toggle";
 import { EditProfileDialog } from "@/components/coach/edit-profile-dialog";
 import { SmsOptInToggle } from "@/components/sms/sms-opt-in-toggle";
+import { PushOptInToggle } from "@/components/push/push-opt-in-toggle";
+import { getPushSubscriptionCount } from "@/lib/push/actions";
 
 export default async function CoachProfilePage() {
   const supabase = await createSupabaseServerClient();
@@ -23,6 +25,10 @@ export default async function CoachProfilePage() {
 
   // Fetch pay rates
   const { data: payData } = await getCoachPayRates();
+
+  // Count active push subscriptions for the opt-in card. Rendered
+  // server-side so the toggle has a non-flicker starting state.
+  const pushCount = await getPushSubscriptionCount(user.id);
 
   return (
     <div className="mx-auto max-w-lg space-y-6 animate-fade-up">
@@ -71,6 +77,10 @@ export default async function CoachProfilePage() {
 
       {/* GST Registration */}
       <GSTToggle initialValue={profile?.gst_registered ?? false} />
+
+      {/* Push opt-in -- primary urgent-tier channel. SMS escalates only when
+          push + in-app both miss; see lib/sms/actions.ts::sendUrgentNotificationViaSms. */}
+      <PushOptInToggle initialCount={pushCount} />
 
       {/* SMS escalation opt-in (urgent notifications fall through to SMS when
           push fails — see lib/sms/actions.ts::sendUrgentNotificationViaSms). */}
