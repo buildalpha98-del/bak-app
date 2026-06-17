@@ -551,3 +551,75 @@ The team performance command center. Status Pulse strip (underperforming · top 
 **Out of scope:** Coach detail sub-page `/[coachId]` (separate mini-review when we drill in); the underlying performance scoring logic (lives in `lib/performance/`); badge-issue trigger logic.
 
 ---
+
+### 1.8 `/admin/assessments` — Skill Assessments
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/assessments/page.tsx` (~60 lines) batches `getAssessmentTemplates()` + centres + terms + `getAssessmentsStatusPulse()` → `AssessmentListView` (the shared shell, also used by `/ops/assessments`). Detail at `[id]/page.tsx` → `AssessmentDetailView`.
+
+**Surface — list page:**
+- **Status Pulse strip** above the filter row — templates without skills · children pending this term · coaches silent this week · new templates this week (each chip jumps to a filtered slice via URL param)
+- **Filter chip row** (URL-persisted): search (sport / centre / term name) · Sport · Age (3–5 / 5–8 / 8–12) · Term · Centre · grid/table view toggle · Clear all
+- **Create assessment** dialog with sport + age + term + centre, AI skill generation, manual edit + inline duplicate-warn ("a template for {sport} · {age} already exists — open existing")
+- **Table view + grid view** (URL-persisted). Mobile under `md` collapses the table to a 1-column card list
+- **Bulk-select on table view** with sticky orange action bar — Duplicate / Delete (delete keeps templates with ratings)
+- **Row → `<Link>`** overlay for keyboard + open-in-new-tab nav
+- **"No skills" ring** in restrained orange on grid cards / row chip when `skill_count === 0`
+
+**Sub-page:** `/admin/assessments/[id]` — tabbed detail (Skills / Settings / Ratings) with count badges.
+
+**Backed by:**
+- `getAssessmentTemplates()` — now returns `ratings_count`, `term_id`, `centre_id` for the new chips
+- `getAssessmentsStatusPulse()` — 4-count pulse
+- `bulkDuplicateAssessmentTemplates(ids)` / `bulkDeleteAssessmentTemplates(ids)` — admin/ops gated with per-id error capture + activity_log entries
+- `createAssessmentTemplate`, `deleteAssessmentTemplate`, `getAssessmentTemplateDetail` — unchanged
+- `getCoachAssessmentTasks`, `saveChildRating`, `getChildAssessments`, `getAssessedChildIdsForCentre` — unchanged (coach + child-list surfaces stable)
+
+**CLAUDE.md context** — assessment_templates (sport, age_group, skills_json, term_id, centre_id) + skill_ratings (child + coach + term + ratings_json). AI generates 5–8 skills per sport+age; coaches rate 1–5. Used by /admin/children's per-child assessment column (status: done / pending / overdue / no_term) and /coach/assessments for rating workflows.
+
+✅ **What works**
+
+- Live pulse counts (templates without skills · pending child × template pairs this term · silent coaches · new templates this week) with `useCountUp` and brand-orange tint when > 0
+- URL-persisted filters survive refresh + can be shared as a deep link
+- Bulk Duplicate + Delete with partial-failure tolerance (per-id error array, toast counts both successes and skipped)
+- Inline duplicate-warn on Create dialog — if `sport + age + term` already has a published template with skills, link to the existing one
+- Tabbed detail view (Skills / Settings / Ratings) with count badges in each trigger
+- Grid + table view modes, both URL-persisted, table collapses to mobile cards under `md`
+- Restrained brand orange: Create CTA, bulk-action bar, active view-toggle, "Save", "No skills" indicator only
+- Coach view (`coach-assessment-view.tsx`) and child-list assessment column unchanged — confirmed by reading `getChildrenList` which still reads `skill_ratings` by `term_id` and bucket-derives status
+
+⚠️ **Gaps**
+
+1. **No inline skill editor on the detail page** — today skill rubric is read-only; need to navigate to a Create dialog to add/edit skills on an existing template. Deferred — out of scope for this close-out
+2. **No region filter** — `assessment_templates` has no region column; would require a migration to add `region_ids[]` for territory-scoped templates. Out of scope
+3. **No filter for "templates I created"** — useful when multiple admins seed templates; deferred
+4. **The pulse's "coaches silent this week" filter is approximate** — flips the list to all term-scoped templates; a precise filter would need a join from `skill_ratings` to `profiles.role='coach'`. Acceptable trade-off for the chip's purpose (surface what to nudge)
+5. **Detail page Ratings tab is link-only** — no inline table of per-child ratings. Deferred to a follow-up that drills into `getTemplateRatings` (already exists) with a grouped-by-child view
+
+🎯 **Final-state target**
+
+The skill-assessment command center. Status Pulse strip surfaces what's half-built (templates without skills), what's behind (children pending this term, coaches silent this week), and what's new (this week's published templates). Filter chip row (Sport · Age · Term · Centre) plus search across sport/centre/term names, all URL-persisted. Grid + table views with mobile responsiveness. Bulk Duplicate + Delete with safety: delete blocks templates with ratings and reports per-id failures. Inline duplicate-warn on Create. Tabbed detail (Skills / Settings / Ratings) with count badges. UI matches `/admin` home and the rest — `rounded-2xl` containers, restrained brand orange, hover-lift, `useCountUp` on the pulse numbers.
+
+📋 **Open items**
+
+- [x] **Assessments Status Pulse** strip at top — templates without skills (`skills_json` empty) / children pending this term (active children × term templates missing a rating) / coaches silent this week (have ever rated but not this week) / new templates this week (head count on `created_at >= Monday`)
+- [x] **Filter chip row** with URL persistence: search · Sport · Age · Term · Centre · view toggle · Clear all
+- [x] **Bulk-select** on table view with sticky orange action bar — Duplicate (admin/ops, copies sport/age/skills/term/centre, fresh `created_by`) + Delete (skips templates with ratings)
+- [x] **Tabbed detail view** — Skills / Settings / Ratings with count badges on each trigger; "No skills" empty-state in orange when `skill_count === 0`
+- [x] **Inline duplicate-warn** on Create dialog — surfaces existing templates with same sport+age(+term) so admins can extend rather than re-seed
+- [x] **Grid + table view** modes, URL-persisted via `?view=`, with hover-lift on grid cards and `hover:bg-muted/30` on table rows
+- [x] **Mobile responsive** — table collapses to 1-column card list under `md`
+- [x] **Row-as-link** — overlay anchor pattern for keyboard / right-click / open-in-new-tab nav
+- [x] **UI refresh** — `rounded-2xl` everywhere, restrained orange (Create CTA · bulk-action bar · active view toggle · "Save" · "No skills" ring · pulse counts), `gap-6` between sections, `useCountUp` on pulse counts
+- [x] **Empty state** styling — `rounded-2xl border py-16` with `ClipboardList` icon, adaptive copy based on filter state
+- [x] **Tests** — `lib/assessments/__tests__/assessments-status-pulse.test.ts` (6 cases) + `lib/assessments/__tests__/bulk-actions.test.ts` (8 cases): role gate, empty selection, happy path, partial-failure capture
+- [ ] **(Optional, post-beta)** Inline skill editor on detail page — add/edit/reorder skills without re-creating
+- [ ] **(Optional, post-beta)** Region scoping on templates — `region_ids[]` column for territory-specific rubrics
+- [ ] **(Optional, post-beta)** Inline per-child ratings table on the Ratings tab — drills `getTemplateRatings` into a child × skill grid
+
+**Out of scope:** Coach assessment flow (`coach-assessment-view.tsx`) — keeps its existing public API; ChildAssessmentDisplay used by `/admin/children/[id]` Assessments tab — stable; AI skill-generation endpoint (`/api/assessments/generate-skills`) — separate.
+
+**Plumbing verified:** `getChildrenList` (used by `/admin/children` for the per-child assessment column) still reads `skill_ratings.term_id + child_id` directly — no change to row shape, so the assessment column resolves identically.
+
+---

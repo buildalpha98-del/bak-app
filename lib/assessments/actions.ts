@@ -21,7 +21,10 @@ export interface AssessmentTemplateListItem {
   sport: string;
   age_group: AgeGroup;
   skill_count: number;
+  ratings_count: number;
+  term_id: string | null;
   term_name: string | null;
+  centre_id: string | null;
   centre_name: string | null;
   created_at: string;
 }
@@ -96,28 +99,50 @@ export async function getAssessmentTemplates(): Promise<{
 
     if (error) throw error;
 
-    // Fetch term and centre names
+    // Fetch term and centre names + a per-template ratings count for
+    // the detail-page tab badge and the "duplicate guard" path.
+    const templateIds = (data ?? []).map((t) => t.id);
     const termIds = [...new Set((data ?? []).map((t) => t.term_id).filter(Boolean))] as string[];
     const centreIds = [...new Set((data ?? []).map((t) => t.centre_id).filter(Boolean))] as string[];
 
-    const [termsResult, centresResult] = await Promise.all([
+    const [termsResult, centresResult, ratingsResult] = await Promise.all([
       termIds.length > 0
         ? supabase.from("terms").select("id, name").in("id", termIds)
-        : { data: [] },
+        : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
       centreIds.length > 0
         ? supabase.from("centres").select("id, name").in("id", centreIds)
-        : { data: [] },
+        : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
+      templateIds.length > 0
+        ? supabase
+            .from("skill_ratings")
+            .select("assessment_template_id")
+            .in("assessment_template_id", templateIds)
+        : Promise.resolve({
+            data: [] as Array<{ assessment_template_id: string }>,
+          }),
     ]);
 
     const termMap = new Map((termsResult.data ?? []).map((t) => [t.id, t.name]));
     const centreMap = new Map((centresResult.data ?? []).map((c) => [c.id, c.name]));
+
+    const ratingsByTemplate = new Map<string, number>();
+    for (const row of ratingsResult.data ?? []) {
+      const r = row as { assessment_template_id: string };
+      ratingsByTemplate.set(
+        r.assessment_template_id,
+        (ratingsByTemplate.get(r.assessment_template_id) ?? 0) + 1,
+      );
+    }
 
     const items: AssessmentTemplateListItem[] = (data ?? []).map((t) => ({
       id: t.id,
       sport: t.sport,
       age_group: t.age_group as AgeGroup,
       skill_count: Array.isArray(t.skills_json) ? t.skills_json.length : 0,
+      ratings_count: ratingsByTemplate.get(t.id) ?? 0,
+      term_id: t.term_id ?? null,
       term_name: t.term_id ? termMap.get(t.term_id) ?? null : null,
+      centre_id: t.centre_id ?? null,
       centre_name: t.centre_id ? centreMap.get(t.centre_id) ?? null : null,
       created_at: t.created_at,
     }));
@@ -127,6 +152,207 @@ export async function getAssessmentTemplates(): Promise<{
     console.error("getAssessmentTemplates error:", err);
     return { data: [], error: "Failed to load assessment templates." };
   }
+}
+
+// ============================================================
+// Auth gate — admin/ops only for bulk + destructive operations
+// ============================================================
+
+async function requireAdminOrOps(): Promise<
+  | { ok: true; userId: string; role: "admin" | "ops" }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    !profile ||
+    (profile.role !== "admin" && profile.role !== "ops")
+  ) {
+    return { ok: false, error: "Not authorised." };
+  }
+
+  return { ok: true, userId: user.id, role: profile.role };
+}
+
+// ============================================================
+// bulkDuplicateAssessmentTemplates
+// ============================================================
+//
+// Copies each selected template into a brand-new row. We keep
+// sport/age_group/skills_json/term_id/centre_id intact and clear out
+// `created_by` to the current admin/ops user. A per-id error array
+// surfaces partial failures so the UI can toast a precise count.
+
+export async function bulkDuplicateAssessmentTemplates(
+  templateIds: string[],
+): Promise<{
+  duplicated: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!templateIds.length) {
+    return { duplicated: 0, errors: [], error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { duplicated: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: rows, error: fetchError } = await supabase
+    .from("assessment_templates")
+    .select("id, sport, age_group, skills_json, term_id, centre_id")
+    .in("id", templateIds);
+  if (fetchError) {
+    return {
+      duplicated: 0,
+      errors: [],
+      error: fetchError.message,
+    };
+  }
+
+  const fetchedIds = new Set((rows ?? []).map((r) => r.id));
+  const errors: { id: string; error: string }[] = templateIds
+    .filter((id) => !fetchedIds.has(id))
+    .map((id) => ({ id, error: "Template not found." }));
+  let duplicated = 0;
+
+  for (const row of rows ?? []) {
+    const r = row as {
+      id: string;
+      sport: string;
+      age_group: AgeGroup;
+      skills_json: unknown;
+      term_id: string | null;
+      centre_id: string | null;
+    };
+    const { error } = await supabase.from("assessment_templates").insert({
+      sport: r.sport,
+      age_group: r.age_group,
+      skills_json: Array.isArray(r.skills_json) ? r.skills_json : [],
+      term_id: r.term_id,
+      centre_id: r.centre_id,
+      created_by: gate.userId,
+    });
+    if (error) {
+      errors.push({ id: r.id, error: error.message });
+    } else {
+      duplicated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "assessment_template_bulk_duplicated",
+        entity_type: "assessment_template",
+        entity_id: r.id,
+      });
+    }
+  }
+
+  revalidatePath("/admin/assessments");
+  revalidatePath("/ops/assessments");
+
+  return {
+    duplicated,
+    errors,
+    error:
+      errors.length && duplicated === 0
+        ? "Failed to duplicate templates."
+        : errors.length
+          ? "Some templates failed to duplicate."
+          : null,
+  };
+}
+
+// ============================================================
+// bulkDeleteAssessmentTemplates
+// ============================================================
+//
+// Mirrors the single-row `deleteAssessmentTemplate` — any template
+// that still has `skill_ratings` is skipped (with a per-id error)
+// because that's data the org is meant to keep around. Ops-safe.
+
+export async function bulkDeleteAssessmentTemplates(
+  templateIds: string[],
+): Promise<{
+  deleted: number;
+  errors: { id: string; error: string }[];
+  error: string | null;
+}> {
+  if (!templateIds.length) {
+    return { deleted: 0, errors: [], error: "No templates selected." };
+  }
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) {
+    return { deleted: 0, errors: [], error: gate.error };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  // One bulk read for ratings counts so we don't make N round-trips.
+  const { data: ratingRows } = await supabase
+    .from("skill_ratings")
+    .select("assessment_template_id")
+    .in("assessment_template_id", templateIds);
+  const ratingsByTemplate = new Map<string, number>();
+  for (const row of ratingRows ?? []) {
+    const r = row as { assessment_template_id: string };
+    ratingsByTemplate.set(
+      r.assessment_template_id,
+      (ratingsByTemplate.get(r.assessment_template_id) ?? 0) + 1,
+    );
+  }
+
+  const errors: { id: string; error: string }[] = [];
+  let deleted = 0;
+
+  for (const id of templateIds) {
+    const count = ratingsByTemplate.get(id) ?? 0;
+    if (count > 0) {
+      errors.push({
+        id,
+        error: `${count} rating${count === 1 ? "" : "s"} exist — remove ratings first.`,
+      });
+      continue;
+    }
+    const { error } = await supabase
+      .from("assessment_templates")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      errors.push({ id, error: error.message });
+    } else {
+      deleted += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "assessment_template_bulk_deleted",
+        entity_type: "assessment_template",
+        entity_id: id,
+      });
+    }
+  }
+
+  revalidatePath("/admin/assessments");
+  revalidatePath("/ops/assessments");
+
+  return {
+    deleted,
+    errors,
+    error:
+      errors.length && deleted === 0
+        ? "Failed to delete templates."
+        : errors.length
+          ? "Some templates couldn't be deleted."
+          : null,
+  };
 }
 
 // ============================================================
