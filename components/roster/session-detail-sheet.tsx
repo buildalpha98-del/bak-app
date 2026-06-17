@@ -28,6 +28,7 @@ import {
   BookOpen,
   Trash2,
   Pencil,
+  Lock,
 } from "lucide-react";
 import {
   Select,
@@ -102,6 +103,13 @@ interface SessionDetailSheetProps {
   onUpdate: () => void;
   /** Per-session cert warnings keyed by session_id */
   sessionCertWarnings?: Record<string, SessionCertWarning>;
+  /**
+   * When false, the Pay Rate section renders a small Lock chip
+   * instead of revealing rate / override values. Plumbed from the
+   * page-level `getFinancialAccess()` call so the gate matches
+   * `WeekCostChip` and the `/admin/payroll` route.
+   */
+  financialAccess?: boolean;
 }
 
 // ============================================================
@@ -115,6 +123,7 @@ export function SessionDetailSheet({
   coaches,
   onUpdate,
   sessionCertWarnings,
+  financialAccess = false,
 }: SessionDetailSheetProps) {
   const [saving, setSaving] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -639,75 +648,88 @@ export function SessionDetailSheet({
 
           <Separator />
 
-          {/* Pay Rate */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">Pay Rate</h3>
-              {!isTerminal && !editingRate && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setRateOverride(
-                      session.pay_rate_override?.toString() ?? ""
-                    );
-                    setEditingRate(true);
-                  }}
-                >
-                  Override
-                </Button>
-              )}
-            </div>
-
-            {editingRate ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="size-4 text-muted-foreground" />
-                  <Input
-                    id="pay-rate-override"
-                    type="number"
-                    value={rateOverride}
-                    onChange={(e) => setRateOverride(e.target.value)}
-                    placeholder="Override rate"
-                    className="w-32"
-                    aria-label="Pay rate override"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    disabled={saving}
-                    onClick={handleSaveRate}
-                  >
-                    Save
-                  </Button>
+          {/* Pay Rate — gated behind financial_access. Without the
+              flag we render a small Lock chip so the operator still
+              sees the section heading (predictable layout) but no
+              monetary detail leaks. */}
+          {financialAccess ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-foreground">Pay Rate</h3>
+                {!isTerminal && !editingRate && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setEditingRate(false)}
+                    onClick={() => {
+                      setRateOverride(
+                        session.pay_rate_override?.toString() ?? ""
+                      );
+                      setEditingRate(true);
+                    }}
                   >
-                    Cancel
+                    Override
                   </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <DollarSign className="size-4" />
-                {session.pay_rate_override != null ? (
-                  <span>
-                    ${session.pay_rate_override.toFixed(2)}{" "}
-                    <span className="text-xs text-muted-foreground">
-                      (override)
-                    </span>
-                  </span>
-                ) : session.pay_rate_resolved != null ? (
-                  <span>${session.pay_rate_resolved.toFixed(2)}</span>
-                ) : (
-                  <span className="italic">Not set</span>
                 )}
               </div>
-            )}
-          </div>
+
+              {editingRate ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="size-4 text-muted-foreground" />
+                    <Input
+                      id="pay-rate-override"
+                      type="number"
+                      value={rateOverride}
+                      onChange={(e) => setRateOverride(e.target.value)}
+                      placeholder="Override rate"
+                      className="w-32"
+                      aria-label="Pay rate override"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      disabled={saving}
+                      onClick={handleSaveRate}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingRate(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <DollarSign className="size-4" />
+                  {session.pay_rate_override != null ? (
+                    <span>
+                      ${session.pay_rate_override.toFixed(2)}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        (override)
+                      </span>
+                    </span>
+                  ) : session.pay_rate_resolved != null ? (
+                    <span>${session.pay_rate_resolved.toFixed(2)}</span>
+                  ) : (
+                    <span className="italic">Not set</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-foreground">Pay Rate</h3>
+              <div className="flex items-center gap-2 rounded-2xl border border-dashed bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                <Lock className="size-3.5" />
+                Financial visibility is restricted on this account.
+              </div>
+            </div>
+          )}
 
           {/* Attendance (completed sessions only) */}
           {session.status === "completed" && (

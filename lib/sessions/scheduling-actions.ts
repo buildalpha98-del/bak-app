@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionStatus, ComplianceDocType, ComplianceStatus, CentreType } from "@/lib/types/enums";
 import type { Centre, Profile } from "@/lib/types/database";
@@ -580,3 +581,99 @@ export async function acknowledgeClash(
 // predicate. The old function checked against today's date and keyed by
 // coach, which produced wrong verdicts later in the week and is no
 // longer used by any caller after the roster-grid migration.)
+
+// ============================================================
+// 6. publishDraftSessionsForWeek — admin/ops bulk-publish
+// ============================================================
+//
+// Bulk-flip every `draft` session in the given Mon→Fri week to
+// `published`. Backs the toolbar's "Publish week (N drafts)" CTA.
+//
+// Permission: admin / ops only. Coach attempts are rejected outright
+// (matches every other write-side roster action).
+//
+// We deliberately do NOT touch any column other than `status`. The
+// `pending_confirmation_at` column called out in the brief doesn't
+// exist on `sessions` (pending_confirmation is only a status enum
+// value, set by the existing per-session "Send for Confirmation"
+// flow). Each row gets its own activity_log entry so the audit trail
+// stays granular — mirrors the centres bulk-status pattern.
+
+export async function publishDraftSessionsForWeek(weekStart: string): Promise<{
+  published: number;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    // Auth: admin / ops only.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { published: 0, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { published: 0, error: "Not authorised." };
+    }
+
+    // Mon→Fri inclusive — matches the rest of the week pulse maths.
+    const monday = new Date(weekStart + "T00:00:00");
+    const friday = new Date(monday);
+    friday.setDate(friday.getDate() + 4);
+    const weekEndDate = friday.toISOString().split("T")[0];
+
+    // Pull only the drafts so the activity log is accurate even if a
+    // race between the count query and the update lets a non-draft
+    // sneak in. The .eq("status","draft") below double-guards.
+    const { data: drafts, error: selErr } = await supabase
+      .from("sessions")
+      .select("id")
+      .gte("date", weekStart)
+      .lte("date", weekEndDate)
+      .eq("status", "draft");
+
+    if (selErr) throw selErr;
+    if (!drafts || drafts.length === 0) {
+      return { published: 0, error: null };
+    }
+
+    const draftIds = drafts.map((d) => d.id as string);
+
+    const { error: updErr } = await supabase
+      .from("sessions")
+      .update({ status: "published" })
+      .in("id", draftIds)
+      .eq("status", "draft");
+
+    if (updErr) throw updErr;
+
+    // One activity log row per session so the per-shift timeline is
+    // accurate — best-effort, don't sink the whole call on logging
+    // hiccups.
+    const logRows = draftIds.map((id) => ({
+      user_id: user.id,
+      action: "session_published_via_bulk",
+      entity_type: "session",
+      entity_id: id,
+      metadata: { week_start: weekStart },
+    }));
+    const { error: logErr } = await supabase
+      .from("activity_log")
+      .insert(logRows);
+    if (logErr) {
+      console.error("publishDraftSessionsForWeek log error:", logErr);
+    }
+
+    revalidatePath("/admin/roster");
+    revalidatePath("/ops/roster");
+    return { published: draftIds.length, error: null };
+  } catch (err) {
+    console.error("publishDraftSessionsForWeek error:", err);
+    return { published: 0, error: "Failed to publish drafts." };
+  }
+}

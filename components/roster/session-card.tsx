@@ -53,7 +53,7 @@ export function SessionCard({
         type="button"
         onClick={onClick}
         aria-label={`${session.sport} session at ${session.centre_name}, ${session.duration_minutes} minutes${session.coach_name ? `, ${session.coach_name}` : ", unassigned"}, ${session.status}${asSecondary ? ", shared shift" : ""}`}
-        className={`flex h-full w-full cursor-pointer flex-col gap-0.5 rounded-md border bg-card px-2 py-1 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        className={`flex h-full w-full cursor-pointer flex-col gap-0.5 rounded-2xl border bg-card px-2 py-1 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           asSecondary ? "border-l border-l-muted-foreground/40" : ""
         }`}
         style={

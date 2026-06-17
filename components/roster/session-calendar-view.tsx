@@ -61,7 +61,7 @@ export function SessionCalendarView({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card">
+    <div className="overflow-x-auto rounded-2xl border bg-card transition hover:shadow-md">
       <div
         className="grid min-w-[700px]"
         style={{

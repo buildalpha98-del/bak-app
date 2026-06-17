@@ -149,3 +149,84 @@ The centres list is **the operational heartbeat surface** — Abdul opens it 5+ 
 - [ ] (Optional) Saved views — name + recall filter combinations
 
 ---
+
+### 1.3 `/admin/roster` — Roster (weekly grid)
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/roster/page.tsx` (52 lines) batches 5 server actions in one `Promise.all` (`getSessionsForWeek`, `getCentresForSelect`, `getActiveCoaches`, `getActiveTerm`, `getSessionCertWarningsForWeek`) and passes everything to `RosterPage` (`components/roster/roster-page.tsx`, 505 lines).
+
+**Surface:**
+- **Unconfirmed shifts banner** at top (when any pending shifts exist)
+- **Header**: "Roster" title + `WeekCostChip` ($ — `financial_access`-gated since Wave A) + "View Terms" link
+- **Toolbar** (8+ buttons):
+  - Week navigation: prev / "Mon DD–FRI DD MMM" label / next + Today + native date picker
+  - View toggle: Staff (default) / Calendar / List
+  - Check Clashes button → opens conflict-detection drawer
+  - Add Session button
+  - Generate Week button (term-template-driven)
+  - **AI Assign** (brand-orange primary CTA — opens the AI scheduling flow)
+- **AI Summary Bar** (when a run is mid-review)
+- **Empty state** OR one of three view components:
+  - `StaffRosterView` — rows = coaches, columns = days; primary "+N others" badge + secondary "↔ shared" cards from P5
+  - `SessionCalendarView` — week grid by day/time
+  - `SessionListView` — chronological list
+- All three card variants share `SessionCard` with the P3 3-dot menu (Swap coach / Add note / Duplicate) and the `StickyNote` note indicator
+- Detail sheet uses the P5 `CoachChipMultiselect` for multi-coach assignment
+- Sub-pages: `/terms` (term list) and `/terms/[id]/template` (term-template editor)
+
+**Recently shipped (Wave-A-adjacent):**
+- P3 — per-shift notes, inline 3-dot menu, duplicate action
+- P5 — multi-coach via `session_coaches`, per-rate-summed cost projection, conflict detection from the join table
+- Financial gate on `WeekCostChip`
+
+✅ **What works**
+
+- 3 view modes, all real-time (router.refresh after every mutation)
+- Week navigation + date picker + Today
+- AI scheduling (generate → review → publish flow)
+- Multi-coach assignment end-to-end (chip multi-select, drag-to-promote primary)
+- Cost fan-out per coach, hidden for non-financial-access viewers
+- Cert guard on every assignment, with resolved coach names in the error
+- Conflict detection reads from `session_coaches` so multi-coach overlaps surface on both cards
+- Unconfirmed shifts banner — actionable nudge
+- Empty state with helpful copy
+
+⚠️ **Gaps**
+
+1. **No drag-and-drop scheduling** — P4 is deferred. Today every move requires "edit session → change date → save". For ops-heavy days, that's the biggest friction point.
+2. **Toolbar density** — 8 buttons + view toggle + date picker in one row; wraps awkwardly on tablets, no progressive disclosure
+3. **No filters** — can't slice the grid by sport, centre, coach, or status; for 40+ centre weeks this gets noisy
+4. **No "this week summary"** strip — `WeekCostChip` is the only at-a-glance metric. Should also surface: total sessions / draft count / unassigned count / hours rostered / coverage % (sessions with primary assigned ÷ total)
+5. **View selection doesn't persist** — every visit defaults to Staff view; URL param would let you bookmark calendar-week-view
+6. **Native HTML date picker** (`<Input type="date" />`) — visually inconsistent with the rest of the design system; ugly on Safari
+7. **No region filter** — once centres span 5+ regions, viewing one region's roster matters
+8. **No "publish all drafts" bulk action** — generating a week leaves you with N draft sessions; you click each to publish (or run AI Assign which publishes as part of its flow). A single "Publish week" affirmation would be a big win
+9. **UI doesn't match `/admin` home design language** — empty state uses `rounded-xl border-dashed`, toolbar buttons use `rounded-lg border`. Should be `rounded-2xl` everywhere
+10. **No status pulse strip** — the home page + centres list both have one; roster should too (drafts pending / shifts needing a coach / unconfirmed / labour budget vs projected)
+11. **AI Assign primary button placement is good** — keep that — but no "Last AI run" pill showing when the schedule was last regenerated (helps avoid double-runs)
+12. **`/terms` and `/terms/[id]/template` aren't reviewed in this row** — separate surfaces, defer to a sub-review or treat as Roster-adjacent
+13. **`SessionDetailSheet` is rich but the cost/payroll line inside it is not financial-gated** — for ops without `financial_access`, the sheet shows `pay_rate_resolved × duration` totals. Same defensive pattern needed as `WeekCostChip`
+
+🎯 **Final-state target**
+
+The roster is the daily operational cockpit. Top of page: a **Roster Pulse** strip (4 inline numbers — drafts pending / unassigned / coverage % / projected wage), each click-jumps to the filtered grid. Toolbar compresses cleanly on mobile via a dropdown for tertiary actions. Filter chip row (Sport / Centre / Coach / Status / Region) sits under the toolbar; combined with URL persistence so weeks are bookmarkable. View selection persists. Native date input replaced with a proper popover-based calendar picker. "Publish week" bulk action available when ≥1 draft exists. `SessionDetailSheet`'s pay line goes through the financial gate. UI matches home + centres language. P4 drag-and-drop is acknowledged as the next major leap (post-beta).
+
+📋 **Open items**
+
+- [ ] **Roster Pulse strip** at top — drafts pending / unassigned shifts / coverage % / projected wage (financial-gated)
+- [ ] **Filter chip row**: Sport, Centre, Coach, Status, Region — persisted to URL (same pattern as `/admin/centres`)
+- [ ] **URL persistence** for view mode (`?view=calendar`)
+- [ ] **Replace native date picker** with a Popover + `Calendar` primitive (date-fns or zero-dep)
+- [ ] **"Publish week" bulk action** — affirmation Dialog → batch update of all drafts to "published" (admin/ops only)
+- [ ] **Toolbar compression on mobile** — primary actions visible, tertiary in a "More" dropdown menu
+- [ ] **Financial gate on `SessionDetailSheet`** pay totals — same `financial_access` check pattern as `WeekCostChip`
+- [ ] **"Last AI run" pill** next to AI Assign button (timestamp of most recent `scheduling_runs` row)
+- [ ] **UI refresh**: `rounded-2xl`, restrained orange, subtle hover-lift on cards, `gap-6` between major sections (consistent with home + centres)
+- [ ] **(Optional)** Add a Region filter chip once you have multiple regions in production
+- [ ] **(Optional)** Tooltip on each toolbar button explaining the action — discoverability for new ops users
+- [ ] **(Optional / post-beta)** Saved view combinations ("Mondays only", "Coach X this week")
+
+**Out of scope:** P4 drag-and-drop (deferred per master spec); `/admin/roster/terms` and template editor get their own review when we hit that branch of the navigation.
+
+---

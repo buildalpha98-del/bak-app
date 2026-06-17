@@ -166,7 +166,7 @@ function StaffSessionCard({
       <button
         type="button"
         onClick={onClick}
-        className={`w-full rounded-md border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        className={`w-full rounded-2xl border bg-card px-2 py-1.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-2 hover:ring-ring/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           asSecondary ? "border-l border-l-muted-foreground/40" : ""
         }`}
         style={
@@ -295,7 +295,7 @@ export function StaffRosterView({
   coachOrder.sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card">
+    <div className="overflow-x-auto rounded-2xl border bg-card transition hover:shadow-md">
       <table className="min-w-[700px] w-full border-collapse">
         {/* Header */}
         <thead>
