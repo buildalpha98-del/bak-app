@@ -463,6 +463,229 @@ export async function getReportGenerationOptions(): Promise<{
 }
 
 // ============================================================
+// bulkSendReports — admin/ops only; mass-transition drafts → sent
+// ============================================================
+//
+// Used by the table-view bulk-action bar. For each selected report:
+//   - Already-sent reports are counted as `alreadySent` and skipped
+//     (defensive — we don't overwrite a sent_at).
+//   - Drafts get status='sent', sent_at=now(), sent_to=sendTo.
+//   - One activity_log row per successful transition.
+//   - Per-row failures continue, last error surfaces.
+
+export async function bulkSendReports(
+  reportIds: string[],
+  sendTo: string[]
+): Promise<{
+  sent: number;
+  alreadySent: number;
+  error: string | null;
+}> {
+  try {
+    if (reportIds.length === 0) {
+      return { sent: 0, alreadySent: 0, error: "No reports selected." };
+    }
+    if (sendTo.length === 0) {
+      return { sent: 0, alreadySent: 0, error: "At least one recipient is required." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    // Auth: only admin/ops may bulk-send.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { sent: 0, alreadySent: 0, error: "Not authenticated." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { sent: 0, alreadySent: 0, error: "Insufficient permissions." };
+    }
+
+    // Pull each report's current status so we can skip already-sent
+    // ones rather than silently re-stamping sent_at.
+    const { data: existing } = await supabase
+      .from("centre_reports")
+      .select("id, status")
+      .in("id", reportIds);
+
+    const statusById = new Map<string, string>();
+    for (const row of existing ?? []) {
+      const r = row as { id: string; status: string };
+      statusById.set(r.id, r.status);
+    }
+
+    let sent = 0;
+    let alreadySent = 0;
+    let lastError: string | null = null;
+    const nowIso = new Date().toISOString();
+
+    for (const reportId of reportIds) {
+      const currentStatus = statusById.get(reportId);
+      if (currentStatus === "sent") {
+        alreadySent += 1;
+        continue;
+      }
+
+      const { error: upErr } = await supabase
+        .from("centre_reports")
+        .update({
+          status: "sent",
+          sent_at: nowIso,
+          sent_to: sendTo,
+        })
+        .eq("id", reportId);
+
+      if (upErr) {
+        console.error("bulkSendReports per-row error:", reportId, upErr);
+        lastError = upErr.message;
+        continue;
+      }
+
+      const { error: logErr } = await supabase.from("activity_log").insert({
+        user_id: user.id,
+        action: "report_bulk_sent",
+        entity_type: "centre_report",
+        entity_id: reportId,
+        metadata: { sent_to: sendTo },
+      });
+      if (logErr) {
+        console.error("bulkSendReports log error:", reportId, logErr);
+      }
+
+      sent += 1;
+    }
+
+    if (sent === 0 && alreadySent === 0) {
+      return {
+        sent: 0,
+        alreadySent: 0,
+        error: lastError ?? "Failed to send any reports.",
+      };
+    }
+
+    return {
+      sent,
+      alreadySent,
+      error:
+        sent + alreadySent < reportIds.length
+          ? `Sent ${sent} of ${reportIds.length - alreadySent} eligible. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkSendReports error:", err);
+    return { sent: 0, alreadySent: 0, error: "Failed to send reports." };
+  }
+}
+
+// ============================================================
+// bulkDeleteDraftReports — admin/ops only; drafts only
+// ============================================================
+//
+// Skips any already-sent reports in the selection. Hard-deleting a
+// sent report would destroy the outgoing audit trail, so we keep them.
+
+export async function bulkDeleteDraftReports(
+  reportIds: string[]
+): Promise<{ deleted: number; skipped: number; error: string | null }> {
+  try {
+    if (reportIds.length === 0) {
+      return { deleted: 0, skipped: 0, error: "No reports selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { deleted: 0, skipped: 0, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { deleted: 0, skipped: 0, error: "Insufficient permissions." };
+    }
+
+    // Partition the selection into drafts vs already-sent.
+    const { data: existing } = await supabase
+      .from("centre_reports")
+      .select("id, status")
+      .in("id", reportIds);
+
+    const draftIds: string[] = [];
+    let skipped = 0;
+    for (const row of existing ?? []) {
+      const r = row as { id: string; status: string };
+      if (r.status === "draft") {
+        draftIds.push(r.id);
+      } else {
+        skipped += 1;
+      }
+    }
+
+    if (draftIds.length === 0) {
+      return {
+        deleted: 0,
+        skipped,
+        error:
+          skipped > 0
+            ? "All selected reports are already sent — none deleted."
+            : "No drafts found in selection.",
+      };
+    }
+
+    let deleted = 0;
+    let lastError: string | null = null;
+
+    for (const id of draftIds) {
+      const { error: delErr } = await supabase
+        .from("centre_reports")
+        .delete()
+        .eq("id", id);
+      if (delErr) {
+        console.error("bulkDeleteDraftReports per-row error:", id, delErr);
+        lastError = delErr.message;
+        continue;
+      }
+
+      const { error: logErr } = await supabase.from("activity_log").insert({
+        user_id: user.id,
+        action: "report_bulk_deleted",
+        entity_type: "centre_report",
+        entity_id: id,
+      });
+      if (logErr) {
+        console.error("bulkDeleteDraftReports log error:", id, logErr);
+      }
+      deleted += 1;
+    }
+
+    return {
+      deleted,
+      skipped,
+      error:
+        deleted < draftIds.length
+          ? `Deleted ${deleted} of ${draftIds.length}. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkDeleteDraftReports error:", err);
+    return { deleted: 0, skipped: 0, error: "Failed to delete drafts." };
+  }
+}
+
+// ============================================================
 // Upload centre logo
 // ============================================================
 

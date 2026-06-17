@@ -30,6 +30,9 @@ interface TaskBoardProps {
   currentUserId: string;
   externalCreateOpen?: boolean;
   onExternalCreateOpenChange?: (open: boolean) => void;
+  /** Bulk-selection state — when set, cards render a hover checkbox. */
+  selectedIds?: Set<string>;
+  onToggleSelect?: (taskId: string) => void;
 }
 
 export function TaskBoard({
@@ -39,6 +42,8 @@ export function TaskBoard({
   currentUserId,
   externalCreateOpen,
   onExternalCreateOpenChange,
+  selectedIds,
+  onToggleSelect,
 }: TaskBoardProps) {
   const [tasks, setTasks] = useState<TaskWithRelations[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
@@ -224,6 +229,8 @@ export function TaskBoard({
               column={col}
               tasks={tasksByColumn[col.id] ?? []}
               onTaskClick={handleTaskClick}
+              selectedIds={selectedIds}
+              onToggleSelect={onToggleSelect}
             />
           ))}
 
@@ -250,8 +257,13 @@ export function TaskBoard({
             <TabsContent key={col.id} value={col.id} className="mt-3">
               <div className="space-y-2">
                 {(tasksByColumn[col.id] ?? []).map((task) => (
-                  <div key={task.id} onClick={() => handleTaskClick(task.id)}>
-                    <TaskCard task={task} onClick={handleTaskClick} />
+                  <div key={task.id}>
+                    <TaskCard
+                      task={task}
+                      onClick={handleTaskClick}
+                      selected={selectedIds?.has(task.id) ?? false}
+                      onToggleSelect={onToggleSelect}
+                    />
                   </div>
                 ))}
                 {(tasksByColumn[col.id] ?? []).length === 0 && (

@@ -13,9 +13,17 @@ interface TaskColumnProps {
   column: TaskColumnType;
   tasks: TaskWithRelations[];
   onTaskClick: (taskId: string) => void;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (taskId: string) => void;
 }
 
-export function TaskColumn({ column, tasks, onTaskClick }: TaskColumnProps) {
+export function TaskColumn({
+  column,
+  tasks,
+  onTaskClick,
+  selectedIds,
+  onToggleSelect,
+}: TaskColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${column.id}`,
     data: { type: "column", columnId: column.id },
@@ -25,16 +33,16 @@ export function TaskColumn({ column, tasks, onTaskClick }: TaskColumnProps) {
 
   return (
     <div
-      className={`flex-1 min-w-[280px] max-w-[360px] bg-secondary rounded-lg border ${
-        isOver ? "border-primary bg-orange-50/30" : "border-border"
+      className={`flex-1 min-w-[280px] max-w-[360px] rounded-2xl border bg-muted/30 transition ${
+        isOver ? "border-[#E8712A]/50 bg-[#E8712A]/5" : ""
       } flex flex-col ${column.is_final ? "opacity-70" : ""}`}
     >
-      <div className="px-3 py-2.5 border-b border-border">
+      <div className="px-3 py-2.5 border-b">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">
             {column.name}
           </h3>
-          <span className="text-xs text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
+          <span className="text-xs text-muted-foreground bg-background rounded-full px-2 py-0.5 tabular-nums">
             {tasks.length}
           </span>
         </div>
@@ -46,7 +54,13 @@ export function TaskColumn({ column, tasks, onTaskClick }: TaskColumnProps) {
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              onClick={onTaskClick}
+              selected={selectedIds?.has(task.id) ?? false}
+              onToggleSelect={onToggleSelect}
+            />
           ))}
         </SortableContext>
 

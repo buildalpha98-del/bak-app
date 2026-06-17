@@ -645,3 +645,341 @@ export async function getTeamMembers(): Promise<{
   if (error) return { data: null, error: error.message };
   return { data, error: null };
 }
+
+// ============================================================
+// Bulk actions — admin/ops gated
+// ============================================================
+//
+// Drives the sticky bulk-action bar in /admin/tasks (and /ops/tasks
+// once we wire it). All three share the same shape:
+//
+//   - Empty selection → "No tasks selected." up front, no auth call.
+//   - Auth + role gate (admin / ops only). Coaches get
+//     "Insufficient permissions." matching the deleteFeedback pattern.
+//   - Per-row update loop so a single bad row doesn't sink the batch.
+//   - Activity log row per affected task for audit symmetry.
+//   - Returns `{ updated: number, error: string | null }`. A partial
+//     failure surfaces the last error message + a count of successes.
+
+async function gateAdminOrOps(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+): Promise<{ userId: string; error: string | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { userId: "", error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { userId: user.id, error: "Insufficient permissions." };
+  }
+
+  return { userId: user.id, error: null };
+}
+
+export async function bulkReassignTasks(
+  taskIds: string[],
+  assigneeId: string | null,
+): Promise<{ updated: number; error: string | null }> {
+  try {
+    if (taskIds.length === 0) {
+      return { updated: 0, error: "No tasks selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const gate = await gateAdminOrOps(supabase);
+    if (gate.error) return { updated: 0, error: gate.error };
+
+    // Pre-fetch assignee profile once if we're reassigning to a real
+    // user — we'll need their notification routing on each task.
+    type AssigneeProfile = {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+    };
+    let assigneeProfile: AssigneeProfile | null = null;
+    if (assigneeId) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, email, name, role")
+        .eq("id", assigneeId)
+        .single();
+      assigneeProfile = (data ?? null) as AssigneeProfile | null;
+    }
+
+    let updated = 0;
+    let lastError: string | null = null;
+
+    for (const taskId of taskIds) {
+      // Read the current task so we can record the from→to change
+      // and skip no-op writes.
+      const { data: current } = await supabase
+        .from("tasks")
+        .select("title, assignee_id")
+        .eq("id", taskId)
+        .single();
+
+      if (!current) {
+        lastError = `Task ${taskId} not found.`;
+        continue;
+      }
+
+      const { error: upErr } = await supabase
+        .from("tasks")
+        .update({ assignee_id: assigneeId })
+        .eq("id", taskId);
+
+      if (upErr) {
+        console.error("bulkReassignTasks per-row error:", taskId, upErr);
+        lastError = upErr.message;
+        continue;
+      }
+
+      // Activity row on the task itself — only if it's a real change.
+      if (current.assignee_id !== assigneeId) {
+        await supabase.from("task_activity").insert({
+          task_id: taskId,
+          user_id: gate.userId,
+          type: "assignment_change",
+          content: assigneeId ? "Reassigned in bulk" : "Unassigned in bulk",
+          metadata: { from: current.assignee_id, to: assigneeId },
+        });
+
+        // Activity log
+        await supabase.from("activity_log").insert({
+          user_id: gate.userId,
+          action: "task_bulk_reassigned",
+          entity_type: "task",
+          entity_id: taskId,
+          metadata: { from: current.assignee_id, to: assigneeId },
+        });
+
+        // Notify the new assignee (skip if reassigning to self or null).
+        if (assigneeProfile && assigneeProfile.id !== gate.userId) {
+          await triggerNotification(
+            {
+              type: "task_assigned",
+              title: "Task assigned to you",
+              body: current.title,
+              entityType: "task",
+              entityId: taskId,
+            },
+            [
+              {
+                userId: assigneeProfile.id,
+                email: assigneeProfile.email,
+                name: assigneeProfile.name,
+                role: assigneeProfile.role,
+              },
+            ],
+          );
+        }
+      }
+
+      updated += 1;
+    }
+
+    if (updated === 0) {
+      return {
+        updated: 0,
+        error: lastError ?? "Failed to reassign any tasks.",
+      };
+    }
+
+    return {
+      updated,
+      error:
+        updated < taskIds.length
+          ? `Updated ${updated} of ${taskIds.length}. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkReassignTasks error:", err);
+    return { updated: 0, error: "Failed to reassign tasks." };
+  }
+}
+
+export async function bulkMarkComplete(
+  taskIds: string[],
+): Promise<{ updated: number; error: string | null }> {
+  try {
+    if (taskIds.length === 0) {
+      return { updated: 0, error: "No tasks selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const gate = await gateAdminOrOps(supabase);
+    if (gate.error) return { updated: 0, error: gate.error };
+
+    // Resolve the final column once — all moves target the same id.
+    const { data: finalCol } = await supabase
+      .from("task_columns")
+      .select("id, name")
+      .eq("is_final", true)
+      .order("position", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (!finalCol) {
+      return { updated: 0, error: "No final column configured." };
+    }
+
+    let updated = 0;
+    let lastError: string | null = null;
+
+    for (const taskId of taskIds) {
+      const { data: current } = await supabase
+        .from("tasks")
+        .select("column_id, title")
+        .eq("id", taskId)
+        .single();
+
+      if (!current) {
+        lastError = `Task ${taskId} not found.`;
+        continue;
+      }
+
+      // No-op if it's already in the final column.
+      if (current.column_id === finalCol.id) {
+        updated += 1;
+        continue;
+      }
+
+      const { error: upErr } = await supabase
+        .from("tasks")
+        .update({ column_id: finalCol.id, column_order: 0 })
+        .eq("id", taskId);
+
+      if (upErr) {
+        console.error("bulkMarkComplete per-row error:", taskId, upErr);
+        lastError = upErr.message;
+        continue;
+      }
+
+      await supabase.from("task_activity").insert({
+        task_id: taskId,
+        user_id: gate.userId,
+        type: "status_change",
+        content: `Marked complete in bulk → ${finalCol.name}`,
+        metadata: {
+          from_column_id: current.column_id,
+          to_column_id: finalCol.id,
+        },
+      });
+
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "task_bulk_completed",
+        entity_type: "task",
+        entity_id: taskId,
+        metadata: { to_column: finalCol.name },
+      });
+
+      updated += 1;
+    }
+
+    if (updated === 0) {
+      return {
+        updated: 0,
+        error: lastError ?? "Failed to mark any tasks complete.",
+      };
+    }
+
+    return {
+      updated,
+      error:
+        updated < taskIds.length
+          ? `Updated ${updated} of ${taskIds.length}. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkMarkComplete error:", err);
+    return { updated: 0, error: "Failed to mark tasks complete." };
+  }
+}
+
+export async function bulkChangePriority(
+  taskIds: string[],
+  priority: TaskPriority,
+): Promise<{ updated: number; error: string | null }> {
+  try {
+    if (taskIds.length === 0) {
+      return { updated: 0, error: "No tasks selected." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const gate = await gateAdminOrOps(supabase);
+    if (gate.error) return { updated: 0, error: gate.error };
+
+    let updated = 0;
+    let lastError: string | null = null;
+
+    for (const taskId of taskIds) {
+      const { data: current } = await supabase
+        .from("tasks")
+        .select("priority")
+        .eq("id", taskId)
+        .single();
+
+      if (!current) {
+        lastError = `Task ${taskId} not found.`;
+        continue;
+      }
+
+      const { error: upErr } = await supabase
+        .from("tasks")
+        .update({ priority })
+        .eq("id", taskId);
+
+      if (upErr) {
+        console.error("bulkChangePriority per-row error:", taskId, upErr);
+        lastError = upErr.message;
+        continue;
+      }
+
+      if (current.priority !== priority) {
+        await supabase.from("task_activity").insert({
+          task_id: taskId,
+          user_id: gate.userId,
+          type: "priority_change",
+          content: `Priority changed in bulk from ${current.priority} to ${priority}`,
+          metadata: { from: current.priority, to: priority },
+        });
+
+        await supabase.from("activity_log").insert({
+          user_id: gate.userId,
+          action: "task_bulk_priority_changed",
+          entity_type: "task",
+          entity_id: taskId,
+          metadata: { from: current.priority, to: priority },
+        });
+      }
+
+      updated += 1;
+    }
+
+    if (updated === 0) {
+      return {
+        updated: 0,
+        error: lastError ?? "Failed to change priority on any tasks.",
+      };
+    }
+
+    return {
+      updated,
+      error:
+        updated < taskIds.length
+          ? `Updated ${updated} of ${taskIds.length}. Last error: ${lastError}`
+          : null,
+    };
+  } catch (err) {
+    console.error("bulkChangePriority error:", err);
+    return { updated: 0, error: "Failed to change priority on tasks." };
+  }
+}

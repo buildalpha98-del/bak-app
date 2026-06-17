@@ -1091,3 +1091,111 @@ The forms command center. Status Pulse strip surfaces what's blocking (drafts pe
 **Plumbing verified:** `getOverviewKPIs` / `getCohortAnalysis` / `getDemandAnalysis` / `getFinancialIntelligence` / `getCoachUtilisation` / `getGrowthMetrics` signatures preserved — every tab still reads the same data contract.
 
 ---
+
+### 1.19 `/admin/reports` — Centre reports
+
+📋 **Open items** — closed in the `feat(reports+tasks+feedback+bookings)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/reports/page.tsx` now fetches `getReportGenerationOptions` / `listReports` / `getReportsStatusPulse` / `getCentresWithoutReport` in one parallel batch and hands them to a rewritten `ReportsView` client component with URL-persisted filter chips, a jump-chip row, bulk-select on the report table, and a sticky brand-orange `BulkActionBar` for Mark-as-sent + Delete-drafts.
+
+✅ **What works** — Reports Status Pulse (drafts · sent this week · overdue 14d+ · centres without report) with jump links; URL-persisted `?term=&centre=&status=&overdue=yes&missing_report=yes` filters; orange-tinted clear-X jump chips; `missing_report=yes` swaps the table for the centre list with a quick-Generate button per row; bulk-select checkboxes + sticky `BulkActionBar` with Mark-as-sent (sheet w/ comma-separated email list) + Delete-drafts (alert dialog, drafts-only); `rounded-2xl` containers replacing the `Card` shells.
+
+⚠️ **Gaps** — Bulk-send uses a free-text recipient list (works for the small admin volume); if recipient lists grow, swap to a tag/chip multiselect. "Centres without report" only computes when an active term row exists in `terms` — otherwise the bucket is zero rather than guessing the latest completed term.
+
+🎯 **Final-state target** — Reports queue that surfaces what's overdue, who's missing a report, and lets the operator send/delete in one bulk action.
+
+📋 **Open items**
+- [x] **Reports Status Pulse** strip — drafts · sent this week · overdue · centres without report (`lib/reports/status-pulse-actions.ts`)
+- [x] **URL-persisted filters** — `?term=&centre=&status=draft|sent` + `?overdue=yes` + `?missing_report=yes` jump chips with clear-X
+- [x] **Bulk actions** — `bulkSendReports` (skips already-sent, partial-failure surface) + `bulkDeleteDraftReports` (drafts-only guard) appended to `lib/reports/actions.ts`; admin/ops gate; per-row activity log
+- [x] **`getCentresWithoutReport`** helper feeds the missing-report mode with a per-centre Generate shortcut
+- [x] **UI refresh** — `rounded-2xl` shells, `gap-6` rhythm, restrained brand orange (active chips · sticky bar primary · pulse active counts)
+- [x] **Tests** — `lib/reports/__tests__/reports-status-pulse.test.ts` (7 cases) + `lib/reports/__tests__/bulk-actions.test.ts` (9 cases): auth gate · happy path · skip-already-sent · partial failure · drafts-only delete · empty-selection guards
+
+**Plumbing verified:** `centre-reports-tab.tsx` (used on centres detail page) still imports `getCentreReports` only — contract intact; `/admin/reports/[id]` and `report-preview.tsx` untouched; `/ops/reports` re-wired with `basePath="/ops/reports"`.
+
+---
+
+### 1.20 `/admin/tasks` — Task board
+
+📋 **Open items** — closed in the `feat(reports+tasks+feedback+bookings)` commit
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/tasks/page.tsx` adds `getTasksStatusPulse()` to the parallel data batch, and the client wrapper (`client.tsx`) is a full rewrite: URL-persisted filter chips replace the old in-memory `TaskFilters`, board↔list view toggle, bulk-select on both surfaces, sticky `BulkActionBar` with Reassign / Mark-complete / Change-priority sheets. `task-card.tsx` adds an aging left-border tint (amber at 7-14d, brand orange at 14d+) with an `Xd` pill, and the existing DnD board continues to work alongside the new hover-checkbox selection.
+
+✅ **What works** — Tasks Status Pulse (overdue · due today · mine · unassigned) with jump links to `?overdue=yes`/`?due=today`/`?mine=yes`/`?unassigned=yes`; URL-persisted `?view=board|list&assignee=&priority=&category=&due=&mine=&unassigned=&overdue=`; orange-tinted active jump chips with clear-X; board view keeps `@dnd-kit` ordering + hover checkbox; list view adds checkbox column + select-all + Age column; aging left-border tint on non-final cards; sticky `BulkActionBar` (rounded-2xl, brand-orange ring) with Reassign sheet (teamMembers + Unassign), Change-priority sheet, Mark-complete confirm.
+
+⚠️ **Gaps** — Filter persistence on the admin client now bypasses the existing presentational `TaskFilters` component (still in use unchanged by `/ops/tasks`). The status-pulse fan-out uses four parallel head-count queries with a `.not("column_id","in", finalIds)` exclusion — acceptable since there's typically one `is_final` column.
+
+🎯 **Final-state target** — A task board that surfaces what's overdue and unassigned the moment you land, lets you bulk-reassign or close in one motion, and tints stale work by age.
+
+📋 **Open items**
+- [x] **Tasks Status Pulse** strip — overdue · due today · mine · unassigned (excludes `is_final` columns)
+- [x] **URL-persisted filter chips** — assignee · priority · category (column) · due · mine · unassigned · overdue
+- [x] **View toggle** — `?view=board|list` URL-persisted (default board)
+- [x] **Bulk actions** — `bulkReassignTasks` (notifies new assignee) + `bulkMarkComplete` (moves to final column) + `bulkChangePriority`; admin/ops gate; per-row activity + audit log
+- [x] **Aging tint** — left-border amber at 7-14d, brand orange at 14d+ on non-final cards; `Xd` pill bottom-right
+- [x] **UI refresh** — `rounded-2xl` cards, hover-lift, brand orange reserved for `urgent` priority + sticky-bar primary
+- [x] **Tests** — `lib/tasks/__tests__/tasks-status-pulse.test.ts` (6 cases) + `lib/tasks/__tests__/bulk-actions.test.ts` (7 cases): admin gate · happy reassign + partial-fail · mark-complete + no-final-col branch · change-priority
+
+**Plumbing verified:** `getTasks` / `getTaskColumns` / `getTeamMembers` / `moveTask` signatures preserved — `/ops/tasks`, `/coach/tasks`, and the home dashboard widget continue to read the same contract; `task-detail-sheet.tsx` + `create-task-dialog.tsx` + `column-settings-dialog.tsx` untouched.
+
+---
+
+### 1.21 `/admin/feedback` — Session feedback
+
+📋 **Open items** — closed in the `feat(reports+tasks+feedback+bookings)` commit + migration `052_feedback_acknowledged.sql` (pending manual apply)
+
+🔍 **Current state**
+
+`app/(dashboard)/admin/feedback/page.tsx` batches `getFeedbackList` / `getFeedbackAggregation` / `getFeedbackStatusPulse` / `getFeedbackSentimentDistribution` + coaches + centres in one fan-out. The client wrapper renders the new `FeedbackStatusPulseStrip` + 4-tile stat row (Average / Total / 30-day trend / Sentiment distribution), and `feedback-list-view.tsx` adds URL-persisted filter chips, an unread "Read" pill, bulk-select + sticky `BulkActionBar` with Mark-read + Acknowledge sheet. The migration adds `acknowledged_at` + `acknowledged_by` to `feedback_ratings` with a partial index on unacked low ratings.
+
+✅ **What works** — Feedback Status Pulse (new this week · 1-star unread · 5-star unread · no response 24h+) with the 1-star bucket using **red** rather than brand orange for emphasis; URL-persisted `?rating=&period=&coach=&centre=&ack=unread&pending=yes`; jump-chip clear-X; sentiment distribution mini-chart (5-segment stacked bar, red→amber→emerald) computed server-side from the full org so it reflects all-time not just the page; "Read" pill with acknowledged-date tooltip; bulk-select + sticky `BulkActionBar` with Mark-as-read (`bulkMarkFeedbackRead`) + Acknowledge sheet (`bulkAcknowledgeFeedback` writes a note to `activity_log` metadata).
+
+⚠️ **Gaps** — Migration `052_feedback_acknowledged.sql` is unapplied — must be applied manually before deploy. `?pending=yes` (no-response 24h+) clears the list rather than fetching unsubmitted feedback rows since `getFeedbackList` filters `submitted_at IS NOT NULL` by design — a separate helper would be needed to query the pending set, deferred until ops confirms they want that view inline rather than via the no-response cron.
+
+🎯 **Final-state target** — A feedback inbox where the urgent stuff (1-star unread) is unmissable in red, the warm wins (5-star unread) are easy to celebrate, and bulk-acknowledge clears the queue.
+
+📋 **Open items**
+- [x] **Feedback Status Pulse** strip — new this week · 1-star unack · 5-star unack · no response 24h+ (1-star bucket uses red for emphasis)
+- [x] **URL-persisted filter chips** — rating · coach · centre · period (this_week/last_7d/last_30d/all) + `?ack=unread`/`?pending=yes` jump chips
+- [x] **Migration `052_feedback_acknowledged.sql`** — adds `acknowledged_at` + `acknowledged_by` + partial index on unacked low ratings (manual apply required)
+- [x] **Bulk actions** — `bulkMarkFeedbackRead` (skips already-acknowledged) + `bulkAcknowledgeFeedback` (note → `activity_log` metadata); admin/ops gate via `requireAdminOrOps` discriminated union
+- [x] **Sentiment distribution** mini-chart (`components/feedback/sentiment-distribution.tsx`) — CSS-only stacked bar, no recharts dep needed; server-side fetch via `getFeedbackSentimentDistribution`
+- [x] **UI refresh** — `rounded-2xl` stat tiles, restrained orange (no `bg-primary/10` circles), `useCountUp` on total responses
+- [x] **Tests** — `lib/feedback/__tests__/feedback-status-pulse.test.ts` (6 cases) + `lib/feedback/__tests__/bulk-actions.test.ts` (8 cases)
+
+**Plumbing verified:** `entity-feedback-tab.tsx` (embedded in centres + staff detail tabs) does NOT use `FeedbackListView` — its widget surface is independent, contract preserved; new `coaches` / `centres` / `basePath` / `showBulk` props on `FeedbackListView` are optional with backwards-compatible defaults so `/ops/feedback` continues to render with the old 2-arg signature; `submitPublicFeedback` flow untouched.
+
+---
+
+### 1.22 `/admin/bookings` — Parent bookings dashboard
+
+📋 **Open items** — closed in the `feat(reports+tasks+feedback+bookings)` commit
+
+🔍 **Current state**
+
+`AdminBookingsDashboard` (the page-level client component) is reworked to read tab + filter state from the URL: `?tab=sessions|bookings|packages|revenue` is the new sub-page tab state, and per-tab filters round-trip via `replaceParam` exactly like centre-list-view. Pulse data lands in the same `useEffect` as the summary fetch, so the 4-tile pulse strip renders above the heading on first paint. Bulk-select lives on both the sessions + bookings tables.
+
+✅ **What works** — Bookings Status Pulse (today's sessions · waitlist offers expiring ≤24h · packages remaining ≤2 · new bookings this week) with jump links into the right tab + filter; URL-persisted `?tab=…&status=&sport=&period=&date=today&waitlist=expiring&packages_low=yes&range=this_week`; orange-tinted clear-X jump chips; sticky `BulkActionBar` on sessions (Publish drafts / Activate / Cancel) + bookings (Cancel with reason sheet); `useCountUp` on the four summary numbers; `rounded-2xl` cards replacing the old `rounded-xl border-orange-100 bg-white` shells; restrained brand orange limited to active filter chip, sticky bar primary, and pulse active counts.
+
+⚠️ **Gaps** — `useCountUp` animates whole dollars during the tick-up; cents render correctly on the final paint but aren't animated (acceptable for the headline summary). Pulse uses UTC `toISOString()` for the Monday + 24h windows — matches the existing children/forms pulse pattern; small AU-timezone edge for boundary minutes is acceptable for ops-glance counts. `getBookingsStatusPulse` is called from the client `useEffect` since the page was already `"use client"`; converting to a server-wrapper would be a deeper rewrite deferred for now.
+
+🎯 **Final-state target** — A bookings command center that surfaces what needs ops attention today (sessions live now · waitlist about to expire · packages about to run out · new revenue this week) and lets the operator publish/cancel in bulk without leaving the dashboard.
+
+📋 **Open items**
+- [x] **Bookings Status Pulse** strip — today's sessions · waitlist expiring (24h) · packages running low (≤2) · new bookings this week (`lib/bookings/status-pulse-actions.ts`)
+- [x] **URL-persisted tab state** — `?tab=sessions|bookings|packages|revenue` (sessions default, no param)
+- [x] **URL-persisted filters** — sessions: `?status=&sport=&period=today|this_week|all` + bookings: `?status=&payment_type=&session_id=&date_from=&date_to=&range=this_week`
+- [x] **Jump chips** — `?date=today`, `?waitlist=expiring`, `?packages_low=yes`, `?range=this_week` orange-tinted with clear-X
+- [x] **Bulk actions** — `bulkCancelBookings` (reason sheet, skips already-cancelled) + `bulkActivateSessions` (draft/closed → open) + `bulkPublishSessions` (draft-only alias for clarity); admin gate; per-id `activity_log`
+- [x] **UI refresh** — `rounded-2xl` cards, `useCountUp` on summary numbers, `gap-6` rhythm, restrained orange (only on active filter chips, sticky-bar primary, pulse active counts)
+- [x] **`session-list-view.tsx`** — URL persistence on search+type+status+sport + bulk-select + sticky bar (Publish/Activate)
+- [x] **Tests** — `lib/bookings/__tests__/bookings-status-pulse.test.ts` (6 cases) + `lib/bookings/__tests__/bulk-actions.test.ts` (6 cases): coach gate · cancel happy + skip · activate happy + skip · publish draft-only
+
+**Plumbing verified:** `getAdminBookingSummary` / `getAdminBookingsList` / `getAdminSessionsList` / `getAdminPackageBalances` / `getAdminRevenueBreakdown` / `toggleSessionStatus` / `getSessionsForDropdown` / `exportBookingsCSV` signatures preserved — `/parent/book` (parent portal) reads `bookable_sessions` read-only, unchanged; `/ops/bookings/sessions`, `/admin/bookings/sessions/new`, `/admin/bookings/packages`, `/admin/bookings/holiday-clinics` sub-pages all continue to work.
+
+---

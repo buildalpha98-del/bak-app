@@ -1,7 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+// ============================================================
+// Admin Bookings Dashboard
+// ============================================================
+//
+// Mirrors the design language of the centres / roster / CRM refresh
+// (commits 94cfba3 / 91b383e / 7456360):
+//   - inline status pulse strip above the page header
+//   - URL-persisted tab state (?tab=sessions|bookings|packages|revenue)
+//   - URL-persisted filter chips with jump-clear chips
+//   - bulk-select with sticky BulkActionBar (rounded-2xl, brand-orange ring)
+//   - `useCountUp` on summary numbers so they tick into place
+//   - rounded-2xl, restrained orange (#E8712A) accents
+
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import {
   getAdminBookingSummary,
   getAdminBookingsList,
@@ -11,6 +26,9 @@ import {
   exportBookingsCSV,
   toggleSessionStatus,
   getSessionsForDropdown,
+  bulkCancelBookings,
+  bulkActivateSessions,
+  bulkPublishSessions,
 } from "@/lib/bookings/admin-booking-actions";
 import type {
   AdminBookingSummary,
@@ -20,10 +38,17 @@ import type {
   AdminRevenueBreakdown,
   AdminBookingFilters,
 } from "@/lib/bookings/admin-booking-actions";
+import { getBookingsStatusPulse } from "@/lib/bookings/status-pulse-actions";
+import type { BookingsStatusPulse } from "@/lib/bookings/status-pulse-actions";
+import { BookingsStatusPulseStrip } from "@/components/bookings/bookings-status-pulse";
+import { useCountUp } from "@/components/launch/use-count-up";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tabs,
   TabsContent,
@@ -46,6 +71,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   CalendarDays,
   DollarSign,
   Users,
@@ -59,6 +92,10 @@ import {
   TrendingUp,
   BarChart3,
   Trophy,
+  X,
+  CircleCheck,
+  CircleSlash,
+  Megaphone,
 } from "lucide-react";
 import {
   BarChart,
@@ -68,6 +105,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { SPORTS } from "@/lib/types/enums";
 
 // ============================================================
 // Helpers
@@ -124,100 +162,239 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
+const TAB_VALUES = ["sessions", "bookings", "packages", "revenue"] as const;
+type TabValue = (typeof TAB_VALUES)[number];
+
+function isTab(v: string | null): v is TabValue {
+  return v !== null && (TAB_VALUES as readonly string[]).includes(v);
+}
+
+/** Convert YYYY-MM-DD into Monday of that week. */
+function mondayIsoOf(date = new Date()): string {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+// ============================================================
+// Animated metric (ticks up on first paint)
+// ============================================================
+
+function AnimatedMetric({ value }: { value: number }) {
+  const ticked = useCountUp(value);
+  return <>{ticked}</>;
+}
+
+function AnimatedCurrency({ cents }: { cents: number }) {
+  const tickedDollars = useCountUp(Math.round(cents / 100));
+  return <>${tickedDollars.toLocaleString()}</>;
+}
+
 // ============================================================
 // Main Component
 // ============================================================
 
 export default function AdminBookingsDashboard() {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  // ============================================================
+  // URL-backed tab state
+  // ============================================================
+  const initialTab: TabValue = isTab(params.get("tab"))
+    ? (params.get("tab") as TabValue)
+    : "sessions";
+  const [activeTab, setActiveTabState] = useState<TabValue>(initialTab);
+
+  // Sync activeTab from URL when navigation comes from outside (eg
+  // pulse jump-link, browser back/forward). The local setter still
+  // writes back to URL for inline tab switches.
+  const urlTab = params.get("tab");
+  useEffect(() => {
+    const target = isTab(urlTab) ? (urlTab as TabValue) : "sessions";
+    setActiveTabState((prev) => (prev === target ? prev : target));
+  }, [urlTab]);
+
+  const replaceParam = useCallback(
+    (updates: Record<string, string | null>) => {
+      const next = new URLSearchParams(Array.from(params.entries()));
+      for (const [key, value] of Object.entries(updates)) {
+        if (value && value !== "all" && value !== "") {
+          next.set(key, value);
+        } else {
+          next.delete(key);
+        }
+      }
+      const qs = next.toString();
+      router.replace(qs ? `?${qs}` : "?", { scroll: false });
+    },
+    [params, router]
+  );
+
+  function setActiveTab(v: string) {
+    if (!isTab(v)) return;
+    setActiveTabState(v);
+    replaceParam({ tab: v === "sessions" ? null : v });
+  }
+
+  // ============================================================
+  // Pulse strip
+  // ============================================================
+  const [pulse, setPulse] = useState<BookingsStatusPulse>({
+    todaysSessionsCount: 0,
+    waitlistExpiringCount: 0,
+    packagesLowCount: 0,
+    newBookingsThisWeekCount: 0,
+  });
+
+  // ============================================================
+  // Data state
+  // ============================================================
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("sessions");
-
-  // Summary
   const [summary, setSummary] = useState<AdminBookingSummary | null>(null);
-
-  // Sessions
   const [sessions, setSessions] = useState<AdminSessionRow[]>([]);
-  const [togglingSession, setTogglingSession] = useState<string | null>(null);
-
-  // Bookings
   const [bookings, setBookings] = useState<AdminBookingRow[]>([]);
-  const [bookingFilters, setBookingFilters] = useState<AdminBookingFilters>({});
+  const [packageData, setPackageData] = useState<AdminPackageSummary | null>(null);
+  const [revenueData, setRevenueData] = useState<AdminRevenueBreakdown | null>(null);
+  const [togglingSession, setTogglingSession] = useState<string | null>(null);
   const [sessionOptions, setSessionOptions] = useState<
     { id: string; title: string; date: string }[]
   >([]);
   const [exporting, setExporting] = useState(false);
-
-  // Packages
-  const [packageData, setPackageData] = useState<AdminPackageSummary | null>(null);
-
-  // Revenue
-  const [revenueData, setRevenueData] = useState<AdminRevenueBreakdown | null>(null);
   const [revenueChartView, setRevenueChartView] = useState<
     "session_type" | "suburb" | "sport"
   >("session_type");
-
   const [error, setError] = useState<string | null>(null);
 
-  // Load summary on mount
+  // ============================================================
+  // URL-backed bookings filters
+  // ============================================================
+  const bookingFilters: AdminBookingFilters = useMemo(() => {
+    return {
+      session_id: params.get("session_id") ?? undefined,
+      date_from: params.get("date_from") ?? undefined,
+      date_to: params.get("date_to") ?? undefined,
+      status: params.get("status") ?? undefined,
+      payment_type: params.get("payment_type") ?? undefined,
+    };
+  }, [params]);
+
+  const bookingsRange = params.get("range"); // "this_week" jump from pulse
+
+  // ============================================================
+  // URL-backed sessions filters
+  // ============================================================
+  const sessionStatusFilter = params.get("session_status") ?? "all";
+  const sessionSportFilter = params.get("sport") ?? "all";
+  const sessionPeriodFilter = params.get("period") ?? "all"; // today, this_week, all
+  const sessionWaitlistFilter = params.get("waitlist"); // "expiring"
+  const sessionDateFilter = params.get("date"); // "today"
+
+  // ============================================================
+  // Packages filter
+  // ============================================================
+  const packagesLowFilter = params.get("low") === "yes";
+
+  // Selection state per tab (each is independent so switching tabs
+  // doesn't collapse the user's in-flight bulk pick).
+  const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [selectedBookingIds, setSelectedBookingIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  // ============================================================
+  // Initial load
+  // ============================================================
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data, error: err } = await getAdminBookingSummary();
-      if (data) setSummary(data);
-      if (err) setError(err);
+      const [summaryRes, pulseRes] = await Promise.all([
+        getAdminBookingSummary(),
+        getBookingsStatusPulse(),
+      ]);
+      if (summaryRes.data) setSummary(summaryRes.data);
+      if (summaryRes.error) setError(summaryRes.error);
+      setPulse(pulseRes);
       setLoading(false);
     }
     load();
   }, []);
 
-  // Load tab data
-  useEffect(() => {
-    async function loadTab() {
-      setError(null);
-      if (activeTab === "sessions") {
-        const { data, error: err } = await getAdminSessionsList();
-        if (data) setSessions(data);
-        if (err) setError(err);
-      } else if (activeTab === "bookings") {
-        const [bookingsResult, sessionsResult] = await Promise.all([
-          getAdminBookingsList(bookingFilters),
-          getSessionsForDropdown(),
-        ]);
-        if (bookingsResult.data) setBookings(bookingsResult.data);
-        if (sessionsResult.data) setSessionOptions(sessionsResult.data);
-        if (bookingsResult.error) setError(bookingsResult.error);
-      } else if (activeTab === "packages") {
-        const { data, error: err } = await getAdminPackageBalances();
-        if (data) setPackageData(data);
-        if (err) setError(err);
-      } else if (activeTab === "revenue") {
-        const { data, error: err } = await getAdminRevenueBreakdown();
-        if (data) setRevenueData(data);
-        if (err) setError(err);
-      }
-    }
-    loadTab();
-  }, [activeTab]);
-
-  // Reload bookings when filters change
-  const loadFilteredBookings = useCallback(async () => {
-    const { data, error: err } = await getAdminBookingsList(bookingFilters);
-    if (data) setBookings(data);
+  // ============================================================
+  // Tab data loaders
+  // ============================================================
+  const loadSessions = useCallback(async () => {
+    const { data, error: err } = await getAdminSessionsList();
+    if (data) setSessions(data);
     if (err) setError(err);
+  }, []);
+
+  const loadBookings = useCallback(async () => {
+    const [bookingsResult, sessionsResult] = await Promise.all([
+      getAdminBookingsList(bookingFilters),
+      getSessionsForDropdown(),
+    ]);
+    if (bookingsResult.data) setBookings(bookingsResult.data);
+    if (sessionsResult.data) setSessionOptions(sessionsResult.data);
+    if (bookingsResult.error) setError(bookingsResult.error);
   }, [bookingFilters]);
 
-  useEffect(() => {
-    if (activeTab === "bookings") {
-      loadFilteredBookings();
-    }
-  }, [bookingFilters, activeTab, loadFilteredBookings]);
+  const loadPackages = useCallback(async () => {
+    const { data, error: err } = await getAdminPackageBalances();
+    if (data) setPackageData(data);
+    if (err) setError(err);
+  }, []);
 
+  const loadRevenue = useCallback(async () => {
+    const { data, error: err } = await getAdminRevenueBreakdown();
+    if (data) setRevenueData(data);
+    if (err) setError(err);
+  }, []);
+
+  useEffect(() => {
+    setError(null);
+    if (activeTab === "sessions") loadSessions();
+    else if (activeTab === "bookings") loadBookings();
+    else if (activeTab === "packages") loadPackages();
+    else if (activeTab === "revenue") loadRevenue();
+  }, [activeTab, loadSessions, loadBookings, loadPackages, loadRevenue]);
+
+  // Refetch pulse after a successful bulk action so the numbers reflect
+  // the new state.
+  async function refreshPulse() {
+    const p = await getBookingsStatusPulse();
+    setPulse(p);
+  }
+
+  // ============================================================
+  // Filter setters (URL-persisted)
+  // ============================================================
+  // base-ui Select calls back with `string | null`; we normalise here
+  // so the URL writer + AdminBookingFilters never see a stray `null`.
+  function setBookingFilter(
+    key: keyof AdminBookingFilters,
+    value: string | null | undefined
+  ) {
+    replaceParam({ [key]: value ?? null });
+  }
+
+  function clearJumpFilter(key: string) {
+    replaceParam({ [key]: null });
+  }
+
+  // ============================================================
   // Toggle session open/close
+  // ============================================================
   async function handleToggleSession(sessionId: string, currentStatus: string) {
     setTogglingSession(sessionId);
     const { error: err } = await toggleSessionStatus(sessionId, currentStatus);
     if (err) {
-      setError(err);
+      toast.error(err);
     } else {
       setSessions((prev) =>
         prev.map((s) =>
@@ -226,16 +403,17 @@ export default function AdminBookingsDashboard() {
             : s
         )
       );
+      void refreshPulse();
     }
     setTogglingSession(null);
   }
 
-  // Export CSV
+  // Export CSV (passes URL filters through)
   async function handleExportCSV() {
     setExporting(true);
     const { data: csv, error: err } = await exportBookingsCSV(bookingFilters);
     if (err) {
-      setError(err);
+      toast.error(err);
     } else if (csv) {
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -250,7 +428,112 @@ export default function AdminBookingsDashboard() {
     setExporting(false);
   }
 
-  // Chart data
+  // ============================================================
+  // Derived sessions list (URL filters applied)
+  // ============================================================
+  const filteredSessions = useMemo(() => {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const mondayIso = mondayIsoOf().slice(0, 10);
+    return sessions.filter((s) => {
+      if (sessionStatusFilter !== "all" && s.status !== sessionStatusFilter) {
+        return false;
+      }
+      if (sessionSportFilter !== "all" && s.sport !== sessionSportFilter) {
+        return false;
+      }
+      if (sessionDateFilter === "today" && s.date !== todayIso) {
+        return false;
+      }
+      if (sessionPeriodFilter === "today" && s.date !== todayIso) {
+        return false;
+      }
+      if (
+        sessionPeriodFilter === "this_week" &&
+        (s.date < mondayIso || s.date > todayIso)
+      ) {
+        // "this_week" = Monday → today (inclusive)
+        return false;
+      }
+      return true;
+    });
+  }, [
+    sessions,
+    sessionStatusFilter,
+    sessionSportFilter,
+    sessionPeriodFilter,
+    sessionDateFilter,
+  ]);
+
+  // Derived bookings list (range jump from pulse + status normalization)
+  const filteredBookings = useMemo(() => {
+    let list = bookings;
+    if (bookingsRange === "this_week") {
+      const mondayIso = mondayIsoOf();
+      list = list.filter(
+        (b) =>
+          b.status === "confirmed" &&
+          new Date(b.booked_at).toISOString() >= mondayIso
+      );
+    }
+    return list;
+  }, [bookings, bookingsRange]);
+
+  // Derived package balances (low jump)
+  const filteredBalances = useMemo(() => {
+    if (!packageData) return [];
+    if (packagesLowFilter) {
+      return packageData.balances.filter(
+        (b) => b.status === "active" && b.remaining_sessions <= 2
+      );
+    }
+    return packageData.balances;
+  }, [packageData, packagesLowFilter]);
+
+  // ============================================================
+  // Bulk selection helpers
+  // ============================================================
+  function toggleSession(id: string) {
+    setSelectedSessionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleBooking(id: string) {
+    setSelectedBookingIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const allSessionIds = useMemo(
+    () => filteredSessions.map((s) => s.id),
+    [filteredSessions]
+  );
+  const allSessionsSelected =
+    allSessionIds.length > 0 &&
+    allSessionIds.every((id) => selectedSessionIds.has(id));
+
+  const allBookingIds = useMemo(
+    () => filteredBookings.map((b) => b.id),
+    [filteredBookings]
+  );
+  const allBookingsSelected =
+    allBookingIds.length > 0 &&
+    allBookingIds.every((id) => selectedBookingIds.has(id));
+
+  function toggleSelectAllSessions(checked: boolean) {
+    if (!checked) return setSelectedSessionIds(new Set());
+    setSelectedSessionIds(new Set(allSessionIds));
+  }
+  function toggleSelectAllBookings(checked: boolean) {
+    if (!checked) return setSelectedBookingIds(new Set());
+    setSelectedBookingIds(new Set(allBookingIds));
+  }
+
   function getChartData() {
     if (!revenueData) return [];
     switch (revenueChartView) {
@@ -280,83 +563,66 @@ export default function AdminBookingsDashboard() {
     );
   }
 
+  // ============================================================
+  // Render
+  // ============================================================
   return (
     <div className="space-y-6">
+      {/* Pulse strip — sits above the page header */}
+      <BookingsStatusPulseStrip
+        pulse={pulse}
+        basePath="/admin/bookings"
+      />
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+          <h1 className="text-2xl font-semibold text-foreground">
             Booking Dashboard
           </h1>
-          <p className="text-[#666666] mt-1">
+          <p className="text-sm text-muted-foreground">
             Manage parent bookings, sessions, packages, and revenue
           </p>
         </div>
-        <Link href="/admin/bookings/sessions/new">
-          <Button className="bg-[#E8712A] hover:bg-[#D4641F] text-white">
-            <CalendarDays className="h-4 w-4 mr-2" />
-            Create Session
-          </Button>
-        </Link>
+        <Button
+          render={<Link href="/admin/bookings/sessions/new" />}
+          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+        >
+          <CalendarDays className="size-4" />
+          Create Session
+        </Button>
       </div>
 
-      {/* Error */}
+      {/* Error banner */}
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
           <p className="text-sm font-medium text-red-800">{error}</p>
         </div>
       )}
 
-      {/* Summary Cards */}
+      {/* Summary Cards — countUp values, neutral icon treatment */}
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-orange-100 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-[#666666]">
-                Bookings This Week
-              </p>
-              <CalendarDays className="h-5 w-5 text-[#E8712A]" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-              {summary.bookingsThisWeek}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-orange-100 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-[#666666]">
-                Revenue This Week
-              </p>
-              <DollarSign className="h-5 w-5 text-[#E8712A]" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-              {formatCents(summary.revenueThisWeek)}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-orange-100 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-[#666666]">
-                Sessions With Capacity
-              </p>
-              <Users className="h-5 w-5 text-[#E8712A]" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-              {summary.sessionsWithCapacity}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-orange-100 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-[#666666]">
-                Active Waitlist
-              </p>
-              <Clock className="h-5 w-5 text-[#E8712A]" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-              {summary.activeWaitlist}
-            </p>
-          </div>
+          <SummaryCard
+            label="Bookings This Week"
+            icon={CalendarDays}
+            value={<AnimatedMetric value={summary.bookingsThisWeek} />}
+          />
+          <SummaryCard
+            label="Revenue This Week"
+            icon={DollarSign}
+            value={<AnimatedCurrency cents={summary.revenueThisWeek} />}
+          />
+          <SummaryCard
+            label="Sessions With Capacity"
+            icon={Users}
+            value={<AnimatedMetric value={summary.sessionsWithCapacity} />}
+          />
+          <SummaryCard
+            label="Active Waitlist"
+            icon={Clock}
+            value={<AnimatedMetric value={summary.activeWaitlist} />}
+          />
         </div>
       )}
 
@@ -369,14 +635,102 @@ export default function AdminBookingsDashboard() {
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
         </TabsList>
 
-        {/* ============================================ */}
+        {/* ============================================================ */}
         {/* Sessions Tab */}
-        {/* ============================================ */}
+        {/* ============================================================ */}
         <TabsContent value="sessions" className="space-y-4">
-          <div className="rounded-xl border border-orange-100 bg-white overflow-hidden">
+          {/* Jump-filter chips (active filters from pulse links) */}
+          {(sessionDateFilter === "today" ||
+            sessionWaitlistFilter === "expiring") && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Filtered:</span>
+              {sessionDateFilter === "today" && (
+                <JumpChip
+                  icon={CalendarDays}
+                  label="Today's sessions only"
+                  onClear={() => clearJumpFilter("date")}
+                />
+              )}
+              {sessionWaitlistFilter === "expiring" && (
+                <JumpChip
+                  icon={Clock}
+                  label={`${pulse.waitlistExpiringCount} waitlist offers expiring soon`}
+                  onClear={() => clearJumpFilter("waitlist")}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Filter bar */}
+          <div className="flex flex-col gap-3 rounded-2xl border bg-background p-3 sm:flex-row sm:items-center">
+            <Select
+              value={sessionStatusFilter}
+              onValueChange={(v) =>
+                replaceParam({ session_status: v === "all" ? null : v })
+              }
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={sessionSportFilter}
+              onValueChange={(v) =>
+                replaceParam({ sport: v === "all" ? null : v })
+              }
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Sport" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sports</SelectItem>
+                {SPORTS.map((sport) => (
+                  <SelectItem key={sport} value={sport}>
+                    {sport}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={sessionPeriodFilter}
+              onValueChange={(v) =>
+                replaceParam({ period: v === "all" ? null : v })
+              }
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All dates</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this_week">This week</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[36px]">
+                    <Checkbox
+                      checked={allSessionsSelected}
+                      onCheckedChange={(c) =>
+                        toggleSelectAllSessions(c === true)
+                      }
+                      aria-label="Select all visible"
+                    />
+                  </TableHead>
                   <TableHead>Session</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Type</TableHead>
@@ -387,32 +741,43 @@ export default function AdminBookingsDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sessions.length === 0 ? (
+                {filteredSessions.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
-                      className="text-center py-8 text-[#666666]"
+                      colSpan={8}
+                      className="text-center py-8 text-muted-foreground"
                     >
                       No bookable sessions found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sessions.map((s) => {
+                  filteredSessions.map((s) => {
                     const capacityPct =
                       s.max_capacity > 0
                         ? Math.round(
                             (s.current_bookings / s.max_capacity) * 100
                           )
                         : 0;
+                    const selected = selectedSessionIds.has(s.id);
 
                     return (
-                      <TableRow key={s.id}>
+                      <TableRow
+                        key={s.id}
+                        data-state={selected ? "selected" : undefined}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selected}
+                            onCheckedChange={() => toggleSession(s.id)}
+                            aria-label={`Select ${s.title}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-[#1A1A1A]">
+                            <p className="font-medium text-foreground">
                               {s.title}
                             </p>
-                            <p className="text-xs text-[#666666]">
+                            <p className="text-xs text-muted-foreground">
                               {s.sport && `${s.sport} — `}
                               {s.suburb}
                             </p>
@@ -420,7 +785,7 @@ export default function AdminBookingsDashboard() {
                         </TableCell>
                         <TableCell>
                           <p className="text-sm">{formatDate(s.date)}</p>
-                          <p className="text-xs text-[#666666]">
+                          <p className="text-xs text-muted-foreground">
                             {s.start_time} - {s.end_time}
                           </p>
                         </TableCell>
@@ -432,16 +797,13 @@ export default function AdminBookingsDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1 min-w-[120px]">
-                            <div className="flex justify-between text-xs text-[#666666]">
+                            <div className="flex justify-between text-xs text-muted-foreground">
                               <span>
                                 {s.current_bookings}/{s.max_capacity}
                               </span>
                               <span>{capacityPct}%</span>
                             </div>
-                            <Progress
-                              value={capacityPct}
-                              className="h-2"
-                            />
+                            <Progress value={capacityPct} className="h-2" />
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-medium">
@@ -474,20 +836,24 @@ export default function AdminBookingsDashboard() {
                               }
                             >
                               {togglingSession === s.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="size-4 animate-spin" />
                               ) : s.status === "open" ? (
-                                <ToggleRight className="h-4 w-4 text-green-600" />
+                                <ToggleRight className="size-4 text-green-600" />
                               ) : (
-                                <ToggleLeft className="h-4 w-4 text-gray-400" />
+                                <ToggleLeft className="size-4 text-muted-foreground" />
                               )}
                             </Button>
-                            <Link
-                              href={`/admin/bookings/sessions/${s.id}`}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              render={
+                                <Link
+                                  href={`/admin/bookings/sessions/${s.id}`}
+                                />
+                              }
                             >
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </Link>
+                              <Eye className="size-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -499,19 +865,30 @@ export default function AdminBookingsDashboard() {
           </div>
         </TabsContent>
 
-        {/* ============================================ */}
+        {/* ============================================================ */}
         {/* Bookings Tab */}
-        {/* ============================================ */}
+        {/* ============================================================ */}
         <TabsContent value="bookings" className="space-y-4">
+          {/* Jump chip — "this week" from pulse */}
+          {bookingsRange === "this_week" && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Filtered:</span>
+              <JumpChip
+                icon={TrendingUp}
+                label="New bookings this week (confirmed)"
+                onClear={() => clearJumpFilter("range")}
+              />
+            </div>
+          )}
+
           {/* Filters */}
-          <div className="rounded-xl border border-orange-100 bg-white p-4">
+          <div className="rounded-2xl border bg-background p-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <Select
                 value={bookingFilters.session_id ?? "all"}
-                onValueChange={(v) => {
-                  const val = v === "all" || !v ? undefined : v;
-                  setBookingFilters((f) => ({ ...f, session_id: val }));
-                }}
+                onValueChange={(v) =>
+                  setBookingFilter("session_id", v === "all" ? undefined : v)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Sessions" />
@@ -531,10 +908,7 @@ export default function AdminBookingsDashboard() {
                 placeholder="From date"
                 value={bookingFilters.date_from ?? ""}
                 onChange={(e) =>
-                  setBookingFilters((f) => ({
-                    ...f,
-                    date_from: e.target.value || undefined,
-                  }))
+                  setBookingFilter("date_from", e.target.value || undefined)
                 }
               />
               <Input
@@ -542,19 +916,15 @@ export default function AdminBookingsDashboard() {
                 placeholder="To date"
                 value={bookingFilters.date_to ?? ""}
                 onChange={(e) =>
-                  setBookingFilters((f) => ({
-                    ...f,
-                    date_to: e.target.value || undefined,
-                  }))
+                  setBookingFilter("date_to", e.target.value || undefined)
                 }
               />
 
               <Select
                 value={bookingFilters.status ?? "all"}
-                onValueChange={(v) => {
-                  const val = v === "all" || !v ? undefined : v;
-                  setBookingFilters((f) => ({ ...f, status: val }));
-                }}
+                onValueChange={(v) =>
+                  setBookingFilter("status", v === "all" ? undefined : v)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
@@ -573,10 +943,9 @@ export default function AdminBookingsDashboard() {
 
               <Select
                 value={bookingFilters.payment_type ?? "all"}
-                onValueChange={(v) => {
-                  const val = v === "all" || !v ? undefined : v;
-                  setBookingFilters((f) => ({ ...f, payment_type: val }));
-                }}
+                onValueChange={(v) =>
+                  setBookingFilter("payment_type", v === "all" ? undefined : v)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Payment Types" />
@@ -597,9 +966,9 @@ export default function AdminBookingsDashboard() {
                 disabled={exporting}
               >
                 {exporting ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="size-4" />
                 )}
                 Export CSV
               </Button>
@@ -607,10 +976,19 @@ export default function AdminBookingsDashboard() {
           </div>
 
           {/* Bookings Table */}
-          <div className="rounded-xl border border-orange-100 bg-white overflow-hidden">
+          <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[36px]">
+                    <Checkbox
+                      checked={allBookingsSelected}
+                      onCheckedChange={(c) =>
+                        toggleSelectAllBookings(c === true)
+                      }
+                      aria-label="Select all visible"
+                    />
+                  </TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Children</TableHead>
                   <TableHead>Session</TableHead>
@@ -621,123 +999,130 @@ export default function AdminBookingsDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bookings.length === 0 ? (
+                {filteredBookings.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
-                      className="text-center py-8 text-[#666666]"
+                      colSpan={8}
+                      className="text-center py-8 text-muted-foreground"
                     >
                       No bookings found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  bookings.map((b) => (
-                    <TableRow key={b.id}>
-                      <TableCell className="font-medium">
-                        {b.parent_name}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {b.children.map((c, i) => (
-                            <Badge
-                              key={i}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {c.child_name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm">{b.session_title}</p>
-                        <p className="text-xs text-[#666666]">
-                          {formatDate(b.session_date)}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            b.payment_type === "package_redemption"
-                              ? "border-purple-200 text-purple-700 bg-purple-50 text-xs"
-                              : "border-blue-200 text-blue-700 bg-blue-50 text-xs"
-                          }
-                        >
-                          {b.payment_type === "package_redemption"
-                            ? "Package"
-                            : "Single"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCents(b.total_cents)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge
-                          variant="outline"
-                          className={statusBadgeClass(b.status)}
-                        >
-                          {statusLabel(b.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-[#666666]">
-                        {formatDate(b.booked_at)}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredBookings.map((b) => {
+                    const selected = selectedBookingIds.has(b.id);
+                    return (
+                      <TableRow
+                        key={b.id}
+                        data-state={selected ? "selected" : undefined}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selected}
+                            onCheckedChange={() => toggleBooking(b.id)}
+                            aria-label={`Select booking ${b.parent_name}`}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {b.parent_name}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {b.children.map((c, i) => (
+                              <Badge
+                                key={i}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {c.child_name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-sm">{b.session_title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(b.session_date)}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              b.payment_type === "package_redemption"
+                                ? "border-purple-200 text-purple-700 bg-purple-50 text-xs"
+                                : "border-blue-200 text-blue-700 bg-blue-50 text-xs"
+                            }
+                          >
+                            {b.payment_type === "package_redemption"
+                              ? "Package"
+                              : "Single"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCents(b.total_cents)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant="outline"
+                            className={statusBadgeClass(b.status)}
+                          >
+                            {statusLabel(b.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(b.booked_at)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </div>
         </TabsContent>
 
-        {/* ============================================ */}
+        {/* ============================================================ */}
         {/* Packages Tab */}
-        {/* ============================================ */}
+        {/* ============================================================ */}
         <TabsContent value="packages" className="space-y-4">
+          {packagesLowFilter && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Filtered:</span>
+              <JumpChip
+                icon={Package}
+                label="Packages with ≤2 sessions remaining"
+                onClear={() => clearJumpFilter("low")}
+              />
+            </div>
+          )}
+
           {packageData && (
             <>
               {/* Package Summary Cards */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Package Revenue
-                    </p>
-                    <DollarSign className="h-5 w-5 text-[#E8712A]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">
-                    {formatCents(packageData.totalPackageRevenue)}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Total Balances
-                    </p>
-                    <Package className="h-5 w-5 text-[#E8712A]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">
-                    {packageData.balances.length}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Most Popular
-                    </p>
-                    <Trophy className="h-5 w-5 text-[#E8712A]" />
-                  </div>
-                  <p className="mt-2 text-lg font-bold text-[#1A1A1A]">
-                    {packageData.mostPopularPackage ?? "N/A"}
-                  </p>
-                </div>
+                <SummaryCard
+                  label="Package Revenue"
+                  icon={DollarSign}
+                  value={
+                    <AnimatedCurrency cents={packageData.totalPackageRevenue} />
+                  }
+                />
+                <SummaryCard
+                  label="Total Balances"
+                  icon={Package}
+                  value={<AnimatedMetric value={packageData.balances.length} />}
+                />
+                <SummaryCard
+                  label="Most Popular"
+                  icon={Trophy}
+                  value={packageData.mostPopularPackage ?? "N/A"}
+                  smaller
+                />
               </div>
 
               {/* Package Balances Table */}
-              <div className="rounded-xl border border-orange-100 bg-white overflow-hidden">
+              <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -751,17 +1136,17 @@ export default function AdminBookingsDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {packageData.balances.length === 0 ? (
+                    {filteredBalances.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={5}
-                          className="text-center py-8 text-[#666666]"
+                          className="text-center py-8 text-muted-foreground"
                         >
                           No package balances found.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      packageData.balances.map((b) => (
+                      filteredBalances.map((b) => (
                         <TableRow key={b.id}>
                           <TableCell className="font-medium">
                             {b.parent_name}
@@ -771,7 +1156,7 @@ export default function AdminBookingsDashboard() {
                             <span className="font-semibold">
                               {b.remaining_sessions}
                             </span>
-                            <span className="text-[#666666]">
+                            <span className="text-muted-foreground">
                               {" "}
                               / {b.total_sessions}
                             </span>
@@ -797,105 +1182,68 @@ export default function AdminBookingsDashboard() {
           )}
         </TabsContent>
 
-        {/* ============================================ */}
+        {/* ============================================================ */}
         {/* Revenue Tab */}
-        {/* ============================================ */}
+        {/* ============================================================ */}
         <TabsContent value="revenue" className="space-y-4">
           {revenueData && (
             <>
-              {/* Revenue Summary Cards */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Total Parent Revenue
-                    </p>
-                    <TrendingUp className="h-5 w-5 text-[#E8712A]" />
-                  </div>
-                  <p className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-                    {formatCents(revenueData.totalRevenue)}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Single Bookings
-                    </p>
-                    <DollarSign className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">
-                    {formatCents(revenueData.singleBookingRevenue)}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-orange-100 bg-white p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[#666666]">
-                      Package Purchases
-                    </p>
-                    <Package className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">
-                    {formatCents(revenueData.packagePurchaseRevenue)}
-                  </p>
-                </div>
+                <SummaryCard
+                  label="Total Parent Revenue"
+                  icon={TrendingUp}
+                  value={<AnimatedCurrency cents={revenueData.totalRevenue} />}
+                />
+                <SummaryCard
+                  label="Single Bookings"
+                  icon={DollarSign}
+                  value={
+                    <AnimatedCurrency
+                      cents={revenueData.singleBookingRevenue}
+                    />
+                  }
+                />
+                <SummaryCard
+                  label="Package Purchases"
+                  icon={Package}
+                  value={
+                    <AnimatedCurrency
+                      cents={revenueData.packagePurchaseRevenue}
+                    />
+                  }
+                />
               </div>
 
-              {/* Chart */}
-              <div className="rounded-xl border border-orange-100 bg-white p-5">
+              <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-[#E8712A]" />
-                    <h3 className="text-lg font-semibold text-[#1A1A1A]">
+                    <BarChart3 className="size-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold text-foreground">
                       Revenue Breakdown
                     </h3>
                   </div>
                   <div className="flex gap-1">
-                    <Button
-                      variant={
-                        revenueChartView === "session_type"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setRevenueChartView("session_type")}
-                      className={
-                        revenueChartView === "session_type"
-                          ? "bg-[#E8712A] hover:bg-[#D4641F] text-white"
-                          : ""
-                      }
-                    >
-                      By Type
-                    </Button>
-                    <Button
-                      variant={
-                        revenueChartView === "suburb" ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setRevenueChartView("suburb")}
-                      className={
-                        revenueChartView === "suburb"
-                          ? "bg-[#E8712A] hover:bg-[#D4641F] text-white"
-                          : ""
-                      }
-                    >
-                      By Suburb
-                    </Button>
-                    <Button
-                      variant={
-                        revenueChartView === "sport" ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setRevenueChartView("sport")}
-                      className={
-                        revenueChartView === "sport"
-                          ? "bg-[#E8712A] hover:bg-[#D4641F] text-white"
-                          : ""
-                      }
-                    >
-                      By Sport
-                    </Button>
+                    {(["session_type", "suburb", "sport"] as const).map((v) => (
+                      <Button
+                        key={v}
+                        variant={
+                          revenueChartView === v ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setRevenueChartView(v)}
+                        className={
+                          revenueChartView === v
+                            ? "bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                            : ""
+                        }
+                      >
+                        {v === "session_type"
+                          ? "By Type"
+                          : v === "suburb"
+                            ? "By Suburb"
+                            : "By Sport"}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
@@ -932,7 +1280,7 @@ export default function AdminBookingsDashboard() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-[#666666] text-sm">
+                  <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
                     No revenue data to display.
                   </div>
                 )}
@@ -941,6 +1289,281 @@ export default function AdminBookingsDashboard() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Sticky bulk-action bar — sessions */}
+      {activeTab === "sessions" && selectedSessionIds.size > 0 && (
+        <SessionsBulkBar
+          selectedIds={Array.from(selectedSessionIds)}
+          onClear={() => setSelectedSessionIds(new Set())}
+          onDone={() => {
+            setSelectedSessionIds(new Set());
+            void loadSessions();
+            void refreshPulse();
+          }}
+        />
+      )}
+
+      {/* Sticky bulk-action bar — bookings */}
+      {activeTab === "bookings" && selectedBookingIds.size > 0 && (
+        <BookingsBulkBar
+          selectedIds={Array.from(selectedBookingIds)}
+          onClear={() => setSelectedBookingIds(new Set())}
+          onDone={() => {
+            setSelectedBookingIds(new Set());
+            void loadBookings();
+            void refreshPulse();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// ============================================================
+// Subcomponents
+// ============================================================
+
+function SummaryCard({
+  label,
+  icon: Icon,
+  value,
+  smaller,
+}: {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  value: React.ReactNode;
+  smaller?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <Icon className="size-5 text-muted-foreground" />
+      </div>
+      <p
+        className={
+          smaller
+            ? "mt-2 text-lg font-semibold text-foreground"
+            : "mt-2 text-3xl font-semibold tabular-nums text-foreground"
+        }
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function JumpChip({
+  icon: Icon,
+  label,
+  onClear,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+      <Icon className="size-3" />
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        aria-label="Clear filter"
+      >
+        <X className="size-3" />
+      </button>
+    </span>
+  );
+}
+
+// ============================================================
+// Sessions bulk-action bar
+// ============================================================
+
+function SessionsBulkBar({
+  selectedIds,
+  onClear,
+  onDone,
+}: {
+  selectedIds: string[];
+  onClear: () => void;
+  onDone: () => void;
+}) {
+  const count = selectedIds.length;
+  const [working, setWorking] = useState<"activate" | "publish" | null>(null);
+
+  async function handleActivate() {
+    setWorking("activate");
+    try {
+      const { updated, error } = await bulkActivateSessions(selectedIds);
+      if (error && updated === 0) {
+        toast.error(error);
+        return;
+      }
+      toast.success(
+        `Activated ${updated} session${updated === 1 ? "" : "s"}.`
+      );
+      onDone();
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  async function handlePublish() {
+    setWorking("publish");
+    try {
+      const { updated, error } = await bulkPublishSessions(selectedIds);
+      if (error && updated === 0) {
+        toast.error(error);
+        return;
+      }
+      toast.success(
+        `Published ${updated} session${updated === 1 ? "" : "s"}.`
+      );
+      onDone();
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="flex items-center gap-3 pr-2 text-sm">
+        <span className="font-medium text-foreground">
+          {count} session{count === 1 ? "" : "s"} selected
+        </span>
+        <button
+          type="button"
+          className="text-xs text-muted-foreground hover:underline"
+          onClick={onClear}
+        >
+          Clear
+        </button>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handlePublish}
+        disabled={working !== null}
+      >
+        <Megaphone className="size-4" />
+        {working === "publish" ? "Publishing…" : "Publish"}
+      </Button>
+      <Button
+        size="sm"
+        onClick={handleActivate}
+        disabled={working !== null}
+        className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+      >
+        <CircleCheck className="size-4" />
+        {working === "activate" ? "Activating…" : "Activate"}
+      </Button>
+    </div>
+  );
+}
+
+// ============================================================
+// Bookings bulk-action bar
+// ============================================================
+
+function BookingsBulkBar({
+  selectedIds,
+  onClear,
+  onDone,
+}: {
+  selectedIds: string[];
+  onClear: () => void;
+  onDone: () => void;
+}) {
+  const count = selectedIds.length;
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [working, setWorking] = useState(false);
+
+  async function handleCancel() {
+    setWorking(true);
+    try {
+      const { updated, error } = await bulkCancelBookings(selectedIds, reason);
+      if (error && updated === 0) {
+        toast.error(error);
+        return;
+      }
+      toast.success(
+        `Cancelled ${updated} booking${updated === 1 ? "" : "s"}.`
+      );
+      setReason("");
+      setCancelOpen(false);
+      onDone();
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+        <div className="flex items-center gap-3 pr-2 text-sm">
+          <span className="font-medium text-foreground">
+            {count} booking{count === 1 ? "" : "s"} selected
+          </span>
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:underline"
+            onClick={onClear}
+          >
+            Clear
+          </button>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => setCancelOpen(true)}
+          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+        >
+          <CircleSlash className="size-4" />
+          Cancel bookings
+        </Button>
+      </div>
+
+      <Sheet open={cancelOpen} onOpenChange={setCancelOpen}>
+        <SheetContent className="flex w-full max-w-md flex-col">
+          <SheetHeader>
+            <SheetTitle>Cancel {count} booking{count === 1 ? "" : "s"}</SheetTitle>
+            <SheetDescription>
+              Only confirmed or pending-payment bookings will be flipped to
+              cancelled. The reason is recorded in the activity log.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 space-y-3 px-4">
+            <div className="space-y-2">
+              <Label>Reason (optional)</Label>
+              <Textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Session cancelled due to weather…"
+                rows={5}
+              />
+            </div>
+          </div>
+          <SheetFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelOpen(false)}
+              disabled={working}
+            >
+              Keep bookings
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={working}
+              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            >
+              {working ? "Cancelling…" : "Cancel bookings"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

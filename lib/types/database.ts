@@ -623,6 +623,8 @@ export interface FeedbackRating {
   feedback_token: string;
   submitted_at: string | null;
   created_at: string;
+  acknowledged_at: string | null;
+  acknowledged_by: string | null;
 }
 
 // ========================

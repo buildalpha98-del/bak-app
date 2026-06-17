@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { autoCreateTask } from "@/lib/tasks/auto-create";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
+import { getMonday } from "@/lib/utils/roster";
 
 // ============================================================
 // Feedback server actions
@@ -253,6 +254,14 @@ export async function deleteFeedback(
 // Dashboard & list query actions
 // ============================================================
 
+export type FeedbackPeriodFilter =
+  | "this_week"
+  | "last_7d"
+  | "last_30d"
+  | "all";
+
+export type FeedbackAckFilter = "all" | "unread" | "read";
+
 export interface FeedbackListFilters {
   centreId?: string;
   coachId?: string;
@@ -261,6 +270,10 @@ export interface FeedbackListFilters {
   maxRating?: number;
   dateFrom?: string;
   dateTo?: string;
+  /** Coarse period preset. Translated to dateFrom/dateTo internally. */
+  period?: FeedbackPeriodFilter;
+  /** Acknowledgement state filter for the inline jump-chips. */
+  ack?: FeedbackAckFilter;
   page?: number;
   pageSize?: number;
 }
@@ -271,6 +284,7 @@ export interface FeedbackListItem {
   comment: string | null;
   submitted_at: string;
   sport: string | null;
+  acknowledged_at: string | null;
   centre: { id: string; name: string };
   coach: { id: string; name: string } | null;
   session: { id: string; date: string };
@@ -298,6 +312,7 @@ export async function getFeedbackList(filters: FeedbackListFilters = {}): Promis
       comment,
       submitted_at,
       sport,
+      acknowledged_at,
       centre_id,
       coach_id,
       session_id,
@@ -316,9 +331,34 @@ export async function getFeedbackList(filters: FeedbackListFilters = {}): Promis
   if (filters.sport) query = query.eq("sport", filters.sport);
   if (filters.minRating) query = query.gte("rating", filters.minRating);
   if (filters.maxRating) query = query.lte("rating", filters.maxRating);
-  if (filters.dateFrom)
-    query = query.gte("submitted_at", filters.dateFrom);
+
+  // Translate the coarse `period` preset into dateFrom/dateTo. The
+  // explicit dateFrom/dateTo on the filter wins if both are set.
+  let dateFrom = filters.dateFrom;
+  if (!dateFrom && filters.period && filters.period !== "all") {
+    const now = new Date();
+    if (filters.period === "this_week") {
+      // Monday-of-this-week. Roster util keeps the weekday math in
+      // one place to match the pulse-strip definition.
+      const monday = getMonday(now);
+      dateFrom = monday.toISOString();
+    } else if (filters.period === "last_7d") {
+      dateFrom = new Date(
+        now.getTime() - 7 * 24 * 60 * 60 * 1000
+      ).toISOString();
+    } else if (filters.period === "last_30d") {
+      dateFrom = new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000
+      ).toISOString();
+    }
+  }
+  if (dateFrom) query = query.gte("submitted_at", dateFrom);
   if (filters.dateTo) query = query.lte("submitted_at", filters.dateTo);
+
+  if (filters.ack === "unread")
+    query = query.is("acknowledged_at", null);
+  else if (filters.ack === "read")
+    query = query.not("acknowledged_at", "is", null);
 
   query = query.range(offset, offset + pageSize - 1);
 
@@ -332,12 +372,179 @@ export async function getFeedbackList(filters: FeedbackListFilters = {}): Promis
     comment: row.comment as string | null,
     submitted_at: row.submitted_at as string,
     sport: row.sport as string | null,
+    acknowledged_at: (row.acknowledged_at as string | null) ?? null,
     centre: row.centres as { id: string; name: string },
     coach: row.profiles as { id: string; name: string } | null,
     session: row.sessions as { id: string; date: string },
   }));
 
   return { data: items, total: count ?? 0, error: null };
+}
+
+// ============================================================
+// getFeedbackSentimentDistribution
+// ============================================================
+//
+// Returns the count of submitted ratings bucketed by star value (1-5).
+// Drives the inline "Sentiment distribution" widget on /admin/feedback
+// — a 5-segment stacked bar that gives at-a-glance read on whether
+// the inbox is skewing positive or negative.
+
+export async function getFeedbackSentimentDistribution(): Promise<{
+  data: { 1: number; 2: number; 3: number; 4: number; 5: number };
+  error: string | null;
+}> {
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("feedback_ratings")
+    .select("rating")
+    .not("submitted_at", "is", null)
+    .not("rating", "is", null);
+
+  if (error) {
+    return {
+      data: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      error: error.message,
+    };
+  }
+
+  const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<1 | 2 | 3 | 4 | 5, number>;
+  for (const row of data ?? []) {
+    const r = (row as { rating: number }).rating;
+    if (r >= 1 && r <= 5) dist[r as 1 | 2 | 3 | 4 | 5] += 1;
+  }
+
+  return { data: dist, error: null };
+}
+
+// ============================================================
+// Bulk acknowledgement
+// ============================================================
+//
+// `acknowledged_at` is the universal read-receipt. Setting it
+// removes the row from the "unread" pulse-strip buckets without
+// destroying the data — vs deleteFeedback which is a hard delete.
+// The bulk helpers gate to admin/ops, only update rows that are
+// still NULL (so re-acknowledgement is a true no-op), and log a
+// single activity-log entry per call (not per row) so the audit
+// trail stays readable.
+
+type AdminOpsGate =
+  | { ok: false; error: string }
+  | {
+      ok: true;
+      error: null;
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      userId: string;
+    };
+
+async function requireAdminOrOps(): Promise<AdminOpsGate> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { ok: false, error: "Not authenticated." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+    return { ok: false, error: "Not authorised." };
+  }
+
+  return { ok: true, error: null, supabase, userId: user.id };
+}
+
+export async function bulkMarkFeedbackRead(
+  feedbackIds: string[]
+): Promise<{ updated: number; error: string | null }> {
+  if (feedbackIds.length === 0) {
+    return { updated: 0, error: "No feedback selected." };
+  }
+
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) return { updated: 0, error: gate.error };
+  const { supabase, userId } = gate;
+
+  const nowIso = new Date().toISOString();
+
+  // Update rows currently NULL only — skipping already-read rows
+  // means re-running the action is a true no-op for the counter
+  // and the activity log.
+  const { data, error } = await supabase
+    .from("feedback_ratings")
+    .update({ acknowledged_at: nowIso, acknowledged_by: userId })
+    .in("id", feedbackIds)
+    .is("acknowledged_at", null)
+    .select("id");
+
+  if (error) return { updated: 0, error: error.message };
+
+  const updated = (data ?? []).length;
+
+  if (updated > 0) {
+    await supabase.from("activity_log").insert({
+      user_id: userId,
+      action: "feedback_bulk_marked_read",
+      entity_type: "feedback_ratings",
+      entity_id: null,
+      metadata: { count: updated, ids: feedbackIds.slice(0, 50) },
+    });
+  }
+
+  return { updated, error: null };
+}
+
+export async function bulkAcknowledgeFeedback(
+  feedbackIds: string[],
+  note: string
+): Promise<{ updated: number; error: string | null }> {
+  if (feedbackIds.length === 0) {
+    return { updated: 0, error: "No feedback selected." };
+  }
+  const trimmedNote = note.trim();
+
+  const gate = await requireAdminOrOps();
+  if (!gate.ok) return { updated: 0, error: gate.error };
+  const { supabase, userId } = gate;
+
+  const nowIso = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from("feedback_ratings")
+    .update({ acknowledged_at: nowIso, acknowledged_by: userId })
+    .in("id", feedbackIds)
+    .is("acknowledged_at", null)
+    .select("id");
+
+  if (error) return { updated: 0, error: error.message };
+
+  const updated = (data ?? []).length;
+
+  if (updated > 0) {
+    // Single activity-log entry with the acknowledgement note as
+    // metadata; we avoid schema churn (no per-row note column).
+    await supabase.from("activity_log").insert({
+      user_id: userId,
+      action: "feedback_bulk_acknowledged",
+      entity_type: "feedback_ratings",
+      entity_id: null,
+      metadata: {
+        count: updated,
+        ids: feedbackIds.slice(0, 50),
+        note: trimmedNote || null,
+      },
+    });
+  }
+
+  return { updated, error: null };
 }
 
 /**

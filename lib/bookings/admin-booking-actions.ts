@@ -578,3 +578,228 @@ export async function getSessionsForDropdown(): Promise<{
     return { data: [], error: "Failed to load sessions." };
   }
 }
+
+// ============================================================
+// 9. Bulk admin-gated actions
+// ============================================================
+//
+// Each action gates to admin/ops via the role check pattern in
+// `verifyAdminOrOps`. Updates are applied per-id so a bad row doesn't
+// sink the whole batch; we capture per-id errors and continue. Activity
+// log gets one row per successful update so the audit trail stays
+// granular.
+//
+// State transitions are guarded server-side:
+//   - bulkCancelBookings: only `confirmed` or `pending_payment` rows
+//     flip to `cancelled`. Anything already cancelled/refunded is
+//     silently skipped (counts toward the "skipped" total).
+//   - bulkActivateSessions: only `draft` or `closed` rows flip to
+//     `open`. Anything already open/cancelled/completed is skipped.
+//   - bulkPublishSessions: a narrower alias — only `draft` → `open`,
+//     mirroring the publish-week UX vocabulary on the roster grid.
+
+async function gateAdminOrOps(): Promise<
+  | { ok: true; userId: string; role: "admin" | "ops" }
+  | { ok: false; error: string }
+> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    !profile ||
+    (profile.role !== "admin" && profile.role !== "ops")
+  ) {
+    return { ok: false, error: "Insufficient permissions." };
+  }
+
+  return {
+    ok: true,
+    userId: user.id,
+    role: profile.role as "admin" | "ops",
+  };
+}
+
+/**
+ * Bulk-cancel N bookings. Only `confirmed` or `pending_payment` rows
+ * flip to `cancelled`; anything else is skipped. Returns the count of
+ * successful updates and a first-error message if something went
+ * wrong; per-id failures are aggregated into `error`.
+ */
+export async function bulkCancelBookings(
+  bookingIds: string[],
+  reason: string
+): Promise<{ updated: number; error: string | null }> {
+  if (!bookingIds.length) {
+    return { updated: 0, error: "No bookings selected." };
+  }
+  const gate = await gateAdminOrOps();
+  if (!gate.ok) return { updated: 0, error: gate.error };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    let updated = 0;
+    const errors: string[] = [];
+
+    // Load current statuses so we only flip eligible rows. A guard
+    // up-front keeps the activity-log entries truthful.
+    const { data: existing, error: readErr } = await supabase
+      .from("bookings")
+      .select("id, status")
+      .in("id", bookingIds);
+    if (readErr) return { updated: 0, error: readErr.message };
+
+    const eligible = (existing ?? []).filter((b: { status: string }) =>
+      ["confirmed", "pending_payment"].includes(b.status)
+    );
+
+    for (const row of eligible as Array<{ id: string }>) {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "cancelled" })
+        .eq("id", row.id);
+      if (error) {
+        errors.push(error.message);
+        continue;
+      }
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "booking_bulk_cancelled",
+        entity_type: "booking",
+        entity_id: row.id,
+        metadata: { reason: reason?.trim() || null },
+      });
+    }
+
+    return {
+      updated,
+      error: errors.length ? errors[0] : null,
+    };
+  } catch (err) {
+    console.error("bulkCancelBookings error:", err);
+    return { updated: 0, error: (err as Error).message ?? "Failed to cancel bookings." };
+  }
+}
+
+/**
+ * Bulk-activate (open) N bookable_sessions. Only `draft` or `closed`
+ * rows flip to `open`; anything else is skipped.
+ */
+export async function bulkActivateSessions(
+  sessionIds: string[]
+): Promise<{ updated: number; error: string | null }> {
+  if (!sessionIds.length) {
+    return { updated: 0, error: "No sessions selected." };
+  }
+  const gate = await gateAdminOrOps();
+  if (!gate.ok) return { updated: 0, error: gate.error };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    let updated = 0;
+    const errors: string[] = [];
+
+    const { data: existing, error: readErr } = await supabase
+      .from("bookable_sessions")
+      .select("id, status")
+      .in("id", sessionIds);
+    if (readErr) return { updated: 0, error: readErr.message };
+
+    const eligible = (existing ?? []).filter((s: { status: string }) =>
+      ["draft", "closed"].includes(s.status)
+    );
+
+    for (const row of eligible as Array<{ id: string }>) {
+      const { error } = await supabase
+        .from("bookable_sessions")
+        .update({ status: "open" })
+        .eq("id", row.id);
+      if (error) {
+        errors.push(error.message);
+        continue;
+      }
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "bookable_session_bulk_activated",
+        entity_type: "bookable_session",
+        entity_id: row.id,
+      });
+    }
+
+    return {
+      updated,
+      error: errors.length ? errors[0] : null,
+    };
+  } catch (err) {
+    console.error("bulkActivateSessions error:", err);
+    return { updated: 0, error: (err as Error).message ?? "Failed to activate sessions." };
+  }
+}
+
+/**
+ * Bulk-publish (draft → open) N bookable_sessions. Narrower than
+ * activate — used when the operator explicitly wants to ship drafts
+ * without touching any "closed" rows. Keeps the audit trail clearer
+ * for the publish-week vocabulary.
+ */
+export async function bulkPublishSessions(
+  sessionIds: string[]
+): Promise<{ updated: number; error: string | null }> {
+  if (!sessionIds.length) {
+    return { updated: 0, error: "No sessions selected." };
+  }
+  const gate = await gateAdminOrOps();
+  if (!gate.ok) return { updated: 0, error: gate.error };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    let updated = 0;
+    const errors: string[] = [];
+
+    const { data: existing, error: readErr } = await supabase
+      .from("bookable_sessions")
+      .select("id, status")
+      .in("id", sessionIds);
+    if (readErr) return { updated: 0, error: readErr.message };
+
+    const eligible = (existing ?? []).filter(
+      (s: { status: string }) => s.status === "draft"
+    );
+
+    for (const row of eligible as Array<{ id: string }>) {
+      const { error } = await supabase
+        .from("bookable_sessions")
+        .update({ status: "open" })
+        .eq("id", row.id);
+      if (error) {
+        errors.push(error.message);
+        continue;
+      }
+      updated += 1;
+      await supabase.from("activity_log").insert({
+        user_id: gate.userId,
+        action: "bookable_session_bulk_published",
+        entity_type: "bookable_session",
+        entity_id: row.id,
+      });
+    }
+
+    return {
+      updated,
+      error: errors.length ? errors[0] : null,
+    };
+  } catch (err) {
+    console.error("bulkPublishSessions error:", err);
+    return { updated: 0, error: (err as Error).message ?? "Failed to publish sessions." };
+  }
+}

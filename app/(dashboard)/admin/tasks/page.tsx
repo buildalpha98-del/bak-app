@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTaskColumns, getTasks, getTeamMembers } from "@/lib/tasks/actions";
+import { getTasksStatusPulse } from "@/lib/tasks/status-pulse-actions";
 import { AdminTasksClient } from "./client";
 
 export default async function AdminTasksPage() {
@@ -21,10 +22,11 @@ export default async function AdminTasksPage() {
     redirect("/");
   }
 
-  const [columnsResult, tasksResult, membersResult] = await Promise.all([
+  const [columnsResult, tasksResult, membersResult, pulse] = await Promise.all([
     getTaskColumns(),
     getTasks(),
     getTeamMembers(),
+    getTasksStatusPulse(),
   ]);
 
   const firstError = columnsResult.error || tasksResult.error || membersResult.error;
@@ -42,6 +44,8 @@ export default async function AdminTasksPage() {
       initialTasks={tasksResult.data ?? []}
       teamMembers={(membersResult.data ?? []).map((m) => ({ id: m.id, name: m.name }))}
       currentUserId={user.id}
+      pulse={pulse}
+      basePath="/admin/tasks"
     />
   );
 }
