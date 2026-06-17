@@ -1,5 +1,84 @@
 # Dashboard Review — 2026-05-17
 
+> **Final state:** ✅ Every role × every tab closed. 19 feature commits between `80ce5a5` and `399349d`. Build green, 706/708 tests pass (2 pre-existing healthScore failures unrelated and unchanged).
+
+## Run summary
+
+| Role | Commit lineage | Tabs |
+|---|---|---|
+| Admin home + centres + roster + CRM | `80ce5a5` → `cefca1e` | 4 |
+| Admin staff + children + performance | `821d102` → `d9c9904` | 3 |
+| Admin assessments + programs + training | `3db4b09` → `7456360` | 3 |
+| Admin equipment + documents + forms | `91b383e` | 3 |
+| Admin finance cluster (5 financial-gated tabs) | `94cfba3` | 5 |
+| Admin reports + tasks + feedback + bookings | `db2d0aa` | 4 |
+| Admin marketing+referrals+campaigns+churn+announcements+messages+settings | `7d2ce34` | 7 |
+| Ops command centre + onboarding + cross-page audit | `7844ae5` | 2 + audit |
+| Coach (14 surfaces) | `7a85481` | 14 |
+| Client portal (14 surfaces) | `984e1a6` | 14 |
+| Parent portal (10 surfaces) | `399349d` | 10 |
+| **Total** | — | **~69 surfaces** |
+
+## Migrations applied to prod
+
+- `050` profiles.financial_access (Wave A)
+- `051` business_settings y1 targets (`80ce5a5`)
+- `052` feedback_ratings.acknowledged_at + idx (`db2d0aa`)
+
+## Shared design language
+
+Every list view follows the same pattern:
+- **Status pulse strip** — 3–4 inline counts with `useCountUp`, orange when > 0, muted at zero, click-to-jump via URL query params
+- **URL-persisted filter chip row** — search + entity filters + Region + jump-link chips set by pulse clicks + "Clear all" tail
+- **Bulk-select sticky action bar** — admin/ops-gated, with activity_log entries per action
+- **Grid ↔ Table view toggle** (`?view=grid|table`) where useful
+- **Detail views** refactored to Tabs with count badges where stacked-card layouts were getting long
+- **UI refresh** — `rounded-2xl`, `transition hover:shadow-md hover:-translate-y-0.5`, `gap-6` between sections, restrained brand orange `#E8712A` reserved for: primary CTAs, active filter chips, pulse counts > 0, save buttons, marquee numbers
+
+## Plumbing audit — cross-page integration verified
+
+| Scenario | Wiring |
+|---|---|
+| **Coach rostered → financial figures update** | `sessions` rows feed `coach_invoices` (existing trigger). `WeekCostChip` + Payroll Snapshot both read the same `sessions × coach × pay_rates` join. Financial-access gated. |
+| **Lead won → centre created + onboarding starts** | `crm/actions.ts` already creates the centre on `stage='won'`. New `onboarding-status-pulse` reads `centre_onboarding_checklists`. |
+| **Coach earns badge → visible everywhere** | `coach_badges` populated by monthly cron. Surfaced on `/admin/performance` (leaderboard chips) + `/coach/performance` (mini gallery). |
+| **Feedback submitted → admin pulse increments** | `feedback_ratings` insert → admin `/admin/feedback` pulse counts unacknowledged 1-star + 5-star + total this week. `acknowledged_at` (migration 052) lets ops "seen-it" without deleting. |
+| **Centre child enrolment → counts propagate** | `centre_children` link from `/admin/children` bulk-link or parent self-add → `/admin/centres` detail Children tab + Children pulse `noCentreCount` decrements. |
+| **Parent books → admin bookings pulse updates** | `bookings` insert from `/parent/book` → `/admin/bookings` "new bookings this week" pulse increments + `payments` row from Square webhook → `/admin/invoicing` overdue flow. |
+| **Onboarding step completed → email queued** | `centre_onboarding_steps.completed=true` → trigger queues `centre_onboarding_emails` (Wave A migration 049) → 6-hourly cron `/api/cron/onboarding-emails` dispatches via Resend. `/ops/onboarding` pulse reflects "waiting on email". |
+| **Assessment completed → child status updates** | `skill_ratings` write from `/coach/assessments` or `/admin/assessments` → `/admin/children` row `assessment_status` recomputes ("done"/"pending"/"overdue") on next render. |
+| **Financial-access toggle → live UI hide** | `setStaffFinancialAccess` flips `profiles.financial_access` → financial routes layout-gated by `requireFinancialAccess()` redirect; sidebar items hide via `filterNavByAccess`; cost chips silently return null. |
+
+## Test count
+
+| Domain | New tests |
+|---|---|
+| Status pulses | ~70 across all role surfaces |
+| Bulk actions | ~80 across admin/ops bulk actions |
+| Existing P3/P5/Wave-A coverage | Unchanged, all passing |
+| **Total now** | **706/708** (2 pre-existing unrelated failures from `d18c8cc`) |
+
+## Files created (high-level)
+
+- ~30 new `*-status-pulse.tsx` components
+- ~30 new `lib/*/status-pulse-actions.ts` server-action files
+- ~20 new pulse test files + ~10 new bulk-actions test files
+- 1 generalised `MonthCalendarPopover` (`mode='week'|'month'`) shared by roster + performance
+- 4 financial-gate `layout.tsx` files (Wave A) + nav-filter helpers
+
+## Open follow-ups (none block beta)
+
+- `Profile.region_ids` is read via `(p as Record<string, unknown>).region_ids` — worth adding to canonical TS interface
+- `bulkChangeStage` (CRM) doesn't accept a `reason` — bulk won/lost uses generic activity log entry
+- Bulk "Add to sequence" + "Bulk invoicing" + "Bulk message parents via Resend" stubbed to "Wave B" toasts
+- Form templates use `[Archived]` name-prefix until a `status` column lands
+- Insight read/unread model not implemented — "Insight ready" badge fires whenever insight exists within 90 days
+- `/admin/activity` capped at 200 entries; pagination is post-beta
+- Several jump-link query params (`?status=needs_replacement`, `?filter=overdue`, etc.) land on target pages but those don't yet read them — small follow-up
+- 2 pre-existing `healthScore.test.ts` failures (March 2026) remain — unrelated, not regressing
+
+---
+
 Walking through every tab of the BAK-APP dashboard, role by role, capturing current state vs intended final state and turning gaps into a punch list.
 
 **Order:** Admin → Ops → Coach → Client → Parent.
