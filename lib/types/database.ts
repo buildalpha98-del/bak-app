@@ -79,6 +79,13 @@ export interface Profile {
    * Added in migration 050.
    */
   financial_access: boolean;
+  /**
+   * Opt-in for urgent-tier SMS fallback (see lib/sms/actions.ts). When
+   * a push notification can't be delivered to an urgent-tier recipient,
+   * the dispatcher checks this flag — false means skip SMS silently and
+   * stay on the existing in-app + email channels. Added in migration 055.
+   */
+  sms_opt_in: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -1396,6 +1403,8 @@ export interface ParentProfile {
   phone: string | null;
   suburb: string | null;
   marketing_opt_in: boolean;
+  /** Opt-in for urgent-tier SMS fallback. See `Profile.sms_opt_in`. Added in migration 055. */
+  sms_opt_in: boolean;
   created_at: string;
   updated_at: string;
 }

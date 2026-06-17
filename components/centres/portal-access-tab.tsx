@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Plus,
   X,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import {
   linkClientUserToCentre,
   unlinkClientUserFromCentre,
 } from "@/lib/client/actions";
+import { sendSms } from "@/lib/sms/actions";
 import type { ClientUser } from "@/lib/types/database";
 import type { ClientUserCentre } from "@/lib/client/actions";
 import { cn } from "@/lib/utils";
@@ -288,6 +290,27 @@ function PortalUserRow({
   const [selectedToLink, setSelectedToLink] = useState<string>("");
   const [linking, setLinking] = useState(false);
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
+  // SMS test triage — admins use this to verify the SMS bridge can
+  // actually reach a director (phone valid, opted into receiving, etc.).
+  // We send through the configured provider regardless of opt-in (this is
+  // a manual triage send, not the urgent-fallback path) so admins can
+  // diagnose "did the message ever arrive?" even when the director has
+  // urgent SMS turned off.
+  const [smsBusy, setSmsBusy] = useState(false);
+
+  async function handleSendTestSms() {
+    setSmsBusy(true);
+    const { error } = await sendSms({
+      userId: user.user_id,
+      body: `Build Alpha Kids: test SMS for ${user.name}. If you received this you're reachable for urgent alerts.`,
+    });
+    setSmsBusy(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    toast.success(`Test SMS sent to ${user.name}.`);
+  }
 
   // Suppress lint warning — onUsersChange exists for future hookups
   // (e.g. when a primary user is revoked we need to refresh the
@@ -364,6 +387,19 @@ function PortalUserRow({
             {user.email} · Last login {formatLastLogin(user.last_login)}
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSendTestSms}
+          disabled={smsBusy}
+          title="Send a test SMS to verify the bridge is reachable."
+        >
+          {smsBusy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <MessageSquare className="size-4 text-muted-foreground" />
+          )}
+        </Button>
         <Button
           variant="ghost"
           size="icon"

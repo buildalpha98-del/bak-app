@@ -4,6 +4,7 @@ import { getCoachPayRates } from "@/lib/pay-rates/actions";
 import { CoachPayRates } from "@/components/pay-rates/coach-pay-rates";
 import { GSTToggle } from "@/components/invoicing/gst-toggle";
 import { EditProfileDialog } from "@/components/coach/edit-profile-dialog";
+import { SmsOptInToggle } from "@/components/sms/sms-opt-in-toggle";
 
 export default async function CoachProfilePage() {
   const supabase = await createSupabaseServerClient();
@@ -16,7 +17,7 @@ export default async function CoachProfilePage() {
   // Fetch profile for display
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, email, phone, abn, photo_url, gst_registered")
+    .select("name, email, phone, abn, photo_url, gst_registered, sms_opt_in")
     .eq("id", user.id)
     .single();
 
@@ -70,6 +71,10 @@ export default async function CoachProfilePage() {
 
       {/* GST Registration */}
       <GSTToggle initialValue={profile?.gst_registered ?? false} />
+
+      {/* SMS escalation opt-in (urgent notifications fall through to SMS when
+          push fails — see lib/sms/actions.ts::sendUrgentNotificationViaSms). */}
+      <SmsOptInToggle scope="profile" initialValue={profile?.sms_opt_in ?? false} />
 
       {/* Pay Rates */}
       <div className="space-y-3 stagger-2">

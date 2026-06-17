@@ -16,6 +16,7 @@ import {
   KeyRound,
   Copy,
   Mail,
+  MessageSquare,
   Banknote,
   BanknoteX,
 } from "lucide-react";
@@ -63,6 +64,7 @@ import {
   deleteAvailabilitySlot,
   getStaffSessions,
 } from "@/lib/staff/actions";
+import { sendSms } from "@/lib/sms/actions";
 import type { StaffDetail } from "@/lib/staff/actions";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
@@ -207,6 +209,30 @@ export function StaffDetailView({
   // Financial access toggle
   const [financialBusy, setFinancialBusy] = useState(false);
 
+  // SMS test affordance — admin-only triage for verifying the SMS bridge
+  // is reachable for this staff member. The send goes through the configured
+  // provider (Twilio in prod, mock in dev) and writes an sms_log row either
+  // way so admins can audit later.
+  const [smsBusy, setSmsBusy] = useState(false);
+
+  async function handleSendTestSms() {
+    if (!profile.phone) {
+      toast.error("No phone number on file for this staff member.");
+      return;
+    }
+    setSmsBusy(true);
+    const { error } = await sendSms({
+      userId: profile.id,
+      body: `Build Alpha Kids: test SMS for ${profile.name}. If you received this you're reachable for urgent alerts.`,
+    });
+    setSmsBusy(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    toast.success(`Test SMS sent to ${profile.name}.`);
+  }
+
   async function handleToggleFinancialAccess() {
     const next = !profile.financial_access;
     setFinancialBusy(true);
@@ -277,6 +303,22 @@ export function StaffDetailView({
             <KeyRound className="h-3.5 w-3.5" />
             Reset Password
           </Button>
+          {canEditFinancialAccess && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendTestSms}
+              disabled={smsBusy || !profile.phone}
+              title={
+                profile.phone
+                  ? "Send a test SMS to verify the bridge is reachable."
+                  : "Add a phone number first."
+              }
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              SMS test
+            </Button>
+          )}
           {canEditFinancialAccess && (
             <Button
               variant="outline"

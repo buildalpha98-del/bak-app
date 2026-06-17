@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getParentProfile, updateParentProfile, getParentChildren } from "@/lib/parent/actions";
 import { getParentPackageBalances } from "@/lib/bookings/booking-actions";
 import { getParentPayments } from "@/lib/parent/payment-actions";
+import { setParentSmsOptIn } from "@/lib/sms/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,6 +97,12 @@ export default function ParentAccountPage() {
   const [savingMarketing, setSavingMarketing] = useState(false);
   const [marketingSaved, setMarketingSaved] = useState(false);
 
+  // SMS opt-in — controls whether the urgent-notification fallback may
+  // text this parent (see lib/sms/actions.ts::sendUrgentNotificationViaSms).
+  const [smsOptIn, setSmsOptIn] = useState(false);
+  const [savingSms, setSavingSms] = useState(false);
+  const [smsSaved, setSmsSaved] = useState(false);
+
   useEffect(() => {
     async function load() {
       const [profileRes, childrenRes, packagesRes, paymentsRes] = await Promise.all([
@@ -112,6 +119,7 @@ export default function ParentAccountPage() {
         setPhone(profileRes.data.phone ?? "");
         setSuburb(profileRes.data.suburb ?? "");
         setMarketingOptIn(profileRes.data.marketing_opt_in);
+        setSmsOptIn(profileRes.data.sms_opt_in ?? false);
       }
 
       setChildrenCount(childrenRes.data.length);
@@ -168,6 +176,28 @@ export default function ParentAccountPage() {
     toast.success(checked ? "Marketing emails enabled." : "Marketing emails disabled.");
     setMarketingSaved(true);
     setTimeout(() => setMarketingSaved(false), 3000);
+  }
+
+  async function handleSmsToggle(checked: boolean) {
+    setSmsOptIn(checked);
+    setSavingSms(true);
+    setSmsSaved(false);
+
+    const { error: saveError } = await setParentSmsOptIn(checked);
+
+    setSavingSms(false);
+
+    if (saveError) {
+      setSmsOptIn(!checked);
+      toast.error("Could not update your preference. Please try again.");
+      return;
+    }
+
+    toast.success(
+      checked ? "SMS reminders enabled." : "SMS reminders disabled.",
+    );
+    setSmsSaved(true);
+    setTimeout(() => setSmsSaved(false), 3000);
   }
 
   async function handleSignOut() {
@@ -464,6 +494,39 @@ export default function ParentAccountPage() {
               <span
                 className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
                   marketingOptIn ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </label>
+
+        <label className="flex items-center justify-between cursor-pointer">
+          <div className="space-y-0.5">
+            <p className="text-sm font-medium text-foreground">SMS reminders</p>
+            <p className="text-xs text-muted-foreground">
+              Get booking reminders by SMS. Standard rates may apply.
+            </p>
+          </div>
+          <div className="relative flex items-center gap-2">
+            {savingSms && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+            )}
+            {smsSaved && (
+              <Check className="h-3.5 w-3.5 text-green-600" />
+            )}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={smsOptIn}
+              onClick={() => handleSmsToggle(!smsOptIn)}
+              disabled={savingSms}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                smsOptIn ? "bg-[#E8712A]" : "bg-gray-200"
+              }`}
+            >
+              <span
+                className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                  smsOptIn ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
             </button>
