@@ -1,0 +1,100 @@
+<!--
+  Build Alpha Kids — magic link email template
+
+  Paste this into: Supabase Dashboard → Authentication → Email Templates
+  → "Magic Link" → switch to "Source" / HTML view → replace contents.
+
+  Template variables (Supabase Go template syntax):
+    {{ .ConfirmationURL }}  — the magic link URL (REQUIRED — this is the link)
+    {{ .Email }}            — recipient address
+    {{ .SiteURL }}          — your app URL
+
+  Why this design beats the Supabase default:
+    - Real greeting + reason = lower spam score
+    - Plain-text URL fallback handles email clients that strip buttons
+    - Footer with sender info + "didn't request this" clears CAN-SPAM
+    - Mobile-friendly single column, no images (images trigger filters)
+    - Brand colour as an accent only — not a wall of orange
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in to Build Alpha Kids</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F6F8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1A1A1A;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F6F8;padding:24px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#FFFFFF;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;">
+
+        <tr>
+          <td style="background:#E8712A;height:6px;line-height:6px;font-size:0;">&nbsp;</td>
+        </tr>
+
+        <tr>
+          <td style="padding:28px 32px 8px;">
+            <div style="font-size:13px;font-weight:600;color:#E8712A;letter-spacing:0.5px;">BUILD ALPHA KIDS</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 32px 8px;">
+            <h1 style="font-size:22px;font-weight:600;line-height:1.3;margin:0 0 8px;color:#1A1A1A;">Your sign-in link</h1>
+            <p style="font-size:15px;line-height:1.6;margin:0;color:#4B5563;">
+              You asked to sign in to your Build Alpha Kids portal. Tap the button below to confirm it&rsquo;s you. This link is valid for one hour and can only be used once.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:24px 32px;">
+            <a href="{{ .ConfirmationURL }}"
+               style="display:inline-block;background:#E8712A;color:#FFFFFF;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:600;min-width:200px;text-align:center;">
+              Sign in to Build Alpha Kids
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 32px 8px;">
+            <p style="font-size:13px;line-height:1.6;margin:0 0 8px;color:#6B7280;">
+              Or copy this link into your browser:
+            </p>
+            <p style="font-size:12px;line-height:1.5;margin:0;word-break:break-all;color:#374151;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px 12px;">
+              {{ .ConfirmationURL }}
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:24px 32px 8px;border-top:1px solid #E5E7EB;margin-top:24px;">
+            <p style="font-size:12px;line-height:1.6;margin:16px 0 0;color:#6B7280;">
+              <strong style="color:#374151;">Didn&rsquo;t request this?</strong> Someone may have typed your email by mistake. You can safely ignore this message and no one will gain access to your account.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:16px 32px 28px;">
+            <p style="font-size:12px;line-height:1.6;margin:0;color:#9CA3AF;">
+              This message was sent to {{ .Email }} because someone requested a sign-in link for that address.
+              <br>
+              Build Alpha Kids &middot; South-West Sydney, NSW Australia
+              <br>
+              Need a hand? Reply to this email and we&rsquo;ll respond personally.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+      <p style="font-size:11px;color:#9CA3AF;margin:16px 0 0;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        &copy; Build Alpha Kids
+      </p>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
