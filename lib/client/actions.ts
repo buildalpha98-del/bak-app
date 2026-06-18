@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { clientInvitationEmail } from "@/lib/client/email-templates";
+import { getBaseUrl, getAuthCallbackUrl } from "@/lib/utils/base-url";
 import type { ClientUser, SharedLink } from "@/lib/types/database";
 
 // ============================================================
@@ -44,14 +45,10 @@ export async function sendClientMagicLink(
   try {
     const supabase = await createSupabaseServerClient();
 
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${baseUrl}/client-login`,
+        emailRedirectTo: getAuthCallbackUrl("/client-login"),
       },
     });
 
@@ -148,24 +145,22 @@ export async function inviteClientUser(input: {
       .single();
 
     // Send invitation email with magic link
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
+    const callbackUrl = getAuthCallbackUrl("/client-login");
     const { subject, html } = clientInvitationEmail(
       input.name,
       centre?.name ?? "your centre",
-      `${baseUrl}/client-login`
+      `${getBaseUrl()}/client-login`
     );
 
     await sendEmail(input.email, subject, html);
 
-    // Also send magic link
+    // Also send magic link via Supabase Auth (routes through SMTP
+    // configured in Supabase dashboard — needs Resend SMTP set up).
     await adminClient.auth.admin.generateLink({
       type: "magiclink",
       email: input.email,
       options: {
-        redirectTo: `${baseUrl}/client-login`,
+        redirectTo: callbackUrl,
       },
     });
 

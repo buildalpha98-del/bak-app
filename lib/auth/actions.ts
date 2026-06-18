@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getAuthCallbackUrl } from "@/lib/utils/base-url";
 const PORTAL_ROUTES: Record<string, string> = {
   admin: "/admin",
   ops: "/ops",
@@ -67,12 +68,9 @@ export async function requestPasswordReset(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${baseUrl}/update-password`,
+    redirectTo: getAuthCallbackUrl("/update-password"),
   });
 
   if (error) {

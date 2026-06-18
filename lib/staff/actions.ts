@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
 import { staffOnboarding } from "@/lib/launch/email-templates";
 import { generateDefaultAvailabilitySlots } from "@/lib/utils/staff/default-availability";
+import { getAuthCallbackUrl } from "@/lib/utils/base-url";
 import { getMonday, getFriday } from "@/lib/utils/roster";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
@@ -635,7 +636,7 @@ export async function sendStaffPasswordResetEmail(
     type: "recovery",
     email,
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://bak-app.vercel.app"}/update-password`,
+      redirectTo: getAuthCallbackUrl("/update-password"),
     },
   });
 

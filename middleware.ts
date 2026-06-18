@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   "/parent-login",
   "/reset-password",
   "/update-password",
+  "/auth/callback", // Supabase code-exchange — sets the session; must never be gated
   "/feedback",
   "/refer", // public referral landing pages
   "/client/shared", // shared read-only links (token-based, no auth)

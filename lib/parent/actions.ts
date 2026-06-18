@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/launch/email";
 import { welcomeParent, parentBulkInvite } from "@/lib/launch/email-templates";
 import { createNotification } from "@/lib/launch/notifications";
 import { calculateAgeGroup } from "@/lib/utils/ageGroup";
+import { getAuthCallbackUrl } from "@/lib/utils/base-url";
 import type { ParentProfile, ParentChild, Child } from "@/lib/types/database";
 import type { AgeGroup, Gender, ParentRelationship } from "@/lib/types/enums";
 
@@ -41,14 +42,10 @@ export async function sendParentMagicLink(
   try {
     const supabase = await createSupabaseServerClient();
 
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${baseUrl}/parent-login`,
+        emailRedirectTo: getAuthCallbackUrl("/parent-login"),
       },
     });
 
@@ -663,12 +660,7 @@ export async function importParents(
       }
     }
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
-    const redirectTo = `${baseUrl}/parent-login`;
+    const redirectTo = getAuthCallbackUrl("/parent-login");
 
     // Process rows one at a time so a single failure doesn't poison
     // the whole batch.
