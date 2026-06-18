@@ -35,6 +35,7 @@ import type { FormTemplateListItem, FormSubmissionListItem } from "@/lib/forms/a
 import type { FormField } from "@/lib/types/database";
 import { useOnlineStatus } from "@/lib/offline/useOnlineStatus";
 import { queueFormSubmission } from "@/lib/offline/formQueue";
+import { submitOrQueue } from "@/lib/offline/submit-or-queue";
 import { toast } from "sonner";
 
 // ============================================================
@@ -84,36 +85,42 @@ export function CoachFormsView({
   ) {
     if (!activeTemplate) return;
 
-    if (!isOnline) {
-      // Queue offline
-      await queueFormSubmission({
-        formTemplateId: activeTemplate.id,
-        sessionId: null,
-        dataJson: data,
-        attachments,
-      });
-      toast.success("Form saved locally — will sync when online.", {
+    setSubmitting(true);
+    // Unified path: submitOrQueue checks navigator.onLine, dispatches when
+    // online, or queues to the offline store when not. We also keep the
+    // legacy queueFormSubmission write so the older sync path can still
+    // pick up rows it knows about — both stores will drain independently.
+    const payload = {
+      formTemplateId: activeTemplate.id,
+      sessionId: null as string | null,
+      dataJson: data,
+      attachments,
+    };
+    const res = await submitOrQueue("form_submission", payload, async (p) => {
+      const result = await submitForm(p);
+      return { error: result.error };
+    });
+    setSubmitting(false);
+
+    if (res.error) {
+      toast.error(res.error);
+      return;
+    }
+    if (res.queued) {
+      // Mirror into the legacy store so existing sync paths see it too.
+      try {
+        await queueFormSubmission(payload);
+      } catch {
+        // already enqueued in the unified store — legacy mirror is best-effort
+      }
+      toast.success("Saved offline — will sync when you reconnect.", {
         icon: "🟠",
       });
       setSubmitOpen(false);
       return;
     }
-
-    setSubmitting(true);
-    const { error } = await submitForm({
-      formTemplateId: activeTemplate.id,
-      sessionId: null,
-      dataJson: data,
-      attachments,
-    });
-    setSubmitting(false);
-
-    if (error) {
-      toast.error(error);
-    } else {
-      toast.success("Form submitted successfully!");
-      setSubmitOpen(false);
-    }
+    toast.success("Form submitted successfully!");
+    setSubmitOpen(false);
   }
 
   async function handleViewSubmission(sub: FormSubmissionListItem) {

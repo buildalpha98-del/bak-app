@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateSessionNotes } from "@/lib/sessions/actions";
+import { submitOrQueue } from "@/lib/offline/submit-or-queue";
 
 interface SessionNotesPopoverProps {
   open: boolean;
@@ -38,11 +39,19 @@ export function SessionNotesPopover({
 
   async function handleSave() {
     setSaving(true);
-    const result = await updateSessionNotes(sessionId, text);
+    const payload = { sessionId, notes: text };
+    const result = await submitOrQueue("session_note", payload, async (p) => {
+      return await updateSessionNotes(p.sessionId, p.notes);
+    });
     setSaving(false);
     if (result.error) {
       toast.error(result.error);
       return;
+    }
+    if (result.queued) {
+      toast.success("Saved offline — will sync when you reconnect.", {
+        icon: "🟠",
+      });
     }
     const next = text.trim() === "" ? null : text.trim();
     onSaved(next);

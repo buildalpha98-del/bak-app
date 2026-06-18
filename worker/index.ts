@@ -107,3 +107,32 @@ _self.addEventListener("notificationclick", (event: NotificationEvent) => {
       })
   );
 });
+
+// ============================================================
+// Background Sync — `queue-sync` tag
+// ============================================================
+
+// When the browser fires a 'sync' event for our tag, fan a message out to
+// every open client; the OfflineSyncRunner picks it up and triggers
+// syncQueue(). Best-effort: Background Sync is Chromium-only, but the
+// 60s foreground poll + 'online' event handler cover non-supporting
+// browsers (Safari, Firefox).
+_self.addEventListener("sync", (event: Event) => {
+  const syncEvent = event as Event & { tag?: string };
+  if (syncEvent.tag !== "queue-sync") return;
+
+  const ext = event as ExtendableEvent;
+  ext.waitUntil(
+    _self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          try {
+            client.postMessage({ type: "BAK_SYNC_REQUEST" });
+          } catch {
+            // Best-effort — a single bad client shouldn't block the fan-out.
+          }
+        }
+      })
+  );
+});

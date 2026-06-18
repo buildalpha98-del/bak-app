@@ -6,6 +6,7 @@ import { GSTToggle } from "@/components/invoicing/gst-toggle";
 import { EditProfileDialog } from "@/components/coach/edit-profile-dialog";
 import { SmsOptInToggle } from "@/components/sms/sms-opt-in-toggle";
 import { PushOptInToggle } from "@/components/push/push-opt-in-toggle";
+import { SyncIssuesCard } from "@/components/coach/sync-issues-card";
 import { getPushSubscriptionCount } from "@/lib/push/actions";
 
 export default async function CoachProfilePage() {
@@ -74,6 +75,9 @@ export default async function CoachProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Permanently-failed offline submissions — hidden when nothing's stuck */}
+      <SyncIssuesCard />
 
       {/* GST Registration */}
       <GSTToggle initialValue={profile?.gst_registered ?? false} />

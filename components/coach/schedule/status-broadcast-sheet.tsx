@@ -19,6 +19,7 @@ import {
   type SessionStatusBroadcastType,
   type BroadcastAudience,
 } from "@/lib/sessions/status-broadcast-actions";
+import { submitOrQueue } from "@/lib/offline/submit-or-queue";
 import { cn } from "@/lib/utils";
 
 // ============================================================
@@ -102,21 +103,37 @@ export function StatusBroadcastSheet({
   function handleSend() {
     if (!status || audience.length === 0) return;
     startTransition(async () => {
-      const res = await broadcastSessionStatus({
+      const payload = {
         sessionId,
         status,
         lateMinutes: status === "running_late" ? lateMinutes : undefined,
         message: message.trim() || undefined,
         broadcastTo: audience,
+      };
+      // Online → dispatch directly so we get the real broadcast id back for
+      // the optimistic pill. Offline → queue and craft a local optimistic
+      // record; the actual notification fan-out happens on sync.
+      const res = await submitOrQueue("status_broadcast", payload, async (p) => {
+        const result = await broadcastSessionStatus(p);
+        if (result.error) return { error: result.error };
+        if (!result.id) return { error: "Broadcast failed." };
+        return { error: null };
       });
-      if (res.error || !res.id) {
-        toast.error(res.error ?? "Broadcast failed.");
+      if (res.error) {
+        toast.error(res.error);
         return;
       }
-      toast.success("Status broadcast sent.");
-      // Build an optimistic record so the parent card can pin the pill.
+      if (res.queued) {
+        toast.success("Saved offline — will broadcast when you reconnect.", {
+          icon: "📡",
+        });
+      } else {
+        toast.success("Status broadcast sent.");
+      }
+      // Build an optimistic record so the parent card can pin the pill — we
+      // use a local id when queued since the server hasn't issued one yet.
       onBroadcastSent?.({
-        id: res.id,
+        id: res.queued ? `pending_${Date.now()}` : sessionId,
         session_id: sessionId,
         coach_id: "",
         coach_name: null,

@@ -24,6 +24,7 @@ import {
   uploadSessionPhoto,
   getExistingAttendance,
 } from "@/lib/launch/coach-dashboard-actions";
+import { submitOrQueue } from "@/lib/offline/submit-or-queue";
 
 // ========================
 // Time formatting
@@ -342,21 +343,31 @@ function AttendanceSheetButton({
       status: (attendance[c.id] ? "present" : "absent") as "present" | "absent",
     }));
 
-    const result = await markAttendance({
+    const payload = {
       sessionId: session.sessionId,
       coachId,
       attendanceRecords: records,
       walkIns: walkIns.length > 0 ? walkIns : undefined,
+    };
+    const result = await submitOrQueue("attendance", payload, async (p) => {
+      const r = await markAttendance(p);
+      return { error: r.success ? null : (r.error ?? "Attendance failed") };
     });
 
     setSaving(false);
-    if (result.success) {
-      toast.success("Attendance saved");
-      setOpen(false);
-      onSaved();
-    } else {
-      toast.error(result.error || "Failed to save attendance");
+    if (result.error) {
+      toast.error(result.error);
+      return;
     }
+    if (result.queued) {
+      toast.success("Saved offline — will sync when you reconnect.", {
+        icon: "🟠",
+      });
+    } else {
+      toast.success("Attendance saved");
+    }
+    setOpen(false);
+    onSaved();
   };
 
   const presentCount = Object.values(attendance).filter(Boolean).length + walkIns.length;
@@ -530,21 +541,38 @@ function CompletionSheetButton({
       }
     }
 
-    const result = await saveSessionNotes({
+    const obsPayload = {
       sessionId: session.sessionId,
       coachId,
       generalNotes: notes || undefined,
       rating,
       childObservations: childObs.length > 0 ? childObs : undefined,
+    };
+    const result = await submitOrQueue("observation", obsPayload, async (p) => {
+      const r = await saveSessionNotes(p);
+      return { error: r.success ? null : (r.error ?? "Observation save failed") };
     });
 
-    if (!result.success) {
+    if (result.error) {
       setSaving(false);
-      toast.error(result.error || "Failed to complete session");
+      toast.error(result.error);
       return;
     }
 
-    // Upload photos
+    if (result.queued) {
+      // Photo uploads need an online round-trip (FormData → storage) so we
+      // skip them in offline mode — coach can attach them later from the
+      // session detail view once they have signal.
+      setSaving(false);
+      toast.success("Saved offline — will sync when you reconnect.", {
+        icon: "🟠",
+      });
+      setOpen(false);
+      onCompleted();
+      return;
+    }
+
+    // Online — upload photos as usual.
     for (const photo of photos) {
       const fd = new FormData();
       fd.append("sessionId", session.sessionId);
