@@ -21,6 +21,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   Building2,
   GraduationCap,
@@ -32,21 +33,25 @@ import {
   Activity,
   TrendingUp,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
+// Recharts (~150kb) splits into its own chunk so the dashboard JS bundle
+// stays small. Chart cards show a muted placeholder until the chunk
+// streams in — usually faster than the data fetch behind them.
+const ChartLoading = () => (
+  <div className="h-full w-full animate-pulse rounded-lg bg-muted/30" />
+);
+const MonthlyRevenueChart = dynamic(
+  () => import("./dashboard-charts").then((m) => m.MonthlyRevenueChart),
+  { ssr: false, loading: ChartLoading }
+);
+const CentreGrowthChart = dynamic(
+  () => import("./dashboard-charts").then((m) => m.CentreGrowthChart),
+  { ssr: false, loading: ChartLoading }
+);
+const RevenueSplitPie = dynamic(
+  () => import("./dashboard-charts").then((m) => m.RevenueSplitPie),
+  { ssr: false, loading: ChartLoading }
+);
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -234,23 +239,7 @@ export function LaunchDashboard({
             </CardHeader>
             <CardContent>
               <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={metrics.revenue.monthlyBreakdown}
-                    margin={{ top: 10, right: 10, bottom: 0, left: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" fontSize={11} />
-                    <YAxis fontSize={11} tickFormatter={(v: number) => fmtCurrency(v)} />
-                    <Tooltip
-                      formatter={(v) => fmtCurrencyFull(Number(v))}
-                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="childcare" stackId="a" fill={BRAND} name="Childcare" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="school" stackId="a" fill={BRAND_TINT} name="School" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <MonthlyRevenueChart data={metrics.revenue.monthlyBreakdown} />
               </div>
             </CardContent>
           </Card>
@@ -262,35 +251,7 @@ export function LaunchDashboard({
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={metrics.growth.monthlyBreakdown}
-                  margin={{ top: 10, right: 10, bottom: 0, left: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis fontSize={11} allowDecimals={false} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line
-                    type="monotone"
-                    dataKey="centres"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    name="Centres"
-                    dot={{ r: 3 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="schools"
-                    stroke="currentColor"
-                    strokeOpacity={0.55}
-                    strokeWidth={2}
-                    name="Schools"
-                    dot={{ r: 3 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <CentreGrowthChart data={metrics.growth.monthlyBreakdown} />
             </div>
           </CardContent>
         </Card>
@@ -305,30 +266,10 @@ export function LaunchDashboard({
             </CardHeader>
             <CardContent>
               <div className="h-[240px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: "Childcare", value: metrics.revenue.childcareRevenue },
-                        { name: "School", value: metrics.revenue.schoolRevenue },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={85}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      <Cell fill={BRAND} />
-                      <Cell fill={BRAND_TINT} />
-                    </Pie>
-                    <Tooltip
-                      formatter={(v) => fmtCurrencyFull(Number(v))}
-                      contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <RevenueSplitPie
+                  childcare={metrics.revenue.childcareRevenue}
+                  school={metrics.revenue.schoolRevenue}
+                />
               </div>
               <div className="mt-2 flex justify-around text-sm">
                 <div className="text-center">
