@@ -34,6 +34,7 @@
 // pattern so a single broken sub-query never blanks the whole strip.
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 
 export interface ClientStatusPulse {
   /** Days until next published session at this centre, or null if none. */
@@ -152,6 +153,63 @@ export async function getClientStatusPulse(
       unpaidInvoicesCount: 0,
       newFeedbackThisTermCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Client pulse — compare variant
+// ============================================================
+//
+// For the centre director, the meaningful comparison is "how
+// many sessions did our centre run this week vs last week" — a
+// stability/growth signal. We also surface a delta on completed
+// sessions for the prior period so directors can see if their
+// programme cadence is holding up.
+
+export async function getClientStatusPulseWithCompare(
+  centreId: string,
+  opts?: { compareTo?: PeriodKey }
+): Promise<{
+  current: ClientStatusPulse;
+  previous?: { sessionsCount: number };
+  /** Current-period session count, paired with the previous count for delta math. */
+  thisPeriodSessions?: number;
+  compareLabel?: string;
+}> {
+  const current = await getClientStatusPulse(centreId);
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const priorPeriod = await resolvePeriod(opts.compareTo);
+    const thisWeek = await resolvePeriod("this_week");
+
+    const [priorRes, currentRes] = await Promise.all([
+      supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", centreId)
+        .neq("status", "cancelled")
+        .gte("date", priorPeriod.start)
+        .lte("date", priorPeriod.end),
+      supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", centreId)
+        .neq("status", "cancelled")
+        .gte("date", thisWeek.start)
+        .lte("date", thisWeek.end),
+    ]);
+
+    return {
+      current,
+      previous: { sessionsCount: priorRes.count ?? 0 },
+      thisPeriodSessions: currentRes.count ?? 0,
+      compareLabel: priorPeriod.label,
+    };
+  } catch (err) {
+    console.error("getClientStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
 

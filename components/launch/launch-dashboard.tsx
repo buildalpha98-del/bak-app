@@ -58,6 +58,7 @@ import {
 import type { Profile } from "@/lib/types/database";
 import { ActivityTimeline } from "@/components/admin/activity-timeline";
 import { Y1TargetEditPopover } from "@/components/admin/y1-target-edit-popover";
+import { ComparisonBadge } from "@/components/shared/comparison-badge";
 import { useCountUp } from "@/components/launch/use-count-up";
 
 // ========================
@@ -518,6 +519,11 @@ interface MetricCardProps {
   isPrimary?: boolean;
   /** Pencil-edit popover, rendered top-right on group hover when present. */
   editor?: React.ReactNode;
+  /** Comparison delta + label rendered next to the headline number. */
+  comparison?: {
+    delta: import("@/lib/comparison/delta").ComparisonDelta;
+    label?: string;
+  };
 }
 
 function MetricCard({
@@ -531,6 +537,7 @@ function MetricCard({
   footer,
   isPrimary,
   editor,
+  comparison,
 }: MetricCardProps) {
   const ticked = useCountUp(numericValue);
   const pct = target ? Math.min(100, (numericValue / target) * 100) : 0;
@@ -562,6 +569,14 @@ function MetricCard({
         <div className="mt-1 flex items-baseline gap-1.5">
           <span className="text-2xl font-semibold tabular-nums">{headline}</span>
           {suffix && <span className="text-sm text-muted-foreground">{suffix}</span>}
+          {comparison && (
+            <ComparisonBadge
+              delta={comparison.delta}
+              label={comparison.label}
+              variant="inline"
+              format="auto"
+            />
+          )}
         </div>
         {target ? (
           <div className="mt-3">

@@ -1,23 +1,36 @@
 import {
   getCentreList,
-  getCentresStatusPulse,
+  getCentresStatusPulseWithCompare,
 } from "@/lib/centres/actions";
 import { getRegions } from "@/lib/regions/actions";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { CentreListView } from "@/components/centres/centre-list-view";
 import { CentresStatusPulseStrip } from "@/components/admin/centres-status-pulse";
+import {
+  CompareSelect,
+  compareParamToPeriodKey,
+} from "@/components/shared/compare-select";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCentresPage() {
-  // Fan out — pulse, list, regions, financial gate all in parallel so
-  // the LCP is bottlenecked by the slowest one, not the sum.
-  const [{ data, error }, pulse, regionsRes, hasFinancial] = await Promise.all([
-    getCentreList(),
-    getCentresStatusPulse(),
-    getRegions(),
-    getFinancialAccess(),
-  ]);
+export default async function AdminCentresPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ compare?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
+  const compareTo = compareParamToPeriodKey(params.compare);
+
+  // Fan out — pulse (with optional compare half), list, regions,
+  // financial gate all in parallel so the LCP is bottlenecked by the
+  // slowest one, not the sum.
+  const [pulseRes, { data, error }, regionsRes, hasFinancial] =
+    await Promise.all([
+      getCentresStatusPulseWithCompare({ compareTo }),
+      getCentreList(),
+      getRegions(),
+      getFinancialAccess(),
+    ]);
 
   if (error) {
     return (
@@ -32,7 +45,15 @@ export default async function AdminCentresPage() {
 
   return (
     <div className="space-y-6">
-      <CentresStatusPulseStrip pulse={pulse} basePath="/admin/centres" />
+      <div className="flex items-center justify-end">
+        <CompareSelect />
+      </div>
+      <CentresStatusPulseStrip
+        pulse={pulseRes.current}
+        previous={pulseRes.previous}
+        compareLabel={pulseRes.compareLabel}
+        basePath="/admin/centres"
+      />
       <CentreListView
         initialData={data ?? []}
         basePath="/admin/centres"

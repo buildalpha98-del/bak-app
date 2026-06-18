@@ -21,6 +21,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
+import {
+  resolveCompareWindow,
+  countRowsInWindow,
+} from "@/lib/comparison/pulse-helpers";
+import type { PeriodKey } from "@/lib/comparison/period";
 
 export interface BookingsStatusPulse {
   todaysSessionsCount: number;
@@ -85,5 +90,44 @@ export async function getBookingsStatusPulse(): Promise<BookingsStatusPulse> {
       packagesLowCount: 0,
       newBookingsThisWeekCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Bookings pulse — compare variant
+// ============================================================
+//
+// Only "new bookings" has a meaningful prior-period equivalent
+// (today's sessions and waitlist are point-in-time). We return just
+// `newBookingsCount` for the prior window so the UI can render a
+// delta on the new-this-week card.
+
+export async function getBookingsStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: BookingsStatusPulse;
+  previous?: { newBookingsCount: number };
+  compareLabel?: string;
+}> {
+  const current = await getBookingsStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const win = await resolveCompareWindow(opts.compareTo);
+    const newBookingsCount = await countRowsInWindow({
+      table: "bookings",
+      dateColumn: "booked_at",
+      startIso: win.startIso,
+      endIso: win.endIso,
+      filters: { status: "confirmed" },
+    });
+    return {
+      current,
+      previous: { newBookingsCount },
+      compareLabel: win.period.label,
+    };
+  } catch (err) {
+    console.error("getBookingsStatusPulseWithCompare error:", err);
+    return { current };
   }
 }

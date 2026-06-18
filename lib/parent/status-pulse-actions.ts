@@ -418,3 +418,78 @@ export async function getParentBookingPulse(): Promise<ParentBookingPulse> {
     };
   }
 }
+
+// ============================================================
+// Parent pulse — compare variant
+// ============================================================
+//
+// For the parent home, "sessions my kids attended this week vs
+// last week" is the natural growth signal. We resolve the parent's
+// children via `parent_children`, then count `session_attendances`
+// rows in each window. Anything missing falls back to current-only.
+
+import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
+
+export async function getParentStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: ParentStatusPulse;
+  previous?: { sessionsCount: number };
+  thisPeriodSessions?: number;
+  compareLabel?: string;
+}> {
+  const current = await getParentStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { current };
+
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!parentProfile) return { current };
+
+    const { data: kidLinks } = await supabase
+      .from("parent_children")
+      .select("child_id")
+      .eq("parent_id", parentProfile.id);
+    const childIds = (kidLinks ?? []).map(
+      (r) => (r as { child_id: string }).child_id
+    );
+    if (childIds.length === 0) return { current };
+
+    const priorPeriod = await resolvePeriod(opts.compareTo);
+    const thisWeek = await resolvePeriod("this_week");
+
+    const [priorRes, currentRes] = await Promise.all([
+      supabase
+        .from("session_attendances")
+        .select("id", { count: "exact", head: true })
+        .in("child_id", childIds)
+        .gte("created_at", `${priorPeriod.start}T00:00:00.000Z`)
+        .lte("created_at", `${priorPeriod.end}T23:59:59.999Z`),
+      supabase
+        .from("session_attendances")
+        .select("id", { count: "exact", head: true })
+        .in("child_id", childIds)
+        .gte("created_at", `${thisWeek.start}T00:00:00.000Z`)
+        .lte("created_at", `${thisWeek.end}T23:59:59.999Z`),
+    ]);
+
+    return {
+      current,
+      previous: { sessionsCount: priorRes.count ?? 0 },
+      thisPeriodSessions: currentRes.count ?? 0,
+      compareLabel: priorPeriod.label,
+    };
+  } catch (err) {
+    console.error("getParentStatusPulseWithCompare error:", err);
+    return { current };
+  }
+}

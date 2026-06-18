@@ -34,6 +34,7 @@
 //     can reuse the result by accepting it as an `initialData` prop.
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 
 export interface CoachStatusPulse {
   shiftsTodayCount: number;
@@ -146,6 +147,68 @@ export async function getCoachStatusPulse(
       overdueFormsCount: 0,
       unreadAnnouncementsCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Coach pulse — compare variant
+// ============================================================
+//
+// The home pulse's shifts/forms/announcements are point-in-time —
+// no useful comparison. What IS comparable is "how many completed
+// sessions did I run in the prior period vs this period?" — the
+// velocity signal a coach actually cares about when checking how
+// their workload is trending. We return both as a single delta.
+
+export async function getCoachStatusPulseWithCompare(
+  coachId: string,
+  opts?: { compareTo?: PeriodKey }
+): Promise<{
+  current: CoachStatusPulse;
+  /** Sessions completed by this coach in current vs prior window. */
+  velocity?: { currentCount: number; previousCount: number };
+  compareLabel?: string;
+}> {
+  const current = await getCoachStatusPulse(coachId);
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    // Current period: use the same key but mapped to "this_X".
+    // We accept any PeriodKey and use it for the prior count; the
+    // current count is always "this_week" so the delta makes sense
+    // when viewed on a weekly cadence (the default for the home strip).
+    const priorPeriod = await resolvePeriod(opts.compareTo);
+    const thisWeek = await resolvePeriod("this_week");
+
+    const [priorRes, currentRes] = await Promise.all([
+      supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("coach_id", coachId)
+        .eq("status", "completed")
+        .gte("date", priorPeriod.start)
+        .lte("date", priorPeriod.end),
+      supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("coach_id", coachId)
+        .eq("status", "completed")
+        .gte("date", thisWeek.start)
+        .lte("date", thisWeek.end),
+    ]);
+
+    return {
+      current,
+      velocity: {
+        currentCount: currentRes.count ?? 0,
+        previousCount: priorRes.count ?? 0,
+      },
+      compareLabel: priorPeriod.label,
+    };
+  } catch (err) {
+    console.error("getCoachStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
 

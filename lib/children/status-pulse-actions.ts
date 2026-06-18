@@ -24,6 +24,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
+import {
+  resolveCompareWindow,
+  countRowsInWindow,
+} from "@/lib/comparison/pulse-helpers";
+import type { PeriodKey } from "@/lib/comparison/period";
 
 export interface ChildrenStatusPulse {
   newThisWeekCount: number;
@@ -163,5 +168,43 @@ export async function getChildrenStatusPulse(): Promise<ChildrenStatusPulse> {
       assessmentsOverdueCount: 0,
       inactive30dCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Children pulse — compare variant
+// ============================================================
+//
+// Only the time-windowed "new this week" count has a meaningful
+// prior-period equivalent — the other three (no centre, overdue,
+// inactive) are point-in-time states. The wrapper returns just the
+// previous `newCount` so the UI can render a delta on that one card.
+
+export async function getChildrenStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: ChildrenStatusPulse;
+  previous?: { newCount: number };
+  compareLabel?: string;
+}> {
+  const current = await getChildrenStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const win = await resolveCompareWindow(opts.compareTo);
+    const newCount = await countRowsInWindow({
+      table: "children",
+      dateColumn: "created_at",
+      startIso: win.startIso,
+      endIso: win.endIso,
+    });
+    return {
+      current,
+      previous: { newCount },
+      compareLabel: win.period.label,
+    };
+  } catch (err) {
+    console.error("getChildrenStatusPulseWithCompare error:", err);
+    return { current };
   }
 }

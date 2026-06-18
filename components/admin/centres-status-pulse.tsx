@@ -20,17 +20,46 @@
 import Link from "next/link";
 import { AlertTriangle, FileWarning, Compass } from "lucide-react";
 import type { CentresStatusPulse } from "@/lib/centres/actions";
+import { computeDelta } from "@/lib/comparison/delta";
+import { ComparisonBadge } from "@/components/shared/comparison-badge";
 
 interface CentresStatusPulseStripProps {
   pulse: CentresStatusPulse;
   /** "/admin/centres" or "/ops/centres" — for the at-risk + onboarding jumps. */
   basePath: string;
+  /** Optional prior-period counts; when present we render comparison badges. */
+  previous?: CentresStatusPulse;
+  /** Short label shown in the badge tooltip, e.g. "vs last week". */
+  compareLabel?: string;
 }
 
 export function CentresStatusPulseStrip({
   pulse,
   basePath,
+  previous,
+  compareLabel,
 }: CentresStatusPulseStripProps) {
+  // Compute deltas once at the top so each PulseStat receives a
+  // ready-made `delta` prop (keeps the badge rendering branch-free).
+  // "Down is good" everywhere here — fewer at-risk / overdue /
+  // behind centres is unambiguously better.
+  const atRiskDelta = previous
+    ? computeDelta(pulse.atRiskCount, previous.atRiskCount, {
+        goodDirection: "down",
+      })
+    : undefined;
+  const overdueDelta = previous
+    ? computeDelta(pulse.overdueInvoiceCount, previous.overdueInvoiceCount, {
+        goodDirection: "down",
+      })
+    : undefined;
+  const behindDelta = previous
+    ? computeDelta(pulse.behindOnboardingCount, previous.behindOnboardingCount, {
+        goodDirection: "down",
+      })
+    : undefined;
+  const badgeLabel = compareLabel ? `vs ${compareLabel}` : undefined;
+
   return (
     <div className="rounded-2xl border bg-background px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -41,6 +70,8 @@ export function CentresStatusPulseStrip({
             pulse.atRiskCount === 1 ? "centre at risk" : "centres at risk"
           }
           href={`${basePath}?status=active&risk=true`}
+          delta={atRiskDelta}
+          badgeLabel={badgeLabel}
         />
         <Divider />
         <PulseStat
@@ -51,10 +82,9 @@ export function CentresStatusPulseStrip({
               ? "invoice overdue"
               : "invoices overdue"
           }
-          // Invoicing lives outside the centres area; the dashboard
-          // home pulse uses the same /admin/invoicing?filter=overdue
-          // URL so we match it for consistency.
           href="/admin/invoicing?filter=overdue"
+          delta={overdueDelta}
+          badgeLabel={badgeLabel}
         />
         <Divider />
         <PulseStat
@@ -62,6 +92,8 @@ export function CentresStatusPulseStrip({
           count={pulse.behindOnboardingCount}
           label="behind on onboarding"
           href={`${basePath}?onboarding=behind`}
+          delta={behindDelta}
+          badgeLabel={badgeLabel}
         />
       </ul>
     </div>
@@ -84,11 +116,15 @@ function PulseStat({
   count,
   label,
   href,
+  delta,
+  badgeLabel,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   count: number;
   label: string;
   href: string;
+  delta?: import("@/lib/comparison/delta").ComparisonDelta;
+  badgeLabel?: string;
 }) {
   const active = count > 0;
   return (
@@ -120,6 +156,9 @@ function PulseStat({
         >
           {label}
         </span>
+        {delta ? (
+          <ComparisonBadge delta={delta} label={badgeLabel} format="auto" />
+        ) : null}
       </Link>
     </li>
   );

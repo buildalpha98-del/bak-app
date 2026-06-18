@@ -14,6 +14,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { getWeekCostProjection } from "@/lib/roster/cost-actions";
+import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 
 export interface RosterStatusPulse {
   /** Sessions in the week with `status='draft'`. */
@@ -124,6 +125,61 @@ export async function getRosterStatusPulse(
       coveragePercent: 100,
       projectedWage: null,
     };
+  }
+}
+
+// ============================================================
+// Roster pulse — compare variant
+// ============================================================
+//
+// Roster's pulse is week-scoped, so the natural comparison is the
+// prior week's draft + unassigned counts. Callers can pass an
+// explicit `comparisonWeekStart` (e.g. previous Monday) or rely on
+// the default-from-weekStart (7 days back) when omitted. We return
+// the matching previous shape minus the wage projection — the
+// projection isn't a useful comparison signal and adds latency.
+
+export async function getRosterStatusPulseWithCompare(
+  weekStart: string,
+  opts?: { compareTo?: PeriodKey; comparisonWeekStart?: string }
+): Promise<{
+  current: RosterStatusPulse;
+  previous?: {
+    draftsCount: number;
+    unassignedCount: number;
+    coveragePercent: number;
+  };
+  compareLabel?: string;
+}> {
+  const current = await getRosterStatusPulse(weekStart);
+  if (!opts?.compareTo && !opts?.comparisonWeekStart) {
+    return { current };
+  }
+
+  try {
+    let priorWeekStart = opts.comparisonWeekStart;
+    let label = "Last week";
+    if (!priorWeekStart && opts.compareTo) {
+      const period = await resolvePeriod(opts.compareTo);
+      priorWeekStart = period.start;
+      label = period.label;
+    }
+    if (!priorWeekStart) return { current };
+
+    const prior = await getRosterStatusPulse(priorWeekStart);
+
+    return {
+      current,
+      previous: {
+        draftsCount: prior.draftsCount,
+        unassignedCount: prior.unassignedCount,
+        coveragePercent: prior.coveragePercent,
+      },
+      compareLabel: label,
+    };
+  } catch (err) {
+    console.error("getRosterStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
 

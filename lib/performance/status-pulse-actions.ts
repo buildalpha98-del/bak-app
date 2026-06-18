@@ -137,3 +137,33 @@ export async function getPerformanceStatusPulse(
     };
   }
 }
+
+// ============================================================
+// Performance pulse — compare variant
+// ============================================================
+//
+// Performance is already period-scoped (the action takes
+// `periodStart`/`periodEnd`), so the compare variant just calls the
+// underlying action twice — once for the current window, once for
+// the prior one. Caller supplies the prior bounds; we don't try to
+// infer them from term metadata here because `getTeamPerformanceData`
+// already mirrors a prior-period pattern and we don't want two
+// different "what is the prior period" definitions in the codebase.
+
+export async function getPerformanceStatusPulseWithCompare(
+  currentStart: string,
+  currentEnd: string,
+  priorStart: string,
+  priorEnd: string,
+  priorLabel: string
+): Promise<{
+  current: PerformanceStatusPulse;
+  previous: PerformanceStatusPulse;
+  compareLabel: string;
+}> {
+  const [current, previous] = await Promise.all([
+    getPerformanceStatusPulse(currentStart, currentEnd),
+    getPerformanceStatusPulse(priorStart, priorEnd),
+  ]);
+  return { current, previous, compareLabel: priorLabel };
+}

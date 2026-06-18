@@ -13,6 +13,11 @@
 // query param the board reads and treats as a derived filter chip.
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  resolveCompareWindow,
+  countRowsInWindow,
+} from "@/lib/comparison/pulse-helpers";
+import type { PeriodKey } from "@/lib/comparison/period";
 
 const ACTIVE_STAGES = [
   "cold_lead",
@@ -138,6 +143,64 @@ export async function getCrmStatusPulse(): Promise<CrmStatusPulse> {
       trialsEndingThisWeekCount: 0,
       hotLeadsCount: 0,
     };
+  }
+}
+
+// ============================================================
+// getCrmStatusPulseWithCompare — same shape + prior-period counts
+// ============================================================
+//
+// For comparison we count *new leads created* and *trials ending* in
+// the prior window. Stale and overdue follow-ups are "right now"
+// concepts (no temporal snapshot makes sense), so we leave their
+// prior values as null and surface comparison only on the two
+// time-windowed metrics. Callers can choose to render those or not.
+//
+// We pass through PeriodKey so the same wrapper handles last_week
+// (default for "vs last week") and last_term for a deeper view.
+
+export async function getCrmStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: CrmStatusPulse;
+  previous?: {
+    newLeadsCount: number;
+    trialsEndingCount: number;
+  };
+  compareLabel?: string;
+}> {
+  const current = await getCrmStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const win = await resolveCompareWindow(opts.compareTo);
+
+    const [newLeadsCount, trialsEndingCount] = await Promise.all([
+      countRowsInWindow({
+        table: "leads",
+        dateColumn: "created_at",
+        startIso: win.startIso,
+        endIso: win.endIso,
+      }),
+      // For trials ending: count leads whose `trial_end_date` fell
+      // inside the prior window. We use trial_end_date as the date
+      // column so the "ending" semantics match the current pulse.
+      countRowsInWindow({
+        table: "leads",
+        dateColumn: "trial_end_date",
+        startIso: win.period.start,
+        endIso: win.period.end,
+      }),
+    ]);
+
+    return {
+      current,
+      previous: { newLeadsCount, trialsEndingCount },
+      compareLabel: win.period.label,
+    };
+  } catch (err) {
+    console.error("getCrmStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
 

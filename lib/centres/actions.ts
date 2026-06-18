@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
+import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 import type {
   CentreType,
   PricingModel,
@@ -704,6 +705,140 @@ export async function getCentresStatusPulse(): Promise<CentresStatusPulse> {
       overdueInvoiceCount: 0,
       behindOnboardingCount: 0,
     };
+  }
+}
+
+// ============================================================
+// getCentresStatusPulseWithCompare — adds prior-period counts
+// ============================================================
+//
+// Mirrors `getCentresStatusPulse` for the "current" half, then runs
+// the same three counts windowed to the prior period so the UI can
+// render a ComparisonBadge. We intentionally keep the existing
+// no-compare variant untouched — callers that don't need compare
+// stay on the cheaper code path, and the existing test suite for it
+// stays green.
+//
+// Window semantics ("status invariant preserved"):
+//
+//  - **atRiskCount (previous)** counts active centres flagged with at
+//    least one unresolved `churn_risk_indicators` row whose
+//    `detected_at <= period.end`. This is the closest snapshot we
+//    have to "centres at risk as of date X" without needing a
+//    historical daily roll-up table.
+//  - **overdueInvoiceCount (previous)** counts outbound invoices
+//    whose `due_date < period.end` AND `created_at <= period.end`
+//    AND status='overdue'. Captures invoices that were overdue at
+//    the end of the prior window without polluting the count with
+//    rows created later.
+//  - **behindOnboardingCount (previous)** counts checklists whose
+//    `started_at` was 14+ days before `period.end`, are not
+//    completed, and had fewer than 5 steps completed *at any point*
+//    (we don't track step history per-day, so this is the closest
+//    approximation — same approach the current snapshot uses,
+//    bounded by the period). Cancelled / completed rows are
+//    excluded throughout.
+
+export async function getCentresStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: CentresStatusPulse;
+  previous?: CentresStatusPulse;
+  compareLabel?: string;
+}> {
+  const current = await getCentresStatusPulse();
+  if (!opts?.compareTo) {
+    return { current };
+  }
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const period = await resolvePeriod(opts.compareTo);
+    // Inclusive end-of-day in the period for the comparison cutoff.
+    const endIso = `${period.end}T23:59:59.999Z`;
+
+    // 14 days before the period end — same grace window the
+    // no-compare variant uses, but anchored to "end of prior period"
+    // instead of "right now". Use UTC math so DST transitions in
+    // Sydney don't accidentally shift the cutoff by an hour.
+    const fourteenBeforeEnd = new Date(endIso);
+    fourteenBeforeEnd.setUTCDate(fourteenBeforeEnd.getUTCDate() - 14);
+    const cutoffIso = fourteenBeforeEnd.toISOString();
+
+    const [atRiskRes, overdueRes, oldChecklistsRes] = await Promise.all([
+      // Active centres that had any unresolved churn risk indicator
+      // *as of* the period end. We look at the indicators table
+      // because `centres.churn_risk` is a live snapshot — historical
+      // values aren't preserved on the centre row.
+      supabase
+        .from("churn_risk_indicators")
+        .select("centre_id")
+        .lte("detected_at", endIso)
+        .or(`resolved_at.is.null,resolved_at.gt.${endIso}`),
+      // Invoices that were overdue as of the period end. We bound
+      // by created_at so rows created *after* the window don't
+      // count, then check overdue status + due_date past the end.
+      supabase
+        .from("outbound_invoices")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "overdue")
+        .lte("created_at", endIso)
+        .lt("due_date", period.end),
+      // Onboarding checklists that were 14+ days old by the period
+      // end and never completed. We exclude `completed` and
+      // `cancelled` to preserve the "status invariant" from the
+      // no-compare variant.
+      supabase
+        .from("centre_onboarding_checklists")
+        .select("id, status")
+        .neq("status", "completed")
+        .neq("status", "cancelled")
+        .lt("started_at", cutoffIso),
+    ]);
+
+    // Dedupe centre_ids — one centre can have multiple risk
+    // indicators but should count once.
+    const atRiskCentreIds = new Set<string>();
+    for (const row of (atRiskRes.data ?? []) as { centre_id: string }[]) {
+      if (row.centre_id) atRiskCentreIds.add(row.centre_id);
+    }
+
+    let behindOnboardingCount = 0;
+    const candidateIds = (oldChecklistsRes.data ?? []).map(
+      (c: { id: string }) => c.id
+    );
+    if (candidateIds.length > 0) {
+      const { data: stepRows } = await supabase
+        .from("centre_onboarding_steps")
+        .select("checklist_id, status")
+        .in("checklist_id", candidateIds);
+
+      const completedByChecklist = new Map<string, number>();
+      for (const row of stepRows ?? []) {
+        if (row.status === "completed") {
+          completedByChecklist.set(
+            row.checklist_id,
+            (completedByChecklist.get(row.checklist_id) ?? 0) + 1
+          );
+        }
+      }
+      for (const id of candidateIds) {
+        if ((completedByChecklist.get(id) ?? 0) < 5) behindOnboardingCount++;
+      }
+    }
+
+    return {
+      current,
+      previous: {
+        atRiskCount: atRiskCentreIds.size,
+        overdueInvoiceCount: overdueRes.count ?? 0,
+        behindOnboardingCount,
+      },
+      compareLabel: period.label,
+    };
+  } catch (err) {
+    console.error("getCentresStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
 

@@ -20,6 +20,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
+import {
+  resolveCompareWindow,
+  countRowsInWindow,
+} from "@/lib/comparison/pulse-helpers";
+import type { PeriodKey } from "@/lib/comparison/period";
 
 export interface ChurnStatusPulse {
   atRiskCount: number;
@@ -101,5 +106,66 @@ export async function getChurnStatusPulse(): Promise<ChurnStatusPulse> {
       improvingCount: 0,
       unchangedCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Churn pulse — compare variant
+// ============================================================
+//
+// "At risk" and "events" are the two metrics where a prior-period
+// comparison is meaningful. For atRisk we count distinct centres
+// with high/critical indicators *as of* the period end. For events
+// we count `churn_events.detected_at` rows inside the window.
+
+export async function getChurnStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: ChurnStatusPulse;
+  previous?: { atRiskCount: number; newEventsCount: number };
+  compareLabel?: string;
+}> {
+  const current = await getChurnStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const win = await resolveCompareWindow(opts.compareTo);
+
+    // Distinct centres flagged high/critical with snapshot_date inside
+    // the window. We pull the centre_id projection then dedupe in mem.
+    const { data: indicatorRows } = await supabase
+      .from("churn_risk_indicators")
+      .select("centre_id, risk_level")
+      .gte("snapshot_date", win.period.start)
+      .lte("snapshot_date", win.period.end)
+      .in("risk_level", ["high", "critical"]);
+
+    const atRiskCentres = new Set<string>();
+    for (const row of (indicatorRows ?? []) as {
+      centre_id: string;
+      risk_level: string;
+    }[]) {
+      if (row.centre_id) atRiskCentres.add(row.centre_id);
+    }
+
+    const newEventsCount = await countRowsInWindow({
+      table: "churn_events",
+      dateColumn: "detected_at",
+      startIso: win.startIso,
+      endIso: win.endIso,
+    });
+
+    return {
+      current,
+      previous: {
+        atRiskCount: atRiskCentres.size,
+        newEventsCount,
+      },
+      compareLabel: win.period.label,
+    };
+  } catch (err) {
+    console.error("getChurnStatusPulseWithCompare error:", err);
+    return { current };
   }
 }

@@ -24,6 +24,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
+import {
+  resolveCompareWindow,
+  countRowsInWindow,
+} from "@/lib/comparison/pulse-helpers";
+import type { PeriodKey } from "@/lib/comparison/period";
 
 export interface InvoicingStatusPulse {
   overdueInvoicesCount: number;
@@ -80,5 +85,45 @@ export async function getInvoicingStatusPulse(): Promise<InvoicingStatusPulse> {
       flaggedInvoicesCount: 0,
       sentThisWeekCount: 0,
     };
+  }
+}
+
+// ============================================================
+// Invoicing pulse — compare variant
+// ============================================================
+//
+// "Sent this week" has a direct prior-period analogue. Overdue is a
+// rolling snapshot — comparing "overdue right now" to "overdue end
+// of last week" needs a historical projection (outbound_invoices
+// only carries current state). We surface the comparison only on
+// the sent-window count, which is the cleanest signal of billing
+// velocity over time.
+
+export async function getInvoicingStatusPulseWithCompare(opts?: {
+  compareTo?: PeriodKey;
+}): Promise<{
+  current: InvoicingStatusPulse;
+  previous?: { sentCount: number };
+  compareLabel?: string;
+}> {
+  const current = await getInvoicingStatusPulse();
+  if (!opts?.compareTo) return { current };
+
+  try {
+    const win = await resolveCompareWindow(opts.compareTo);
+    const sentCount = await countRowsInWindow({
+      table: "outbound_invoices",
+      dateColumn: "sent_at",
+      startIso: win.startIso,
+      endIso: win.endIso,
+    });
+    return {
+      current,
+      previous: { sentCount },
+      compareLabel: win.period.label,
+    };
+  } catch (err) {
+    console.error("getInvoicingStatusPulseWithCompare error:", err);
+    return { current };
   }
 }
