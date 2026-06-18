@@ -7,6 +7,14 @@ const withPWA = require("next-pwa")({
   register: true,
   skipWaiting: true,
   customWorkerDir: "worker",
+  // Document fallback: when the user navigates while offline and the
+  // requested page isn't already cached, serve `/offline` instead of
+  // the browser's default "no internet" chrome. Authenticated routes
+  // are still attempted first via NetworkFirst — this is the last
+  // resort.
+  fallbacks: {
+    document: "/offline",
+  },
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,

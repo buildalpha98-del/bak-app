@@ -24,6 +24,7 @@ import {
 import { AppLogo } from "@/components/shared/app-logo";
 import { NotificationBell } from "@/components/shared/navigation/notification-bell";
 import { CentreSwitcher } from "@/components/client/centre-switcher";
+import { IosInstallPrompt } from "@/components/shared/ios-install-prompt";
 import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 import type {
@@ -75,7 +76,13 @@ export function ClientShell({ clientUser, centres, children }: ClientShellProps)
   return (
     <div className="min-h-dvh bg-gray-50">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 flex h-14 items-center border-b bg-white px-4">
+      <header
+        // iOS notch / dynamic island: in standalone PWA mode the inset
+        // pushes our header below the system status bar instead of
+        // letting it draw underneath.
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className="sticky top-0 z-40 flex min-h-14 items-center border-b bg-white px-4"
+      >
         {/* Mobile menu toggle */}
         <button
           type="button"
@@ -250,6 +257,8 @@ export function ClientShell({ clientUser, centres, children }: ClientShellProps)
         {/* Main content */}
         <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
+
+      <IosInstallPrompt />
 
       {/* Mobile bottom tabs */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden">

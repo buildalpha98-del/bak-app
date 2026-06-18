@@ -26,5 +26,55 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Today's Schedule",
+      "short_name": "Today",
+      "url": "/coach/schedule?day=today",
+      "description": "View today's sessions",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Lead",
+      "short_name": "Add Lead",
+      "url": "/admin/crm?action=new",
+      "description": "Add a new sales lead",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Inbox",
+      "short_name": "Inbox",
+      "url": "/admin/inbox",
+      "description": "Action-needed inbox",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-narrow.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Daily ops dashboard"
+    },
+    {
+      "src": "/screenshots/roster-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Roster planner"
+    }
+  ],
+  "share_target": {
+    "action": "/share-receive",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [{ "name": "files", "accept": ["image/*"] }]
+    }
+  }
 }

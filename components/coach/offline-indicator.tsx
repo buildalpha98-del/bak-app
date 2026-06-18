@@ -15,7 +15,7 @@
  * coach with a flaky connection can poke the engine on demand.
  */
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   Popover,
   PopoverContent,
@@ -37,6 +37,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { updateAppBadge } from "@/lib/badge/badge";
 import { useOnlineState } from "@/lib/offline/use-connection";
 import {
   dequeue,
@@ -87,6 +88,13 @@ export function OfflineIndicator() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<QueueItem[]>([]);
   const [isPending, startTransition] = useTransition();
+
+  // Surface the offline queue length on the home-screen icon. A coach
+  // who's offline with 3 pending submissions sees a "3" on the BAK
+  // app icon — the kind of cue that makes a PWA feel native.
+  useEffect(() => {
+    void updateAppBadge(queueLength);
+  }, [queueLength]);
 
   // State 1: online + nothing queued → hide chrome.
   if (online && queueLength === 0) return null;

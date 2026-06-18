@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NAV_CONFIG, isNavItemActive, getMobileItems } from "@/components/shared/navigation/nav-config";
 import { AppLogo } from "@/components/shared/app-logo";
 import { NotificationBell } from "@/components/shared/navigation/notification-bell";
+import { IosInstallPrompt } from "@/components/shared/ios-install-prompt";
 import { cn } from "@/lib/utils";
 
 interface ParentShellProps {
@@ -53,7 +54,13 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Top bar */}
-        <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-orange-100 md:px-6">
+        <header
+          // iOS notch / dynamic island: when installed as a PWA with
+          // black-translucent status bar, the inset pushes our header
+          // content down so it isn't hidden under the system bar.
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
+          className="flex items-center justify-between px-4 pb-3 bg-white border-b border-orange-100 md:px-6"
+        >
           <div className="flex items-center gap-2 md:hidden">
             <AppLogo size="sm" />
           </div>
@@ -71,6 +78,8 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
           {children}
         </main>
       </div>
+
+      <IosInstallPrompt />
 
       {/* Mobile bottom tabs */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 px-1 pb-[env(safe-area-inset-bottom)] z-50">

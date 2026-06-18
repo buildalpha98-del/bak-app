@@ -13,6 +13,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getInboxCounts } from "@/lib/inbox/actions";
+import { updateAppBadge } from "@/lib/badge/badge";
 import type { InboxCounts } from "@/lib/inbox/types";
 
 interface InboxBadgeProps {
@@ -48,6 +49,14 @@ export function InboxBadge({
   }, []);
 
   const total = counts.urgent + counts.important;
+
+  // Mirror the visible badge onto the home-screen icon via the
+  // Badging API so installed PWAs show an unread dot like a native
+  // app. No-op on unsupported browsers.
+  React.useEffect(() => {
+    void updateAppBadge(total);
+  }, [total]);
+
   if (total === 0) return null;
 
   const display = total > 99 ? "99+" : String(total);

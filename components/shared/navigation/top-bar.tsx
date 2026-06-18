@@ -13,7 +13,14 @@ interface TopBarProps {
 
 export function TopBar({ profile }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 sm:px-6">
+    <header
+      // Honour iOS notch / dynamic island in standalone PWA mode: the
+      // top inset pushes the header content below the status bar instead
+      // of letting it stack underneath when statusBarStyle is
+      // black-translucent.
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      className="sticky top-0 z-40 flex min-h-14 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 sm:px-6"
+    >
       {/* Left: logo on mobile, breadcrumbs on desktop */}
       <div className="flex items-center gap-3">
         <div className="flex md:hidden items-center gap-2.5 shrink-0">

@@ -7,6 +7,7 @@ import { TopBar } from "./navigation/top-bar";
 import { BottomTabs } from "./navigation/bottom-tabs";
 import { SyncStatusIndicator } from "./sync-status-indicator";
 import { InstallPrompt } from "./install-prompt";
+import { IosInstallPrompt } from "./ios-install-prompt";
 import { SessionTimeoutWarning } from "./session-timeout-warning";
 import { useEphemeralSession } from "@/lib/hooks/useEphemeralSession";
 import { CommandPalette } from "./command-palette";
@@ -35,6 +36,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
         <QuickActions role={profile.role} />
         <CommandPalette userRole={profile.role} />
         <InstallPrompt />
+        <IosInstallPrompt />
         <SessionTimeoutWarning />
       </div>
     </SidebarProvider>

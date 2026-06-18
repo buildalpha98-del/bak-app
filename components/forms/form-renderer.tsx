@@ -535,6 +535,11 @@ function FieldRenderer({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,application/pdf"
+                // `capture="environment"` hints iOS / Android to open the
+                // rear camera directly when the user picks "Take Photo".
+                // The file picker is still offered as a fallback, so this
+                // is purely additive.
+                capture="environment"
                 multiple={field.maxFiles ? field.maxFiles > 1 : true}
                 className="hidden"
                 onChange={(e) => onFileUpload(e.target.files)}
