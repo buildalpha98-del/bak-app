@@ -91,6 +91,7 @@ export default async function AdminRosterPage({
       latestRun={latestRun}
       basePath="/admin/roster"
       sessionCertWarnings={certWarningsRes.data ?? undefined}
+      viewerRole="admin"
     />
   );
 }

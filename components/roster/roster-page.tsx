@@ -183,6 +183,12 @@ interface RosterPageProps {
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   /** Unconfirmed shifts for ops banner. */
   unconfirmedShifts?: UnconfirmedShift[];
+  /**
+   * P4: viewer's role. DnD (drag a card to reschedule / reassign) is
+   * gated to admin and ops — coaches and clients see cards but can't
+   * move them. Default coach so non-admin viewers fail closed.
+   */
+  viewerRole?: "admin" | "ops" | "coach" | "client" | "parent";
 }
 
 // ============================================================
@@ -203,7 +209,9 @@ export function RosterPage({
   basePath,
   sessionCertWarnings,
   unconfirmedShifts,
+  viewerRole = "coach",
 }: RosterPageProps) {
+  const dndEnabled = viewerRole === "admin" || viewerRole === "ops";
   const router = useRouter();
   const params = useSearchParams();
   const weekStart = new Date(initialWeekStart + "T00:00:00");
@@ -872,6 +880,7 @@ export function RosterPage({
           onEmptySlotClick={handleEmptySlotClick}
           onSessionChange={handleRefresh}
           sessionCertWarnings={sessionCertWarnings}
+          dndEnabled={dndEnabled}
           renderConfidenceBadge={
             reviewRunId
               ? (sessionId) => {
@@ -894,6 +903,7 @@ export function RosterPage({
           onSessionClick={handleSessionClickWithReview}
           onEmptySlotClick={handleEmptySlotClick}
           sessionCertWarnings={sessionCertWarnings}
+          dndEnabled={dndEnabled}
           renderConfidenceBadge={
             reviewRunId
               ? (sessionId) => {

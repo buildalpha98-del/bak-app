@@ -1,6 +1,20 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { toast } from "sonner";
 import { Plus, User, ShieldAlert, ShieldOff, StickyNote } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
@@ -12,6 +26,7 @@ import { getWeekDates, formatDayHeader, formatTime12 } from "@/lib/utils/roster"
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
 import { SessionCardMenu } from "./session-card-menu";
+import { dragMoveSession } from "@/lib/sessions/dnd-actions";
 
 // ============================================================
 // Props
@@ -26,6 +41,12 @@ interface StaffRosterViewProps {
   onSessionChange: () => void;
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   renderConfidenceBadge?: (sessionId: string) => ReactNode | undefined;
+  /**
+   * P4: when true, cards are draggable, day cells are droppable.
+   * Drops to a different coach row reassign the primary; drops to a
+   * different day change the date. See `dragMoveSession`.
+   */
+  dndEnabled?: boolean;
 }
 
 // ============================================================
@@ -64,7 +85,7 @@ function flattenForStaffView(
     } else if (s.coach_id) {
       // Legacy fallback for any read site that hasn't loaded
       // assigned_coaches yet — treat the primary cache as a single
-      // entry. After Task 12 this should rarely fire in practice.
+      // entry.
       out.push({
         coachId: s.coach_id,
         session: s,
@@ -136,6 +157,9 @@ function StaffSessionCard({
   onSessionChange,
   otherCount,
   asSecondary,
+  isConflicted,
+  isActive,
+  draggableProps,
 }: {
   session: SessionWithRelations;
   onClick: () => void;
@@ -147,6 +171,16 @@ function StaffSessionCard({
   otherCount?: number;
   /** When true, render this as the secondary view (↔ shared, thinner left border). */
   asSecondary?: boolean;
+  /** Apply red ring + "Has conflict" badge for 8s after a conflicting drop. */
+  isConflicted?: boolean;
+  /** Hide the card under the drag overlay clone. */
+  isActive?: boolean;
+  /** Props from useDraggable when DnD is enabled. */
+  draggableProps?: {
+    setNodeRef: (node: HTMLElement | null) => void;
+    attributes: Record<string, unknown>;
+    listeners: Record<string, unknown> | undefined;
+  };
 }) {
   const colour = sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
@@ -162,7 +196,14 @@ function StaffSessionCard({
   })();
 
   return (
-    <div className="relative w-full group">
+    <div
+      ref={draggableProps?.setNodeRef}
+      {...(draggableProps?.attributes ?? {})}
+      {...(draggableProps?.listeners ?? {})}
+      className={`relative w-full group ${draggableProps ? "touch-none" : ""} ${
+        isActive ? "opacity-40" : ""
+      } ${isConflicted ? "rounded-2xl ring-2 ring-red-500" : ""}`}
+    >
       <button
         type="button"
         onClick={onClick}
@@ -255,7 +296,107 @@ function StaffSessionCard({
           <StickyNote className="h-2.5 w-2.5" aria-hidden="true" />
         </span>
       )}
+
+      {isConflicted && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-1 left-1 z-30 rounded bg-red-500 px-1 py-0.5 text-[9px] font-semibold text-white shadow-sm"
+          title="Drop landed on a conflicting slot — review and resolve"
+        >
+          Has conflict — review
+        </span>
+      )}
     </div>
+  );
+}
+
+function DraggableStaffCard(props: {
+  entry: StaffViewSessionEntry;
+  coaches: Pick<Profile, "id" | "name">[];
+  onSessionChange: () => void;
+  onSessionClick: (s: SessionWithRelations) => void;
+  confidenceBadge?: ReactNode;
+  certWarning?: SessionCertWarning;
+  conflictedIds: Set<string>;
+  activeKey: string | null;
+  dndEnabled: boolean;
+}) {
+  const {
+    entry,
+    coaches,
+    onSessionChange,
+    onSessionClick,
+    confidenceBadge,
+    certWarning,
+    conflictedIds,
+    activeKey,
+    dndEnabled,
+  } = props;
+
+  // Drag id encodes BOTH session_id and source coach_id so the drop
+  // handler knows which coach (in a multi-coach shift) is being
+  // dragged — only that coach gets reassigned, the others stay put.
+  const dragId = `${entry.session.id}::${entry.coachId}`;
+  const { setNodeRef, attributes, listeners } = useDraggable({
+    id: dragId,
+    disabled: !dndEnabled,
+  });
+
+  return (
+    <StaffSessionCard
+      session={entry.session}
+      onClick={() => onSessionClick(entry.session)}
+      confidenceBadge={confidenceBadge}
+      certWarning={certWarning}
+      coaches={coaches}
+      onSessionChange={onSessionChange}
+      otherCount={entry.otherCount}
+      asSecondary={!entry.isPrimary}
+      isConflicted={conflictedIds.has(entry.session.id)}
+      isActive={activeKey === dragId}
+      draggableProps={
+        dndEnabled
+          ? {
+              setNodeRef,
+              attributes: attributes as unknown as Record<string, unknown>,
+              listeners: listeners as unknown as
+                | Record<string, unknown>
+                | undefined,
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+function DroppableDayCell({
+  coachId,
+  dateStr,
+  children,
+  className,
+  dndEnabled,
+}: {
+  coachId: string;
+  dateStr: string;
+  children: ReactNode;
+  className: string;
+  dndEnabled: boolean;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `staff_${coachId}_${dateStr}`,
+    disabled: !dndEnabled,
+  });
+  return (
+    <td
+      ref={setNodeRef}
+      className={`${className} ${
+        isOver
+          ? "bg-[#E8712A]/10 outline-2 outline-dashed outline-[#E8712A]/50 outline-offset-[-2px]"
+          : ""
+      }`}
+    >
+      {children}
+    </td>
   );
 }
 
@@ -272,29 +413,161 @@ export function StaffRosterView({
   onSessionChange,
   sessionCertWarnings,
   renderConfidenceBadge,
+  dndEnabled = false,
 }: StaffRosterViewProps) {
   const weekDates = getWeekDates(weekStart);
-  const entries = flattenForStaffView(sessions);
+
+  // Local sessions list for optimistic updates.
+  const [localSessions, setLocalSessions] =
+    useState<SessionWithRelations[]>(sessions);
+  useEffect(() => {
+    setLocalSessions(sessions);
+  }, [sessions]);
+
+  const [conflictedIds, setConflictedIds] = useState<Set<string>>(new Set());
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [activeSession, setActiveSession] =
+    useState<SessionWithRelations | null>(null);
+
+  // P4 sensors — pointer + touch (250ms long-press / 5px tolerance).
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor),
+  );
+
+  const reducedMotion = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  const entries = flattenForStaffView(localSessions);
   const grouped = groupEntriesByCoachAndDate(entries);
 
   // Build the coach rows: all coaches who have sessions + any coaches from the list
   // who don't have sessions this week (so the full team is visible)
   const coachOrder: { id: string; name: string }[] = [];
   const seen = new Set<string>();
-
-  // First: coaches from the coaches prop (preserves alphabetical or passed order)
   for (const c of coaches) {
     coachOrder.push({ id: c.id, name: c.name ?? "Unknown" });
     seen.add(c.id);
   }
 
-  // Check for unassigned sessions
   const hasUnassigned = grouped.has("__unassigned__");
-
-  // Sort coaches alphabetically by name
   coachOrder.sort((a, b) => a.name.localeCompare(b.name));
 
-  return (
+  // ---- DnD handlers ----
+
+  function handleDragStart(event: DragStartEvent) {
+    const key = event.active.id as string;
+    setActiveKey(key);
+    const sessionId = key.split("::")[0];
+    const s = localSessions.find((x) => x.id === sessionId);
+    if (s) setActiveSession(s);
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    setActiveKey(null);
+    setActiveSession(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const dragKey = active.id as string;
+    const [sessionId, sourceCoachId] = dragKey.split("::");
+    const dropKey = over.id as string;
+    if (!dropKey.startsWith("staff_")) return;
+
+    // staff_<coachId>_<YYYY-MM-DD>
+    const rest = dropKey.slice("staff_".length);
+    // The date is the last 10 chars; coach_id is everything before.
+    const dateMatch = rest.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/);
+    if (!dateMatch) return;
+    const targetCoachId = dateMatch[1];
+    const newDate = dateMatch[2];
+
+    const source = localSessions.find((s) => s.id === sessionId);
+    if (!source) return;
+
+    // No-op drop — same coach, same day.
+    const dateChanged = source.date !== newDate;
+    const coachChanged =
+      targetCoachId !== sourceCoachId && targetCoachId !== "__unassigned__";
+    const clearAssignment = targetCoachId === "__unassigned__";
+
+    if (!dateChanged && !coachChanged && !clearAssignment) {
+      return;
+    }
+
+    const snapshot = localSessions;
+    const expectedUpdatedAt = source.updated_at ?? "";
+
+    // Optimistic update — apply the patch locally.
+    setLocalSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId) return s;
+        const next = { ...s };
+        if (dateChanged) next.date = newDate;
+        if (coachChanged) {
+          next.coach_id = targetCoachId;
+          // Reset assigned_coaches to a single primary to mirror what
+          // the server will write through setSessionCoaches.
+          next.assigned_coaches = [
+            {
+              user_id: targetCoachId,
+              name:
+                coaches.find((c) => c.id === targetCoachId)?.name ?? null,
+              is_primary: true,
+            },
+          ];
+        } else if (clearAssignment) {
+          next.coach_id = null;
+          next.assigned_coaches = [];
+        }
+        return next;
+      }),
+    );
+
+    const result = await dragMoveSession({
+      sessionId,
+      newDate: dateChanged ? newDate : undefined,
+      newCoachId: clearAssignment
+        ? null
+        : coachChanged
+          ? targetCoachId
+          : undefined,
+      expectedUpdatedAt,
+    });
+
+    if (!result.ok) {
+      setLocalSessions(snapshot);
+      toast.error(result.error ?? "Could not move session.");
+      return;
+    }
+
+    if (result.conflict) {
+      setConflictedIds((prev) => {
+        const next = new Set(prev);
+        next.add(sessionId);
+        return next;
+      });
+      toast.info("Session landed on a conflicting slot — review and resolve.");
+      setTimeout(() => {
+        setConflictedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(sessionId);
+          return next;
+        });
+      }, 8_000);
+    } else {
+      toast.success("Session moved.");
+    }
+
+    onSessionChange();
+  }
+
+  const table = (
     <div className="overflow-x-auto rounded-2xl border bg-card transition hover:shadow-md">
       <table className="min-w-[700px] w-full border-collapse">
         {/* Header */}
@@ -329,6 +602,9 @@ export function StaffRosterView({
               sessionCertWarnings={sessionCertWarnings}
               coaches={coaches}
               isUnassigned
+              dndEnabled={dndEnabled}
+              conflictedIds={conflictedIds}
+              activeKey={activeKey}
             />
           )}
 
@@ -346,6 +622,9 @@ export function StaffRosterView({
               renderConfidenceBadge={renderConfidenceBadge}
               sessionCertWarnings={sessionCertWarnings}
               coaches={coaches}
+              dndEnabled={dndEnabled}
+              conflictedIds={conflictedIds}
+              activeKey={activeKey}
             />
           ))}
 
@@ -363,6 +642,31 @@ export function StaffRosterView({
         </tbody>
       </table>
     </div>
+  );
+
+  if (!dndEnabled) return table;
+
+  return (
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      {table}
+      <DragOverlay dropAnimation={reducedMotion ? null : undefined}>
+        {activeSession ? (
+          <div className="w-[160px] opacity-90">
+            <StaffSessionCard
+              session={activeSession}
+              onClick={() => {}}
+              certWarning={sessionCertWarnings?.[activeSession.id]}
+              coaches={coaches}
+              onSessionChange={onSessionChange}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
 
@@ -382,6 +686,9 @@ function StaffRow({
   sessionCertWarnings,
   coaches,
   isUnassigned,
+  dndEnabled,
+  conflictedIds,
+  activeKey,
 }: {
   coachId: string;
   coachName: string;
@@ -394,6 +701,9 @@ function StaffRow({
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   coaches: Pick<Profile, "id" | "name">[];
   isUnassigned?: boolean;
+  dndEnabled: boolean;
+  conflictedIds: Set<string>;
+  activeKey: string | null;
 }) {
   // Count total entries (per-coach cards) for this row this week
   let totalSessions = 0;
@@ -436,9 +746,12 @@ function StaffRow({
         const isEmpty = dayEntries.length === 0;
 
         return (
-          <td
+          <DroppableDayCell
             key={dateStr}
+            coachId={coachId}
+            dateStr={dateStr}
             className="border-l px-1.5 py-1.5 align-top"
+            dndEnabled={dndEnabled}
           >
             {isEmpty ? (
               /* Empty cell - clickable to add session */
@@ -453,16 +766,17 @@ function StaffRow({
             ) : (
               <div className="flex flex-col gap-1">
                 {dayEntries.map((entry) => (
-                  <StaffSessionCard
+                  <DraggableStaffCard
                     key={`${entry.session.id}-${entry.coachId}`}
-                    session={entry.session}
-                    onClick={() => onSessionClick(entry.session)}
-                    confidenceBadge={renderConfidenceBadge?.(entry.session.id)}
-                    certWarning={sessionCertWarnings?.[entry.session.id]}
+                    entry={entry}
                     coaches={coaches}
                     onSessionChange={onSessionChange}
-                    otherCount={entry.otherCount}
-                    asSecondary={!entry.isPrimary}
+                    onSessionClick={onSessionClick}
+                    confidenceBadge={renderConfidenceBadge?.(entry.session.id)}
+                    certWarning={sessionCertWarnings?.[entry.session.id]}
+                    conflictedIds={conflictedIds}
+                    activeKey={activeKey}
+                    dndEnabled={dndEnabled}
                   />
                 ))}
                 {/* Add button below existing sessions */}
@@ -476,7 +790,7 @@ function StaffRow({
                 </button>
               </div>
             )}
-          </td>
+          </DroppableDayCell>
         );
       })}
     </tr>

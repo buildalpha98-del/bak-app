@@ -91,6 +91,7 @@ export default async function OpsRosterPage({
       basePath="/ops/roster"
       sessionCertWarnings={certWarningsRes.data ?? undefined}
       unconfirmedShifts={unconfirmedRes.data ?? undefined}
+      viewerRole="ops"
     />
   );
 }
