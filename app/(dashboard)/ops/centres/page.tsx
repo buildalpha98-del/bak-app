@@ -6,10 +6,8 @@ import { getRegions } from "@/lib/regions/actions";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { CentreListView } from "@/components/centres/centre-list-view";
 import { CentresStatusPulseStrip } from "@/components/admin/centres-status-pulse";
-import {
-  CompareSelect,
-  compareParamToPeriodKey,
-} from "@/components/shared/compare-select";
+import { CompareSelect } from "@/components/shared/compare-select";
+import { compareParamToPeriodKey } from "@/lib/comparison/url-param";
 
 export const dynamic = "force-dynamic";
 

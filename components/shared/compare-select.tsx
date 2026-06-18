@@ -74,17 +74,8 @@ export function CompareSelect({
   );
 }
 
-/**
- * Server-side helper: map the URL `?compare=...` value to a
- * `PeriodKey | undefined`. Keeps the conversion in one place so
- * each page reads the URL the same way.
- */
-export function compareParamToPeriodKey(
-  value: string | string[] | undefined | null
-): PeriodKey | undefined {
-  const v = Array.isArray(value) ? value[0] : value;
-  if (v === "last_week" || v === "last_month" || v === "last_term") {
-    return v;
-  }
-  return undefined;
-}
+// `compareParamToPeriodKey` lives in `lib/comparison/url-param.ts` so
+// server components can import it without crossing the "use client"
+// boundary. Re-exported here for backwards compatibility with any
+// callers that still import it from this module.
+export { compareParamToPeriodKey } from "@/lib/comparison/url-param";
