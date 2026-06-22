@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard, AlertCircle } from "lucide-react";
+import { getSquareWebSdkUrl } from "@/lib/payments/square-config";
 
 declare global {
   interface Window {
@@ -66,7 +67,10 @@ export function SquarePayment({
 
     const script = document.createElement("script");
     script.id = "square-web-payments-sdk";
-    script.src = "https://sandbox.web.squarecdn.com/v1/square.js";
+    // Env-driven SDK URL: sandbox.web.squarecdn.com vs web.squarecdn.com.
+    // Must match NEXT_PUBLIC_SQUARE_ENV on this deploy or card tokens
+    // tokenised against the wrong environment will reject on the server.
+    script.src = getSquareWebSdkUrl();
     script.async = true;
 
     script.onload = () => {

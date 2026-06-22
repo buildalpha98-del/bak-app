@@ -12,7 +12,7 @@ Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in
 - **P5** (`4207c68 … 0558b3f`) — multi-coach per shift: `session_coaches` join table (migration 048) with sync-trigger maintaining `sessions.coach_id` as a read-only cache; `setSessionCoaches` helper is the single write path; CI guard test (`lib/__tests__/no-direct-coach-id-writes.test.ts`) enforces it; cost projection per-rate-summed; conflict detection reads from `session_coaches`; UI roster grid renders "+N others" badge on primary and "↔ shared" on secondaries; detail sheet uses a drag-to-reorder `CoachChipMultiselect`.
 - **P4** (drag-and-drop scheduling + colour coding + mobile polish) — **deferred**, planned for post-beta.
 
-**Beta-readiness (Wave A — pre-launch):** 5 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite pending, Square live cutover pending). See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
+**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`). See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
 
 ## Tech Stack
 

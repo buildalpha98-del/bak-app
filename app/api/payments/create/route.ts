@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { getSquareApiUrl } from "@/lib/payments/square-config";
 
-const SQUARE_API_URL =
-  "https://connect.squareupsandbox.com/v2/payments";
+// Resolved at request-time so a redeploy with a flipped SQUARE_ENV
+// picks up immediately without bundle invalidation.
 
 interface CreatePaymentBody {
   sourceId: string;
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Call Square Payments API
-    const squareResponse = await fetch(SQUARE_API_URL, {
+    const squareResponse = await fetch(getSquareApiUrl(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
