@@ -2,10 +2,19 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateProgram } from "@/lib/ai/generate-program";
 import { validateAgeBands } from "@/lib/utils/programs/age-bands";
+import {
+  checkDailyLimit,
+  getCached,
+  setCached,
+  hashRequestKey,
+} from "@/lib/ai/cache-and-limit";
 
-// Simple in-memory rate limit: userId → last generation timestamp
+// Per-user 10s cooldown — prevents accidental double-clicks.
 const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_MS = 10_000; // 10 seconds
+const RATE_LIMIT_MS = 10_000;
+
+// Per-user daily cap. 30/day × ~$1/call ≈ $30/day ceiling per user.
+const DAILY_LIMIT = 30;
 
 export async function POST(request: Request) {
   try {
@@ -116,7 +125,37 @@ export async function POST(request: Request) {
       };
     }
 
-    // 5. Generate programme via Claude
+    // 5. Result cache — same (sport, ageGroups, duration, skillFocus,
+    // equipment) returns the previous Claude output for 24h.
+    // centreContext is intentionally excluded from the key — recent
+    // programs at a centre change over time and we want fresh output
+    // when context shifts. Cache is global (not per-user).
+    const cacheParams = {
+      sport,
+      ageGroups: [...ageGroups].sort(),
+      durationMinutes: body.durationMinutes,
+      skillFocus: typeof body.skillFocus === "string" ? body.skillFocus : null,
+      availableEquipment: [...availableEquipment].sort(),
+    };
+    const cacheKey = hashRequestKey("program", cacheParams);
+    const cached = getCached<unknown>(cacheKey);
+    if (cached) {
+      return NextResponse.json({ data: cached, cached: true });
+    }
+
+    // 6. Daily cap — only counts uncached generations against the user.
+    const daily = checkDailyLimit(`program:${user.id}`, DAILY_LIMIT);
+    if (!daily.allowed) {
+      const hoursToReset = Math.ceil((daily.resetAt - Date.now()) / 3_600_000);
+      return NextResponse.json(
+        {
+          error: `Daily generation limit reached (${DAILY_LIMIT}/day). Resets in ~${hoursToReset}h.`,
+        },
+        { status: 429 }
+      );
+    }
+
+    // 7. Generate programme via Claude
     rateLimitMap.set(user.id, Date.now());
 
     const programContent = await generateProgram({
@@ -127,6 +166,7 @@ export async function POST(request: Request) {
       availableEquipment,
       centreContext,
     });
+    setCached(cacheKey, programContent);
 
     return NextResponse.json({ data: programContent });
   } catch (err) {

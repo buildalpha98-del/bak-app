@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateSkills } from "@/lib/ai/generate-skills";
 import { SPORTS } from "@/lib/types/enums";
+import {
+  checkDailyLimit,
+  getCached,
+  setCached,
+  hashRequestKey,
+} from "@/lib/ai/cache-and-limit";
 
-// Simple in-memory rate limit
+// Per-user 10s cooldown — prevents accidental double-clicks.
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 10_000;
+
+// Per-user daily cap on AI generations. Belt-and-braces against a
+// runaway tab. 30/day × ~$0.50/call = $15/day ceiling per user.
+const DAILY_LIMIT = 30;
 
 export async function POST(request: Request) {
   try {
@@ -74,9 +84,36 @@ export async function POST(request: Request) {
       .order("created_at", { ascending: false })
       .limit(1);
 
-    // 6. Generate skills via Claude
+    // 6. Result cache — same (sport, ageGroup) returns the previous
+    // Claude output for 24h. Lets a user reopen the dialog without
+    // re-spending the AI tokens. Cache key is global (not per-user)
+    // because the output doesn't depend on who's asking.
+    const cacheKey = hashRequestKey("skills", { sport, ageGroup });
+    const cached = getCached<unknown>(cacheKey);
+    if (cached) {
+      return NextResponse.json({
+        data: cached,
+        existing: existing && existing.length > 0 ? existing[0] : null,
+        cached: true,
+      });
+    }
+
+    // 7. Daily cap — only counts uncached generations against the user.
+    const daily = checkDailyLimit(`skills:${user.id}`, DAILY_LIMIT);
+    if (!daily.allowed) {
+      const hoursToReset = Math.ceil((daily.resetAt - Date.now()) / 3_600_000);
+      return NextResponse.json(
+        {
+          error: `Daily generation limit reached (${DAILY_LIMIT}/day). Resets in ~${hoursToReset}h.`,
+        },
+        { status: 429 }
+      );
+    }
+
+    // 8. Generate skills via Claude
     rateLimitMap.set(user.id, Date.now());
     const skills = await generateSkills(sport, ageGroup);
+    setCached(cacheKey, skills);
 
     return NextResponse.json({
       data: skills,
