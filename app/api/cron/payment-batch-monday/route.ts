@@ -15,9 +15,19 @@ export async function GET(request: Request) {
   const admin = createSupabaseAdmin();
   const today = new Date();
 
-  // Only act if today is a Monday (cron runs on Mondays, but belt-and-braces)
-  if (today.getDay() !== 1) {
-    return NextResponse.json({ message: "Not a Monday — skipping", day: today.getDay() });
+  // Belt-and-braces day check — must use Sydney timezone, NOT server-local.
+  // Vercel runs UTC by default; bom1 region is UTC+5:30. Server-local Monday
+  // != Australian Monday on either side. The payroll period is Sydney-aligned
+  // so the check must be too.
+  const sydneyWeekday = new Intl.DateTimeFormat("en-AU", {
+    timeZone: "Australia/Sydney",
+    weekday: "short",
+  }).format(today);
+  if (sydneyWeekday !== "Mon") {
+    return NextResponse.json({
+      message: "Not a Sydney Monday — skipping",
+      weekday: sydneyWeekday,
+    });
   }
 
   // Get the just-ended fortnightly period (14 days ago sits within the previous period)

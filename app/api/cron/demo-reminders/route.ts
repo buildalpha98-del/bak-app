@@ -34,53 +34,61 @@ export async function GET(request: Request) {
   }
 
   let notified = 0;
+  let failed = 0;
 
   for (const demo of demos) {
     if (!demo.coach_id) continue;
 
-    // Get coach profile
-    const { data: coach } = await admin
-      .from("profiles")
-      .select("id, email, name, role")
-      .eq("id", demo.coach_id)
-      .single();
+    try {
+      const { data: coach } = await admin
+        .from("profiles")
+        .select("id, email, name, role")
+        .eq("id", demo.coach_id)
+        .single();
 
-    if (!coach) continue;
+      if (!coach) {
+        failed++;
+        continue;
+      }
 
-    // Get lead centre name
-    const { data: lead } = await admin
-      .from("leads")
-      .select("centre_name")
-      .eq("id", demo.lead_id)
-      .single();
+      const { data: lead } = await admin
+        .from("leads")
+        .select("centre_name")
+        .eq("id", demo.lead_id)
+        .single();
 
-    const centreName = lead?.centre_name ?? "a centre";
-    const timeStr = demo.scheduled_time?.slice(0, 5) ?? "TBC";
+      const centreName = lead?.centre_name ?? "a centre";
+      const timeStr = demo.scheduled_time?.slice(0, 5) ?? "TBC";
 
-    await triggerNotification(
-      {
-        type: "demo_reminder",
-        title: `Demo tomorrow at ${centreName}`,
-        body: `You have a ${demo.duration_minutes}min demo at ${timeStr} tomorrow. Make sure you're prepared!`,
-        entityType: "demo_session",
-        entityId: demo.id,
-      },
-      [
+      await triggerNotification(
         {
-          userId: coach.id,
-          email: coach.email,
-          name: coach.name,
-          role: coach.role,
+          type: "demo_reminder",
+          title: `Demo tomorrow at ${centreName}`,
+          body: `You have a ${demo.duration_minutes}min demo at ${timeStr} tomorrow. Make sure you're prepared!`,
+          entityType: "demo_session",
+          entityId: demo.id,
         },
-      ]
-    );
+        [
+          {
+            userId: coach.id,
+            email: coach.email,
+            name: coach.name,
+            role: coach.role,
+          },
+        ]
+      );
 
-    notified++;
+      notified++;
+    } catch (err) {
+      failed++;
+      console.error(`demo-reminders: notification failed for demo ${demo.id}:`, err);
+    }
   }
 
   return NextResponse.json({
     message: "Demo reminders sent",
     demosFound: demos.length,
     coachesNotified: notified,
+    failed,
   });
 }

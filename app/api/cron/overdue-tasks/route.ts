@@ -53,43 +53,58 @@ export async function GET(request: Request) {
     byAssignee[task.assignee_id].push(task);
   }
 
-  // Send one notification per assignee
+  // Send one notification per assignee. Wrap each one so a single
+  // Supabase/notification failure doesn't silently swallow the entire batch.
   let notified = 0;
+  let failed = 0;
   for (const [assigneeId, tasks] of Object.entries(byAssignee)) {
-    const { data: assignee } = await admin
-      .from("profiles")
-      .select("id, email, name, role")
-      .eq("id", assigneeId)
-      .single();
+    try {
+      const { data: assignee } = await admin
+        .from("profiles")
+        .select("id, email, name, role")
+        .eq("id", assigneeId)
+        .single();
 
-    if (!assignee) continue;
+      if (!assignee) {
+        failed++;
+        continue;
+      }
 
-    await triggerNotification(
-      {
-        type: "task_overdue_reminder",
-        title: `${tasks.length} overdue task${tasks.length > 1 ? "s" : ""}`,
-        body: tasks.length === 1
-          ? tasks[0].title
-          : `You have ${tasks.length} tasks past their due date`,
-        entityType: "task",
-        entityId: tasks[0].id,
-        data: { count: tasks.length, taskIds: tasks.map((t) => t.id) },
-      },
-      [
+      await triggerNotification(
         {
-          userId: assignee.id,
-          email: assignee.email,
-          name: assignee.name,
-          role: assignee.role,
+          type: "task_overdue_reminder",
+          title: `${tasks.length} overdue task${tasks.length > 1 ? "s" : ""}`,
+          body:
+            tasks.length === 1
+              ? tasks[0].title
+              : `You have ${tasks.length} tasks past their due date`,
+          entityType: "task",
+          entityId: tasks[0].id,
+          data: { count: tasks.length, taskIds: tasks.map((t) => t.id) },
         },
-      ]
-    );
-    notified++;
+        [
+          {
+            userId: assignee.id,
+            email: assignee.email,
+            name: assignee.name,
+            role: assignee.role,
+          },
+        ]
+      );
+      notified++;
+    } catch (err) {
+      failed++;
+      console.error(
+        `overdue-tasks: notification failed for assignee ${assigneeId}:`,
+        err
+      );
+    }
   }
 
   return NextResponse.json({
     message: "Overdue reminders sent",
     overdueTasks: overdueTasks.length,
     usersNotified: notified,
+    failed,
   });
 }

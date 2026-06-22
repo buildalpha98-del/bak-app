@@ -50,76 +50,114 @@ export async function GET(request: Request) {
 
   const todayStr = now.toISOString().split("T")[0];
   let remindersSent = 0;
+  let failed = 0;
+  let skipped = 0;
 
   for (const booking of validBookings) {
-    const session = (booking as Record<string, unknown>)
-      .bookable_sessions as {
-      id: string;
-      title: string;
-      date: string;
-      start_time: string;
-      end_time: string;
-      location_name: string;
-      location_address: string;
-    };
+    try {
+      const session = (booking as Record<string, unknown>)
+        .bookable_sessions as {
+        id: string;
+        title: string;
+        date: string;
+        start_time: string;
+        end_time: string;
+        location_name: string;
+        location_address: string;
+      };
 
-    // Check if a reminder was already sent today for this booking
-    const { data: existingNotification } = await admin
-      .from("notifications")
-      .select("id")
-      .eq("type", "booking_reminder")
-      .eq("entity_id", booking.id)
-      .gte("created_at", `${todayStr}T00:00:00`)
-      .lt("created_at", `${todayStr}T23:59:59`)
-      .limit(1);
+      // Skip if we already sent today (idempotent).
+      const { data: existingNotification } = await admin
+        .from("notifications")
+        .select("id")
+        .eq("type", "booking_reminder")
+        .eq("entity_id", booking.id)
+        .gte("created_at", `${todayStr}T00:00:00`)
+        .lt("created_at", `${todayStr}T23:59:59`)
+        .limit(1);
 
-    if (existingNotification && existingNotification.length > 0) {
-      continue;
+      if (existingNotification && existingNotification.length > 0) {
+        skipped++;
+        continue;
+      }
+
+      const { data: parentProfile } = await admin
+        .from("parent_profiles")
+        .select("user_id")
+        .eq("id", booking.parent_id)
+        .single();
+
+      if (!parentProfile) {
+        skipped++;
+        continue;
+      }
+
+      const { data: user, error: userErr } =
+        await admin.auth.admin.getUserById(parentProfile.user_id);
+
+      if (userErr) {
+        failed++;
+        console.error(
+          `booking-reminder: getUserById failed for booking ${booking.id}:`,
+          userErr
+        );
+        continue;
+      }
+      if (!user?.user?.email) {
+        skipped++;
+        continue;
+      }
+
+      const children = (
+        booking.children_json as Array<{ child_name: string }>
+      ).map((c) => ({ name: c.child_name }));
+
+      const { subject, html } = bookingReminderEmail(session, children);
+
+      const emailResult = await sendEmail(user.user.email, subject, html);
+      if (!emailResult.success) {
+        failed++;
+        console.error(
+          `booking-reminder: sendEmail failed for booking ${booking.id}: ${emailResult.error}`
+        );
+        // Still create the in-app notification — the parent may catch it there.
+      }
+
+      const { error: notifyErr } = await admin.from("notifications").insert({
+        user_id: parentProfile.user_id,
+        type: "booking_reminder",
+        title: `Tomorrow: ${session.title}`,
+        body: `Your session is tomorrow at ${session.start_time}. Don't forget to bring comfortable clothes and a water bottle!`,
+        tier: "important",
+        entity_type: "booking",
+        entity_id: booking.id,
+        data: { bookable_session_id: session.id },
+      });
+
+      if (notifyErr) {
+        failed++;
+        console.error(
+          `booking-reminder: notification insert failed for booking ${booking.id}:`,
+          notifyErr
+        );
+        continue;
+      }
+
+      remindersSent++;
+    } catch (err) {
+      failed++;
+      console.error(
+        `booking-reminder: unexpected error for booking ${booking.id}:`,
+        err
+      );
     }
-
-    // Get parent's user details for email and notification
-    const { data: parentProfile } = await admin
-      .from("parent_profiles")
-      .select("user_id")
-      .eq("id", booking.parent_id)
-      .single();
-
-    if (!parentProfile) continue;
-
-    const { data: user } = await admin.auth.admin.getUserById(
-      parentProfile.user_id
-    );
-
-    if (!user?.user?.email) continue;
-
-    const children = (
-      booking.children_json as Array<{ child_name: string }>
-    ).map((c) => ({ name: c.child_name }));
-
-    // Generate email
-    const { subject, html } = bookingReminderEmail(session, children);
-
-    // Send email
-    await sendEmail(user.user.email, subject, html);
-
-    // Create notification record
-    await admin.from("notifications").insert({
-      user_id: parentProfile.user_id,
-      type: "booking_reminder",
-      title: `Tomorrow: ${session.title}`,
-      body: `Your session is tomorrow at ${session.start_time}. Don't forget to bring comfortable clothes and a water bottle!`,
-      tier: "important",
-      entity_type: "booking",
-      entity_id: booking.id,
-      data: { bookable_session_id: session.id },
-    });
-
-    remindersSent++;
   }
 
   return NextResponse.json({
     message: "Booking reminders processed",
     reminders_sent: remindersSent,
+    skipped,
+    failed,
     total_bookings_checked: validBookings.length,
   });
 }

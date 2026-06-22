@@ -12,8 +12,12 @@ export const dynamic = "force-dynamic";
 // ============================================================
 // Sequence processing cron — runs every 6 hours (see vercel.json)
 // ============================================================
+//
+// Must be GET — Vercel cron only sends GET requests. Previously
+// this was POST and the cron silently 404'd every 6 hours,
+// meaning no sequence email ever sent in production.
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Verify cron secret or admin
     const cronSecret = request.headers.get("authorization");

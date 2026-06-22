@@ -82,50 +82,62 @@ export async function GET(request: Request) {
   }
 
   let notificationsSent = 0;
+  let failed = 0;
 
   for (const [coachId, items] of Object.entries(byCoach)) {
-    // Fetch coach profile for notification
-    const { data: coach } = await admin
-      .from("profiles")
-      .select("id, email, name, role")
-      .eq("id", coachId)
-      .single();
+    try {
+      const { data: coach } = await admin
+        .from("profiles")
+        .select("id, email, name, role")
+        .eq("id", coachId)
+        .single();
 
-    if (!coach) continue;
+      if (!coach) {
+        failed++;
+        continue;
+      }
 
-    const moduleList = items.map((i) => i.title).join(", ");
+      const moduleList = items.map((i) => i.title).join(", ");
 
-    await triggerNotification(
-      {
-        type: "training_overdue",
-        title: `${items.length} overdue training module${items.length > 1 ? "s" : ""}`,
-        body:
-          items.length === 1
-            ? `"${items[0].title}" is past its due date`
-            : `${items.length} modules overdue: ${moduleList}`,
-        entityType: "training_assignment",
-        entityId: items[0].assignmentId,
-        data: {
-          count: items.length,
-          assignmentIds: items.map((i) => i.assignmentId),
-        },
-      },
-      [
+      await triggerNotification(
         {
-          userId: coach.id,
-          email: coach.email,
-          name: coach.name,
-          role: coach.role,
+          type: "training_overdue",
+          title: `${items.length} overdue training module${items.length > 1 ? "s" : ""}`,
+          body:
+            items.length === 1
+              ? `"${items[0].title}" is past its due date`
+              : `${items.length} modules overdue: ${moduleList}`,
+          entityType: "training_assignment",
+          entityId: items[0].assignmentId,
+          data: {
+            count: items.length,
+            assignmentIds: items.map((i) => i.assignmentId),
+          },
         },
-      ]
-    );
+        [
+          {
+            userId: coach.id,
+            email: coach.email,
+            name: coach.name,
+            role: coach.role,
+          },
+        ]
+      );
 
-    notificationsSent++;
+      notificationsSent++;
+    } catch (err) {
+      failed++;
+      console.error(
+        `training-overdue: notification failed for coach ${coachId}:`,
+        err
+      );
+    }
   }
 
   return NextResponse.json({
     message: "Overdue training reminders sent",
     overdueAssignments: toNotify.length,
     coachesNotified: notificationsSent,
+    failed,
   });
 }

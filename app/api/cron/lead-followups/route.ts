@@ -27,6 +27,7 @@ export async function GET(request: Request) {
   }
 
   let followUpNotified = 0;
+  let followUpFailed = 0;
 
   if (dueLeads && dueLeads.length > 0) {
     // Group by owner to batch notifications
@@ -38,40 +39,50 @@ export async function GET(request: Request) {
     }
 
     for (const [ownerId, leads] of Object.entries(byOwner)) {
-      const { data: owner } = await admin
-        .from("profiles")
-        .select("id, email, name, role")
-        .eq("id", ownerId)
-        .single();
+      try {
+        const { data: owner } = await admin
+          .from("profiles")
+          .select("id, email, name, role")
+          .eq("id", ownerId)
+          .single();
 
-      if (!owner) continue;
+        if (!owner) {
+          followUpFailed++;
+          continue;
+        }
 
-      // One notification per owner listing all due follow-ups
-      const body =
-        leads.length === 1
-          ? `${leads[0].centre_name} is due for follow-up today`
-          : `You have ${leads.length} leads due for follow-up today: ${leads.map((l) => l.centre_name).join(", ")}`;
+        const body =
+          leads.length === 1
+            ? `${leads[0].centre_name} is due for follow-up today`
+            : `You have ${leads.length} leads due for follow-up today: ${leads.map((l) => l.centre_name).join(", ")}`;
 
-      await triggerNotification(
-        {
-          type: "task_overdue_reminder", // reuse existing type
-          title: `${leads.length} follow-up${leads.length > 1 ? "s" : ""} due today`,
-          body,
-          entityType: "lead",
-          entityId: leads[0].id,
-          data: { leadIds: leads.map((l) => l.id), count: leads.length },
-        },
-        [
+        await triggerNotification(
           {
-            userId: owner.id,
-            email: owner.email,
-            name: owner.name,
-            role: owner.role,
+            type: "task_overdue_reminder", // reuse existing type
+            title: `${leads.length} follow-up${leads.length > 1 ? "s" : ""} due today`,
+            body,
+            entityType: "lead",
+            entityId: leads[0].id,
+            data: { leadIds: leads.map((l) => l.id), count: leads.length },
           },
-        ]
-      );
+          [
+            {
+              userId: owner.id,
+              email: owner.email,
+              name: owner.name,
+              role: owner.role,
+            },
+          ]
+        );
 
-      followUpNotified++;
+        followUpNotified++;
+      } catch (err) {
+        followUpFailed++;
+        console.error(
+          `lead-followups: notification failed for owner ${ownerId}:`,
+          err
+        );
+      }
     }
   }
 
@@ -89,6 +100,7 @@ export async function GET(request: Request) {
     message: "Lead follow-up reminders sent",
     followUpsDueToday: dueLeads?.length ?? 0,
     ownersNotified: followUpNotified,
+    failed: followUpFailed,
     overdueLeads: overdueCount,
   });
 }

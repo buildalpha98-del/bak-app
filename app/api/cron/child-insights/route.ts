@@ -261,18 +261,27 @@ Sessions attended: ${termAttendances.filter((a) => a.present).length}`;
 
       const insight = parseInsightResponse(responseText);
 
-      await admin.from("child_insights").insert({
-        child_id: childId,
-        term_id: completedTerm.id,
-        centre_id: centreId,
-        insight_type: "term_end",
-        content_json: insight,
-        summary: insight.summary,
-        strengths: insight.strengths,
-        areas_for_growth: insight.areas_for_growth,
-        recommendations: insight.recommendations,
-        generated_by: "ai_cron",
-      });
+      // UPSERT not INSERT — backed by partial unique index on
+      // (child_id, term_id, insight_type) where term_id IS NOT NULL,
+      // see migration 058. Protects against duplicate insights when
+      // the cron re-runs (manual back-fill, retried after timeout).
+      await admin
+        .from("child_insights")
+        .upsert(
+          {
+            child_id: childId,
+            term_id: completedTerm.id,
+            centre_id: centreId,
+            insight_type: "term_end",
+            content_json: insight,
+            summary: insight.summary,
+            strengths: insight.strengths,
+            areas_for_growth: insight.areas_for_growth,
+            recommendations: insight.recommendations,
+            generated_by: "ai_cron",
+          },
+          { onConflict: "child_id,term_id,insight_type" }
+        );
 
       generated++;
     } catch (err) {

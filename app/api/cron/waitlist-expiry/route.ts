@@ -35,20 +35,23 @@ export async function GET(request: Request) {
 
   let expiredCount = 0;
   let reofferedCount = 0;
+  let failed = 0;
   const sessionsToProcess = new Set<string>();
 
-  // Mark all expired offers
+  // Mark all expired offers + notify each parent. Per-offer try/catch
+  // so a single Supabase failure doesn't poison the batch.
   for (const offer of expiredOffers) {
-    const { error: updateError } = await admin
-      .from("waitlist")
-      .update({ status: "expired" })
-      .eq("id", offer.id);
+    try {
+      const { error: updateError } = await admin
+        .from("waitlist")
+        .update({ status: "expired" })
+        .eq("id", offer.id);
 
-    if (!updateError) {
+      if (updateError) throw updateError;
+
       expiredCount++;
       sessionsToProcess.add(offer.bookable_session_id);
 
-      // Send expiry notification to parent
       const { data: parent } = await admin
         .from("parent_profiles")
         .select("user_id")
@@ -62,29 +65,49 @@ export async function GET(request: Request) {
         .single();
 
       if (parent && session) {
-        await admin.from("notifications").insert({
-          user_id: parent.user_id,
-          type: "waitlist_expired",
-          title: "Waitlist offer expired",
-          body: `Your spot offer for ${session.title} on ${new Date(session.date).toLocaleDateString("en-AU")} has expired.`,
-          tier: "informational",
-          entity_type: "waitlist",
-          entity_id: offer.id,
-          data: { bookable_session_id: offer.bookable_session_id },
-        });
+        const { error: notifyError } = await admin
+          .from("notifications")
+          .insert({
+            user_id: parent.user_id,
+            type: "waitlist_expired",
+            title: "Waitlist offer expired",
+            body: `Your spot offer for ${session.title} on ${new Date(session.date).toLocaleDateString("en-AU")} has expired.`,
+            tier: "informational",
+            entity_type: "waitlist",
+            entity_id: offer.id,
+            data: { bookable_session_id: offer.bookable_session_id },
+          });
+        if (notifyError) {
+          console.error(
+            `waitlist-expiry: parent notify failed for offer ${offer.id}:`,
+            notifyError
+          );
+        }
       }
+    } catch (err) {
+      failed++;
+      console.error(`waitlist-expiry: failed for offer ${offer.id}:`, err);
     }
   }
 
-  // Process waitlist for each affected session (offer to next person)
+  // Re-offer each affected session to the next person on the waitlist.
   for (const sessionId of sessionsToProcess) {
-    const { offered } = await processWaitlistForSession(sessionId);
-    if (offered) reofferedCount++;
+    try {
+      const { offered } = await processWaitlistForSession(sessionId);
+      if (offered) reofferedCount++;
+    } catch (err) {
+      failed++;
+      console.error(
+        `waitlist-expiry: processWaitlistForSession failed for session ${sessionId}:`,
+        err
+      );
+    }
   }
 
   return NextResponse.json({
     message: "Waitlist expiry processed",
     expired: expiredCount,
     reoffered: reofferedCount,
+    failed,
   });
 }
