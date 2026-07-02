@@ -116,3 +116,53 @@ export function formatDateShort(dateStr: string): string {
     month: "short",
   });
 }
+
+// ============================================================
+// Full-week (Mon–Sun) helpers — used by the staff roster grid.
+// Kept separate from the Mon–Fri exports above so the calendar
+// and list views (which assume a 5-day week) are unaffected.
+// ============================================================
+
+/** Day labels for the full 7-day staff grid header */
+export const DAY_LABELS_FULL = [
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+  "Sun",
+];
+
+/** Get dates for a full week as YYYY-MM-DD strings (Mon through Sun) */
+export function getWeekDatesFull(monday: Date): string[] {
+  const dates: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+  return dates;
+}
+
+/**
+ * Format "YYYY-MM-DD" as a compact staff-grid column header: "Mon 7/6"
+ * (weekday abbreviation + month/day). Weekend-safe — unlike
+ * `formatDayHeader`, which relies on `dateToDay` returning 0 for Sat/Sun.
+ */
+export function formatDayHeaderShort(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  const dayName = d.toLocaleDateString("en-AU", { weekday: "short" });
+  return `${dayName} ${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+/**
+ * Format a total number of minutes as "HH:MM" (e.g. 285 → "04:45").
+ * Used for per-coach, per-day, and weekly-total hour displays.
+ */
+export function formatHoursMinutes(totalMinutes: number): string {
+  const safe = Math.max(0, Math.round(totalMinutes));
+  const h = Math.floor(safe / 60);
+  const m = safe % 60;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}

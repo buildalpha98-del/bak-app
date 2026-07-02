@@ -15,14 +15,29 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import { Plus, User, ShieldAlert, ShieldOff, StickyNote } from "lucide-react";
+import {
+  Plus,
+  User,
+  Users,
+  Clock,
+  Layers,
+  ShieldAlert,
+  ShieldOff,
+  StickyNote,
+} from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
 import {
   describeSessionCertWarning,
   type SessionCertWarning,
 } from "@/lib/utils/compliance/cert-warnings";
-import { getWeekDates, formatDayHeader, formatTime12 } from "@/lib/utils/roster";
+import {
+  getWeekDatesFull,
+  formatDayHeader,
+  formatDayHeaderShort,
+  formatHoursMinutes,
+  formatTime12,
+} from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
 import { SessionCardMenu } from "./session-card-menu";
@@ -47,6 +62,26 @@ interface StaffRosterViewProps {
    * different day change the date. See `dragMoveSession`.
    */
   dndEnabled?: boolean;
+  /**
+   * Optional projected wage cost for the visible week, shown in the
+   * weekly summary footer's "Labor" metric. When omitted, Labor shows
+   * "—". Sourced from `getWeekCostProjection` in the parent, gated by
+   * financial access.
+   */
+  laborCost?: number | null;
+  /** Optional paid-hours figure paired with `laborCost` for the footer. */
+  laborHours?: number | null;
+}
+
+// Per-day and weekly aggregate shapes for the header stats + footer.
+interface DayStats {
+  minutes: number;
+  shiftCount: number;
+  userCount: number;
+}
+interface CoachWeekStats {
+  minutes: number;
+  shiftCount: number;
 }
 
 // ============================================================
@@ -142,6 +177,68 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+/** Cancelled sessions are excluded from all hour/shift/coverage stats. */
+function isCountable(s: SessionWithRelations): boolean {
+  return s.status !== "cancelled";
+}
+
+/** Distinct assigned coach ids on a session (empty when unassigned). */
+function assignedUserIds(s: SessionWithRelations): string[] {
+  if (s.assigned_coaches && s.assigned_coaches.length > 0) {
+    return s.assigned_coaches.map((c) => c.user_id);
+  }
+  return s.coach_id ? [s.coach_id] : [];
+}
+
+/**
+ * Per-day aggregates (hours / distinct shifts / distinct coaches),
+ * keyed by date. Sessions are counted once each — shared shifts do not
+ * inflate the day's shift count.
+ */
+function computeDayStats(
+  sessions: SessionWithRelations[],
+  weekDates: string[]
+): { byDate: Map<string, DayStats>; maxMinutes: number } {
+  const byDate = new Map<string, DayStats>();
+  const userSets = new Map<string, Set<string>>();
+  for (const dateStr of weekDates) {
+    byDate.set(dateStr, { minutes: 0, shiftCount: 0, userCount: 0 });
+    userSets.set(dateStr, new Set());
+  }
+
+  for (const s of sessions) {
+    if (!isCountable(s)) continue;
+    const stat = byDate.get(s.date);
+    if (!stat) continue; // outside the visible week
+    stat.minutes += s.duration_minutes;
+    stat.shiftCount += 1;
+    const set = userSets.get(s.date)!;
+    for (const uid of assignedUserIds(s)) set.add(uid);
+  }
+
+  let maxMinutes = 0;
+  for (const [dateStr, stat] of byDate) {
+    stat.userCount = userSets.get(dateStr)!.size;
+    if (stat.minutes > maxMinutes) maxMinutes = stat.minutes;
+  }
+
+  return { byDate, maxMinutes };
+}
+
+/** Weekly totals across the visible week: hours, shifts, distinct coaches. */
+function computeWeekTotals(sessions: SessionWithRelations[]): DayStats {
+  let minutes = 0;
+  let shiftCount = 0;
+  const users = new Set<string>();
+  for (const s of sessions) {
+    if (!isCountable(s)) continue;
+    minutes += s.duration_minutes;
+    shiftCount += 1;
+    for (const uid of assignedUserIds(s)) users.add(uid);
+  }
+  return { minutes, shiftCount, userCount: users.size };
 }
 
 // ============================================================
@@ -414,8 +511,10 @@ export function StaffRosterView({
   sessionCertWarnings,
   renderConfidenceBadge,
   dndEnabled = false,
+  laborCost,
+  laborHours,
 }: StaffRosterViewProps) {
-  const weekDates = getWeekDates(weekStart);
+  const weekDates = getWeekDatesFull(weekStart);
 
   // Local sessions list for optimistic updates.
   const [localSessions, setLocalSessions] =
@@ -445,6 +544,26 @@ export function StaffRosterView({
 
   const entries = flattenForStaffView(localSessions);
   const grouped = groupEntriesByCoachAndDate(entries);
+
+  // ---- Aggregates for the enriched header, coach totals, and footer ----
+  // Cheap to recompute per render (same pattern as `entries`/`grouped`);
+  // cancelled sessions are excluded throughout.
+  const { byDate: dayStats, maxMinutes: maxDayMinutes } = computeDayStats(
+    localSessions,
+    weekDates
+  );
+  const weekTotals = computeWeekTotals(localSessions);
+
+  // Per-coach weekly hours + shift count (shared shifts count for each
+  // assigned coach, mirroring the per-row card flattening).
+  const coachWeek = new Map<string, CoachWeekStats>();
+  for (const e of entries) {
+    if (!isCountable(e.session)) continue;
+    const cur = coachWeek.get(e.coachId) ?? { minutes: 0, shiftCount: 0 };
+    cur.minutes += e.session.duration_minutes;
+    cur.shiftCount += 1;
+    coachWeek.set(e.coachId, cur);
+  }
 
   // Build the coach rows: all coaches who have sessions + any coaches from the list
   // who don't have sessions this week (so the full team is visible)
@@ -569,21 +688,56 @@ export function StaffRosterView({
 
   const table = (
     <div className="overflow-x-auto rounded-2xl border bg-card transition hover:shadow-md">
-      <table className="min-w-[700px] w-full border-collapse">
-        {/* Header */}
+      <table className="min-w-[980px] w-full border-collapse">
+        {/* Header — day label + per-day stats + coverage bar */}
         <thead>
           <tr>
             <th className="sticky left-0 z-20 w-[160px] min-w-[160px] border-b bg-muted/50 px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">
               Coach
             </th>
-            {weekDates.map((dateStr) => (
-              <th
-                key={dateStr}
-                className="border-b border-l bg-muted/50 px-2 py-2.5 text-center text-xs font-medium text-muted-foreground"
-              >
-                {formatDayHeader(dateStr)}
-              </th>
-            ))}
+            {weekDates.map((dateStr) => {
+              const stat =
+                dayStats.get(dateStr) ??
+                ({ minutes: 0, shiftCount: 0, userCount: 0 } as DayStats);
+              const coveragePct =
+                maxDayMinutes > 0
+                  ? Math.round((stat.minutes / maxDayMinutes) * 100)
+                  : 0;
+              return (
+                <th
+                  key={dateStr}
+                  className="border-b border-l bg-muted/50 px-2 py-2 align-top text-center font-medium text-muted-foreground"
+                >
+                  <div className="text-xs text-foreground">
+                    {formatDayHeaderShort(dateStr)}
+                  </div>
+                  <div className="mt-1 flex items-center justify-center gap-2 text-[10px] font-normal text-muted-foreground">
+                    <span className="inline-flex items-center gap-0.5">
+                      <Clock className="size-3" aria-hidden="true" />
+                      {stat.minutes > 0 ? formatHoursMinutes(stat.minutes) : "--"}
+                    </span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <Layers className="size-3" aria-hidden="true" />
+                      {stat.shiftCount}
+                    </span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <Users className="size-3" aria-hidden="true" />
+                      {stat.userCount}
+                    </span>
+                  </div>
+                  {/* Coverage bar — fill relative to the busiest day */}
+                  <div
+                    className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted"
+                    title={`${formatHoursMinutes(stat.minutes)} rostered · ${stat.shiftCount} shift${stat.shiftCount === 1 ? "" : "s"}`}
+                  >
+                    <div
+                      className="h-full rounded-full bg-[#E8712A] transition-all"
+                      style={{ width: `${coveragePct}%` }}
+                    />
+                  </div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
 
@@ -602,6 +756,7 @@ export function StaffRosterView({
               sessionCertWarnings={sessionCertWarnings}
               coaches={coaches}
               isUnassigned
+              weekStats={coachWeek.get("__unassigned__")}
               dndEnabled={dndEnabled}
               conflictedIds={conflictedIds}
               activeKey={activeKey}
@@ -622,6 +777,7 @@ export function StaffRosterView({
               renderConfidenceBadge={renderConfidenceBadge}
               sessionCertWarnings={sessionCertWarnings}
               coaches={coaches}
+              weekStats={coachWeek.get(coach.id)}
               dndEnabled={dndEnabled}
               conflictedIds={conflictedIds}
               activeKey={activeKey}
@@ -640,6 +796,57 @@ export function StaffRosterView({
             </tr>
           )}
         </tbody>
+
+        {/* Weekly summary footer */}
+        <tfoot>
+          <tr className="border-t bg-muted/40">
+            <td className="sticky left-0 z-10 w-[160px] min-w-[160px] border-r bg-muted/40 px-3 py-2.5 text-xs font-semibold text-foreground">
+              Weekly summary
+            </td>
+            <td colSpan={weekDates.length} className="px-3 py-2.5">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                  <span className="text-muted-foreground">Hours</span>
+                  <span className="font-semibold text-foreground">
+                    {formatHoursMinutes(weekTotals.minutes)}
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Layers className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                  <span className="text-muted-foreground">Shifts</span>
+                  <span className="font-semibold text-foreground">
+                    {weekTotals.shiftCount}
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                  <span className="text-muted-foreground">Users</span>
+                  <span className="font-semibold text-foreground">
+                    {weekTotals.userCount}
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Labor</span>
+                  <span className="font-semibold text-foreground">
+                    {typeof laborCost === "number"
+                      ? new Intl.NumberFormat("en-AU", {
+                          style: "currency",
+                          currency: "AUD",
+                          maximumFractionDigits: 0,
+                        }).format(laborCost)
+                      : "--"}
+                    {typeof laborHours === "number" && laborHours > 0 ? (
+                      <span className="ml-1 font-normal text-muted-foreground">
+                        · {laborHours.toFixed(1)}h
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
@@ -686,6 +893,7 @@ function StaffRow({
   sessionCertWarnings,
   coaches,
   isUnassigned,
+  weekStats,
   dndEnabled,
   conflictedIds,
   activeKey,
@@ -701,15 +909,14 @@ function StaffRow({
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   coaches: Pick<Profile, "id" | "name">[];
   isUnassigned?: boolean;
+  weekStats?: CoachWeekStats;
   dndEnabled: boolean;
   conflictedIds: Set<string>;
   activeKey: string | null;
 }) {
-  // Count total entries (per-coach cards) for this row this week
-  let totalSessions = 0;
-  for (const arr of entriesByDate.values()) {
-    totalSessions += arr.length;
-  }
+  // Weekly totals for this row (excludes cancelled). Falls back to 0.
+  const rowMinutes = weekStats?.minutes ?? 0;
+  const rowShifts = weekStats?.shiftCount ?? 0;
 
   return (
     <tr className="group/row border-b last:border-b-0 hover:bg-muted/20 transition-colors">
@@ -733,8 +940,11 @@ function StaffRow({
             <p className={`truncate text-sm font-medium ${isUnassigned ? "italic text-muted-foreground" : "text-foreground"}`}>
               {coachName}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              {totalSessions} session{totalSessions !== 1 ? "s" : ""}
+            <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock className="size-2.5" aria-hidden="true" />
+              {formatHoursMinutes(rowMinutes)}
+              <span aria-hidden="true">·</span>
+              {rowShifts} shift{rowShifts !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
