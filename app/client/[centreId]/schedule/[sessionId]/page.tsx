@@ -26,14 +26,14 @@ export default async function ClientSessionPage({
       <ClientSessionDetail session={session} centreId={centreId} />
 
       {/* Per-child attendance — who actually attended vs was away. */}
-      {session.attendees.length > 0 && (
+      {(session.attendees ?? []).length > 0 && (
         <div className="rounded-2xl border bg-white p-4">
           <h2 className="text-sm font-semibold text-foreground">
-            Attendance ({session.attendees.filter((a) => a.present).length} of{" "}
-            {session.attendees.length})
+            Attendance ({(session.attendees ?? []).filter((a) => a.present).length} of{" "}
+            {(session.attendees ?? []).length})
           </h2>
           <ul className="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-            {session.attendees.map((a) => (
+            {(session.attendees ?? []).map((a) => (
               <li
                 key={a.name}
                 className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"

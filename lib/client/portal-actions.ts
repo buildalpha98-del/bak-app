@@ -48,7 +48,8 @@ export interface ClientSession {
   headcount: number | null;
   rating: number | null;
   coach_notes: string | null;
-  attendees: { name: string; present: boolean }[];
+  /** Populated on the detail fetch only — list views omit it. */
+  attendees?: { name: string; present: boolean }[];
 }
 
 export interface ClientChild {
