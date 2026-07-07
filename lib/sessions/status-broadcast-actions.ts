@@ -78,12 +78,6 @@ const TIER_MAP: Record<
   session_over: "informational",
 };
 
-const STATUS_LABEL: Record<SessionStatusBroadcastType, string> = {
-  running_late: "running late",
-  on_site: "on site",
-  session_over: "session over",
-};
-
 const MAX_MESSAGE_CHARS = 100;
 const ALLOWED_LATE_MINUTES = new Set([5, 10, 15, 20, 30]);
 
@@ -435,6 +429,3 @@ function buildNotificationCopy(args: {
   if (body.length > 240) body = `${body.slice(0, 237)}...`;
   return { title, body };
 }
-
-// Re-exported for label rendering in UI components.
-export { STATUS_LABEL };

@@ -32,7 +32,7 @@ import {
   type SessionCertWarning,
 } from "@/lib/utils/compliance/cert-warnings";
 import {
-  getWeekDatesFull,
+  getWeekDates,
   formatDayHeader,
   formatDayHeaderShort,
   formatHoursMinutes,
@@ -514,7 +514,7 @@ export function StaffRosterView({
   laborCost,
   laborHours,
 }: StaffRosterViewProps) {
-  const weekDates = getWeekDatesFull(weekStart);
+  const weekDates = getWeekDates(weekStart);
 
   // Local sessions list for optimistic updates.
   const [localSessions, setLocalSessions] =
