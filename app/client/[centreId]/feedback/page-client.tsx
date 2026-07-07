@@ -134,7 +134,7 @@ function SessionFeedbackCard({
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
+                className="text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
               >
                 {expanded ? "Close" : "Edit"}
               </Button>
@@ -142,7 +142,7 @@ function SessionFeedbackCard({
               <Button
                 size="sm"
                 onClick={onToggle}
-                className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                className="bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
               >
                 {expanded ? "Close" : "Rate this session"}
               </Button>
@@ -243,7 +243,7 @@ export function FeedbackPageClient({
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
             <div
-              className="h-full rounded-full bg-[#E8712A] transition-all duration-500"
+              className="h-full rounded-full bg-[#0891B2] transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -266,7 +266,7 @@ export function FeedbackPageClient({
         <Card className="rounded-2xl transition-shadow hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <CheckCircle className="h-4 w-4 text-[#E8712A]" />
+              <CheckCircle className="h-4 w-4 text-[#0891B2]" />
               Recent submissions
             </CardTitle>
           </CardHeader>

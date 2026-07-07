@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,9 +37,21 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
     if (rating === 0) return;
     setSubmitting(true);
     try {
-      await submitSessionFeedback(session.id, centreId, rating, comment);
+      const result = await submitSessionFeedback(
+        session.id,
+        centreId,
+        rating,
+        comment
+      );
+      if (result && typeof result === "object" && "error" in result && result.error) {
+        throw new Error(String(result.error));
+      }
       setSubmitted(true);
       onSubmitted?.();
+    } catch {
+      // Keep the form populated so the director can retry without
+      // re-typing — silent loss here erodes trust fast.
+      toast.error("Couldn't save your feedback. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -118,7 +131,7 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
       <Button
         type="submit"
         disabled={rating === 0 || submitting}
-        className="w-full rounded-2xl bg-[#E8712A] text-white hover:bg-[#E8712A]/90 disabled:opacity-50"
+        className="w-full rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90 disabled:opacity-50"
       >
         {submitting ? "Saving…" : isEditing ? "Update Feedback" : "Submit Feedback"}
       </Button>

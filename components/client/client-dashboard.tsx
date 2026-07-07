@@ -148,11 +148,11 @@ export function ClientDashboard({
 
       {/* Next session card */}
       {nextSession ? (
-        <Card className="rounded-2xl border-[#E8712A]/20 bg-gradient-to-br from-[#FFF3EA] to-white transition-shadow hover:shadow-md">
+        <Card className="rounded-2xl border-[#0891B2]/20 bg-gradient-to-br from-[#ECFEFF] to-white transition-shadow hover:shadow-md">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-[#E8712A]">
+                <p className="text-xs font-medium uppercase tracking-wider text-[#0891B2]">
                   Next Session
                 </p>
                 <p className="text-lg font-semibold text-foreground">
@@ -165,7 +165,7 @@ export function ClientDashboard({
                   </span>
                   <Badge
                     variant="secondary"
-                    className="bg-white text-[#E8712A] hover:bg-white border border-[#E8712A]/30"
+                    className="bg-white text-[#0891B2] hover:bg-white border border-[#0891B2]/30"
                   >
                     {nextSession.sport}
                   </Badge>
@@ -179,7 +179,7 @@ export function ClientDashboard({
               <div className="flex flex-col items-center rounded-2xl bg-white px-3 py-2 shadow-sm">
                 {days !== null && days >= 0 ? (
                   <>
-                    <span className="text-2xl font-bold tabular-nums text-[#E8712A]">
+                    <span className="text-2xl font-bold tabular-nums text-[#0891B2]">
                       {days}
                     </span>
                     <span className="text-xs text-muted-foreground">
@@ -187,7 +187,7 @@ export function ClientDashboard({
                     </span>
                   </>
                 ) : (
-                  <span className="text-sm font-medium text-[#E8712A]">Today</span>
+                  <span className="text-sm font-medium text-[#0891B2]">Today</span>
                 )}
               </div>
             </div>
@@ -196,7 +196,7 @@ export function ClientDashboard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="-ml-2 text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
+                className="-ml-2 text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
                 render={<Link href={`/client/${centreId}/schedule`} />}
               >
                 View full schedule
@@ -240,13 +240,13 @@ export function ClientDashboard({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4 text-[#E8712A]" />
+              <Activity className="h-4 w-4 text-[#0891B2]" />
               Recent Sessions
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
+              className="text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
               render={<Link href={`/client/${centreId}/schedule`} />}
             >
               View all
@@ -328,9 +328,9 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-2xl border bg-background p-3 text-sm font-medium text-foreground transition-all hover:-translate-y-0.5 hover:border-[#E8712A]/40 hover:shadow-sm"
+      className="flex items-center gap-2 rounded-2xl border bg-background p-3 text-sm font-medium text-foreground transition-all hover:-translate-y-0.5 hover:border-[#0891B2]/40 hover:shadow-sm"
     >
-      <Icon className="h-4 w-4 shrink-0 text-[#E8712A]" />
+      <Icon className="h-4 w-4 shrink-0 text-[#0891B2]" />
       <span className="truncate">{label}</span>
     </Link>
   );
@@ -350,8 +350,8 @@ function SummaryCard({
     <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
-          <div className="rounded-2xl bg-[#E8712A]/10 p-2">
-            <Icon className="h-4 w-4 text-[#E8712A]" />
+          <div className="rounded-2xl bg-[#0891B2]/10 p-2">
+            <Icon className="h-4 w-4 text-[#0891B2]" />
           </div>
         </div>
         <p className="mt-3 text-2xl font-bold tabular-nums text-foreground">

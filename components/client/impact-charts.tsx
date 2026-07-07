@@ -35,8 +35,8 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
       <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
         <defs>
           <linearGradient id="headcountGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#E8712A" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#E8712A" stopOpacity={0} />
+            <stop offset="5%" stopColor="#0891B2" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#0891B2" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -70,20 +70,20 @@ export function AttendanceChart({ data }: AttendanceChartProps) {
         <Area
           type="monotone"
           dataKey="headcount"
-          stroke="#E8712A"
+          stroke="#0891B2"
           strokeWidth={2}
           fill="url(#headcountGradient)"
-          dot={{ fill: "#E8712A", r: 3, strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: "#E8712A" }}
+          dot={{ fill: "#0891B2", r: 3, strokeWidth: 0 }}
+          activeDot={{ r: 5, fill: "#0891B2" }}
         />
         <Area
           type="monotone"
           dataKey="sessions"
-          stroke="#F4A87B"
+          stroke="#67E8F9"
           strokeWidth={2}
           fill="none"
-          dot={{ fill: "#F4A87B", r: 3, strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: "#F4A87B" }}
+          dot={{ fill: "#67E8F9", r: 3, strokeWidth: 0 }}
+          activeDot={{ r: 5, fill: "#67E8F9" }}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -103,7 +103,7 @@ interface RatingChartProps {
 
 function ratingColour(rating: number): string {
   if (rating >= 4) return "#10b981";
-  if (rating >= 3) return "#E8712A";
+  if (rating >= 3) return "#0891B2";
   return "#ef4444";
 }
 
@@ -160,8 +160,8 @@ interface SportPieChartProps {
 // other sports fall back to a quieter neutral chain so the brand
 // colour stays restrained and the pie reads as "Build Alpha Kids".
 const SPORT_COLOURS = [
-  "#E8712A",
-  "#F4A87B",
+  "#0891B2",
+  "#67E8F9",
   "#1F2937",
   "#4B5563",
   "#6B7280",

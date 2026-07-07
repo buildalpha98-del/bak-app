@@ -71,7 +71,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
         render={
           <button
             type="button"
-            className="inline-flex max-w-[260px] items-center gap-2 rounded-2xl border border-transparent bg-gray-50 px-3 py-1.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A]/40 data-[state=open]:bg-gray-100"
+            className="inline-flex max-w-[260px] items-center gap-2 rounded-2xl border border-transparent bg-gray-50 px-3 py-1.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40 data-[state=open]:bg-gray-100"
             aria-label="Switch centre"
           >
             <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -105,7 +105,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left text-sm transition-colors",
                     isCurrent
-                      ? "bg-[#E8712A]/5 ring-1 ring-inset ring-[#E8712A]/30"
+                      ? "bg-[#0891B2]/5 ring-1 ring-inset ring-[#0891B2]/30"
                       : "hover:bg-gray-50",
                   )}
                 >
@@ -129,7 +129,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
                   </span>
 
                   {isCurrent && (
-                    <Check className="h-3.5 w-3.5 shrink-0 text-[#E8712A]" aria-hidden="true" />
+                    <Check className="h-3.5 w-3.5 shrink-0 text-[#0891B2]" aria-hidden="true" />
                   )}
                   {!c.is_default && (
                     <button
@@ -137,7 +137,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
                       onClick={(e) => handleMakeDefault(e, c.id)}
                       title="Make default"
                       aria-label={`Make ${c.name} default`}
-                      className="hidden h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white hover:text-[#E8712A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A]/40 group-hover:flex"
+                      className="hidden h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white hover:text-[#0891B2] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40 group-hover:flex"
                     >
                       {isSavingDefault ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

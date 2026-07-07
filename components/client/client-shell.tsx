@@ -36,6 +36,8 @@ interface ClientShellProps {
   clientUser: ClientUserWithCentre;
   /** Every centre this director can access. Empty array stays plain. */
   centres: ClientUserCentre[];
+  /** Unread staff replies — badges the Messages nav item. */
+  unreadMessages?: number;
   children: React.ReactNode;
 }
 
@@ -56,7 +58,14 @@ function getNavItems(centreId: string) {
   ] as const;
 }
 
-export function ClientShell({ clientUser, centres, children }: ClientShellProps) {
+export function ClientShell({
+  clientUser,
+  centres,
+  unreadMessages = 0,
+  children,
+}: ClientShellProps) {
+  const showMessagesBadge = (label: string) =>
+    label === "Messages" && unreadMessages > 0;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -183,6 +192,11 @@ export function ClientShell({ clientUser, centres, children }: ClientShellProps)
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   {item.label}
+                  {showMessagesBadge(item.label) && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-600 px-1.5 text-[11px] font-semibold text-white">
+                      {unreadMessages}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -270,12 +284,19 @@ export function ClientShell({ clientUser, centres, children }: ClientShellProps)
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-2 text-xs transition-colors min-w-[3rem]",
+                "flex flex-col items-center gap-0.5 px-2 py-2 text-[11px] transition-colors min-w-[3rem]",
                 active ? "text-cyan-600" : "text-gray-400"
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="truncate">{item.label}</span>
+              <span className="relative">
+                <Icon className="h-5 w-5" />
+                {showMessagesBadge(item.label) && (
+                  <span className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-600 ring-2 ring-white" />
+                )}
+              </span>
+              <span className="max-w-[4.5rem] truncate whitespace-nowrap">
+                {item.label}
+              </span>
             </Link>
           );
         })}

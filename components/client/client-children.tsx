@@ -67,7 +67,7 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
               onClick={() => setAgeFilter(group)}
               className={
                 ageFilter === group
-                  ? "rounded-2xl bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                  ? "rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
                   : "rounded-2xl text-muted-foreground"
               }
             >
@@ -80,8 +80,8 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
       {/* Children list */}
       {filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center rounded-2xl p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
-            <Users className="h-6 w-6 text-[#E8712A]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
+            <Users className="h-6 w-6 text-[#0891B2]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-foreground">
             {children.length === 0 ? "No children enrolled" : "No children match your filters"}

@@ -66,15 +66,15 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#E8712A]/30 bg-[#E8712A]/5 px-3 py-2 text-sm font-medium text-[#E8712A] transition-colors hover:bg-[#E8712A]/10"
+            className="inline-flex items-center gap-2 rounded-2xl border border-[#0891B2]/30 bg-[#0891B2]/5 px-3 py-2 text-sm font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/10"
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar
           </a>
         </div>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
-            <FileText className="h-6 w-6 text-[#E8712A]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
+            <FileText className="h-6 w-6 text-[#0891B2]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No reports yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">

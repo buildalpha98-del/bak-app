@@ -148,14 +148,14 @@ export function ClientSettings({
       <Card className="mt-6 rounded-2xl transition-shadow hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4 text-[#E8712A]" />
+            <Link2 className="h-4 w-4 text-[#0891B2]" />
             Shared Links
           </CardTitle>
           <Button
             onClick={handleCreate}
             disabled={isCreating}
             size="sm"
-            className="rounded-2xl bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             {isCreating ? "Creating..." : "Create New Link"}
@@ -164,8 +164,8 @@ export function ClientSettings({
         <CardContent>
           {links.length === 0 ? (
             <div className="py-8 text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#E8712A]/10">
-                <Link2 className="h-5 w-5 text-[#E8712A]" />
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#0891B2]/10">
+                <Link2 className="h-5 w-5 text-[#0891B2]" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 No active shared links. Create one to share read-only portal access.
@@ -192,7 +192,7 @@ export function ClientSettings({
                           className={
                             isExpiringSoon
                               ? "border-amber-200 bg-amber-50 text-amber-700"
-                              : "border-[#E8712A]/30 bg-[#E8712A]/10 text-[#E8712A]"
+                              : "border-[#0891B2]/30 bg-[#0891B2]/10 text-[#0891B2]"
                           }
                         >
                           {days > 0 ? `${days} day${days === 1 ? "" : "s"} left` : "Expires today"}

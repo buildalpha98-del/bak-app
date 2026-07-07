@@ -700,6 +700,24 @@ export async function getCentreMessages(
 
     if (error) return { data: [], error: error.message };
 
+    // Opening the thread is the read action: mark staff replies read
+    // so the nav badge clears. Fire-and-forget — display never blocks
+    // on the bookkeeping write.
+    const hasUnreadStaff = (data ?? []).some(
+      (m) => m.sender_type === "staff" && !m.read_at
+    );
+    if (hasUnreadStaff) {
+      void supabase
+        .from("centre_messages")
+        .update({ read_at: new Date().toISOString() })
+        .eq("centre_id", centreId)
+        .eq("sender_type", "staff")
+        .is("read_at", null)
+        .then(({ error: markErr }) => {
+          if (markErr) console.error("mark staff messages read:", markErr);
+        });
+    }
+
     return {
       data: (data ?? []).map((m) => {
         const clientUser = m.client_users as unknown as { name: string } | null;
@@ -797,6 +815,27 @@ export async function sendCentreMessage(
   }
 }
 
+/**
+ * Unread staff replies across the centre — drives the Messages nav
+ * badge in the client shell.
+ */
+export async function getClientUnreadMessageCount(
+  centreId: string
+): Promise<number> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { count } = await supabase
+      .from("centre_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("centre_id", centreId)
+      .eq("sender_type", "staff")
+      .is("read_at", null);
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // ============================================================
 // Invoices
 // ============================================================
@@ -822,7 +861,10 @@ export async function getClientInvoices(
         invoice_number: inv.invoice_number,
         period_start: inv.period_start,
         period_end: inv.period_end,
-        amount: inv.amount,
+        // Cents are the source of truth; the legacy float `amount`
+        // only backfills rows created before the cents columns.
+        amount:
+          inv.total_cents != null ? inv.total_cents / 100 : inv.amount,
         status: inv.status,
         sent_at: inv.sent_at,
         created_at: inv.created_at,

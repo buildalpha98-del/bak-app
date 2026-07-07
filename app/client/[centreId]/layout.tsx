@@ -3,6 +3,7 @@ import {
   getCurrentClientUser,
   getCurrentClientUserCentres,
 } from "@/lib/client/actions";
+import { getClientUnreadMessageCount } from "@/lib/client/portal-actions";
 import { ClientShell } from "@/components/client/client-shell";
 
 export default async function ClientLayout({
@@ -13,10 +14,12 @@ export default async function ClientLayout({
   params: Promise<{ centreId: string }>;
 }) {
   const { centreId } = await params;
-  const [{ data: clientUser, error }, centresRes] = await Promise.all([
-    getCurrentClientUser(centreId),
-    getCurrentClientUserCentres(),
-  ]);
+  const [{ data: clientUser, error }, centresRes, unreadMessages] =
+    await Promise.all([
+      getCurrentClientUser(centreId),
+      getCurrentClientUserCentres(),
+      getClientUnreadMessageCount(centreId),
+    ]);
 
   if (error || !clientUser) {
     redirect("/client-login");
@@ -30,7 +33,11 @@ export default async function ClientLayout({
   }
 
   return (
-    <ClientShell clientUser={clientUser} centres={centresRes.data ?? []}>
+    <ClientShell
+      clientUser={clientUser}
+      centres={centresRes.data ?? []}
+      unreadMessages={unreadMessages}
+    >
       {children}
     </ClientShell>
   );

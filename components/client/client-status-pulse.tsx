@@ -9,7 +9,7 @@
 //   ClientHomePulseStrip  — used on /client/[centreId] (dashboard).
 //     Next session in N days · unread reports · unpaid invoices ·
 //     feedback this term. Active items use restrained brand orange
-//     (#E8712A), muted otherwise — calm surface when nothing needs
+//     (#0891B2), muted otherwise — calm surface when nothing needs
 //     attention.
 //
 //   ClientPortalPulseStrip — generic per-page strip used on
@@ -158,14 +158,14 @@ function PulseStat({
       <Icon
         className={
           active
-            ? "size-3.5 text-[#E8712A]"
+            ? "size-3.5 text-[#0891B2]"
             : "size-3.5 text-muted-foreground"
         }
       />
       <span
         className={
           active
-            ? "text-base font-semibold tabular-nums text-[#E8712A]"
+            ? "text-base font-semibold tabular-nums text-[#0891B2]"
             : "text-base font-semibold tabular-nums text-muted-foreground"
         }
       >
@@ -205,7 +205,7 @@ function NextSessionStat({
         <Icon
           className={
             active
-              ? "size-3.5 text-[#E8712A]"
+              ? "size-3.5 text-[#0891B2]"
               : "size-3.5 text-muted-foreground"
           }
         />

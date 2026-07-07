@@ -92,8 +92,8 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
           Invoices
         </h1>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8712A]/10">
-            <Receipt className="h-6 w-6 text-[#E8712A]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
+            <Receipt className="h-6 w-6 text-[#0891B2]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">
             No invoices yet
@@ -131,7 +131,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               Outstanding
             </p>
-            <p className="text-lg font-semibold tabular-nums text-[#E8712A]">
+            <p className="text-lg font-semibold tabular-nums text-[#0891B2]">
               {formatCurrency(outstandingTicked)}
             </p>
           </div>
@@ -177,7 +177,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
                       rel="noopener noreferrer"
                     >
                       <Button variant="ghost" size="sm" className="h-8 px-2">
-                        <FileDown className="h-4 w-4 text-[#E8712A]" />
+                        <FileDown className="h-4 w-4 text-[#0891B2]" />
                       </Button>
                     </a>
                   ) : (
@@ -227,7 +227,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
                     href={invoice.pdf_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-[#E8712A] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm text-[#0891B2] hover:underline"
                   >
                     <FileDown className="h-3.5 w-3.5" />
                     Download PDF

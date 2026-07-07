@@ -181,7 +181,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#E8712A] hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
+              className="text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
               render={
                 <Link href={`/client/${centreId}/schedule/${session.id}`} />
               }
