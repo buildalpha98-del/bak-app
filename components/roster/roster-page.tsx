@@ -601,14 +601,29 @@ export function RosterPage({
             Manage weekly coaching sessions
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`${basePath}/terms`} />}
-        >
-          View Terms
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`${basePath}/rerostering`} />}
+          >
+            Rerostering
+            {rosterPulse && rosterPulse.unassignedCount > 0 && (
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E8712A] px-1.5 text-[11px] font-semibold text-white">
+                {rosterPulse.unassignedCount}
+              </span>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`${basePath}/terms`} />}
+          >
+            View Terms
+          </Button>
+        </div>
       </div>
 
       {/* Pulse strip — always rendered so the operator gets the at-a-

@@ -440,7 +440,12 @@ export async function processRerosteringEscalations(): Promise<{
 }
 
 /**
- * Get active rerostering events (for ops command centre widget).
+ * Get open rerostering events for the command centre.
+ *
+ * Includes expired/declined offers whose session STILL needs a
+ * replacement — those are exactly the ones ops must act on ("try the
+ * next candidate"), and the old pending/sent-only filter dropped them
+ * off the list the moment the first offer lapsed.
  */
 export async function getActiveRerosteringEvents() {
   const supabase = await createSupabaseServerClient();
@@ -452,7 +457,7 @@ export async function getActiveRerosteringEvents() {
       suggestions_json, selected_replacement_id, offer_status,
       offer_sent_at, offer_expires_at, escalated, created_at
     `)
-    .in("offer_status", ["pending_offer", "offer_sent"])
+    .in("offer_status", ["pending_offer", "offer_sent", "expired", "declined"])
     .order("created_at", { ascending: false });
 
   if (!events || events.length === 0) return [];
@@ -467,7 +472,7 @@ export async function getActiveRerosteringEvents() {
   const [{ data: sessions }, { data: coaches }] = await Promise.all([
     supabase
       .from("sessions")
-      .select("id, date, time, sport, duration_minutes, centre_id, centres(name)")
+      .select("id, date, time, sport, duration_minutes, status, centre_id, centres(name)")
       .in("id", sessionIds),
     supabase
       .from("profiles")
@@ -478,14 +483,27 @@ export async function getActiveRerosteringEvents() {
   const sessionMap = new Map((sessions || []).map((s) => [s.id, s]));
   const coachMap = new Map((coaches || []).map((c) => [c.id, c]));
 
-  return events.map((event) => ({
-    ...event,
-    session: sessionMap.get(event.session_id),
-    original_coach: coachMap.get(event.original_coach_id),
-    selected_replacement: event.selected_replacement_id
-      ? coachMap.get(event.selected_replacement_id)
-      : null,
-  }));
+  return events
+    .map((event) => ({
+      ...event,
+      session: sessionMap.get(event.session_id),
+      original_coach: coachMap.get(event.original_coach_id),
+      selected_replacement: event.selected_replacement_id
+        ? coachMap.get(event.selected_replacement_id)
+        : null,
+    }))
+    .filter((event) => {
+      // Live offers always show; lapsed ones only while the session is
+      // still unfilled (a later event/manual assignment may have
+      // resolved it).
+      if (
+        event.offer_status === "pending_offer" ||
+        event.offer_status === "offer_sent"
+      ) {
+        return true;
+      }
+      return event.session?.status === "needs_replacement";
+    });
 }
 
 /**

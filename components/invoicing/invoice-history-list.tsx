@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Receipt } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { INVOICE_STATUS_CONFIG } from "@/lib/utils/invoicing";
@@ -62,13 +63,30 @@ export function InvoiceHistoryList({ invoices }: Props) {
                 </p>
               </div>
             </div>
-            {inv.pdf_url && (
-              <div className="mt-3 pt-3 border-t">
-                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>
-                  <Download className="mr-2 h-3.5 w-3.5" /> View PDF
+            <div className="mt-3 flex gap-2 border-t pt-3">
+              <Link
+                href={`/coach/invoicing/${inv.id}`}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "flex-1"
+                )}
+              >
+                <Receipt className="mr-2 h-3.5 w-3.5" /> View payslip
+              </Link>
+              {inv.pdf_url && (
+                <a
+                  href={inv.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "flex-1"
+                  )}
+                >
+                  <Download className="mr-2 h-3.5 w-3.5" /> PDF
                 </a>
-              </div>
-            )}
+              )}
+            </div>
           </Card>
         );
       })}

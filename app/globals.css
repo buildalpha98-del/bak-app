@@ -528,3 +528,23 @@
   border-radius: 2px;
   opacity: 0.7;
 }
+
+/* ============================================================
+   Payslip printing — when the browser print dialog fires on a
+   payslip page, hide the app shell and print only the payslip.
+   Scoped by #payslip-print so no other page is affected.
+   ============================================================ */
+@media print {
+  body:has(#payslip-print) * {
+    visibility: hidden;
+  }
+  body:has(#payslip-print) #payslip-print,
+  body:has(#payslip-print) #payslip-print * {
+    visibility: visible;
+  }
+  body:has(#payslip-print) #payslip-print {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+}
