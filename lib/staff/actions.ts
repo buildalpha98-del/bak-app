@@ -602,6 +602,99 @@ export async function reactivateStaffMember(
   return { error: null };
 }
 
+/**
+ * Permanently delete a staff member's account. Admin-only, and only
+ * allowed once the account is already archived (status = 'inactive') —
+ * archive first, delete second, never a direct shortcut.
+ *
+ * Deletes the auth.users row, which cascades to `profiles` (ON DELETE
+ * CASCADE) and from there through everything that references the
+ * profile: coach_invoices, pay_rates, performance snapshots, badges,
+ * availability, training records, and more are permanently destroyed.
+ * A handful of tables (session_notes, skill_ratings, invoices.created_by,
+ * training_modules.created_by, etc.) have NO ACTION constraints instead —
+ * if the person authored any of those records, Postgres refuses the
+ * delete outright rather than silently losing them. That failure is
+ * caught below and surfaced as a clear error instead of a raw DB message.
+ *
+ * `confirmName` must match the profile's name exactly (case-insensitive,
+ * trimmed) — a typed confirmation, not just a click, given this cannot
+ * be undone.
+ */
+export async function hardDeleteStaffMember(
+  id: string,
+  confirmName: string
+): Promise<{ error: string | null }> {
+  const admin = createSupabaseAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!callerProfile || callerProfile.role !== "admin") {
+    return { error: "Only admin can permanently delete staff." };
+  }
+
+  if (id === user.id) {
+    return { error: "You cannot delete your own account." };
+  }
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("name, role, email, status")
+    .eq("id", id)
+    .single();
+
+  if (!target) return { error: "Staff member not found." };
+
+  if (target.status !== "inactive") {
+    return {
+      error: "This staff member must be deactivated before they can be permanently deleted.",
+    };
+  }
+
+  if (confirmName.trim().toLowerCase() !== target.name.trim().toLowerCase()) {
+    return { error: "The name you typed doesn't match. Please try again." };
+  }
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(id);
+
+  if (deleteError) {
+    console.error("hardDeleteStaffMember error:", deleteError);
+    return {
+      error:
+        "Could not permanently delete this staff member — they still have historical records (session notes, skill ratings, invoices, or similar) that must be preserved. They remain archived and can stay that way, or contact support if this needs manual resolution.",
+    };
+  }
+
+  // Log after a confirmed successful deletion — the row survives
+  // (activity_log.user_id is ON DELETE SET NULL), so this is the only
+  // record left of who this person was now that the profile is gone.
+  // Using `target` (fetched before deletion) since the profile row no
+  // longer exists to look up.
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "staff_hard_deleted",
+    entity_type: "profile",
+    entity_id: id,
+    metadata: {
+      deleted_name: target.name,
+      deleted_role: target.role,
+      deleted_email: target.email,
+    },
+  });
+
+  return { error: null };
+}
+
 // ============================================================
 // Admin: reset staff password
 // ============================================================

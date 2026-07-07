@@ -54,6 +54,7 @@ import {
   updateStaffMember,
   archiveStaffMember,
   reactivateStaffMember,
+  hardDeleteStaffMember,
   adminResetStaffPassword,
   sendStaffPasswordResetEmail,
   setStaffFinancialAccess,
@@ -264,6 +265,7 @@ export function StaffDetailView({
   // Dialogs
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [hardDeleteOpen, setHardDeleteOpen] = useState(false);
   const [addDocOpen, setAddDocOpen] = useState(false);
   const [addRateOpen, setAddRateOpen] = useState(false);
   const [addSlotOpen, setAddSlotOpen] = useState(false);
@@ -372,6 +374,16 @@ export function StaffDetailView({
               </>
             )}
           </Button>
+          {canEditFinancialAccess && profile.status === "inactive" && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setHardDeleteOpen(true)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete Permanently
+            </Button>
+          )}
         </div>
       </div>
 
@@ -665,6 +677,14 @@ export function StaffDetailView({
         onDone={(newStatus) => {
           setProfile((p) => ({ ...p, status: newStatus }));
         }}
+      />
+
+      {/* Permanent Delete Dialog */}
+      <HardDeleteDialog
+        profile={profile}
+        open={hardDeleteOpen}
+        onOpenChange={setHardDeleteOpen}
+        onDone={() => router.push("/admin/staff")}
       />
 
       {/* Reset Password Dialog */}
@@ -965,6 +985,96 @@ function DeactivateDialog({
               : isActive
                 ? "Deactivate"
                 : "Reactivate"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================================
+// Permanent Delete Dialog
+// ============================================================
+
+function HardDeleteDialog({
+  profile,
+  open,
+  onOpenChange,
+  onDone,
+}: {
+  profile: Profile;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDone: () => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const nameMatches =
+    confirmName.trim().toLowerCase() === profile.name.trim().toLowerCase();
+
+  async function handleConfirm() {
+    setLoading(true);
+    setError(null);
+    const res = await hardDeleteStaffMember(profile.id, confirmName);
+    setLoading(false);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    onDone();
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          setConfirmName("");
+          setError(null);
+        }
+        onOpenChange(next);
+      }}
+    >
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Permanently delete {profile.name}?</DialogTitle>
+          <DialogDescription>
+            This cannot be undone. Their invoices, pay rates, performance
+            history, badges, and availability will be permanently destroyed.
+            Sessions they worked will keep the record but lose the coach
+            attribution. If they have session notes, skill ratings, or
+            other authored records that must be preserved, this will be
+            blocked instead of silently deleting them.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor="confirm-name" className="text-foreground font-medium">
+            Type <span className="font-semibold">{profile.name}</span> to confirm
+          </Label>
+          <Input
+            id="confirm-name"
+            value={confirmName}
+            onChange={(e) => setConfirmName(e.target.value)}
+            autoComplete="off"
+            disabled={loading}
+          />
+        </div>
+        {error && (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={loading || !nameMatches}
+          >
+            {loading ? "Deleting..." : "Delete Permanently"}
           </Button>
         </DialogFooter>
       </DialogContent>
