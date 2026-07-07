@@ -22,6 +22,7 @@ export default async function ImpactDashboardPage({
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
   const data = await getImpactDashboard(centreId);
+  if (!data) redirect(`/client/${clientUser.centre_id}`);
   const { stats, attendanceTrend, ratingTrend, sportBreakdown, termName } = data;
 
   const sessionChange =

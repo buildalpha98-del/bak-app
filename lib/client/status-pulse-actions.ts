@@ -35,6 +35,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 export interface ClientStatusPulse {
   /** Days until next published session at this centre, or null if none. */
@@ -89,13 +90,16 @@ function startOfMonthIso(): string {
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 }
 
+// "Today" is Sydney's today, not the server's — the functions run in
+// another timezone, so raw toISOString() shifts the day boundary by
+// hours and "next session in N days" comes out wrong around midnight.
 function todayIsoDate(): string {
-  return new Date().toISOString().split("T")[0];
+  return sydneyTodayIso();
 }
 
 function daysBetween(fromIsoDate: string, toIsoDate: string): number {
-  const a = new Date(fromIsoDate + "T00:00:00");
-  const b = new Date(toIsoDate + "T00:00:00");
+  const a = new Date(fromIsoDate + "T00:00:00Z");
+  const b = new Date(toIsoDate + "T00:00:00Z");
   return Math.ceil((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 

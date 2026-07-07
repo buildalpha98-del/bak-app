@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireClientCentreAccess } from "@/lib/client/access";
 import Anthropic from "@anthropic-ai/sdk";
 
 export interface WeeklyProgramEntry {
@@ -23,6 +24,11 @@ export async function getScopeAndSequence(
   centreId: string,
   termId?: string
 ): Promise<{ termName: string; weeks: WeeklyProgramEntry[] }> {
+  // Server actions are public HTTP endpoints — verify the caller is
+  // actually allowed to see this centre before touching data.
+  const access = await requireClientCentreAccess(centreId);
+  if (!access.authorised) return { termName: "Not authorised", weeks: [] };
+
   const supabase = await createSupabaseServerClient();
 
   // Get term
@@ -94,13 +100,18 @@ export async function generateSessionReflection(
   const { data: session } = await supabase
     .from("sessions")
     .select(`
-      sport, date, duration_minutes, headcount, coach_notes,
+      sport, date, duration_minutes, headcount, coach_notes, centre_id,
       program_id, programs(content_json, skill_focus)
     `)
     .eq("id", sessionId)
     .single();
 
   if (!session) return "Session not found.";
+
+  // The session's centre must belong to the caller — otherwise any
+  // authenticated user could burn AI tokens on sessions they can't see.
+  const access = await requireClientCentreAccess(session.centre_id as string);
+  if (!access.authorised) return "Not authorised.";
 
   const content = (session as any).programs?.content_json as Record<string, unknown> | null;
   const outcomes = content?.curriculumOutcomes as any[] ?? [];

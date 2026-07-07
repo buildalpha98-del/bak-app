@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireClientCentreAccess } from "@/lib/client/access";
 
 export interface ImpactStats {
   sessionsThisTerm: number;
@@ -31,6 +32,11 @@ export interface SportBreakdown {
 }
 
 export async function getImpactDashboard(centreId: string) {
+  // Server actions are public HTTP endpoints — verify centre access
+  // before reading anything.
+  const access = await requireClientCentreAccess(centreId);
+  if (!access.authorised) return null;
+
   const supabase = await createSupabaseServerClient();
 
   // Get active term

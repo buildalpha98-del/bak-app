@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import type { CentreMessage } from "@/lib/types/database";
 
 // ============================================================
@@ -129,7 +130,9 @@ export async function getClientDashboard(
 ): Promise<{ data: ClientDashboardData | null; error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
-    const today = new Date().toISOString().split("T")[0];
+    // "Today" is a Sydney concept — the server runs in another
+    // timezone, so a raw toISOString() day-boundary drifts by hours.
+    const today = sydneyTodayIso();
 
     // Get centre name
     const { data: centre } = await supabase

@@ -74,6 +74,29 @@ export async function inviteClientUser(input: {
     const supabase = await createSupabaseServerClient();
     const adminClient = createSupabaseAdmin();
 
+    // Only staff may grant portal access. Without this check, any
+    // authenticated user could invite themselves to any centre —
+    // server actions are directly callable regardless of which UI
+    // normally triggers them.
+    const {
+      data: { user: caller },
+    } = await supabase.auth.getUser();
+    if (!caller) return { data: null, error: "Not authenticated." };
+
+    const { data: callerProfile } = await supabase
+      .from("profiles")
+      .select("role, status")
+      .eq("id", caller.id)
+      .maybeSingle();
+
+    if (
+      !callerProfile ||
+      callerProfile.status !== "active" ||
+      (callerProfile.role !== "admin" && callerProfile.role !== "ops")
+    ) {
+      return { data: null, error: "Not authorised." };
+    }
+
     // Check for existing client user with this email + centre
     const { data: existing } = await supabase
       .from("client_users")
