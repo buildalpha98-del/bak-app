@@ -10,6 +10,8 @@ export interface SessionForFeedback {
   existingRating: number | null;
   existingComment: string | null;
   feedbackId: string | null;
+  /** Set when the BAK team has acknowledged this feedback. */
+  acknowledgedAt: string | null;
 }
 
 export async function getSessionsForFeedback(centreId: string): Promise<SessionForFeedback[]> {
@@ -23,7 +25,7 @@ export async function getSessionsForFeedback(centreId: string): Promise<SessionF
     .select(`
       id, date, sport, coach_id,
       profiles!sessions_coach_id_fkey(name),
-      feedback_ratings(id, rating, comment)
+      feedback_ratings(id, rating, comment, acknowledged_at)
     `)
     .eq("centre_id", centreId)
     .eq("status", "completed")
@@ -42,6 +44,7 @@ export async function getSessionsForFeedback(centreId: string): Promise<SessionF
       existingRating: feedback?.rating ?? null,
       existingComment: feedback?.comment ?? null,
       feedbackId: feedback?.id ?? null,
+      acknowledgedAt: feedback?.acknowledged_at ?? null,
     };
   });
 }

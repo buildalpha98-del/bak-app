@@ -273,6 +273,41 @@ export async function respondToReplacementOffer(
       entityId: event.session_id,
     });
 
+    // Tell the centre proactively — otherwise the first they hear of
+    // the change is a different coach walking in the door. Fire-and-
+    // forget: a mail hiccup must never fail the acceptance.
+    void (async () => {
+      try {
+        const { data: s } = await supabase
+          .from("sessions")
+          .select("date, time, sport, centres(name, primary_contact_email)")
+          .eq("id", event.session_id)
+          .single();
+        const centre = s?.centres as unknown as {
+          name: string;
+          primary_contact_email: string | null;
+        } | null;
+        if (!centre?.primary_contact_email) return;
+
+        const when = new Date(s!.date + "T00:00:00").toLocaleDateString(
+          "en-AU",
+          { weekday: "long", day: "numeric", month: "long" }
+        );
+        const { sendEmail } = await import("@/lib/email/send");
+        await sendEmail(
+          centre.primary_contact_email,
+          `Coach update — ${s!.sport} on ${when}`,
+          `<p>Hi ${centre.name},</p>
+           <p>A quick heads up: <strong>${coachProfile?.name ?? "one of our coaches"}</strong> will be running your <strong>${s!.sport}</strong> session on <strong>${when} at ${String(s!.time).slice(0, 5)}</strong>.</p>
+           <p>Everything else about the session stays exactly the same. Any questions, just reply to this email or message us through your portal.</p>
+           <p>Build Alpha Kids</p>`,
+          "coach_change"
+        );
+      } catch (err) {
+        console.error("centre coach-change email failed:", err);
+      }
+    })();
+
     // Notify original coach
     const { data: originalCoach } = await supabase
       .from("profiles")

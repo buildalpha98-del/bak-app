@@ -34,6 +34,14 @@
       "schedule": "*/15 * * * *"
     },
     {
+      "path": "/api/cron/centre-weekly-digest",
+      "schedule": "0 20 * * 0"
+    },
+    {
+      "path": "/api/cron/term-packs",
+      "schedule": "0 22 * * *"
+    },
+    {
       "path": "/api/cron/booking-reminder",
       "schedule": "0 8 * * *"
     },

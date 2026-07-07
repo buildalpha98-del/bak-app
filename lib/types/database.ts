@@ -883,6 +883,8 @@ export interface ClientUser {
   role: string;
   is_primary: boolean;
   last_login: string | null;
+  /** Null until the one-time portal welcome is dismissed (migration 062). */
+  welcomed_at: string | null;
   created_at: string;
   updated_at: string;
 }

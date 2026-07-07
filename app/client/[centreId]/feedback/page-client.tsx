@@ -122,7 +122,9 @@ function SessionFeedbackCard({
                 )}
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
                   <CheckCircle className="h-3 w-3" />
-                  Rated
+                  {session.acknowledgedAt
+                    ? "Rated · Seen by the BAK team"
+                    : "Rated"}
                 </span>
               </div>
             )}

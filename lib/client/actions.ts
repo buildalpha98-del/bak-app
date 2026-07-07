@@ -195,6 +195,34 @@ export async function inviteClientUser(input: {
 }
 
 // ============================================================
+// First-login welcome
+// ============================================================
+
+/** Stamp welcomed_at so the one-time welcome never reappears. */
+export async function markClientWelcomed(
+  centreId: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const { error } = await supabase
+      .from("client_users")
+      .update({ welcomed_at: new Date().toISOString() })
+      .eq("user_id", user.id)
+      .eq("centre_id", centreId)
+      .is("welcomed_at", null);
+
+    return { error: error?.message ?? null };
+  } catch {
+    return { error: "Failed to save." };
+  }
+}
+
+// ============================================================
 // Shared-link snapshot (token-gated, read-only)
 // ============================================================
 //

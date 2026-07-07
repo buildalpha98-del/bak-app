@@ -7,6 +7,7 @@ import { getClientDashboard } from "@/lib/client/portal-actions";
 import { getClientStatusPulse } from "@/lib/client/status-pulse-actions";
 import { getCalendarToken } from "@/lib/calendar/actions";
 import { ClientDashboard } from "@/components/client/client-dashboard";
+import { WelcomeBanner } from "@/components/client/welcome-banner";
 
 export default async function ClientDashboardPage({
   params,
@@ -47,13 +48,21 @@ export default async function ClientDashboardPage({
     ? `https://buildalphakids.app/api/calendar/centre/${calToken}.ics`
     : null;
 
+  const firstName = (clientUser.name ?? "").split(" ")[0] || "there";
+
   return (
-    <ClientDashboard
-      data={data}
-      centreId={centreId}
-      pulse={pulse}
-      calendarFeedUrl={calendarFeedUrl}
-      centresSummary={centresSummaryRes.data ?? []}
-    />
+    <div className="space-y-6">
+      {/* One-time orientation for brand-new directors. */}
+      {!clientUser.welcomed_at && (
+        <WelcomeBanner centreId={centreId} firstName={firstName} />
+      )}
+      <ClientDashboard
+        data={data}
+        centreId={centreId}
+        pulse={pulse}
+        calendarFeedUrl={calendarFeedUrl}
+        centresSummary={centresSummaryRes.data ?? []}
+      />
+    </div>
   );
 }
