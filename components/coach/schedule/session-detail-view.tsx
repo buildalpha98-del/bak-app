@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import {
+  submitProgramFeedback,
+  getMyProgramFeedback,
+  type ProgramFeedbackRating,
+} from "@/lib/programs/feedback-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,9 +42,7 @@ import { getProgramById } from "@/lib/programs/actions";
 import { ProgramView } from "@/components/programs/program-view";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import type { CoachSessionDetail } from "@/lib/sessions/coach-actions";
-import { toast } from "sonner";
 import { Play } from "lucide-react";
-import { useEffect } from "react";
 
 // ============================================================
 // Helpers
@@ -318,7 +322,11 @@ export function SessionDetailView({
                   {program.duration_minutes} min programme · v{program.version_number}
                 </p>
               </div>
-              <CoachProgramContent programId={program.id} />
+              <CoachProgramContent
+                programId={program.id}
+                sessionId={session.id}
+                sessionStatus={session.status}
+              />
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
@@ -625,7 +633,15 @@ export function SessionDetailView({
 // Expandable programme content for coaches
 // ============================================================
 
-function CoachProgramContent({ programId }: { programId: string }) {
+function CoachProgramContent({
+  programId,
+  sessionId,
+  sessionStatus,
+}: {
+  programId: string;
+  sessionId: string;
+  sessionStatus: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [content, setContent] = useState<ProgramContentJson | null>(null);
   const [loading, setLoading] = useState(false);
@@ -672,6 +688,114 @@ function CoachProgramContent({ programId }: { programId: string }) {
           )}
         </div>
       )}
+
+      {/* Feedback only makes sense after the session has run. */}
+      {sessionStatus === "completed" && (
+        <ProgramFeedbackRow programId={programId} sessionId={sessionId} />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Programme feedback — how did the plan land?
+// ============================================================
+//
+// One tap after a completed session: too easy / just right / too
+// hard, with an optional note. Feeds the aggregate on the staff
+// programme detail page so plans improve from real delivery signal.
+
+const FEEDBACK_OPTIONS: Array<{
+  value: ProgramFeedbackRating;
+  label: string;
+}> = [
+  { value: "too_easy", label: "Too easy" },
+  { value: "just_right", label: "Just right" },
+  { value: "too_hard", label: "Too hard" },
+];
+
+function ProgramFeedbackRow({
+  programId,
+  sessionId,
+}: {
+  programId: string;
+  sessionId: string;
+}) {
+  const [rating, setRating] = useState<ProgramFeedbackRating | null>(null);
+  const [comment, setComment] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    getMyProgramFeedback(sessionId).then(({ data }) => {
+      if (data) {
+        setRating(data.rating);
+        setComment(data.comment ?? "");
+        setSaved(true);
+      }
+      setLoaded(true);
+    });
+  }, [sessionId]);
+
+  function submit(nextRating: ProgramFeedbackRating) {
+    setRating(nextRating);
+    startTransition(async () => {
+      const { error } = await submitProgramFeedback({
+        sessionId,
+        programId,
+        rating: nextRating,
+        comment,
+      });
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setSaved(true);
+      toast.success("Thanks — feedback saved.");
+    });
+  }
+
+  if (!loaded) return null;
+
+  return (
+    <div className="mt-3 rounded-xl border bg-secondary/40 p-3">
+      <p className="text-xs font-medium text-foreground">
+        How did this plan land?
+        {saved && (
+          <span className="ml-2 font-normal text-muted-foreground">
+            Saved — tap to change.
+          </span>
+        )}
+      </p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {FEEDBACK_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            disabled={isPending}
+            onClick={() => submit(opt.value)}
+            className={`min-h-[44px] rounded-full border px-3.5 text-xs font-medium transition ${
+              rating === opt.value
+                ? "border-[#E8712A] bg-[#E8712A] text-white"
+                : "bg-background text-foreground hover:bg-secondary"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        onBlur={() => {
+          if (rating && comment.trim()) submit(rating);
+        }}
+        placeholder="Optional note — e.g. drill 2 too fiddly for 3yos"
+        className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-[#E8712A]/40"
+        maxLength={500}
+      />
     </div>
   );
 }

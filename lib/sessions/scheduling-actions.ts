@@ -677,3 +677,141 @@ export async function publishDraftSessionsForWeek(weekStart: string): Promise<{
     return { published: 0, error: "Failed to publish drafts." };
   }
 }
+
+// ============================================================
+// 7. confirmSessionsForWeek — admin/ops bulk-confirm
+// ============================================================
+//
+// Bulk-flip every `published` / `pending_confirmation` session in the
+// Mon→Fri week that has a coach assigned to `confirmed`, then send ONE
+// grouped notification per affected coach (bulk_shifts_confirmed).
+// Backs the toolbar's "Confirm week" CTA — before this, Abdul clicked
+// through each session individually after reviewing an AI run.
+//
+// Sessions with no coach are skipped (nothing to confirm), as are
+// needs_replacement / cancelled / completed.
+
+export async function confirmSessionsForWeek(weekStart: string): Promise<{
+  confirmed: number;
+  coachesNotified: number;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { confirmed: 0, coachesNotified: 0, error: "Not authenticated." };
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
+      return { confirmed: 0, coachesNotified: 0, error: "Not authorised." };
+    }
+
+    const monday = new Date(weekStart + "T00:00:00Z");
+    const friday = new Date(monday);
+    friday.setUTCDate(friday.getUTCDate() + 4);
+    const weekEndDate = friday.toISOString().split("T")[0];
+
+    const { data: candidates, error: selErr } = await supabase
+      .from("sessions")
+      .select("id, date, time, sport, coach_id, session_coaches(user_id)")
+      .gte("date", weekStart)
+      .lte("date", weekEndDate)
+      .in("status", ["published", "pending_confirmation"])
+      .not("coach_id", "is", null);
+
+    if (selErr) throw selErr;
+    if (!candidates || candidates.length === 0) {
+      return { confirmed: 0, coachesNotified: 0, error: null };
+    }
+
+    const ids = candidates.map((s) => s.id as string);
+
+    const { error: updErr } = await supabase
+      .from("sessions")
+      .update({ status: "confirmed" })
+      .in("id", ids)
+      .in("status", ["published", "pending_confirmation"]);
+
+    if (updErr) throw updErr;
+
+    // Granular audit trail, best-effort.
+    const logRows = ids.map((id) => ({
+      user_id: user.id,
+      action: "session_confirmed_via_bulk",
+      entity_type: "session",
+      entity_id: id,
+      metadata: { week_start: weekStart },
+    }));
+    const { error: logErr } = await supabase.from("activity_log").insert(logRows);
+    if (logErr) console.error("confirmSessionsForWeek log error:", logErr);
+
+    // One grouped notification per coach — every coach on the shift
+    // (session_coaches), not just the primary.
+    const sessionsByCoach = new Map<string, number>();
+    for (const s of candidates) {
+      const coachIds = new Set<string>(
+        ((s.session_coaches as Array<{ user_id: string }> | null) ?? []).map(
+          (sc) => sc.user_id
+        )
+      );
+      if (s.coach_id) coachIds.add(s.coach_id as string);
+      for (const cid of coachIds) {
+        sessionsByCoach.set(cid, (sessionsByCoach.get(cid) ?? 0) + 1);
+      }
+    }
+
+    let coachesNotified = 0;
+    if (sessionsByCoach.size > 0) {
+      const { data: coaches } = await supabase
+        .from("profiles")
+        .select("id, email, name, role")
+        .in("id", [...sessionsByCoach.keys()]);
+
+      const { triggerNotification } = await import("@/lib/notifications/send");
+      for (const coach of coaches ?? []) {
+        const count = sessionsByCoach.get(coach.id) ?? 0;
+        try {
+          await triggerNotification(
+            {
+              type: "bulk_shifts_confirmed",
+              title: `${count} shift${count === 1 ? "" : "s"} confirmed`,
+              body: `Your shifts for the week of ${weekStart} are confirmed. Check your schedule for details.`,
+              entityType: "session",
+              entityId: ids[0],
+              data: { week_start: weekStart, count },
+            },
+            [
+              {
+                userId: coach.id,
+                email: coach.email,
+                name: coach.name,
+                role: coach.role,
+              },
+            ]
+          );
+          coachesNotified++;
+        } catch (notifyErr) {
+          console.error(
+            `confirmSessionsForWeek: notify failed for coach ${coach.id}:`,
+            notifyErr
+          );
+        }
+      }
+    }
+
+    revalidatePath("/admin/roster");
+    revalidatePath("/ops/roster");
+    revalidatePath("/coach/schedule");
+    return { confirmed: ids.length, coachesNotified, error: null };
+  } catch (err) {
+    console.error("confirmSessionsForWeek error:", err);
+    return { confirmed: 0, coachesNotified: 0, error: "Failed to confirm sessions." };
+  }
+}

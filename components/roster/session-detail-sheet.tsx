@@ -60,6 +60,10 @@ import {
   getProgramsForSport,
   assignProgramToSession,
 } from "@/lib/programs/actions";
+import {
+  getSessionEquipmentCheck,
+  type EquipmentCheckResult,
+} from "@/lib/sessions/equipment-check";
 import type { ProgramListItem } from "@/lib/programs/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { SessionStatus } from "@/lib/types/enums";
@@ -148,6 +152,20 @@ export function SessionDetailSheet({
   // Rerostering event (for needs_replacement sessions)
   const [rerosteringEvent, setRerosteringEvent] = useState<Record<string, unknown> | null>(null);
   const [loadingRerostering, setLoadingRerostering] = useState(false);
+
+  // Equipment mismatch — programme needs vs the session's kit
+  const [equipmentCheck, setEquipmentCheck] =
+    useState<EquipmentCheckResult | null>(null);
+
+  useEffect(() => {
+    if (open && session?.id && session?.program_id) {
+      getSessionEquipmentCheck(session.id).then(({ data }) =>
+        setEquipmentCheck(data)
+      );
+    } else {
+      setEquipmentCheck(null);
+    }
+  }, [open, session?.id, session?.program_id]);
 
   useEffect(() => {
     if (session?.status === "needs_replacement" && open) {
@@ -525,6 +543,23 @@ export function SessionDetailSheet({
                 </span>
               </div>
             )}
+
+            {/* Programme needs gear the session's kit doesn't have —
+                surfaced here so it's caught while rostering, not on
+                the day. */}
+            {equipmentCheck?.applicable &&
+              equipmentCheck.missing.length > 0 && (
+                <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  <span className="font-medium">Equipment mismatch:</span>{" "}
+                  the programme needs{" "}
+                  <span className="font-medium">
+                    {equipmentCheck.missing.join(", ")}
+                  </span>
+                  {equipmentCheck.kitName
+                    ? ` — not in the "${equipmentCheck.kitName}" kit.`
+                    : " — not in the assigned kit."}
+                </div>
+              )}
           </div>
 
           <Separator />

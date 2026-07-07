@@ -51,6 +51,7 @@ import {
   X,
   MoreVertical,
   Check,
+  CheckCircle2,
   Clock,
   Send,
 } from "lucide-react";
@@ -108,7 +109,10 @@ import {
   getSchedulingRun,
   publishSchedulingRun,
 } from "@/lib/scheduling/actions";
-import { publishDraftSessionsForWeek } from "@/lib/sessions/scheduling-actions";
+import {
+  publishDraftSessionsForWeek,
+  confirmSessionsForWeek,
+} from "@/lib/sessions/scheduling-actions";
 import { SPORTS } from "@/lib/types/enums";
 import type { SessionStatus, Sport } from "@/lib/types/enums";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
@@ -418,6 +422,8 @@ export function RosterPage({
 
   // Publish-week confirmation dialog
   const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  const [confirmWeekOpen, setConfirmWeekOpen] = useState(false);
+  const [confirmWeekWorking, setConfirmWeekWorking] = useState(false);
   const [publishWorking, setPublishWorking] = useState(false);
 
   // ---- Navigation ----
@@ -557,6 +563,29 @@ export function RosterPage({
       router.refresh();
     } finally {
       setPublishWorking(false);
+    }
+  }
+
+  async function handleConfirmWeek() {
+    setConfirmWeekWorking(true);
+    try {
+      const { confirmed, coachesNotified, error } =
+        await confirmSessionsForWeek(initialWeekStart);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      if (confirmed === 0) {
+        toast.info("No published sessions with a coach to confirm.");
+      } else {
+        toast.success(
+          `Confirmed ${confirmed} session${confirmed === 1 ? "" : "s"} — ${coachesNotified} coach${coachesNotified === 1 ? "" : "es"} notified.`,
+        );
+      }
+      setConfirmWeekOpen(false);
+      router.refresh();
+    } finally {
+      setConfirmWeekWorking(false);
     }
   }
 
@@ -750,6 +779,17 @@ export function RosterPage({
             Publish week ({draftsCount})
           </Button>
         )}
+
+        {/* Confirm week — bulk published/pending → confirmed. One tap
+            replaces per-session confirmation clicking after a review. */}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setConfirmWeekOpen(true)}
+        >
+          <CheckCircle2 className="size-4" />
+          Confirm week
+        </Button>
 
         {/* Last AI run pill + AI Assign — grouped so the pill always
             sits adjacent to the action that produced it. */}
@@ -1051,6 +1091,36 @@ export function RosterPage({
               className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
             >
               {publishWorking ? "Publishing…" : "Publish drafts"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm-week dialog */}
+      <AlertDialog open={confirmWeekOpen} onOpenChange={setConfirmWeekOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm this week&apos;s sessions?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Every published or pending session with a coach assigned for the
+              week of {formatWeekLabel(weekStart)} moves to
+              &ldquo;Confirmed&rdquo;. Each affected coach receives one grouped
+              notification. Unassigned and cancelled sessions are skipped.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={confirmWeekWorking}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void handleConfirmWeek();
+              }}
+              disabled={confirmWeekWorking}
+              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            >
+              {confirmWeekWorking ? "Confirming…" : "Confirm sessions"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

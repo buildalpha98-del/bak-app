@@ -94,6 +94,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Churn Risk", href: "/admin/churn", icon: AlertTriangle },
     { label: "Announcements", href: "/admin/announcements", icon: Megaphone },
     { label: "Messages", href: "/admin/messages", icon: MessageSquare },
+    { label: "Centre Inbox", href: "/admin/centre-messages", icon: Building2 },
     { label: "Settings", href: "/admin/settings", icon: Settings, mobileOrder: 5 },
   ],
   ops: [
@@ -119,6 +120,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Bookings", href: "/ops/bookings/sessions", icon: ShoppingBag },
     { label: "Announcements", href: "/ops/announcements", icon: Megaphone },
     { label: "Messages", href: "/ops/messages", icon: MessageSquare },
+    { label: "Centre Inbox", href: "/ops/centre-messages", icon: Building2 },
   ],
   coach: [
     { label: "Home", href: "/coach", icon: Home, mobileOrder: 1 },

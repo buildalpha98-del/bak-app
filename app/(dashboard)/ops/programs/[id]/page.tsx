@@ -6,6 +6,7 @@ import {
   getProgramUsageStats,
   getProgramVersionHistory,
 } from "@/lib/programs/actions";
+import { getProgramFeedbackSummary } from "@/lib/programs/feedback-actions";
 import { ProgramDetailView } from "@/components/programs/program-detail";
 
 interface Props {
@@ -21,13 +22,19 @@ export default async function OpsProgramDetailPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const [programResult, versionsResult, usageResult, linkedCentresResult] =
-    await Promise.all([
-      getProgramDetail(id),
-      getProgramVersionHistory(id),
-      getProgramUsageStats(id),
-      getLinkedCentresForProgramme(id),
-    ]);
+  const [
+    programResult,
+    versionsResult,
+    usageResult,
+    linkedCentresResult,
+    feedbackResult,
+  ] = await Promise.all([
+    getProgramDetail(id),
+    getProgramVersionHistory(id),
+    getProgramUsageStats(id),
+    getLinkedCentresForProgramme(id),
+    getProgramFeedbackSummary(id),
+  ]);
 
   if (!programResult.data) notFound();
 
@@ -39,6 +46,7 @@ export default async function OpsProgramDetailPage({ params }: Props) {
         usageResult.data ?? { sessionCount: 0, centresUsed: [], lastUsedAt: null }
       }
       linkedCentres={linkedCentresResult.data ?? []}
+      feedbackSummary={feedbackResult.data}
       basePath="/ops/programs"
     />
   );

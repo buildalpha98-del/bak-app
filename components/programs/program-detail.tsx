@@ -36,6 +36,7 @@ import {
   ListTree,
   Loader2,
   MapPin,
+  MessageSquare,
   Package,
   Pencil,
   Sparkles,
@@ -44,6 +45,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { ProgramFeedbackSummary } from "@/lib/programs/feedback-actions";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -110,6 +112,8 @@ interface ProgramDetailProps {
   usage: ProgramUsageStats;
   linkedCentres: LinkedCentreSummary[];
   basePath: string;
+  /** Coach delivery feedback aggregate — null until any exists. */
+  feedbackSummary?: ProgramFeedbackSummary | null;
 }
 
 export function ProgramDetailView({
@@ -118,6 +122,7 @@ export function ProgramDetailView({
   usage,
   linkedCentres,
   basePath,
+  feedbackSummary = null,
 }: ProgramDetailProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -332,6 +337,14 @@ export function ProgramDetailView({
                     icon: BarChart3,
                     text: `${usage.sessionCount} session${usage.sessionCount === 1 ? "" : "s"}`,
                   },
+                  ...(feedbackSummary && feedbackSummary.total > 0
+                    ? [
+                        {
+                          icon: MessageSquare,
+                          text: `Coach feedback: ${feedbackSummary.justRight}× just right · ${feedbackSummary.tooEasy}× too easy · ${feedbackSummary.tooHard}× too hard`,
+                        },
+                      ]
+                    : []),
                   ...(linkedCentres.length > 0
                     ? [
                         {
