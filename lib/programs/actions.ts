@@ -126,6 +126,9 @@ export async function saveProgram(
       console.warn("Auto-file document for programme failed (non-critical).");
     }
 
+    revalidatePath("/admin/programs");
+    revalidatePath("/ops/programs");
+
     return { data, error: null };
   } catch (err) {
     console.error("saveProgram error:", err);
@@ -533,6 +536,11 @@ export async function createNewVersion(
       },
     });
 
+    revalidatePath("/admin/programs");
+    revalidatePath("/ops/programs");
+    revalidatePath(`/admin/programs/${rootId}`);
+    revalidatePath(`/ops/programs/${rootId}`);
+
     return { data, error: null };
   } catch (err) {
     console.error("createNewVersion error:", err);
@@ -735,6 +743,10 @@ export async function assignProgramToSession(
       entity_id: sessionId,
       metadata: { program_id: programId },
     });
+
+    revalidatePath("/admin/roster");
+    revalidatePath("/ops/roster");
+    revalidatePath("/coach/schedule");
 
     return { error: null };
   } catch (err) {

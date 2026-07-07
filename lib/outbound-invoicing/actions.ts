@@ -349,6 +349,10 @@ export async function updateOutboundLineItems(
         subtotal_cents: subtotalCents,
         gst_amount_cents: gstAmountCents,
         total_cents: totalCents,
+        // Any previously rendered PDF no longer matches the line items.
+        // Clearing pdf_url forces sendInvoice to regenerate — otherwise
+        // the centre receives a stale PDF with the old amounts.
+        pdf_url: null,
       })
       .eq("id", invoiceId)
       .eq("status", "draft");

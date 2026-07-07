@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { triggerNotificationForOps } from "@/lib/notifications/send";
 import type { CentreMessage } from "@/lib/types/database";
 
 // ============================================================
@@ -755,6 +756,26 @@ export async function sendCentreMessage(
       });
 
       if (error) return { error: error.message };
+
+      // Surface the message to staff — without this, a director's
+      // message sits in centre_messages with no admin-side inbox and
+      // nobody ever finds out it arrived. Fire-and-forget so a
+      // notification hiccup can't fail the send itself.
+      const { data: centre } = await supabase
+        .from("centres")
+        .select("name")
+        .eq("id", centreId)
+        .single();
+
+      triggerNotificationForOps({
+        type: "centre_message_received",
+        title: `New message from ${centre?.name ?? "a centre"}`,
+        body: content.length > 140 ? `${content.slice(0, 140)}…` : content,
+        entityType: "centre",
+        entityId: centreId,
+      }).catch((err) =>
+        console.error("centre message ops notification failed:", err)
+      );
     } else {
       const { error } = await supabase.from("centre_messages").insert({
         centre_id: centreId,

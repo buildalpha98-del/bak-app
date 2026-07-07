@@ -1,6 +1,5 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { sendPushToUser as sendPushToUserLegacy } from "./push-send";
-import { sendPushToUser as sendPushToUserNative } from "@/lib/push/actions";
+import { sendPushToUser } from "./push-send";
 import { sendEmail } from "@/lib/email/send";
 import { genericNotificationEmail } from "@/lib/email/templates";
 import { getNotificationUrl } from "./url-builder";
@@ -71,35 +70,26 @@ export async function triggerNotification(
 
       // 5. Push notification
       //
-      // Two dispatchers run in parallel:
-      //   - legacy `push-send.ts` uses the `web-push` package and
-      //     encrypts the payload so the SW shows the actual title;
-      //   - native `lib/push/actions.ts` uses the WebCrypto VAPID
-      //     signer and dispatches without an encrypted body so the
-      //     SW falls back to default content. The in-app row carries
-      //     the actual title regardless.
-      //
-      // Both share the `push_subscriptions` table. Each fails
-      // silently so a push outage cannot block the in-app + email
-      // path, and the SMS fallback only kicks in elsewhere
-      // (lib/sms/actions.ts::sendUrgentNotificationViaSms) when
-      // push + in-app both miss.
+      // Single dispatcher: `push-send.ts` (web-push package) encrypts
+      // the payload so the service worker shows the real title/body.
+      // A second WebCrypto-based sender used to run in parallel for
+      // urgent/important tiers — both hit the same push_subscriptions
+      // rows, so every urgent event arrived TWICE on the same device.
+      // Fails silently so a push outage can't block the in-app +
+      // email path; the SMS fallback lives in
+      // lib/sms/actions.ts::sendUrgentNotificationViaSms.
       if (shouldPush) {
         const url = getNotificationUrl(
           event.entityType,
           event.entityId,
           recipient.role ?? "coach"
         );
-        const payload = {
+        await sendPushToUser(recipient.userId, {
           title: event.title,
           body: event.body,
           url,
           tag: event.type,
-        };
-        await sendPushToUserLegacy(recipient.userId, payload);
-        if (tier === "urgent" || tier === "important") {
-          await sendPushToUserNative(recipient.userId, { ...payload, tier });
-        }
+        });
       }
 
       // 6. Email notification

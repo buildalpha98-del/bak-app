@@ -388,7 +388,7 @@ export function ProgramDetailView({
         <TabsContent value="sessions">
           <Card className="rounded-2xl">
             <CardHeader>
-              <CardTitle>Sessions using this programme</CardTitle>
+              <CardTitle>Centres using this programme</CardTitle>
               <CardDescription>
                 Most recent scheduling first. Open a centre to see the full
                 session schedule.

@@ -135,6 +135,7 @@ export type NotificationEventType =
   | "low_session_rating"
   | "dm_received"
   | "shift_thread_message"
+  | "centre_message_received"
   | "assessment_ready"
   | "assessment_reminder"
   | "rerostering_offer"

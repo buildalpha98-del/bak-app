@@ -437,10 +437,15 @@ export async function generateSessionsForWeek(
       return { data: null, error: "No templates found for this term." };
     }
 
-    // Calculate the week end (Friday)
-    const monday = new Date(weekStartDate + "T00:00:00");
+    // Calculate the week end (Friday). All date maths here is forced
+    // to UTC ("T00:00:00Z" + setUTCDate) — parsing "T00:00:00" without
+    // the Z uses the server's local timezone, and toISOString() then
+    // shifts the date back a day on any server east of Greenwich
+    // (Vercel bom1 is UTC+5:30), turning Monday templates into Sunday
+    // sessions.
+    const monday = new Date(weekStartDate + "T00:00:00Z");
     const friday = new Date(monday);
-    friday.setDate(friday.getDate() + 4);
+    friday.setUTCDate(friday.getUTCDate() + 4);
     const weekEndDate = friday.toISOString().split("T")[0];
 
     // Fetch existing sessions for this term in this week
@@ -471,9 +476,10 @@ export async function generateSessionsForWeek(
     let skipped = 0;
 
     for (const tpl of templates) {
-      // Calculate target date from day_of_week (1=Mon, 2=Tue, ...)
+      // Calculate target date from day_of_week (1=Mon, 2=Tue, ...) —
+      // UTC arithmetic to match the UTC-parsed monday above.
       const targetDate = new Date(monday);
-      targetDate.setDate(targetDate.getDate() + (tpl.day_of_week - 1));
+      targetDate.setUTCDate(targetDate.getUTCDate() + (tpl.day_of_week - 1));
       const dateStr = targetDate.toISOString().split("T")[0];
 
       const key = `${tpl.id}_${dateStr}`;

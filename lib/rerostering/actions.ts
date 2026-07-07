@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { suggestReplacements } from "@/lib/utils/scheduling/rerostering";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
@@ -185,6 +186,7 @@ export async function sendReplacementOffer(
   });
 
   revalidatePath("/ops/roster");
+  revalidatePath("/admin/roster");
   revalidatePath("/coach/schedule");
   return { data: { sent: true } };
 }
@@ -316,15 +318,26 @@ export async function respondToReplacementOffer(
   });
 
   revalidatePath("/ops/roster");
+  revalidatePath("/admin/roster");
   revalidatePath("/coach/schedule");
   return { data: { accepted: accept } };
 }
 
 /**
- * Check for expired offers and escalations. Called by cron or on page load.
+ * Check for expired offers and escalations. Called by the
+ * /api/cron/rerostering-escalations cron every 15 minutes.
+ *
+ * Uses the admin client — cron requests carry no user session, so the
+ * cookie-based server client would return zero rows under RLS and the
+ * whole escalation loop would silently no-op.
  */
-export async function processRerosteringEscalations() {
-  const supabase = await createSupabaseServerClient();
+export async function processRerosteringEscalations(): Promise<{
+  expired: number;
+  escalated: number;
+}> {
+  const supabase = createSupabaseAdmin();
+  let expiredCount = 0;
+  let escalatedCount = 0;
 
   // Find expired offers
   const { data: expiredOffers } = await supabase
@@ -338,6 +351,7 @@ export async function processRerosteringEscalations() {
       .from("rerostering_events")
       .update({ offer_status: "expired" })
       .eq("id", event.id);
+    expiredCount++;
 
     // Notify ops
     await triggerNotificationForOps({
@@ -375,6 +389,7 @@ export async function processRerosteringEscalations() {
 
     if (hoursUntil <= 4 && hoursUntil > 2) {
       // Escalate to admin
+      escalatedCount++;
       await triggerNotificationForOps({
         type: "rerostering_escalation",
         title: "Urgent: No Replacement",
@@ -383,6 +398,7 @@ export async function processRerosteringEscalations() {
         entityId: session.id,
       });
     } else if (hoursUntil <= 2) {
+      escalatedCount++;
       // Notify centre + create urgent task
       const { data: centre } = await supabase
         .from("centres")
@@ -419,6 +435,8 @@ export async function processRerosteringEscalations() {
       }
     }
   }
+
+  return { expired: expiredCount, escalated: escalatedCount };
 }
 
 /**
