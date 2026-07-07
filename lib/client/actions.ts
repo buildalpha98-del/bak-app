@@ -195,6 +195,68 @@ export async function inviteClientUser(input: {
 }
 
 // ============================================================
+// Shared-link snapshot (token-gated, read-only)
+// ============================================================
+//
+// The shared page has no authenticated user, so this uses the admin
+// client — ONLY call it after validateSharedLink has accepted the
+// token. Deliberately a thin summary: upcoming sessions, headline
+// counts, recent report titles. Full detail requires a real login.
+
+export interface SharedPortalSnapshot {
+  upcomingSessions: { date: string; time: string; sport: string }[];
+  childrenCount: number;
+  recentReports: { title: string; sent_at: string | null }[];
+}
+
+export async function getSharedPortalSnapshot(
+  centreId: string
+): Promise<SharedPortalSnapshot> {
+  const empty: SharedPortalSnapshot = {
+    upcomingSessions: [],
+    childrenCount: 0,
+    recentReports: [],
+  };
+  try {
+    const admin = createSupabaseAdmin();
+    const today = new Date().toISOString().split("T")[0];
+
+    const [sessionsRes, childrenRes, reportsRes] = await Promise.all([
+      admin
+        .from("sessions")
+        .select("date, time, sport")
+        .eq("centre_id", centreId)
+        .gte("date", today)
+        .in("status", ["published", "pending_confirmation", "confirmed"])
+        .order("date", { ascending: true })
+        .order("time", { ascending: true })
+        .limit(5),
+      admin
+        .from("centre_children")
+        .select("id", { count: "exact", head: true })
+        .eq("centre_id", centreId)
+        .eq("status", "active"),
+      admin
+        .from("centre_reports")
+        .select("title, sent_at")
+        .eq("centre_id", centreId)
+        .eq("status", "sent")
+        .order("created_at", { ascending: false })
+        .limit(3),
+    ]);
+
+    return {
+      upcomingSessions: sessionsRes.data ?? [],
+      childrenCount: childrenRes.count ?? 0,
+      recentReports: reportsRes.data ?? [],
+    };
+  } catch (err) {
+    console.error("getSharedPortalSnapshot error:", err);
+    return empty;
+  }
+}
+
+// ============================================================
 // Get client users for a centre
 // ============================================================
 

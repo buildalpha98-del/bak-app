@@ -48,6 +48,7 @@ export interface ClientSession {
   headcount: number | null;
   rating: number | null;
   coach_notes: string | null;
+  attendees: { name: string; present: boolean }[];
 }
 
 export interface ClientChild {
@@ -371,6 +372,28 @@ export async function getClientSessionDetail(
     const program = data.programs as unknown as { sport: string; skill_focus: string | null; content_json: Record<string, unknown> } | null;
     const feedbacks = data.feedback_ratings as unknown as { rating: number | null; comment: string | null }[];
 
+    // Per-child attendance — directors verify who actually attended.
+    const { data: attendanceRows } = await supabase
+      .from("session_attendances")
+      .select("present, children(first_name, last_name)")
+      .eq("session_id", sessionId);
+
+    const attendees = (attendanceRows ?? [])
+      .map((a) => {
+        const child = a.children as unknown as {
+          first_name: string;
+          last_name: string;
+        } | null;
+        return child
+          ? {
+              name: `${child.first_name} ${child.last_name.charAt(0)}.`,
+              present: !!a.present,
+            }
+          : null;
+      })
+      .filter((a): a is { name: string; present: boolean } => a !== null)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     return {
       data: {
         id: data.id,
@@ -385,6 +408,7 @@ export async function getClientSessionDetail(
         headcount: data.headcount,
         rating: feedbacks?.[0]?.rating ?? null,
         coach_notes: feedbacks?.[0]?.comment ?? data.coach_notes,
+        attendees,
       },
       error: null,
     };
