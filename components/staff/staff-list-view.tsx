@@ -732,11 +732,17 @@ export function StaffListView({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}
-                      >
-                        {statusStyle.label}
-                      </span>
+                      {member.credentials_purged_at ? (
+                        <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                          Permanently deleted
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}
+                        >
+                          {statusStyle.label}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <ComplianceIndicator
@@ -753,7 +759,7 @@ export function StaffListView({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {section === "archive" && (
+                        {section === "archive" && !member.credentials_purged_at && (
                           <RestoreButton
                             id={member.id}
                             onRestored={() => router.refresh()}
@@ -1036,11 +1042,17 @@ function StaffGridView({
                   <Badge variant="outline" className="text-[10px]">
                     {ROLE_LABELS[member.role]}
                   </Badge>
-                  <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${statusStyle.className}`}
-                  >
-                    {statusStyle.label}
-                  </span>
+                  {member.credentials_purged_at ? (
+                    <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+                      Permanently deleted
+                    </span>
+                  ) : (
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${statusStyle.className}`}
+                    >
+                      {statusStyle.label}
+                    </span>
+                  )}
                   {member.financial_access && (
                     <Badge
                       variant="secondary"
@@ -1074,7 +1086,7 @@ function StaffGridView({
             <div className="mt-3">
               <ShiftCell member={member} />
             </div>
-            {section === "archive" && (
+            {section === "archive" && !member.credentials_purged_at && (
               <div className="mt-3">
                 <RestoreButton id={member.id} onRestored={onRestored} />
               </div>

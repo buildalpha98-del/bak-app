@@ -296,9 +296,16 @@ export function StaffDetailView({
           <h1 className="text-2xl font-bold text-foreground">{profile.name}</h1>
           <div className="mt-1 flex items-center gap-2 flex-wrap">
             <Badge variant="outline">{ROLE_LABELS[profile.role]}</Badge>
-            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}>
-              {statusStyle.label}
-            </span>
+            {profile.credentials_purged_at ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                <Trash2 className="h-3 w-3" />
+                Permanently deleted
+              </span>
+            ) : (
+              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle.className}`}>
+                {statusStyle.label}
+              </span>
+            )}
             {profile.financial_access && (
               <Badge variant="secondary" className="gap-1">
                 <Banknote className="h-3 w-3" />
@@ -312,77 +319,81 @@ export function StaffDetailView({
             <Pencil className="h-3.5 w-3.5" />
             Edit
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setResetPasswordOpen(true)}>
-            <KeyRound className="h-3.5 w-3.5" />
-            Reset Password
-          </Button>
-          {canEditFinancialAccess && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSendTestSms}
-              disabled={smsBusy || !profile.phone}
-              title={
-                profile.phone
-                  ? "Send a test SMS to verify the bridge is reachable."
-                  : "Add a phone number first."
-              }
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              SMS test
-            </Button>
-          )}
-          {canEditFinancialAccess && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToggleFinancialAccess}
-              disabled={financialBusy}
-              title={
-                profile.financial_access
-                  ? "Hides invoicing, payroll, analytics, grants, and intelligence from this user."
-                  : "Grants invoicing, payroll, analytics, grants, and intelligence to this user."
-              }
-            >
-              {profile.financial_access ? (
-                <>
-                  <BanknoteX className="h-3.5 w-3.5" />
-                  Revoke financial access
-                </>
-              ) : (
-                <>
-                  <Banknote className="h-3.5 w-3.5" />
-                  Grant financial access
-                </>
+          {!profile.credentials_purged_at && (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setResetPasswordOpen(true)}>
+                <KeyRound className="h-3.5 w-3.5" />
+                Reset Password
+              </Button>
+              {canEditFinancialAccess && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendTestSms}
+                  disabled={smsBusy || !profile.phone}
+                  title={
+                    profile.phone
+                      ? "Send a test SMS to verify the bridge is reachable."
+                      : "Add a phone number first."
+                  }
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  SMS test
+                </Button>
               )}
-            </Button>
-          )}
-          <Button
-            variant={profile.status === "active" ? "destructive" : "outline"}
-            size="sm"
-            onClick={() => setDeactivateOpen(true)}
-          >
-            {profile.status === "active" ? (
-              <>
-                <UserX className="h-3.5 w-3.5" />
-                Delete
-              </>
-            ) : (
-              <>
-                <UserCheck className="h-3.5 w-3.5" />
-                Restore
-              </>
-            )}
-          </Button>
-          {canEditFinancialAccess && profile.status === "inactive" && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setHardDeleteOpen(true)}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete Permanently
-            </Button>
+              {canEditFinancialAccess && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleFinancialAccess}
+                  disabled={financialBusy}
+                  title={
+                    profile.financial_access
+                      ? "Hides invoicing, payroll, analytics, grants, and intelligence from this user."
+                      : "Grants invoicing, payroll, analytics, grants, and intelligence to this user."
+                  }
+                >
+                  {profile.financial_access ? (
+                    <>
+                      <BanknoteX className="h-3.5 w-3.5" />
+                      Revoke financial access
+                    </>
+                  ) : (
+                    <>
+                      <Banknote className="h-3.5 w-3.5" />
+                      Grant financial access
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button
+                variant={profile.status === "active" ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => setDeactivateOpen(true)}
+              >
+                {profile.status === "active" ? (
+                  <>
+                    <UserX className="h-3.5 w-3.5" />
+                    Delete
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="h-3.5 w-3.5" />
+                    Restore
+                  </>
+                )}
+              </Button>
+              {canEditFinancialAccess && profile.status === "inactive" && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setHardDeleteOpen(true)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete Permanently
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -1022,6 +1033,13 @@ function HardDeleteDialog({
       setError(res.error);
       return;
     }
+    if (res.purged) {
+      toast.success(
+        `${profile.name}'s login has been permanently deleted. Their historical records are preserved.`
+      );
+    } else {
+      toast.success(`${profile.name} has been permanently deleted.`);
+    }
     onDone();
   }
 
@@ -1040,12 +1058,14 @@ function HardDeleteDialog({
         <DialogHeader>
           <DialogTitle>Permanently delete {profile.name}?</DialogTitle>
           <DialogDescription>
-            This cannot be undone. Their invoices, pay rates, performance
-            history, badges, and availability will be permanently destroyed.
-            Sessions they worked will keep the record but lose the coach
-            attribution. If they have session notes, skill ratings, or
-            other authored records that must be preserved, this will be
-            blocked instead of silently deleting them.
+            This cannot be undone. If they have no historical records tied
+            to them, everything is destroyed outright — invoices, pay
+            rates, performance history, badges, availability, all of it.
+            If they do have records that must be preserved (session notes,
+            skill ratings, invoices authored, etc.), those stay fully
+            intact and this instead permanently deletes their login —
+            they can never sign in again, but their name keeps showing up
+            correctly on the historical records.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">

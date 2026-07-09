@@ -78,6 +78,7 @@ export function createMockProfile(overrides: Partial<Profile> = {}): Profile {
     dnd_enabled: false,
     financial_access: false,
     sms_opt_in: false,
+    credentials_purged_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,

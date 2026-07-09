@@ -86,6 +86,14 @@ export interface Profile {
    * stay on the existing in-app + email channels. Added in migration 055.
    */
   sms_opt_in: boolean;
+  /**
+   * Set when a permanent-delete was blocked by historical records
+   * (session notes, skill ratings, invoices, etc.) and the account's
+   * login credentials were scrubbed instead — the profile row and its
+   * history stay intact, but this marks the account as not
+   * restorable. Added in migration 063.
+   */
+  credentials_purged_at: string | null;
   created_at: string;
   updated_at: string;
 }

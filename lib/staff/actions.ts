@@ -603,19 +603,83 @@ export async function reactivateStaffMember(
 }
 
 /**
+ * Every (table, column) pair with a NO ACTION foreign key onto
+ * profiles.id — i.e. every table Postgres will refuse to let a delete
+ * cascade through. If a profile has any row in any of these, a full
+ * auth.users delete is blocked and must fall back to purgeStaffCredentials
+ * instead. Kept as an explicit list (rather than parsing DB error
+ * messages) so the branch is deterministic and doesn't depend on
+ * guessing what a given failure means.
+ */
+const NO_ACTION_HISTORY_TABLES: { table: string; column: string }[] = [
+  { table: "assessment_templates", column: "created_by" },
+  { table: "attendance", column: "marked_by" },
+  { table: "business_settings", column: "updated_by" },
+  { table: "centre_onboarding_steps", column: "completed_by" },
+  { table: "child_observations", column: "coach_id" },
+  { table: "email_log", column: "recipient_id" },
+  { table: "feedback_ratings", column: "acknowledged_by" },
+  { table: "invitations", column: "invited_by" },
+  { table: "invoices", column: "created_by" },
+  { table: "regions", column: "regional_manager_id" },
+  { table: "reminder_log", column: "recipient_id" },
+  { table: "rerostering_events", column: "selected_replacement_id" },
+  { table: "rerostering_events", column: "original_coach_id" },
+  { table: "rerostering_events", column: "approved_by" },
+  { table: "sales_proposals", column: "created_by" },
+  { table: "scheduling_preferences", column: "created_by" },
+  { table: "scheduling_runs", column: "created_by" },
+  { table: "session_notes", column: "coach_id" },
+  { table: "session_photos", column: "uploaded_by" },
+  { table: "skill_ratings", column: "coach_id" },
+  { table: "training_assignments", column: "assigned_by" },
+  { table: "training_modules", column: "created_by" },
+  { table: "training_pathways", column: "created_by" },
+];
+
+async function hasBlockingHistory(
+  admin: ReturnType<typeof createSupabaseAdmin>,
+  id: string
+): Promise<boolean> {
+  // Admin client, not the RLS-scoped server client — this is an internal
+  // integrity check that must see every row regardless of RLS policy
+  // specifics on any of these 23 tables. Only a boolean is ever returned,
+  // never row contents, so bypassing RLS here doesn't leak anything.
+  const results = await Promise.all(
+    NO_ACTION_HISTORY_TABLES.map(({ table, column }) =>
+      admin
+        .from(table)
+        .select("id", { count: "exact", head: true })
+        .eq(column, id)
+    )
+  );
+  return results.some((r) => (r.count ?? 0) > 0);
+}
+
+/**
  * Permanently delete a staff member's account. Admin-only, and only
  * allowed once the account is already archived (status = 'inactive') —
  * archive first, delete second, never a direct shortcut.
  *
- * Deletes the auth.users row, which cascades to `profiles` (ON DELETE
- * CASCADE) and from there through everything that references the
- * profile: coach_invoices, pay_rates, performance snapshots, badges,
- * availability, training records, and more are permanently destroyed.
- * A handful of tables (session_notes, skill_ratings, invoices.created_by,
- * training_modules.created_by, etc.) have NO ACTION constraints instead —
- * if the person authored any of those records, Postgres refuses the
- * delete outright rather than silently losing them. That failure is
- * caught below and surfaced as a clear error instead of a raw DB message.
+ * Two outcomes, decided up front by checking NO_ACTION_HISTORY_TABLES
+ * rather than by trying a delete and interpreting whatever error comes
+ * back (a raw "Invalid API key" or any other unrelated failure would
+ * otherwise be indistinguishable from a real FK block):
+ *
+ * - No historical records anywhere → deletes the auth.users row, which
+ *   cascades to `profiles` (ON DELETE CASCADE) and everything else
+ *   that references it (coach_invoices, pay_rates, performance
+ *   snapshots, badges, availability, training records). Fully gone.
+ *
+ * - Historical records exist (session notes, skill ratings, invoices
+ *   authored, etc.) → the profile and all its history must stay
+ *   intact, so instead of deleting anything we scrub the auth.users
+ *   login (email replaced with an unreachable placeholder, phone
+ *   cleared, password randomised, banned) via purgeStaffCredentials.
+ *   The person can never sign in again, but every record that
+ *   references them keeps resolving correctly. Marked via
+ *   `profiles.credentials_purged_at` so the UI can show "Permanently
+ *   deleted" instead of a live "Restore" button.
  *
  * `confirmName` must match the profile's name exactly (case-insensitive,
  * trimmed) — a typed confirmation, not just a click, given this cannot
@@ -624,7 +688,7 @@ export async function reactivateStaffMember(
 export async function hardDeleteStaffMember(
   id: string,
   confirmName: string
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; purged?: boolean }> {
   const admin = createSupabaseAdmin();
   const supabase = await createSupabaseServerClient();
 
@@ -649,11 +713,15 @@ export async function hardDeleteStaffMember(
 
   const { data: target } = await supabase
     .from("profiles")
-    .select("name, role, email, status")
+    .select("name, role, email, status, credentials_purged_at")
     .eq("id", id)
     .single();
 
   if (!target) return { error: "Staff member not found." };
+
+  if (target.credentials_purged_at) {
+    return { error: "This account has already been permanently deleted." };
+  }
 
   if (target.status !== "inactive") {
     return {
@@ -665,13 +733,19 @@ export async function hardDeleteStaffMember(
     return { error: "The name you typed doesn't match. Please try again." };
   }
 
+  const hasHistory = await hasBlockingHistory(admin, id);
+
+  if (hasHistory) {
+    return purgeStaffCredentials(admin, supabase, id, user.id, target);
+  }
+
   const { error: deleteError } = await admin.auth.admin.deleteUser(id);
 
   if (deleteError) {
     console.error("hardDeleteStaffMember error:", deleteError);
     return {
       error:
-        "Could not permanently delete this staff member — they still have historical records (session notes, skill ratings, invoices, or similar) that must be preserved. They remain archived and can stay that way, or contact support if this needs manual resolution.",
+        "Could not permanently delete this staff member. They remain archived — try again, or contact support if this keeps happening.",
     };
   }
 
@@ -693,6 +767,64 @@ export async function hardDeleteStaffMember(
   });
 
   return { error: null };
+}
+
+/**
+ * Scrubs auth.users login credentials for a staff member whose history
+ * blocks a full delete. Leaves the profiles row and every historical
+ * record fully intact — only the ability to sign in is destroyed.
+ */
+async function purgeStaffCredentials(
+  admin: ReturnType<typeof createSupabaseAdmin>,
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  id: string,
+  actorId: string,
+  target: { name: string; role: string; email: string }
+): Promise<{ error: string | null; purged?: boolean }> {
+  const deadEmail = `deleted-${id}@purged.invalid`;
+  const randomPassword = `${crypto.randomUUID()}${crypto.randomUUID()}`;
+
+  const { error: purgeError } = await admin.auth.admin.updateUserById(id, {
+    email: deadEmail,
+    phone: "",
+    password: randomPassword,
+    ban_duration: "876000h",
+  } as Parameters<typeof admin.auth.admin.updateUserById>[1]);
+
+  if (purgeError) {
+    console.error("purgeStaffCredentials error:", purgeError);
+    return {
+      error:
+        "Could not delete this account's login. They remain archived — try again, or contact support if this keeps happening.",
+    };
+  }
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({
+      credentials_purged_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (profileError) {
+    console.error("purgeStaffCredentials profile update error:", profileError);
+    return { error: profileError.message };
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: actorId,
+    action: "staff_credentials_purged",
+    entity_type: "profile",
+    entity_id: id,
+    metadata: {
+      name: target.name,
+      role: target.role,
+      original_email: target.email,
+    },
+  });
+
+  return { error: null, purged: true };
 }
 
 // ============================================================
