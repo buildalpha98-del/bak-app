@@ -365,12 +365,12 @@ export function StaffDetailView({
             {profile.status === "active" ? (
               <>
                 <UserX className="h-3.5 w-3.5" />
-                Deactivate
+                Delete
               </>
             ) : (
               <>
                 <UserCheck className="h-3.5 w-3.5" />
-                Reactivate
+                Restore
               </>
             )}
           </Button>
@@ -958,15 +958,15 @@ function DeactivateDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>
-            {isActive ? "Deactivate" : "Reactivate"} {profile.name}?
+            {isActive ? "Delete" : "Restore"} {profile.name}?
           </DialogTitle>
           <DialogDescription>
             {isActive ? (
               <>
-                Their account will be locked, any open session will be signed out, and they won&apos;t be eligible for new shifts. Historical records (sessions worked, swap requests, invoices) are kept. You can reactivate later if needed.
+                Their account will be locked, any open session will be signed out, and they won&apos;t be eligible for new shifts. They&apos;ll move to the Archive tab on the Staff list. Their details (sessions worked, swap requests, invoices) are kept — not erased — since staff records must be retained for 7 years under Fair Work record-keeping requirements. You can restore them from the Archive at any time.
               </>
             ) : (
-              "This will lift the account lock and restore the staff member's access to the platform."
+              "This will move the staff member out of the Archive and restore their access to the platform."
             )}
           </DialogDescription>
         </DialogHeader>
@@ -983,8 +983,8 @@ function DeactivateDialog({
             {loading
               ? "Processing..."
               : isActive
-                ? "Deactivate"
-                : "Reactivate"}
+                ? "Delete"
+                : "Restore"}
           </Button>
         </DialogFooter>
       </DialogContent>

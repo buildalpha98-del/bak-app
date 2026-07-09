@@ -18,7 +18,7 @@
 // refreshes: rounded-2xl containers, restrained brand orange, gap-6
 // between sections, gap-4 within.
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, type MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -36,8 +36,10 @@ import {
   MessageSquarePlus,
   KeyRound,
   UserX,
+  UserCheck,
   MapPin,
   CalendarClock,
+  Archive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -76,6 +78,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,6 +94,7 @@ import {
   bulkResetPasswords,
   bulkSendStaffAnnouncement,
   exportStaffCsv,
+  reactivateStaffMember,
 } from "@/lib/staff/actions";
 import type { StaffListItem } from "@/lib/staff/actions";
 import type { UserRole, UserStatus } from "@/lib/types/enums";
@@ -213,6 +217,9 @@ export function StaffListView({
   // / `utilisation=` / `status=onboarding`, which surface as removable
   // orange-tinted chips above the filter bar.
 
+  const [section, setSectionState] = useState<"active" | "archive">(
+    params.get("section") === "archive" ? "archive" : "active"
+  );
   const [search, setSearchState] = useState(params.get("search") ?? "");
   const [roleFilter, setRoleFilterState] = useState<UserRole | "all">(
     (params.get("role") as UserRole | null) ?? "all"
@@ -249,6 +256,11 @@ export function StaffListView({
     [params, router]
   );
 
+  function setSection(v: "active" | "archive") {
+    setSectionState(v);
+    replaceParam("section", v === "active" ? null : v);
+    setSelectedIds(new Set());
+  }
   function setSearch(v: string) {
     setSearchState(v);
     replaceParam("search", v || null);
@@ -318,7 +330,9 @@ export function StaffListView({
   // ============================================================
 
   const filtered = useMemo(() => {
-    let items = initialData;
+    let items = initialData.filter((i) =>
+      section === "archive" ? i.status === "inactive" : i.status !== "inactive"
+    );
     if (roleFilter !== "all") {
       items = items.filter((i) => i.role === roleFilter);
     }
@@ -359,6 +373,7 @@ export function StaffListView({
     return items;
   }, [
     initialData,
+    section,
     roleFilter,
     statusFilter,
     regionFilter,
@@ -385,6 +400,15 @@ export function StaffListView({
     return map;
   }, [regions]);
 
+  const activeCount = useMemo(
+    () => initialData.filter((i) => i.status !== "inactive").length,
+    [initialData]
+  );
+  const archiveCount = useMemo(
+    () => initialData.filter((i) => i.status === "inactive").length,
+    [initialData]
+  );
+
   const anyFilterActive =
     search !== "" ||
     roleFilter !== "all" ||
@@ -404,7 +428,9 @@ export function StaffListView({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Staff</h1>
           <p className="text-sm text-muted-foreground">
-            {initialData.length} team member{initialData.length === 1 ? "" : "s"}
+            {section === "archive"
+              ? `${archiveCount} archived team member${archiveCount === 1 ? "" : "s"}`
+              : `${activeCount} team member${activeCount === 1 ? "" : "s"}`}
           </p>
         </div>
         <Button
@@ -415,6 +441,25 @@ export function StaffListView({
           Add Staff
         </Button>
       </div>
+
+      {/* Active / Archive tabs */}
+      <Tabs
+        value={section}
+        onValueChange={(v) => setSection(v as "active" | "archive")}
+      >
+        <TabsList variant="line">
+          <TabsTrigger value="active">Active Staff</TabsTrigger>
+          <TabsTrigger value="archive">
+            <Archive className="size-3.5" />
+            Archive
+            {archiveCount > 0 && (
+              <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                {archiveCount}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Active jump-filter chips (from pulse strip) */}
       {(complianceFilter !== "all" || utilisationZero) && (
@@ -482,20 +527,21 @@ export function StaffListView({
           </SelectContent>
         </Select>
 
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as UserStatus | "all")}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="onboarding">Onboarding</SelectItem>
-          </SelectContent>
-        </Select>
+        {section === "active" && (
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v as UserStatus | "all")}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="onboarding">Onboarding</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         <Select
           value={regionFilter}
@@ -569,12 +615,20 @@ export function StaffListView({
       {/* Results */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
-          <Users className="mb-3 size-10 text-muted-foreground/50" />
-          <p className="text-sm font-medium text-foreground">No staff found</p>
+          {section === "archive" ? (
+            <Archive className="mb-3 size-10 text-muted-foreground/50" />
+          ) : (
+            <Users className="mb-3 size-10 text-muted-foreground/50" />
+          )}
+          <p className="text-sm font-medium text-foreground">
+            {section === "archive" ? "Archive is empty" : "No staff found"}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {anyFilterActive
-              ? "Try adjusting your filters."
-              : "Add your first team member to get started."}
+            {section === "archive"
+              ? "Deleted staff show up here — their details are kept for 7 years per Fair Work requirements."
+              : anyFilterActive
+                ? "Try adjusting your filters."
+                : "Add your first team member to get started."}
           </p>
         </div>
       ) : viewMode === "grid" ? (
@@ -582,6 +636,8 @@ export function StaffListView({
           items={filtered}
           basePath={basePath}
           regionsById={regionsById}
+          section={section}
+          onRestored={() => router.refresh()}
         />
       ) : (
         <div className="rounded-2xl border bg-card">
@@ -696,13 +752,21 @@ export function StaffListView({
                       <ShiftCell member={member} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        render={<Link href={`${basePath}/${member.id}`} />}
-                      >
-                        View
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        {section === "archive" && (
+                          <RestoreButton
+                            id={member.id}
+                            onRestored={() => router.refresh()}
+                          />
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          render={<Link href={`${basePath}/${member.id}`} />}
+                        >
+                          View
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -719,6 +783,7 @@ export function StaffListView({
           onClear={clearSelection}
           viewerRole={viewerRole}
           hasFinancialAccess={hasFinancialAccess}
+          section={section}
           onCompleted={() => {
             clearSelection();
             router.refresh();
@@ -876,6 +941,52 @@ function ShiftCell({ member }: { member: StaffListItem }) {
 }
 
 // ============================================================
+// Restore button — quick action for archived rows/cards. Calls
+// reactivateStaffMember directly rather than routing through the
+// detail page, since restoring from the Archive tab is meant to be
+// a one-click action.
+// ============================================================
+
+function RestoreButton({
+  id,
+  onRestored,
+}: {
+  id: string;
+  onRestored: () => void;
+}) {
+  const [working, setWorking] = useState(false);
+
+  async function handleRestore(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setWorking(true);
+    try {
+      const { error } = await reactivateStaffMember(id);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      toast.success("Restored to active staff.");
+      onRestored();
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleRestore}
+      disabled={working}
+    >
+      <UserCheck className="size-3.5" />
+      {working ? "Restoring…" : "Restore"}
+    </Button>
+  );
+}
+
+// ============================================================
 // Grid view
 // ============================================================
 
@@ -883,10 +994,14 @@ function StaffGridView({
   items,
   basePath,
   regionsById,
+  section,
+  onRestored,
 }: {
   items: StaffListItem[];
   basePath: string;
   regionsById: Map<string, string>;
+  section: "active" | "archive";
+  onRestored: () => void;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -959,6 +1074,11 @@ function StaffGridView({
             <div className="mt-3">
               <ShiftCell member={member} />
             </div>
+            {section === "archive" && (
+              <div className="mt-3">
+                <RestoreButton id={member.id} onRestored={onRestored} />
+              </div>
+            )}
           </Link>
         );
       })}
@@ -975,12 +1095,14 @@ function BulkActionBar({
   onClear,
   viewerRole,
   hasFinancialAccess,
+  section,
   onCompleted,
 }: {
   selectedIds: string[];
   onClear: () => void;
   viewerRole: UserRole;
   hasFinancialAccess: boolean;
+  section: "active" | "archive";
   onCompleted: () => void;
 }) {
   const count = selectedIds.length;
@@ -1025,10 +1147,10 @@ function BulkActionBar({
       }
       if (errors.length > 0) {
         toast.warning(
-          `Archived ${archived} of ${count}. ${errors.length} failed.`
+          `Deleted ${archived} of ${count}. ${errors.length} failed.`
         );
       } else {
-        toast.success(`Archived ${archived} staff.`);
+        toast.success(`Deleted ${archived} staff.`);
       }
       setArchiveOpen(false);
       onCompleted();
@@ -1093,14 +1215,14 @@ function BulkActionBar({
           <MessageSquarePlus className="size-4" />
           Send announcement
         </Button>
-        {isAdmin && (
+        {isAdmin && section === "active" && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => setArchiveOpen(true)}
           >
             <UserX className="size-4" />
-            Archive
+            Delete
           </Button>
         )}
         <Button
@@ -1151,12 +1273,14 @@ function BulkActionBar({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Archive {count} staff member{count === 1 ? "" : "s"}?
+              Delete {count} staff member{count === 1 ? "" : "s"}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Each profile is set to inactive and signed out. Historical
-              session records are preserved. You can reactivate later from
-              the detail page.
+              Each profile is signed out and moved to the Archive tab.
+              Their details (sessions worked, swap requests, invoices) are
+              kept — not erased — since staff records must be retained for
+              7 years under Fair Work record-keeping requirements. You can
+              restore them from the Archive at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1171,7 +1295,7 @@ function BulkActionBar({
               disabled={archiveWorking}
               className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
             >
-              {archiveWorking ? "Archiving…" : "Archive"}
+              {archiveWorking ? "Deleting…" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
