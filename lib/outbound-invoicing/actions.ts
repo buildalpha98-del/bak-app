@@ -1445,6 +1445,39 @@ export interface InvoiceRegisterRow {
   paid_amount_cents: number;
 }
 
+// ============================================================
+// Bulk approve / send — month-end is 40 centres; per-invoice
+// clicking doesn't scale. Each loop reuses the single-invoice
+// action so auth + status guards + PDF + email behaviour stay
+// identical; sequential on purpose to be gentle on Resend.
+// ============================================================
+
+export async function bulkApproveInvoices(
+  invoiceIds: string[]
+): Promise<{ approved: number; failed: { id: string; error: string }[] }> {
+  const failed: { id: string; error: string }[] = [];
+  let approved = 0;
+  for (const id of invoiceIds) {
+    const { error } = await approveInvoice(id);
+    if (error) failed.push({ id, error });
+    else approved++;
+  }
+  return { approved, failed };
+}
+
+export async function bulkSendInvoices(
+  invoiceIds: string[]
+): Promise<{ sent: number; failed: { id: string; error: string }[] }> {
+  const failed: { id: string; error: string }[] = [];
+  let sent = 0;
+  for (const id of invoiceIds) {
+    const { error } = await sendInvoice(id);
+    if (error) failed.push({ id, error });
+    else sent++;
+  }
+  return { sent, failed };
+}
+
 export async function getInvoiceRegister(
   periodStart: string,
   periodEnd: string

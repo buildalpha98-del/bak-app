@@ -196,9 +196,12 @@ export function SessionDetailSheet({
     setSaving(true);
     const { error } = await updateSessionStatus(session!.id, nextStatus);
     setSaving(false);
-    if (!error) {
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success(`Session marked ${nextStatus.replace(/_/g, " ")}.`);
+    onUpdate();
   }
 
   async function handleCancel() {
@@ -210,22 +213,28 @@ export function SessionDetailSheet({
       cancelReason.trim()
     );
     setSaving(false);
-    if (!error) {
-      setShowCancel(false);
-      setCancelReason("");
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success("Session cancelled.");
+    setShowCancel(false);
+    setCancelReason("");
+    onUpdate();
   }
 
   async function handleDelete() {
     setSaving(true);
     const { error } = await deleteSession(session!.id);
     setSaving(false);
-    if (!error) {
-      setShowDeleteConfirm(false);
-      onOpenChange(false);
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success("Session deleted.");
+    setShowDeleteConfirm(false);
+    onOpenChange(false);
+    onUpdate();
   }
 
   async function handleAssignCoaches(next: ChipCoach[]) {
@@ -260,10 +269,13 @@ export function SessionDetailSheet({
       pay_rate_override: value,
     });
     setSaving(false);
-    if (!error) {
-      setEditingRate(false);
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success("Pay rate updated.");
+    setEditingRate(false);
+    onUpdate();
   }
 
   async function handleLoadReplacements() {

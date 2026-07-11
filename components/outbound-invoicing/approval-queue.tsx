@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Loader2 } from "lucide-react";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function ApprovalQueue({ invoices }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
   if (invoices.length === 0) return null;
@@ -24,6 +26,9 @@ export function ApprovalQueue({ invoices }: Props) {
     if (error) toast.error(error);
     else toast.success("Invoice approved.");
     setLoading(null);
+    // Without this the approved invoice lingers in the pending list
+    // until a manual reload.
+    router.refresh();
   }
 
   return (

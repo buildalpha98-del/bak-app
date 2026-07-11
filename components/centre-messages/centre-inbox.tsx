@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Building2, Inbox, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   sendStaffCentreMessage,
@@ -49,6 +50,23 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
     // Pin to the latest message whenever the thread changes.
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [thread?.messages.length, selectedCentreId]);
+
+  useEffect(() => {
+    // Live inbox: any new centre message (any centre — the thread list
+    // and unread badges need it too) re-fetches the server data.
+    const supabase = createSupabaseBrowserClient();
+    const channel = supabase
+      .channel("centre-inbox")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "centre_messages" },
+        () => router.refresh()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
 
   function selectCentre(centreId: string) {
     const sp = new URLSearchParams(searchParams.toString());

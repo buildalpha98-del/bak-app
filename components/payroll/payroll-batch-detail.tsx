@@ -19,7 +19,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Calculator, CheckCircle2, DollarSign, Edit2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Calculator, CheckCircle2, DollarSign, Edit2 } from "lucide-react";
 import {
   calculatePeriodPayroll,
   adjustInvoice,
@@ -142,6 +142,13 @@ export function PayrollBatchDetail({ batch, invoices }: Props) {
   const totalAdjustments = invoices.reduce((s, i) => s + Number(i.adjustments), 0);
   const grandTotal = invoices.reduce((s, i) => s + Number(i.total_amount), 0);
 
+  // $0 lines mean a coach has no pay rate for that session — silently
+  // underpays if approved. Surface per-invoice and batch-wide.
+  const zeroLineCount = (inv: BatchInvoiceRow) =>
+    (inv.line_items_json ?? []).filter((li) => Number(li.amount) === 0).length;
+  const zeroRateInvoices = invoices.filter((inv) => zeroLineCount(inv) > 0);
+  const zeroRateLines = zeroRateInvoices.reduce((s, inv) => s + zeroLineCount(inv), 0);
+
   return (
     <div className="space-y-6">
       {/* Back */}
@@ -215,6 +222,17 @@ export function PayrollBatchDetail({ batch, invoices }: Props) {
           <CardTitle className="text-base">Coach Invoices</CardTitle>
         </CardHeader>
         <CardContent>
+          {zeroRateInvoices.length > 0 && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <p>
+                {zeroRateLines} session line{zeroRateLines === 1 ? "" : "s"} across{" "}
+                {zeroRateInvoices.length} invoice{zeroRateInvoices.length === 1 ? "" : "s"} ha
+                {zeroRateLines === 1 ? "s" : "ve"} a $0 pay rate. Set the coach&apos;s rate in
+                Staff → Pay Rates, then Calculate Payroll again before approving.
+              </p>
+            </div>
+          )}
           {invoices.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
               No invoices yet. Click "Calculate Payroll" to generate invoices for all coaches with completed sessions.
@@ -240,6 +258,11 @@ export function PayrollBatchDetail({ batch, invoices }: Props) {
                       <td className="py-3 pr-4">
                         <p className="font-medium">{inv.coach_name}</p>
                         <p className="text-xs text-muted-foreground">{inv.coach_email}</p>
+                        {zeroLineCount(inv) > 0 && (
+                          <Badge className="mt-1 bg-amber-100 text-amber-800">
+                            {zeroLineCount(inv)} line{zeroLineCount(inv) === 1 ? "" : "s"} missing rate
+                          </Badge>
+                        )}
                       </td>
                       <td className="py-3 pr-4 text-right">{inv.total_sessions}</td>
                       <td className="py-3 pr-4 text-right">{inv.total_hours}</td>
