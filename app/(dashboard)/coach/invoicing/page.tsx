@@ -9,7 +9,6 @@ import { getFortnightlyPeriodForOffset } from "@/lib/utils/invoicing";
 import { getCoachInvoicingPulse } from "@/lib/coach/page-pulses";
 import { InvoicingDashboard } from "@/components/invoicing/invoicing-dashboard";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { Receipt, Wallet, CalendarCheck2 } from "lucide-react";
 
 interface Props {
   searchParams: Promise<{ period?: string }>;
@@ -67,18 +66,18 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
       <CoachPulseStrip
         items={[
           {
-            icon: Receipt,
+            icon: "receipt",
             count: pulse.unpaidCount,
             label: pulse.unpaidCount === 1 ? "unpaid" : "unpaid",
             accent: true,
           },
           {
-            icon: Wallet,
+            icon: "wallet",
             count: pulse.paidThisMonthCount,
             label: "paid this month",
           },
           {
-            icon: CalendarCheck2,
+            icon: "calendar-check",
             count: pulse.sessionsThisPeriodCount,
             label: "sessions this period",
           },

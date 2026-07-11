@@ -4,7 +4,6 @@ import { getAnnouncements } from "@/lib/announcements/actions";
 import { getCoachAnnouncementsPulse } from "@/lib/coach/page-pulses";
 import { AnnouncementList } from "@/components/announcements/announcement-list";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { Megaphone, CalendarDays } from "lucide-react";
 
 export default async function CoachAnnouncementsPage() {
   const supabase = await createSupabaseServerClient();
@@ -31,13 +30,13 @@ export default async function CoachAnnouncementsPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: Megaphone,
+            icon: "megaphone",
             count: pulse.unreadCount,
             label: "unread",
             accent: true,
           },
           {
-            icon: CalendarDays,
+            icon: "calendar-days",
             count: pulse.thisWeekCount,
             label: "this week",
           },

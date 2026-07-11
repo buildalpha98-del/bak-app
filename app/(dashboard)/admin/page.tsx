@@ -41,7 +41,7 @@ export default async function AdminDashboard() {
     .from("profiles")
     .select("role, financial_access, name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile) redirect("/login");
 

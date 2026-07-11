@@ -20,7 +20,7 @@ export default async function OpsCommandCentrePage() {
     .from("profiles")
     .select("role, name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile || (profile.role !== "ops" && profile.role !== "admin")) {
     redirect("/");

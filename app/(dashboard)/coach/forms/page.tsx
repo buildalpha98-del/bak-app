@@ -7,7 +7,6 @@ import {
 import { getCoachFormsPulse } from "@/lib/coach/page-pulses";
 import { CoachFormsView } from "@/components/forms/coach-forms-view";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 export default async function CoachFormsPage() {
   const supabase = await createSupabaseServerClient();
@@ -22,7 +21,7 @@ export default async function CoachFormsPage() {
     .from("profiles")
     .select("name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   const coachName = profile?.name ?? user.email ?? "Coach";
 
@@ -46,19 +45,19 @@ export default async function CoachFormsPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: AlertTriangle,
+            icon: "alert-triangle",
             count: pulse.overdueCount,
             label: "overdue",
             accent: true,
           },
           {
-            icon: Clock,
+            icon: "clock",
             count: pulse.dueTodayCount,
             label: "due today",
             accent: pulse.dueTodayCount > 0,
           },
           {
-            icon: CheckCircle2,
+            icon: "check-circle",
             count: pulse.completedThisWeekCount,
             label: "completed this week",
           },

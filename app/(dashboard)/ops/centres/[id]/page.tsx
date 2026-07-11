@@ -25,7 +25,7 @@ export default async function OpsCentreDetailPage({
       .from("profiles")
       .select("role, financial_access")
       .eq("id", user.id)
-      .single(),
+      .maybeSingle(),
     getCentreDetail(id),
   ]);
 

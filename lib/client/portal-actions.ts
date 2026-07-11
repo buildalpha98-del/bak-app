@@ -817,7 +817,11 @@ export async function sendCentreMessage(
         type: "centre_message_received",
         title: `New message from ${centre?.name ?? "a centre"}`,
         body: content.length > 140 ? `${content.slice(0, 140)}…` : content,
-        entityType: "centre",
+        // "centre_message" (not "centre") — the URL builder maps this
+        // to the staff Centre Inbox with the thread preselected. The
+        // bare "centre" type had no mapping and dumped clickers on
+        // the admin home.
+        entityType: "centre_message",
         entityId: centreId,
       }).catch((err) =>
         console.error("centre message ops notification failed:", err)

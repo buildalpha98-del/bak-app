@@ -4,7 +4,6 @@ import { getCoachAssessmentTasks } from "@/lib/assessments/actions";
 import { getCoachAssessmentsPulse } from "@/lib/coach/page-pulses";
 import CoachAssessmentView from "@/components/assessments/coach-assessment-view";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { ClipboardList, CheckCircle2 } from "lucide-react";
 
 export default async function CoachAssessmentsPage() {
   const supabase = await createSupabaseServerClient();
@@ -23,7 +22,7 @@ export default async function CoachAssessmentsPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: ClipboardList,
+            icon: "clipboard-list",
             count: pulse.childrenPendingCount,
             label:
               pulse.childrenPendingCount === 1
@@ -32,7 +31,7 @@ export default async function CoachAssessmentsPage() {
             accent: true,
           },
           {
-            icon: CheckCircle2,
+            icon: "check-circle",
             count: pulse.submittedThisTermCount,
             label: "submitted this term",
           },

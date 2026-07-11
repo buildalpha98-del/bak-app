@@ -4,7 +4,6 @@ import { getRecentNotifications } from "@/lib/notifications/actions";
 import { getCoachNotificationsPulse } from "@/lib/coach/page-pulses";
 import { NotificationsList } from "@/components/shared/notifications-list";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { Bell, BellRing } from "lucide-react";
 
 export default async function CoachNotificationsPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,13 +31,13 @@ export default async function CoachNotificationsPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: BellRing,
+            icon: "bell-ring",
             count: pulse.urgentCount,
             label: "urgent",
             accent: true,
           },
           {
-            icon: Bell,
+            icon: "bell",
             count: pulse.importantCount,
             label: "important",
             accent: pulse.importantCount > 0,

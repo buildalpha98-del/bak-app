@@ -17,8 +17,8 @@ export async function GET(request: Request) {
     // Fetch all active centres
     const { data: centres, error: centresError } = await admin
       .from("centres")
-      .select("id, name, status")
-      .in("status", ["active", "trial"]);
+      .select("id, name, contract_status")
+      .in("contract_status", ["active", "trial"]);
 
     if (centresError) throw centresError;
 

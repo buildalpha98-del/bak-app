@@ -27,7 +27,7 @@ export default async function AdminCentreDetailPage({
       .from("profiles")
       .select("role, financial_access")
       .eq("id", user.id)
-      .single(),
+      .maybeSingle(),
     getCentreDetail(id),
     supabase
       .from("centres")

@@ -4,7 +4,6 @@ import { getCoachAssignedKits } from "@/lib/equipment/actions";
 import { getCoachEquipmentPulse } from "@/lib/coach/page-pulses";
 import { CoachEquipmentView } from "@/components/equipment/coach-equipment-view";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { Package, AlertTriangle } from "lucide-react";
 
 export default async function CoachEquipmentPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,7 +31,7 @@ export default async function CoachEquipmentPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: Package,
+            icon: "package",
             count: pulse.kitsAssignedCount,
             label:
               pulse.kitsAssignedCount === 1
@@ -40,7 +39,7 @@ export default async function CoachEquipmentPage() {
                 : "kits assigned",
           },
           {
-            icon: AlertTriangle,
+            icon: "alert-triangle",
             count: pulse.issuesOpenCount,
             label: pulse.issuesOpenCount === 1 ? "issue open" : "issues open",
             accent: true,

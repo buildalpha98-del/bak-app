@@ -4,7 +4,6 @@ import { getTasks, getTaskColumns } from "@/lib/tasks/actions";
 import { getCoachTasksPulse } from "@/lib/coach/page-pulses";
 import { CoachTasksClient } from "./client";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
-import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 
 export default async function CoachTasksPage() {
   const supabase = await createSupabaseServerClient();
@@ -44,19 +43,19 @@ export default async function CoachTasksPage() {
       <CoachPulseStrip
         items={[
           {
-            icon: AlertTriangle,
+            icon: "alert-triangle",
             count: pulse.overdueCount,
             label: "overdue",
             accent: true,
           },
           {
-            icon: Clock,
+            icon: "clock",
             count: pulse.dueTodayCount,
             label: "due today",
             accent: pulse.dueTodayCount > 0,
           },
           {
-            icon: CheckCircle2,
+            icon: "check-circle",
             count: pulse.completedThisWeekCount,
             label: "done this week",
           },

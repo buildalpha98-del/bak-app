@@ -78,7 +78,7 @@ export async function getCohortAnalysis(): Promise<{
     // Get all centres with their creation dates and current status
     const { data: centres, error: centresErr } = await supabase
       .from("centres")
-      .select("id, created_at, status")
+      .select("id, created_at, contract_status")
       .order("created_at", { ascending: true });
 
     if (centresErr) throw centresErr;
@@ -97,7 +97,7 @@ export async function getCohortAnalysis(): Promise<{
       cohortMap.get(key)!.push({
         id: c.id,
         createdAt: d,
-        status: c.status ?? "active",
+        status: c.contract_status ?? "active",
       });
     }
 
@@ -203,11 +203,11 @@ export async function getDemandAnalysis(): Promise<{
     // Centres for suburb lookup
     const { data: centres } = await supabase
       .from("centres")
-      .select("id, suburb");
+      .select("id, address");
 
     const centreSuburb = new Map<string, string>();
     for (const c of centres ?? []) {
-      centreSuburb.set(c.id, c.suburb ?? "Unknown");
+      centreSuburb.set(c.id, c.address ?? "Unknown");
     }
 
     // Build booking count per session
@@ -558,7 +558,7 @@ export async function getGrowthMetrics(): Promise<{
     // Centres
     const { data: centres } = await supabase
       .from("centres")
-      .select("id, created_at, status")
+      .select("id, created_at, contract_status")
       .order("created_at", { ascending: true });
 
     // Parents
@@ -570,7 +570,7 @@ export async function getGrowthMetrics(): Promise<{
     // Bookings
     const { data: bookings } = await supabase
       .from("bookings")
-      .select("id, created_at, status")
+      .select("id, created_at, contract_status")
       .order("created_at", { ascending: true });
 
     // Churn events
@@ -699,13 +699,13 @@ export async function getOverviewKPIs(): Promise<{
     const { count: activeCentres } = await supabase
       .from("centres")
       .select("id", { count: "exact", head: true })
-      .eq("status", "active");
+      .eq("contract_status", "active");
 
     // Previous month: approximate by centres created before last month end
     const { count: prevActiveCentres } = await supabase
       .from("centres")
       .select("id", { count: "exact", head: true })
-      .eq("status", "active")
+      .eq("contract_status", "active")
       .lte("created_at", lastMonthEnd);
 
     // Active parents (those with bookings this month)

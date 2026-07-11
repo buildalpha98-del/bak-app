@@ -8,17 +8,56 @@
 // (forms / training / messages / invoicing / docs / tasks /
 // assessments / announcements / equipment / notifications).
 //
+// Icons are passed as STRING KEYS, not component references — the
+// callers are Server Components and Lucide icons are forwardRef
+// objects that can't cross the RSC serialization boundary (this
+// exact pattern was throwing in production on /coach/announcements
+// and /coach/forms). The key→component map lives here on the client.
+//
 // Each item is a single number + label; the icon/number turns brand
 // orange when the count > 0 AND the item is flagged as `accent`
 // (e.g. "overdue", "urgent"). Optional `href` makes the item a tap
 // target — passing nothing leaves it as plain text.
 
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  BellRing,
+  CalendarCheck2,
+  CalendarDays,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  Megaphone,
+  Package,
+  Receipt,
+  Sparkles,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import { useCountUp } from "@/components/launch/use-count-up";
 
+const PULSE_ICONS = {
+  "alert-triangle": AlertTriangle,
+  bell: Bell,
+  "bell-ring": BellRing,
+  "calendar-check": CalendarCheck2,
+  "calendar-days": CalendarDays,
+  "check-circle": CheckCircle2,
+  "clipboard-list": ClipboardList,
+  clock: Clock,
+  megaphone: Megaphone,
+  package: Package,
+  receipt: Receipt,
+  sparkles: Sparkles,
+  wallet: Wallet,
+} satisfies Record<string, LucideIcon>;
+
+export type CoachPulseIcon = keyof typeof PULSE_ICONS;
+
 export interface CoachPulseItem {
-  icon: LucideIcon;
+  icon: CoachPulseIcon;
   count: number;
   label: string;
   /** When true and count > 0, render in brand orange. */
@@ -51,7 +90,8 @@ export function CoachPulseStrip({ items }: { items: CoachPulseItem[] }) {
 }
 
 function PulseStat({ item }: { item: CoachPulseItem }) {
-  const { icon: Icon, count, label, accent, href } = item;
+  const { icon, count, label, accent, href } = item;
+  const Icon = PULSE_ICONS[icon] ?? Bell;
   const active = accent === true && count > 0;
   const ticked = useCountUp(count);
 

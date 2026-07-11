@@ -42,10 +42,30 @@ export async function middleware(request: NextRequest) {
   const { response, supabase } = createSupabaseMiddlewareClient(request);
   const { pathname } = request.nextUrl;
 
-  // Refresh the auth session
+  // Refresh the auth session. On auth errors (banned user, refresh
+  // token revoked/rotated away) the stale sb-* cookies MUST be
+  // cleared — otherwise the browser re-sends them on every request
+  // and the user loops on an error forever (observed 30+ times in
+  // production for a single banned user).
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  if (
+    authError &&
+    (authError.code === "user_banned" ||
+      authError.code === "refresh_token_not_found" ||
+      authError.status === 400)
+  ) {
+    const login = NextResponse.redirect(new URL("/login", request.url));
+    for (const cookie of request.cookies.getAll()) {
+      if (cookie.name.startsWith("sb-")) {
+        login.cookies.delete(cookie.name);
+      }
+    }
+    return login;
+  }
 
   // Check if current route is public
   const isPublicRoute = PUBLIC_ROUTES.some(

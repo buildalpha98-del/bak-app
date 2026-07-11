@@ -41,24 +41,24 @@ export default async function CoachTrainingPage() {
         <CoachPulseStrip
           items={[
             {
-              icon: AlertTriangle,
+              icon: "alert-triangle",
               count: pulse.overdueCount,
               label: "overdue",
               accent: true,
             },
             {
-              icon: Clock,
+              icon: "clock",
               count: pulse.dueSoonCount,
               label: "due in 7 days",
               accent: pulse.dueSoonCount > 0,
             },
             {
-              icon: Sparkles,
+              icon: "sparkles",
               count: pulse.newCount,
               label: "new this week",
             },
             {
-              icon: CheckCircle2,
+              icon: "check-circle",
               count: pulse.completedCount,
               label: "completed",
             },

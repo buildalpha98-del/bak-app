@@ -86,8 +86,8 @@ export async function getProposalContext(
     // Fetch nearby centres (all active centres for context)
     const { data: centres } = await supabase
       .from("centres")
-      .select("id, name, suburb, status")
-      .eq("status", "active")
+      .select("id, name, address, contract_status")
+      .eq("contract_status", "active")
       .limit(20);
 
     // Get session counts and ratings for nearby centres
@@ -111,8 +111,8 @@ export async function getProposalContext(
 
         nearbyCentres.push({
           name: centre.name,
-          suburb: centre.suburb ?? null,
-          status: centre.status,
+          suburb: centre.address ?? null,
+          status: centre.contract_status,
           sessionCount: sessionCount ?? 0,
           avgRating: avgRating ? Math.round(avgRating * 10) / 10 : null,
         });
@@ -123,7 +123,7 @@ export async function getProposalContext(
     const { count: totalCentres } = await supabase
       .from("centres")
       .select("*", { count: "exact", head: true })
-      .eq("status", "active");
+      .eq("contract_status", "active");
 
     const { count: totalSessions } = await supabase
       .from("sessions")
