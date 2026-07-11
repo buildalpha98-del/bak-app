@@ -5,6 +5,7 @@ import { getAssessmentTemplates } from "@/lib/assessments/actions";
 import { getAssessmentsStatusPulse } from "@/lib/assessments/status-pulse-actions";
 import { AssessmentListView } from "@/components/assessments/assessment-list-view";
 import { AssessmentsStatusPulseStrip } from "@/components/assessments/assessments-status-pulse";
+import { LoadError } from "@/components/ui/load-error";
 
 export const metadata = {
   title: "Assessments | Build Alpha Kids",
@@ -32,9 +33,7 @@ export default async function AdminAssessmentsPage() {
   if (templatesResult.error) {
     return (
       <div className="container max-w-6xl py-6">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {templatesResult.error}
-        </div>
+        <LoadError message={templatesResult.error} />
       </div>
     );
   }

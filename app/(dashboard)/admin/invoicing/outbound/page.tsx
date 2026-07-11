@@ -7,6 +7,7 @@ import {
 import { OutboundInvoiceList } from "@/components/outbound-invoicing/invoice-list";
 import { ApprovalQueue } from "@/components/outbound-invoicing/approval-queue";
 import { Card, CardContent } from "@/components/ui/card";
+import { LoadError } from "@/components/ui/load-error";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-AU", {
@@ -32,9 +33,7 @@ export default async function AdminOutboundInvoicingPage() {
   const firstError = allResult.error || pendingResult.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

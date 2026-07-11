@@ -4,6 +4,7 @@ import { getConversations } from "@/lib/messages/actions";
 import { getMessagesStatusPulse } from "@/lib/messages/status-pulse-actions";
 import { MessagesPageClient } from "@/components/messages/messages-page-client";
 import { MessagesStatusPulseStrip } from "@/components/messages/messages-status-pulse";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function AdminMessagesPage() {
   const supabase = await createSupabaseServerClient();
@@ -15,9 +16,7 @@ export default async function AdminMessagesPage() {
     conversations = await getConversations();
   } catch {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load messages. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load messages. Please try refreshing." />
     );
   }
 

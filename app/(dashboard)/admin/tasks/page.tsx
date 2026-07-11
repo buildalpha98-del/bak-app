@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTaskColumns, getTasks, getTeamMembers } from "@/lib/tasks/actions";
 import { getTasksStatusPulse } from "@/lib/tasks/status-pulse-actions";
 import { AdminTasksClient } from "./client";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function AdminTasksPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,9 +33,7 @@ export default async function AdminTasksPage() {
   const firstError = columnsResult.error || tasksResult.error || membersResult.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

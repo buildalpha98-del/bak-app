@@ -7,6 +7,7 @@ import {
 } from "@/lib/equipment/actions";
 import { getEquipmentStatusPulse } from "@/lib/equipment/status-pulse-actions";
 import { EquipmentPageTabs } from "@/components/equipment/equipment-page-tabs";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function OpsEquipmentPage() {
   const supabase = await createSupabaseServerClient();
@@ -25,9 +26,7 @@ export default async function OpsEquipmentPage() {
 
   if (kitsResult.error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {kitsResult.error}
-      </div>
+      <LoadError message={kitsResult.error} />
     );
   }
 

@@ -9,6 +9,7 @@ import { getFortnightlyPeriodForOffset } from "@/lib/utils/invoicing";
 import { getCoachInvoicingPulse } from "@/lib/coach/page-pulses";
 import { InvoicingDashboard } from "@/components/invoicing/invoicing-dashboard";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { LoadError } from "@/components/ui/load-error";
 
 interface Props {
   searchParams: Promise<{ period?: string }>;
@@ -46,9 +47,7 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
   const firstError = invoiceResult.error || sessionsResult.error || historyResult.error || profileResult.error;
   if (firstError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

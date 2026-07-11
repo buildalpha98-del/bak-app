@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlaggedInvoicesList } from "@/components/invoicing/flagged-invoices-list";
 import { AdminInvoiceList } from "@/components/invoicing/admin-invoice-list";
 import { InvoicingStatusPulseStrip } from "@/components/invoicing/invoicing-status-pulse";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function OpsInvoicingPage() {
   const supabase = await createSupabaseServerClient();
@@ -24,9 +25,7 @@ export default async function OpsInvoicingPage() {
   const firstError = flaggedResult.error || allResult.error;
   if (firstError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

@@ -5,6 +5,7 @@ import {
   getSwapRequestHistory,
 } from "@/lib/sessions/shift-actions";
 import { SwapManagementView } from "@/components/roster/swap-management-view";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function OpsSwapsPage() {
   const supabase = await createSupabaseServerClient();
@@ -22,9 +23,7 @@ export default async function OpsSwapsPage() {
   const firstError = pendingRes.error || historyRes.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

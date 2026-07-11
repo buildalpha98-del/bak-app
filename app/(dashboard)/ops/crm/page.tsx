@@ -7,6 +7,7 @@ import {
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { getRegions } from "@/lib/regions/actions";
 import { PipelineBoard } from "@/components/crm/pipeline-board";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function OpsCrmPage() {
   const [
@@ -31,9 +32,7 @@ export default async function OpsCrmPage() {
 
   if (leadsResult.error || summaryResult.error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {leadsResult.error ?? summaryResult.error}
-      </div>
+      <LoadError message={leadsResult.error ?? summaryResult.error} />
     );
   }
 

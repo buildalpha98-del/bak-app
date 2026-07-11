@@ -18,6 +18,7 @@
 
 import { Clock, CalendarClock, Flame, AlarmClock } from "lucide-react";
 import type { CrmStatusPulse } from "@/lib/crm/status-pulse-actions";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 export type CrmPulseJump = "stale" | "overdue" | "trials_ending" | "hot";
 
@@ -96,6 +97,7 @@ function PulseJumpStat({
   onClick: () => void;
 }) {
   const active = count > 0;
+  const ticked = useCountUp(count);
   return (
     <li>
       <button
@@ -115,7 +117,7 @@ function PulseJumpStat({
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >
-          {count}
+          {ticked}
         </span>
         <span
           className={

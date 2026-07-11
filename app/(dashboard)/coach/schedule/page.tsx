@@ -16,6 +16,7 @@ import { TermView } from "@/components/coach/schedule/term-view";
 import { CoachSchedulePulseStrip } from "@/components/coach/schedule/coach-schedule-pulse";
 import { CalendarSubscribeButton } from "@/components/calendar/calendar-subscribe-button";
 import { getCalendarToken } from "@/lib/calendar/actions";
+import { LoadError } from "@/components/ui/load-error";
 
 interface SchedulePageProps {
   searchParams: Promise<{ tab?: string; date?: string }>;
@@ -60,9 +61,7 @@ export default async function SchedulePage({
   const firstError = todayRes.error || weekRes.error || termRes.error || pendingRes.error;
   if (firstError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

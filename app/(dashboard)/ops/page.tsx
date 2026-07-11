@@ -5,6 +5,7 @@ import { getOpsCommandPulse } from "@/lib/ops/command-pulse-actions";
 import { OpsContextStrip } from "@/components/ops/ops-context-strip";
 import { OpsQuickActionsRow } from "@/components/ops/ops-quick-actions-row";
 import { CommandCentre } from "./command-centre";
+import { LoadError } from "@/components/ui/load-error";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +38,7 @@ export default async function OpsCommandCentrePage() {
     ]);
   } catch {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load command centre data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load command centre data. Please try refreshing." />
     );
   }
 

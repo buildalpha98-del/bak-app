@@ -45,11 +45,7 @@ export function FeedbackStatusPulseStrip({
         <PulseStat
           icon={AlertTriangle}
           count={pulse.oneStarUnackCount}
-          label={
-            pulse.oneStarUnackCount === 1
-              ? "1-star unacknowledged"
-              : "1-star unacknowledged"
-          }
+          label="1-star unacknowledged"
           href={`${basePath}?rating=1&ack=unread`}
           tone="alarm"
         />
@@ -103,7 +99,7 @@ function PulseStat({
     <li>
       <Link
         href={href}
-        className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40"
+        className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <Icon
           className={

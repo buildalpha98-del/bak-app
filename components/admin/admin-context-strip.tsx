@@ -14,6 +14,7 @@
 
 import Link from "next/link";
 import type { AdminStatusPulse } from "@/lib/launch/dashboard-actions";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 interface AdminContextStripProps {
   firstName: string;
@@ -72,11 +73,12 @@ function PulseStat({
   href: string;
 }) {
   const active = count > 0;
+  const ticked = useCountUp(count);
   return (
     <li>
       <Link
         href={href}
-        className="group inline-flex items-baseline gap-1.5 rounded-md px-1 -mx-1 transition hover:bg-muted/40"
+        className="group inline-flex items-baseline gap-1.5 rounded-md px-1 -mx-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <span
           className={
@@ -85,7 +87,7 @@ function PulseStat({
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >
-          {count}
+          {ticked}
         </span>
         <span
           className={

@@ -55,10 +55,23 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
 
       {/* Nav items */}
       <nav className="relative flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
-        {items.map((item) => {
+        {items.map((item, index) => {
           const active = isNavItemActive(item.href, pathname);
           const Icon = item.icon;
           const isInbox = item.href.endsWith("/inbox");
+          // First item of each section carries the group heading
+          // (collapsed rail gets a divider instead).
+          const startsSection =
+            item.section !== undefined && item.section !== items[index - 1]?.section;
+          const sectionHeader = startsSection ? (
+            isCollapsed ? (
+              <div className="mx-2 my-2 border-t border-sidebar-border" />
+            ) : (
+              <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/35">
+                {item.section}
+              </p>
+            )
+          ) : null;
 
           const linkClasses = cn(
             "group flex items-center gap-3 h-10 rounded-lg px-3 text-sm font-medium transition-all duration-200 relative",
@@ -69,50 +82,56 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
 
           if (isCollapsed) {
             return (
-              <Tooltip key={item.href}>
-                <TooltipTrigger
-                  render={<Link href={item.href} />}
-                  className={cn(
-                    "flex items-center justify-center h-10 rounded-lg px-0 text-sm transition-all duration-200 relative",
-                    active
-                      ? "bg-sidebar-accent text-sidebar-primary"
-                      : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/40"
-                  )}
-                >
-                  {/* Active left stripe */}
-                  {active && (
-                    <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
-                  )}
-                  <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
-                  {isInbox && (
-                    <span className="absolute -top-0.5 -right-0.5">
-                      <InboxBadge variant="collapsed" />
-                    </span>
-                  )}
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
+              <div key={item.href}>
+                {sectionHeader}
+                <Tooltip>
+                  <TooltipTrigger
+                    render={<Link href={item.href} />}
+                    className={cn(
+                      "flex items-center justify-center h-10 rounded-lg px-0 text-sm transition-all duration-200 relative",
+                      active
+                        ? "bg-sidebar-accent text-sidebar-primary"
+                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/40"
+                    )}
+                  >
+                    {/* Active left stripe */}
+                    {active && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
+                    )}
+                    <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
+                    {isInbox && (
+                      <span className="absolute -top-0.5 -right-0.5">
+                        <InboxBadge variant="collapsed" />
+                      </span>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             );
           }
 
           return (
-            <Link key={item.href} href={item.href} className={linkClasses}>
-              {/* Active left stripe */}
-              {active && (
-                <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
-              )}
-              <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
-              <span className="truncate">{item.label}</span>
-              {isInbox ? (
-                <InboxBadge variant="expanded" />
-              ) : (
-                active && (
-                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-warm" />
-                )
-              )}
-            </Link>
+            <div key={item.href}>
+              {sectionHeader}
+              <Link href={item.href} className={linkClasses}>
+                {/* Active left stripe */}
+                {active && (
+                  <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
+                )}
+                <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
+                <span className="truncate">{item.label}</span>
+                {isInbox ? (
+                  <InboxBadge variant="expanded" />
+                ) : (
+                  active && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-warm" />
+                  )
+                )}
+              </Link>
+            </div>
           );
         })}
       </nav>

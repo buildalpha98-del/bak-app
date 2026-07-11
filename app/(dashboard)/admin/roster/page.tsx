@@ -14,6 +14,7 @@ import { getRegions } from "@/lib/regions/actions";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
+import { LoadError } from "@/components/ui/load-error";
 
 interface AdminRosterPageProps {
   searchParams: Promise<{ week?: string }>;
@@ -64,9 +65,7 @@ export default async function AdminRosterPage({
     certWarningsRes.error;
   if (firstError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

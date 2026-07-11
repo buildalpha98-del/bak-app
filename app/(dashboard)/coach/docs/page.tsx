@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getDocuments, getCategoryCounts } from "@/lib/documents/actions";
 import { getDocumentsStatusPulse } from "@/lib/documents/status-pulse-actions";
 import { DocumentHub } from "@/components/documents/document-hub";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function CoachDocsPage() {
   const supabase = await createSupabaseServerClient();
@@ -21,9 +22,7 @@ export default async function CoachDocsPage() {
   const firstError = docsResult.error || countsResult.error;
   if (firstError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 

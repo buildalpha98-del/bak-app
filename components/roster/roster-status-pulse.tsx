@@ -21,6 +21,7 @@
 
 import { FileEdit, UserX } from "lucide-react";
 import type { RosterStatusPulse } from "@/lib/roster/status-pulse-actions";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 interface RosterStatusPulseStripProps {
   pulse: RosterStatusPulse;
@@ -105,6 +106,7 @@ function PulseJumpStat({
   onClick: () => void;
 }) {
   const active = count > 0;
+  const ticked = useCountUp(count);
   return (
     <li>
       <button
@@ -124,7 +126,7 @@ function PulseJumpStat({
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >
-          {count}
+          {ticked}
         </span>
         <span
           className={

@@ -7,6 +7,7 @@ import {
 } from "@/lib/forms/actions";
 import { getFormsStatusPulse } from "@/lib/forms/status-pulse-actions";
 import { FormTemplateList } from "@/components/forms/form-template-list";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function AdminFormsPage() {
   const supabase = await createSupabaseServerClient();
@@ -30,9 +31,7 @@ export default async function AdminFormsPage() {
 
   if (templatesRes.error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {templatesRes.error}
-      </div>
+      <LoadError message={templatesRes.error} />
     );
   }
 

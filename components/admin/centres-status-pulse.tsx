@@ -22,6 +22,7 @@ import { AlertTriangle, FileWarning, Compass } from "lucide-react";
 import type { CentresStatusPulse } from "@/lib/centres/actions";
 import { computeDelta } from "@/lib/comparison/delta";
 import { ComparisonBadge } from "@/components/shared/comparison-badge";
+import { useCountUp } from "@/components/launch/use-count-up";
 
 interface CentresStatusPulseStripProps {
   pulse: CentresStatusPulse;
@@ -127,6 +128,7 @@ function PulseStat({
   badgeLabel?: string;
 }) {
   const active = count > 0;
+  const ticked = useCountUp(count);
   return (
     <li>
       <Link
@@ -145,7 +147,7 @@ function PulseStat({
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >
-          {count}
+          {ticked}
         </span>
         <span
           className={

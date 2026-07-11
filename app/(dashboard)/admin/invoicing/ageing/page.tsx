@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAgeingReport } from "@/lib/outbound-invoicing/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LoadError } from "@/components/ui/load-error";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-AU", {
@@ -52,9 +53,7 @@ export default async function AgeingReportPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load ageing report. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load ageing report. Please try refreshing." />
     );
   }
 

@@ -154,7 +154,7 @@ function PulseStat({
   const active = count > 0;
   const ticked = useCountUp(count);
   const inner = (
-    <span className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40">
+    <span className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
       <Icon
         className={
           active
@@ -200,7 +200,7 @@ function NextSessionStat({
     <li>
       <Link
         href={href}
-        className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40"
+        className="group inline-flex items-center gap-1.5 rounded-md -mx-1 px-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <Icon
           className={

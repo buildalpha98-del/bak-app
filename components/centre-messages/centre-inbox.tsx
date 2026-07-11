@@ -219,6 +219,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
               <Button
                 onClick={handleSend}
                 disabled={isPending || !draft.trim()}
+                aria-label="Send reply"
                 className="h-11 bg-primary text-white hover:bg-primary/90"
               >
                 {isPending ? (

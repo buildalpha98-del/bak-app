@@ -4,6 +4,7 @@ import { getTasks, getTaskColumns } from "@/lib/tasks/actions";
 import { getCoachTasksPulse } from "@/lib/coach/page-pulses";
 import { CoachTasksClient } from "./client";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
+import { LoadError } from "@/components/ui/load-error";
 
 export default async function CoachTasksPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,9 +33,7 @@ export default async function CoachTasksPage() {
   const firstError = columnsResult.error || tasksResult.error;
   if (firstError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Failed to load page data. Please try refreshing.
-      </div>
+      <LoadError message="Failed to load page data. Please try refreshing." />
     );
   }
 
