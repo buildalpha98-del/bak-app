@@ -274,7 +274,7 @@ export function ProgramDetailView({
               size="sm"
               disabled={savingVersion}
               onClick={handleSaveNewVersion}
-              className="min-h-[40px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
             >
               {savingVersion && <Loader2 className="size-4 animate-spin" />}
               Save as v{(program.version_number ?? 0) + 1}
@@ -468,7 +468,7 @@ export function ProgramDetailView({
                         className={
                           "flex items-center justify-between gap-3 rounded-xl border bg-background px-3 py-2 transition hover:bg-muted/30 " +
                           (v.id === program.id
-                            ? "border-[#E8712A]/40 bg-[#E8712A]/5"
+                            ? "border-primary/40 bg-primary/5"
                             : "")
                         }
                       >
@@ -476,7 +476,7 @@ export function ProgramDetailView({
                           <p className="text-sm font-medium text-foreground">
                             v{v.version_number}
                             {v.id === program.id && (
-                              <span className="ml-2 text-xs text-[#E8712A]">
+                              <span className="ml-2 text-xs text-primary">
                                 current
                               </span>
                             )}
@@ -521,8 +521,8 @@ export function ProgramDetailView({
                         className="flex items-center justify-between gap-3 rounded-xl border bg-background px-3 py-2 transition hover:bg-muted/30"
                       >
                         <div className="min-w-0 flex-1 flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E8712A]/10">
-                            <Building2 className="size-4 text-[#E8712A]" />
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <Building2 className="size-4 text-primary" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-foreground">

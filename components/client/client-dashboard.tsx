@@ -165,7 +165,7 @@ export function ClientDashboard({
                   </span>
                   <Badge
                     variant="secondary"
-                    className="bg-white text-[#0891B2] hover:bg-white border border-[#0891B2]/30"
+                    className="bg-card text-[#0891B2] hover:bg-card border border-[#0891B2]/30"
                   >
                     {nextSession.sport}
                   </Badge>
@@ -176,7 +176,7 @@ export function ClientDashboard({
                 <NextSessionBroadcastPill sessionId={nextSession.id} />
               </div>
 
-              <div className="flex flex-col items-center rounded-2xl bg-white px-3 py-2 shadow-sm">
+              <div className="flex flex-col items-center rounded-2xl bg-card px-3 py-2 shadow-sm">
                 {days !== null && days >= 0 ? (
                   <>
                     <span className="text-2xl font-bold tabular-nums text-[#0891B2]">

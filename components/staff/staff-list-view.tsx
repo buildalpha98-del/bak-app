@@ -146,7 +146,7 @@ function utilisationTone(hours: number): {
     };
   }
   if (hours <= 25) {
-    return { bar: "bg-[#E8712A]", text: "text-foreground" };
+    return { bar: "bg-primary", text: "text-foreground" };
   }
   if (hours <= 35) {
     return { bar: "bg-emerald-500", text: "text-foreground" };
@@ -435,7 +435,7 @@ export function StaffListView({
         </div>
         <Button
           render={<Link href={`${basePath}/new`} />}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Add Staff
@@ -466,7 +466,7 @@ export function StaffListView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {complianceFilter !== "all" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <AlertTriangle className="size-3" />
               {complianceFilter === "expired"
                 ? "Expired certs"
@@ -476,7 +476,7 @@ export function StaffListView({
               <button
                 type="button"
                 onClick={() => clearJumpFilter("compliance")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear compliance filter"
               >
                 <X className="size-3" />
@@ -484,13 +484,13 @@ export function StaffListView({
             </span>
           )}
           {utilisationZero && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <CalendarClock className="size-3" />
               Not rostered this week
               <button
                 type="button"
                 onClick={() => clearJumpFilter("utilisation")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear utilisation filter"
               >
                 <X className="size-3" />
@@ -590,7 +590,7 @@ export function StaffListView({
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "bg-primary/10 text-primary hover:bg-primary/15"
                 : ""
             }
           >
@@ -603,7 +603,7 @@ export function StaffListView({
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "bg-primary/10 text-primary hover:bg-primary/15"
                 : ""
             }
           >
@@ -695,7 +695,7 @@ export function StaffListView({
                               alt={member.name}
                             />
                           )}
-                          <AvatarFallback className="bg-[#E8712A] text-[10px] font-semibold text-white">
+                          <AvatarFallback className="bg-primary text-[10px] font-semibold text-white">
                             {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -723,7 +723,7 @@ export function StaffListView({
                         {member.financial_access && (
                           <Badge
                             variant="secondary"
-                            className="hidden gap-1 border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A] lg:inline-flex"
+                            className="hidden gap-1 border-primary/40 bg-primary/10 text-primary lg:inline-flex"
                           >
                             <Banknote className="size-3" />
                             Finance
@@ -1027,7 +1027,7 @@ function StaffGridView({
                 {member.photo_url && (
                   <AvatarImage src={member.photo_url} alt={member.name} />
                 )}
-                <AvatarFallback className="bg-[#E8712A] text-sm font-semibold text-white">
+                <AvatarFallback className="bg-primary text-sm font-semibold text-white">
                   {getInitials(member.name)}
                 </AvatarFallback>
               </Avatar>
@@ -1056,7 +1056,7 @@ function StaffGridView({
                   {member.financial_access && (
                     <Badge
                       variant="secondary"
-                      className="gap-1 border-[#E8712A]/40 bg-[#E8712A]/10 text-[10px] text-[#E8712A]"
+                      className="gap-1 border-primary/40 bg-primary/10 text-[10px] text-primary"
                     >
                       <Banknote className="size-3" />
                       Finance
@@ -1196,7 +1196,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} staff selected
@@ -1241,7 +1241,7 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -1273,7 +1273,7 @@ function BulkActionBar({
                 void handleReset();
               }}
               disabled={resetWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {resetWorking ? "Resetting…" : "Reset"}
             </AlertDialogAction>
@@ -1305,7 +1305,7 @@ function BulkActionBar({
                 void handleArchive();
               }}
               disabled={archiveWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {archiveWorking ? "Deleting…" : "Delete"}
             </AlertDialogAction>
@@ -1405,7 +1405,7 @@ function BulkAnnouncementSheet({
           <Button
             onClick={handleSend}
             disabled={working || !title.trim() || !body.trim()}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>

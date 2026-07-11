@@ -177,7 +177,7 @@ export function RerosteringCommandCentre({ events }: Props) {
               onClick={() => setExpandedId(expanded ? null : event.id)}
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-secondary/50"
             >
-              <CalendarX2 className="h-5 w-5 shrink-0 text-[#E8712A]" />
+              <CalendarX2 className="h-5 w-5 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">
                   {event.session?.sport ?? "Session"} — {centreName(event.session)}
@@ -296,7 +296,7 @@ export function RerosteringCommandCentre({ events }: Props) {
                             className={
                               isLapsed
                                 ? ""
-                                : "bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                                : "bg-primary text-white hover:bg-primary/90"
                             }
                             disabled={disableSend}
                             onClick={() =>

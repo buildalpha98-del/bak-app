@@ -123,7 +123,7 @@ export function AssessmentDetailView({
                 {template.ratings_count !== 1 ? "s" : ""}
               </span>
               {noSkills && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-xs font-medium text-[#E8712A]">
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   <AlertTriangle className="size-3" />
                   No skills yet
                 </span>
@@ -201,7 +201,7 @@ export function AssessmentDetailView({
             <CardContent>
               {noSkills ? (
                 <div className="rounded-2xl border border-dashed bg-muted/20 p-6 text-center text-sm">
-                  <AlertTriangle className="mx-auto mb-2 size-6 text-[#E8712A]" />
+                  <AlertTriangle className="mx-auto mb-2 size-6 text-primary" />
                   <p className="font-medium text-foreground">
                     No skills defined yet
                   </p>
@@ -343,7 +343,7 @@ export function AssessmentDetailView({
                   </p>
                   <Link
                     href={`${basePath.replace("/assessments", "/children")}?assessment=overdue`}
-                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[#E8712A] hover:underline"
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
                   >
                     View children pending this term
                     <ArrowLeft className="size-3 rotate-180" />

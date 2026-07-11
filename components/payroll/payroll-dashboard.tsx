@@ -160,7 +160,7 @@ export function PayrollDashboard({
     <div className="space-y-6 animate-fade-up">
       {/* Page header */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
           Payroll
         </p>
         <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -210,7 +210,7 @@ export function PayrollDashboard({
                 <Button
                   onClick={() => handleCreateBatch(previousPeriod)}
                   disabled={isPending}
-                  className="rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+                  className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
                 >
                   <Plus className="size-4 mr-1" />
                   Create Batch
@@ -293,7 +293,7 @@ export function PayrollDashboard({
                 {filtered.map((b) => (
                   <Card
                     key={b.id}
-                    className="rounded-2xl border p-4 transition card-hover hover:border-[#E8712A]/40"
+                    className="rounded-2xl border p-4 transition card-hover hover:border-primary/40"
                   >
                     <Link
                       href={`/admin/payroll/${b.id}`}

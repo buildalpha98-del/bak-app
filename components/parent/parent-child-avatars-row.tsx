@@ -34,7 +34,7 @@ export function ParentChildAvatarsRow({
             href={`/parent/kids/${child.id}`}
             className="group flex flex-col items-center min-w-[68px] gap-1.5"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-[#E8712A] text-base font-bold border-2 border-transparent group-hover:border-[#E8712A]/40 transition-all">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-primary text-base font-bold border-2 border-transparent group-hover:border-primary/40 transition-all">
               {initials}
             </div>
             <div className="text-center">
@@ -52,7 +52,7 @@ export function ParentChildAvatarsRow({
         href="/parent/kids"
         className="group flex flex-col items-center min-w-[68px] gap-1.5"
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-orange-200 text-[#E8712A] text-xl font-bold group-hover:border-[#E8712A]/60 transition-all">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-orange-200 text-primary text-xl font-bold group-hover:border-primary/60 transition-all">
           +
         </div>
         <p className="text-xs font-medium text-[#666666] truncate max-w-[68px]">

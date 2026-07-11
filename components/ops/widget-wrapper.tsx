@@ -48,7 +48,7 @@ export function WidgetWrapper({
         <CollapsibleTrigger className="w-full cursor-pointer lg:cursor-default">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#E8712A]/10 text-[#E8712A]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Icon className="size-4" />
               </div>
               <CardTitle className="text-base font-semibold">{title}</CardTitle>
@@ -75,7 +75,7 @@ export function WidgetWrapper({
 function WidgetCountPill({ count }: { count: number }) {
   const ticked = useCountUp(count);
   return (
-    <span className="ml-0.5 inline-flex items-center rounded-full bg-[#E8712A]/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-[#E8712A]">
+    <span className="ml-0.5 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
       {ticked}
     </span>
   );

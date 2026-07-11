@@ -84,7 +84,7 @@ function PulseStat({
       ? "text-red-600"
       : tone === "green"
         ? "text-green-600"
-        : "text-[#E8712A]";
+        : "text-primary";
   return (
     <li>
       <Link

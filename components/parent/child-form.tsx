@@ -34,7 +34,7 @@ export function ChildForm({
   }
 
   return (
-    <div className="rounded-xl border border-orange-100 bg-white p-5 space-y-4 relative">
+    <div className="rounded-xl border border-orange-100 bg-card p-5 space-y-4 relative">
       {showRemove && onRemove && (
         <Button
           type="button"

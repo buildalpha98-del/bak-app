@@ -60,7 +60,7 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40"
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-card/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
             <Building2 className="h-4 w-4" />
@@ -97,7 +97,7 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
                         "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                         isCurrent
                           ? "bg-[#0891B2]/5 ring-1 ring-inset ring-[#0891B2]/30"
-                          : "hover:bg-white",
+                          : "hover:bg-card",
                       )}
                     >
                       <div className="min-w-0 flex-1">
@@ -106,7 +106,7 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
                             {c.name}
                           </span>
                           {c.is_default && (
-                            <Badge variant="outline" className="border-cyan-200 bg-white text-[10px] text-cyan-700">
+                            <Badge variant="outline" className="border-cyan-200 bg-card text-[10px] text-cyan-700">
                               Default
                             </Badge>
                           )}

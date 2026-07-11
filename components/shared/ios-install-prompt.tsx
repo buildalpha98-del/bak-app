@@ -92,7 +92,7 @@ export function IosInstallPrompt() {
       role="dialog"
       aria-modal="false"
       aria-labelledby="ios-install-title"
-      className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-md rounded-2xl border border-orange-100 bg-white p-4 shadow-2xl ring-1 ring-black/5 animate-fade-up"
+      className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-md rounded-2xl border border-orange-100 bg-card p-4 shadow-2xl ring-1 ring-black/5 animate-fade-up"
       style={{
         // Keep the banner above the home indicator on devices with a
         // bottom safe-area inset (iPhone X+).
@@ -122,12 +122,12 @@ export function IosInstallPrompt() {
           </p>
           <div className="mt-2 flex items-center gap-2 text-xs text-[#1A1A1A]">
             <span>Tap</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-primary">
               <Share className="h-3.5 w-3.5" />
               Share
             </span>
             <span>then</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-primary">
               <Plus className="h-3.5 w-3.5" />
               Add to Home Screen
             </span>
@@ -137,7 +137,7 @@ export function IosInstallPrompt() {
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss install prompt"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#666666] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] focus-visible:ring-offset-2"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#666666] hover:bg-[#F5F5F5] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <X className="h-4 w-4" />
         </button>

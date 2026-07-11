@@ -37,7 +37,7 @@ function daysSince(iso: string | null | undefined): number {
 
 function ageingLeftBorder(daysOld: number, inFinalColumn: boolean): string {
   if (inFinalColumn) return "";
-  if (daysOld >= 14) return "border-l-2 border-l-[#E8712A]/60";
+  if (daysOld >= 14) return "border-l-2 border-l-primary/60";
   if (daysOld >= 7) return "border-l-2 border-l-amber-400/70";
   return "";
 }
@@ -55,7 +55,7 @@ export function TaskListView({
     low: "bg-muted text-muted-foreground",
     medium: "bg-blue-50 text-blue-700",
     high: "bg-amber-50 text-amber-700",
-    urgent: "bg-[#E8712A]/10 text-[#E8712A]",
+    urgent: "bg-primary/10 text-primary",
   };
 
   const selectable = !!onToggleSelect;
@@ -159,7 +159,7 @@ export function TaskListView({
                             className="w-5 h-5 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-[#E8712A] text-white text-[10px] font-semibold flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
                             {task.assignee.name.charAt(0).toUpperCase()}
                           </div>
                         )}

@@ -251,7 +251,7 @@ export function AddStaffForm() {
                 htmlFor="financial_access"
                 className="inline-flex cursor-pointer items-center gap-1.5 font-medium"
               >
-                <Banknote className="size-4 text-[#E8712A]" />
+                <Banknote className="size-4 text-primary" />
                 Grant financial access
               </Label>
               <p className="text-xs text-muted-foreground">

@@ -95,7 +95,7 @@ export function TodayView({ sessions, nextSessionDate }: TodayViewProps) {
             {/* Session card */}
             <div className="min-w-0 flex-1 relative">
               <Link href={`/coach/schedule/${session.id}`} className="block">
-                <Card className="card-hover rounded-2xl transition-all active:shadow-md min-h-[44px] hover:-translate-y-0.5 hover:border-[#E8712A]/30">
+                <Card className="card-hover rounded-2xl transition-all active:shadow-md min-h-[44px] hover:-translate-y-0.5 hover:border-primary/30">
                   <CardContent className="p-3 space-y-2">
                     {/* Time range */}
                     <div className="flex items-center justify-between pr-10">
@@ -161,7 +161,7 @@ export function TodayView({ sessions, nextSessionDate }: TodayViewProps) {
                   e.stopPropagation();
                   setOpenSessionId(session.id);
                 }}
-                className="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm backdrop-blur hover:bg-[#E8712A]/10 hover:text-[#E8712A]"
+                className="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm backdrop-blur hover:bg-primary/10 hover:text-primary"
               >
                 <Megaphone className="size-4" />
               </button>

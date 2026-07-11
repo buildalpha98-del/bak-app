@@ -33,8 +33,8 @@ export function AISummaryBar({
   }
 
   return (
-    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 rounded-lg border border-[#E8712A]/20 bg-orange-50 px-4 py-3">
-      <Sparkles className="size-4 shrink-0 text-[#E8712A]" />
+    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-orange-50 px-4 py-3">
+      <Sparkles className="size-4 shrink-0 text-primary" />
 
       <p className="text-sm text-foreground">
         AI assigned{" "}
@@ -64,7 +64,7 @@ export function AISummaryBar({
           size="sm"
           onClick={handlePublish}
           disabled={publishing}
-          className="bg-[#E8712A] hover:bg-[#d4651f] text-white"
+          className="bg-primary hover:bg-[#d4651f] text-white"
         >
           {publishing && <Loader2 className="size-4 animate-spin" />}
           {publishing ? "Publishing..." : "Publish Week"}

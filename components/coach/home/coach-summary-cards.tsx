@@ -85,7 +85,7 @@ function SummaryCard({
       className={[
         "group flex min-h-[88px] flex-col justify-between rounded-2xl border bg-background p-3 transition hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0",
         accent
-          ? "border-[#E8712A]/40 hover:border-[#E8712A]/60"
+          ? "border-primary/40 hover:border-primary/60"
           : "hover:border-border",
       ].join(" ")}
     >
@@ -96,7 +96,7 @@ function SummaryCard({
         <Icon
           className={
             accent
-              ? "size-4 text-[#E8712A]"
+              ? "size-4 text-primary"
               : "size-4 text-muted-foreground"
           }
         />
@@ -104,7 +104,7 @@ function SummaryCard({
       <span
         className={[
           "text-2xl font-bold tabular-nums leading-none",
-          accent ? "text-[#E8712A]" : "text-foreground",
+          accent ? "text-primary" : "text-foreground",
         ].join(" ")}
       >
         {ticked}

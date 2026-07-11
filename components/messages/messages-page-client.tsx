@@ -143,7 +143,7 @@ export function MessagesPageClient({
       {statusFilter && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
             {statusFilter === "unread"
               ? "Unread only"
               : statusFilter === "awaiting"
@@ -156,7 +156,7 @@ export function MessagesPageClient({
             <button
               type="button"
               onClick={clearStatusFilter}
-              className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+              className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
               aria-label="Clear filter"
             >
               <X className="h-3 w-3" />

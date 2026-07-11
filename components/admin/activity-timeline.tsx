@@ -62,7 +62,7 @@ function categoryFor(item: ActivityItem): Exclude<ActivityCategory, "all"> {
 function getStyle(type: ActivityItem["type"]): { icon: LucideIcon; iconBg: string; iconColour: string } {
   switch (type) {
     case "new_centre":
-      return { icon: Building2, iconBg: "bg-[#E8712A]/10", iconColour: "text-[#E8712A]" };
+      return { icon: Building2, iconBg: "bg-primary/10", iconColour: "text-primary" };
     case "new_booking":
       return { icon: Calendar, iconBg: "bg-blue-100", iconColour: "text-blue-600" };
     case "session_completed":
@@ -136,7 +136,7 @@ export function ActivityTimeline({
                 aria-pressed={active}
                 className={
                   active
-                    ? "rounded-full border border-[#E8712A]/30 bg-[#E8712A]/10 px-3 py-1 text-xs font-medium text-[#E8712A] transition"
+                    ? "rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition"
                     : "rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
                 }
               >
@@ -175,7 +175,7 @@ export function ActivityTimeline({
                     aria-hidden
                     className={
                       "absolute -bottom-0.5 -right-0.5 size-2 rounded-full ring-2 ring-background " +
-                      (dotToday ? "bg-[#E8712A]" : "bg-muted-foreground/60")
+                      (dotToday ? "bg-primary" : "bg-muted-foreground/60")
                     }
                   />
                 </span>

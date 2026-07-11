@@ -328,7 +328,7 @@ export default function BookingFlowPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -364,7 +364,7 @@ export default function BookingFlowPage() {
           <div key={s} className="flex items-center gap-2 flex-1">
             <div
               className={`h-2 flex-1 rounded-full transition-colors ${
-                s <= step ? "bg-[#E8712A]" : "bg-gray-200"
+                s <= step ? "bg-primary" : "bg-gray-200"
               }`}
             />
           </div>
@@ -387,30 +387,30 @@ export default function BookingFlowPage() {
             </h1>
           </div>
 
-          <div className="rounded-xl border bg-white p-6 space-y-4">
+          <div className="rounded-xl border bg-card p-6 space-y-4">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-semibold text-foreground">
                 {session.title}
               </h2>
-              <Badge className="bg-orange-50 text-[#E8712A] border-orange-200">
+              <Badge className="bg-orange-50 text-primary border-orange-200">
                 {session.sport}
               </Badge>
             </div>
 
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 shrink-0 text-[#E8712A]" />
+                <Calendar className="h-5 w-5 shrink-0 text-primary" />
                 <span>{formatDate(session.date)}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 shrink-0 text-[#E8712A]" />
+                <Clock className="h-5 w-5 shrink-0 text-primary" />
                 <span>
                   {formatTime(session.start_time)} &ndash;{" "}
                   {formatTime(session.end_time)}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 shrink-0 text-[#E8712A]" />
+                <MapPin className="h-5 w-5 shrink-0 text-primary" />
                 <span>
                   {session.location_name}
                   {session.suburb ? `, ${session.suburb}` : ""}
@@ -422,7 +422,7 @@ export default function BookingFlowPage() {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 shrink-0 text-[#E8712A]" />
+                <Users className="h-5 w-5 shrink-0 text-primary" />
                 <span>
                   Ages {session.age_group_min}&ndash;{session.age_group_max}
                 </span>
@@ -455,7 +455,7 @@ export default function BookingFlowPage() {
           </div>
 
           <Button
-            className="w-full bg-[#E8712A] hover:bg-[#d4651f] h-11"
+            className="w-full bg-primary hover:bg-[#d4651f] h-11"
             onClick={() => setStep(2)}
           >
             Continue to Select Children
@@ -481,7 +481,7 @@ export default function BookingFlowPage() {
 
           <div className="space-y-3">
             {children.length === 0 ? (
-              <div className="rounded-xl border bg-white p-6 text-center">
+              <div className="rounded-xl border bg-card p-6 text-center">
                 <p className="text-muted-foreground">
                   No children found. Please add your children first.
                 </p>
@@ -509,8 +509,8 @@ export default function BookingFlowPage() {
                       !eligible
                         ? "opacity-50 cursor-not-allowed bg-gray-50"
                         : selected
-                          ? "border-[#E8712A] bg-orange-50 ring-2 ring-[#E8712A]/20"
-                          : "bg-white hover:border-[#E8712A]/40 cursor-pointer"
+                          ? "border-primary bg-orange-50 ring-2 ring-primary/20"
+                          : "bg-card hover:border-primary/40 cursor-pointer"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -533,7 +533,7 @@ export default function BookingFlowPage() {
                         <div
                           className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                             selected
-                              ? "bg-[#E8712A] border-[#E8712A]"
+                              ? "bg-primary border-primary"
                               : "border-gray-300"
                           }`}
                         >
@@ -550,7 +550,7 @@ export default function BookingFlowPage() {
           </div>
 
           {selectedChildIds.length > 0 && (
-            <div className="rounded-xl border bg-white p-4">
+            <div className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   {selectedChildIds.length} child
@@ -564,7 +564,7 @@ export default function BookingFlowPage() {
           )}
 
           <Button
-            className="w-full bg-[#E8712A] hover:bg-[#d4651f] h-11"
+            className="w-full bg-primary hover:bg-[#d4651f] h-11"
             disabled={selectedChildIds.length === 0}
             onClick={() => setStep(3)}
           >
@@ -588,7 +588,7 @@ export default function BookingFlowPage() {
           </div>
 
           {/* Order summary */}
-          <div className="rounded-xl border bg-white p-5 space-y-3">
+          <div className="rounded-xl border bg-card p-5 space-y-3">
             <h3 className="font-semibold text-foreground">Order Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -642,9 +642,9 @@ export default function BookingFlowPage() {
 
           {/* Discount code input */}
           {!discountApplied && (
-            <div className="rounded-xl border bg-white p-5 space-y-3">
+            <div className="rounded-xl border bg-card p-5 space-y-3">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-[#E8712A]" />
+                <Tag className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">Have a discount code?</h3>
               </div>
               <div className="flex gap-2">
@@ -653,14 +653,14 @@ export default function BookingFlowPage() {
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                   placeholder="Enter code"
-                  className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E8712A]/20 focus:border-[#E8712A]"
+                  className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleApplyDiscount}
                   disabled={discountLoading || !discountCode.trim()}
-                  className="border-[#E8712A] text-[#E8712A] hover:bg-orange-50"
+                  className="border-primary text-primary hover:bg-orange-50"
                 >
                   {discountLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                 </Button>
@@ -728,9 +728,9 @@ export default function BookingFlowPage() {
           )}
 
           {/* Payment option: Card */}
-          <div className="rounded-xl border bg-white p-5 space-y-4">
+          <div className="rounded-xl border bg-card p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-[#E8712A]" />
+              <CreditCard className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-foreground">Pay with Card</h3>
             </div>
             {pendingBookingId ? (
@@ -756,9 +756,9 @@ export default function BookingFlowPage() {
 
           {/* Payment option: Session Pack */}
           {packageBalances.length > 0 && (
-            <div className="rounded-xl border bg-white p-5 space-y-4">
+            <div className="rounded-xl border bg-card p-5 space-y-4">
               <div className="flex items-center gap-2">
-                <PackageIcon className="h-5 w-5 text-[#E8712A]" />
+                <PackageIcon className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-foreground">
                   Use Session Pack
                 </h3>
@@ -781,7 +781,7 @@ export default function BookingFlowPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-[#E8712A] text-[#E8712A] hover:bg-orange-50"
+                      className="border-primary text-primary hover:bg-orange-50"
                       disabled={
                         submitting ||
                         pkg.remaining_sessions < selectedChildIds.length
@@ -817,7 +817,7 @@ export default function BookingFlowPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border bg-white p-5 text-left space-y-3">
+          <div className="rounded-xl border bg-card p-5 text-left space-y-3">
             <h3 className="font-semibold text-foreground">{session.title}</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -854,7 +854,7 @@ export default function BookingFlowPage() {
               Download Calendar Invite
             </Button>
             <Button
-              className="bg-[#E8712A] hover:bg-[#d4651f] gap-2"
+              className="bg-primary hover:bg-[#d4651f] gap-2"
               render={<Link href="/parent/book" />}
             >
               Book Another Session

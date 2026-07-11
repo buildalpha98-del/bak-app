@@ -58,7 +58,7 @@ const KIND_LABEL: Record<QueueKind, string> = {
 };
 
 function KindIcon({ kind }: { kind: QueueKind }) {
-  const className = "size-3.5 text-[#E8712A]";
+  const className = "size-3.5 text-primary";
   switch (kind) {
     case "attendance":
       return <ClipboardCheck className={className} />;
@@ -150,12 +150,12 @@ export function OfflineIndicator() {
   let pulsing = false;
 
   if (online && queueLength > 0) {
-    pillClass = "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A]";
+    pillClass = "border-primary/40 bg-primary/10 text-primary";
     pillIcon = <RefreshCw className={cn("size-3.5", isPending && "animate-spin")} />;
     pillText = `Syncing ${queueLength} item${queueLength === 1 ? "" : "s"}`;
     pulsing = true;
   } else if (!online && queueLength > 0) {
-    pillClass = "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A]";
+    pillClass = "border-primary/40 bg-primary/10 text-primary";
     pillIcon = <CloudOff className="size-3.5" />;
     pillText = `Offline · ${queueLength} queued`;
     pulsing = true;
@@ -285,7 +285,7 @@ export function OfflineIndicator() {
               variant="default"
               disabled={isPending || !online}
               onClick={handleSyncAll}
-              className="w-full rounded-xl bg-[#E8712A] text-white hover:bg-[#d05f1f]"
+              className="w-full rounded-xl bg-primary text-white hover:bg-[#d05f1f]"
             >
               {isPending ? (
                 <>

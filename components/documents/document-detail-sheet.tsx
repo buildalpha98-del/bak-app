@@ -372,7 +372,7 @@ export function DocumentDetailSheet({
                     size="sm"
                     disabled={saving}
                     onClick={handleSaveEdits}
-                    className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                    className="bg-primary text-white hover:bg-primary/90"
                   >
                     {saving && (
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />

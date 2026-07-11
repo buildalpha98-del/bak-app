@@ -80,9 +80,9 @@ function QuickActionLink({ action }: { action: QuickAction }) {
   return (
     <Link
       href={action.href}
-      className="group flex h-14 items-center gap-3 rounded-2xl border bg-background px-4 transition hover:-translate-y-0.5 hover:border-[#E8712A]/40 hover:shadow-md hover:ring-1 hover:ring-[#E8712A]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A]/40"
+      className="group flex h-14 items-center gap-3 rounded-2xl border bg-background px-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#E8712A]/10 text-[#E8712A] transition group-hover:bg-[#E8712A]/20">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/20">
         <Icon className="size-5" />
       </span>
       <span className="flex min-w-0 flex-col leading-tight">

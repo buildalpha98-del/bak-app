@@ -492,7 +492,7 @@ function CoachAvatar({
           className="h-full w-full object-cover"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-[#E8712A]/10 text-sm font-bold text-[#E8712A]">
+        <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-bold text-primary">
           {name.charAt(0).toUpperCase()}
         </div>
       )}
@@ -637,9 +637,9 @@ export function TeamPerformanceView({
     if (sortKey !== col)
       return <ChevronDown className="inline h-3 w-3 text-slate-300" />;
     return sortDir === "asc" ? (
-      <ChevronUp className="inline h-3 w-3 text-[#E8712A]" />
+      <ChevronUp className="inline h-3 w-3 text-primary" />
     ) : (
-      <ChevronDown className="inline h-3 w-3 text-[#E8712A]" />
+      <ChevronDown className="inline h-3 w-3 text-primary" />
     );
   }
 
@@ -841,7 +841,7 @@ export function TeamPerformanceView({
           onValueChange={(v) => setBenchmarkAndUrl(v as BenchmarkFilter)}
         >
           <SelectTrigger
-            className={`h-9 w-[150px] ${benchmark !== "all" ? "border-[#E8712A]/40 ring-2 ring-[#E8712A]/20" : ""}`}
+            className={`h-9 w-[150px] ${benchmark !== "all" ? "border-primary/40 ring-2 ring-primary/20" : ""}`}
           >
             <SelectValue placeholder="Benchmark" />
           </SelectTrigger>
@@ -879,7 +879,7 @@ export function TeamPerformanceView({
               aria-label="Table view"
               className={
                 viewMode === "table"
-                  ? "rounded-2xl bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                  ? "rounded-2xl bg-primary/10 text-primary hover:bg-primary/15"
                   : ""
               }
             >
@@ -892,7 +892,7 @@ export function TeamPerformanceView({
               aria-label="Card view"
               className={
                 viewMode === "cards"
-                  ? "rounded-2xl bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                  ? "rounded-2xl bg-primary/10 text-primary hover:bg-primary/15"
                   : ""
               }
             >
@@ -904,7 +904,7 @@ export function TeamPerformanceView({
             size="sm"
             onClick={handleExport}
             disabled={isExporting || data.coaches.length === 0}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Download className="mr-1 size-4" />
             {isExporting ? "Exporting…" : "Export CSV"}
@@ -922,12 +922,12 @@ export function TeamPerformanceView({
       {feedbackJump && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
             Coaches with no feedback this period
             <button
               type="button"
               onClick={clearFeedbackJump}
-              className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+              className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
               aria-label="Clear feedback filter"
             >
               <X className="size-3" />
@@ -942,7 +942,7 @@ export function TeamPerformanceView({
           {top3.map((coach, i) => {
             const tone =
               i === 0
-                ? "border-[#E8712A]/40 bg-[#E8712A]/5"
+                ? "border-primary/40 bg-primary/5"
                 : "border bg-card";
             const badge = coach.badges[0];
             const badgeName = badge
@@ -961,7 +961,7 @@ export function TeamPerformanceView({
                     size="lg"
                   />
                   {i === 0 && (
-                    <span className="absolute -top-1 -right-1 rounded-full bg-[#E8712A] p-1 text-white">
+                    <span className="absolute -top-1 -right-1 rounded-full bg-primary p-1 text-white">
                       <Trophy className="size-3" />
                     </span>
                   )}
@@ -981,7 +981,7 @@ export function TeamPerformanceView({
                     <span
                       className={
                         i === 0
-                          ? "text-2xl font-bold text-[#E8712A]"
+                          ? "text-2xl font-bold text-primary"
                           : "text-2xl font-bold text-foreground"
                       }
                     >
@@ -1007,7 +1007,7 @@ export function TeamPerformanceView({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Team avg score */}
         <Card
-          className={`rounded-2xl border-[#E8712A]/30 bg-[#E8712A]/5 ${scoreBorder(avgScore)}`}
+          className={`rounded-2xl border-primary/30 bg-primary/5 ${scoreBorder(avgScore)}`}
         >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -1016,7 +1016,7 @@ export function TeamPerformanceView({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-[#E8712A]">
+            <p className="text-3xl font-bold text-primary">
               {data.coaches.length === 0 ? (
                 "—"
               ) : (
@@ -1486,7 +1486,7 @@ function CoachLeaderboardCard({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 bg-[#E8712A] text-xs text-white hover:bg-[#E8712A]/90"
+          className="flex-1 h-8 bg-primary text-xs text-white hover:bg-primary/90"
           render={<Link href={`${basePath}/${coach.id}`} />}
         >
           View detail

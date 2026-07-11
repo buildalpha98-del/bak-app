@@ -115,7 +115,7 @@ export function DocumentHub({
         {canUpload && (
           <Button
             onClick={() => setUploadOpen(true)}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Upload Document

@@ -417,13 +417,13 @@ export function CentreListView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {riskOnly && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <AlertTriangle className="size-3" />
               At risk only
               <button
                 type="button"
                 onClick={() => clearJumpFilter("risk")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear at-risk filter"
               >
                 <X className="size-3" />
@@ -431,13 +431,13 @@ export function CentreListView({
             </span>
           )}
           {onboardingBehind && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <Compass className="size-3" />
               Behind on onboarding
               <button
                 type="button"
                 onClick={() => clearJumpFilter("onboarding")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear onboarding filter"
               >
                 <X className="size-3" />
@@ -801,7 +801,7 @@ function BulkActionBar({
           // Fixed positioning + brand-orange ring lifts the bar above
           // the page so the operator's next move is unmissable, while
           // staying out of the way of normal list browsing.
-          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6"
+          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6"
         }
       >
         <div className="flex items-center gap-3 pr-2 text-sm">
@@ -842,7 +842,7 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -897,7 +897,7 @@ function BulkActionBar({
                 void handleStatusConfirm();
               }}
               disabled={statusWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {statusWorking ? "Saving…" : "Apply"}
             </AlertDialogAction>
@@ -986,7 +986,7 @@ function BulkAnnouncementSheet({
           <Button
             onClick={handleSend}
             disabled={working || !content.trim()}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>

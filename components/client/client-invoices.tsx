@@ -91,7 +91,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
         <h1 className="text-2xl font-bold font-heading text-foreground">
           Invoices
         </h1>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
             <Receipt className="h-6 w-6 text-[#0891B2]" />
           </div>
@@ -139,7 +139,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
       </div>
 
       {/* Desktop table */}
-      <div className="mt-6 hidden overflow-hidden rounded-2xl border bg-white sm:block">
+      <div className="mt-6 hidden overflow-hidden rounded-2xl border bg-card sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">

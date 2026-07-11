@@ -77,7 +77,7 @@ function CardSkeleton({ height = "h-32" }: { height?: string }) {
 
 export function AdminContextStripSkeleton({ firstName }: { firstName: string }) {
   return (
-    <div className="rounded-2xl border bg-white px-5 py-4">
+    <div className="rounded-2xl border bg-card px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold font-heading text-foreground">
@@ -115,7 +115,7 @@ export function LaunchDashboardSkeleton() {
 
 export function SnapshotCardSkeleton({ title }: { title: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-4">
+    <div className="rounded-2xl border bg-card p-4">
       <div className="text-sm font-medium text-muted-foreground">{title}</div>
       <div className="mt-3 h-24 animate-pulse rounded bg-muted/40" />
     </div>

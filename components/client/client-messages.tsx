@@ -136,7 +136,7 @@ export function ClientMessages({
                   className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 ${
                     own
                       ? "bg-[#0891B2] text-white rounded-br-md"
-                      : "bg-white border border-gray-200 text-foreground rounded-bl-md"
+                      : "bg-card border border-gray-200 text-foreground rounded-bl-md"
                   }`}
                 >
                   {!own && (

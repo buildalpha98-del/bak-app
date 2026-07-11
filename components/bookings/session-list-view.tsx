@@ -351,7 +351,7 @@ export function SessionListView({ initialData, basePath }: SessionListViewProps)
                     <TableCell>
                       <Link
                         href={`${basePath}/${session.id}`}
-                        className="font-medium text-[#E8712A] hover:underline"
+                        className="font-medium text-primary hover:underline"
                       >
                         {session.title}
                       </Link>
@@ -462,7 +462,7 @@ function SessionsListBulkBar({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
       <div className="flex items-center gap-3 pr-2 text-sm">
         <span className="font-medium text-foreground">
           {count} session{count === 1 ? "" : "s"} selected
@@ -488,7 +488,7 @@ function SessionsListBulkBar({
         size="sm"
         onClick={handleActivate}
         disabled={working !== null}
-        className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+        className="bg-primary text-white hover:bg-primary/90"
       >
         <CircleCheck className="size-4" />
         {working === "activate" ? "Activating…" : "Activate"}

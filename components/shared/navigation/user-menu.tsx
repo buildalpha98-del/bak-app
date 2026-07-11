@@ -37,7 +37,7 @@ function getProfileRoute(role: string): string {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-gradient-to-br from-[#E8712A] to-[#D84315]",
+  admin: "bg-gradient-to-br from-primary to-[#D84315]",
   ops: "bg-gradient-to-br from-[#2962FF] to-[#1565C0]",
   coach: "bg-gradient-to-br from-[#4CAF50] to-[#2E7D32]",
 };

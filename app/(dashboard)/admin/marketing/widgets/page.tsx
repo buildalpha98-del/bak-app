@@ -20,7 +20,7 @@ const WIDGETS: Widget[] = [
     name: "Stats Bar",
     description:
       "Display live session counts, centre numbers, and average ratings in a compact horizontal bar.",
-    icon: <BarChart3 className="h-5 w-5 text-[#E8712A]" />,
+    icon: <BarChart3 className="h-5 w-5 text-primary" />,
     embedCode: `<div id="bak-stats-bar"></div>
 <script>
 (function() {
@@ -46,7 +46,7 @@ const WIDGETS: Widget[] = [
     name: "Sports Grid",
     description:
       "A responsive grid of all sports offered with descriptions. Great for a services/programs page.",
-    icon: <Grid3X3 className="h-5 w-5 text-[#E8712A]" />,
+    icon: <Grid3X3 className="h-5 w-5 text-primary" />,
     embedCode: `<div id="bak-sports-grid"></div>
 <script>
 (function() {
@@ -70,7 +70,7 @@ const WIDGETS: Widget[] = [
     name: "Testimonial Carousel",
     description:
       "Auto-rotating carousel of approved parent and centre testimonials with star ratings.",
-    icon: <MessageSquareQuote className="h-5 w-5 text-[#E8712A]" />,
+    icon: <MessageSquareQuote className="h-5 w-5 text-primary" />,
     embedCode: `<div id="bak-testimonials"></div>
 <script>
 (function() {
@@ -101,7 +101,7 @@ const WIDGETS: Widget[] = [
     name: "Enquiry Form",
     description:
       "Contact form that submits directly into the CRM pipeline as a new lead. Includes centre name, contact details, and message.",
-    icon: <FileText className="h-5 w-5 text-[#E8712A]" />,
+    icon: <FileText className="h-5 w-5 text-primary" />,
     embedCode: `<div id="bak-enquiry-form"></div>
 <script>
 (function() {
@@ -169,7 +169,7 @@ export default function WidgetsPage() {
         {WIDGETS.map((widget, idx) => (
           <div
             key={widget.name}
-            className="rounded-xl border bg-white overflow-hidden"
+            className="rounded-xl border bg-card overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b p-5">
@@ -214,7 +214,7 @@ export default function WidgetsPage() {
                 </Badge>
               </div>
               <div
-                className="rounded-lg border bg-white overflow-hidden"
+                className="rounded-lg border bg-card overflow-hidden"
                 style={{ minHeight: widget.previewHeight }}
               >
                 <iframe

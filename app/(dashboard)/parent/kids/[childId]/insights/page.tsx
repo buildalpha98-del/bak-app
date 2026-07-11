@@ -83,7 +83,7 @@ export default function ChildInsightsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function ChildInsightsPage() {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="h-11 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-lg"
+          className="h-11 bg-primary text-white hover:bg-[#D4651F] rounded-lg"
         >
           {generating ? (
             <>
@@ -136,8 +136,8 @@ export default function ChildInsightsPage() {
 
       {/* Empty state */}
       {insights.length === 0 && !error && (
-        <div className="rounded-2xl border border-orange-100 bg-white p-8 text-center shadow-sm">
-          <Sparkles className="mx-auto h-10 w-10 text-[#E8712A] mb-3" />
+        <div className="rounded-2xl border border-orange-100 bg-card p-8 text-center shadow-sm">
+          <Sparkles className="mx-auto h-10 w-10 text-primary mb-3" />
           <h3 className="text-lg font-semibold text-[#1A1A1A]">
             No insights yet
           </h3>
@@ -177,7 +177,7 @@ function InsightCard({
     )?.sport_highlights ?? [];
 
   return (
-    <div className="rounded-2xl border border-orange-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-2xl border border-orange-100 bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {/* Card header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -264,7 +264,7 @@ function InsightCard({
           {insight.recommendations && insight.recommendations.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Lightbulb className="h-4 w-4 text-[#E8712A]" />
+                <Lightbulb className="h-4 w-4 text-primary" />
                 <h4 className="text-sm font-semibold text-[#1A1A1A]">
                   Recommendations
                 </h4>
@@ -275,7 +275,7 @@ function InsightCard({
                     key={i}
                     className="text-sm text-[#666666] flex items-start gap-2"
                   >
-                    <span className="text-[#E8712A] mt-1 flex-shrink-0">
+                    <span className="text-primary mt-1 flex-shrink-0">
                       &bull;
                     </span>
                     {rec}

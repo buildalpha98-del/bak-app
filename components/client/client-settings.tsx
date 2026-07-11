@@ -283,7 +283,7 @@ function LinkedCentresCard({
             return (
               <li
                 key={c.id}
-                className="flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5"
+                className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-xs font-semibold text-cyan-700">
                   {c.name.charAt(0).toUpperCase()}

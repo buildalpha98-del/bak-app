@@ -382,7 +382,7 @@ export function FormTemplateList({
         {tab === "templates" && (
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Create Template
@@ -402,7 +402,7 @@ export function FormTemplateList({
           onClick={() => setParam({ tab: null })}
           className={`px-4 py-1.5 text-sm rounded-xl transition-colors ${
             tab === "templates"
-              ? "bg-[#E8712A] text-white"
+              ? "bg-primary text-white"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -417,7 +417,7 @@ export function FormTemplateList({
           onClick={() => setParam({ tab: "submissions" })}
           className={`px-4 py-1.5 text-sm rounded-xl transition-colors ${
             tab === "submissions"
-              ? "bg-[#E8712A] text-white"
+              ? "bg-primary text-white"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -508,7 +508,7 @@ export function FormTemplateList({
               <Button
                 onClick={handleCreate}
                 disabled={creating}
-                className="bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {creating && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
                 Create
@@ -565,7 +565,7 @@ export function FormTemplateList({
               <Button
                 onClick={handleDuplicate}
                 disabled={duplicating}
-                className="bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {duplicating && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -827,14 +827,14 @@ function TemplateCard({
             href={`${basePath}/${template.id}/edit`}
             className="flex items-center gap-3 min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
           >
-            <FileText className="h-5 w-5 shrink-0 text-[#E8712A]" />
+            <FileText className="h-5 w-5 shrink-0 text-primary" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-medium text-foreground truncate">
                   {displayName(template.name)}
                 </span>
                 {template.is_default && (
-                  <Badge className="bg-[#E8712A] text-white text-[10px]">
+                  <Badge className="bg-primary text-white text-[10px]">
                     Default
                   </Badge>
                 )}
@@ -1013,7 +1013,7 @@ function SubmissionsTab({
             >
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <FileText className="h-5 w-5 shrink-0 text-[#E8712A]" />
+                  <FileText className="h-5 w-5 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-foreground">

@@ -98,7 +98,7 @@ function PulseStat({
   const active = count > 0;
   const ticked = useCountUp(count);
   const accent =
-    tone === "alarm" ? "text-red-500" : "text-[#E8712A]";
+    tone === "alarm" ? "text-red-500" : "text-primary";
   return (
     <li>
       <Link

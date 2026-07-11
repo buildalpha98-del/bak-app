@@ -365,7 +365,7 @@ function PortalUserRow({
   const pickableCentres = availableCentres.filter((c) => !linkedIds.has(c.id));
 
   return (
-    <div className="rounded-xl border bg-white">
+    <div className="rounded-xl border bg-card">
       <div className="flex flex-wrap items-center gap-3 p-3">
         <button
           type="button"
@@ -434,7 +434,7 @@ function PortalUserRow({
               {linkedCentres.map((c) => (
                 <li
                   key={c.id}
-                  className="flex items-center gap-2 rounded-lg border bg-white px-2.5 py-1.5"
+                  className="flex items-center gap-2 rounded-lg border bg-card px-2.5 py-1.5"
                 >
                   <span className="text-sm text-foreground">{c.name}</span>
                   {c.is_default && (
@@ -478,7 +478,7 @@ function PortalUserRow({
                     value={selectedToLink}
                     onChange={(e) => setSelectedToLink(e.target.value)}
                     disabled={linking}
-                    className="h-8 rounded-md border bg-white px-2 text-xs"
+                    className="h-8 rounded-md border bg-card px-2 text-xs"
                   >
                     <option value="">Pick a centre…</option>
                     {pickableCentres.map((c) => (

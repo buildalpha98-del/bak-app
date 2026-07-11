@@ -319,7 +319,7 @@ export default function AdminMarketingPage() {
             </Link>
           </div>
           <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
-            <MessageSquareQuote className="mx-auto h-12 w-12 text-[#E8712A] opacity-50" />
+            <MessageSquareQuote className="mx-auto h-12 w-12 text-primary opacity-50" />
             <p className="mt-3 text-sm text-[#666666]">
               Review pending feedback and approve testimonials for your marketing
               website.
@@ -329,7 +329,7 @@ export default function AdminMarketingPage() {
               {pulse.approvedThisWeekCount} approved this week
             </p>
             <Link href="/admin/marketing/testimonials">
-              <Button className="mt-4 bg-[#E8712A] hover:bg-[#d4641f]">
+              <Button className="mt-4 bg-primary hover:bg-[#d4641f]">
                 Go to Testimonials
               </Button>
             </Link>
@@ -363,7 +363,7 @@ export default function AdminMarketingPage() {
                   className="rounded-2xl border bg-background p-5 hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-2">
-                    <Code2 className="h-5 w-5 text-[#E8712A]" />
+                    <Code2 className="h-5 w-5 text-primary" />
                     <p className="font-medium text-[#1A1A1A]">{widget}</p>
                   </div>
                   <p className="mt-1 text-xs text-[#666666]">

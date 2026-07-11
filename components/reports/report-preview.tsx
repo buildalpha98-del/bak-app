@@ -252,7 +252,7 @@ export function ReportPreview({ report }: ReportPreviewProps) {
                 key={idx}
                 className="flex items-start gap-2 text-sm leading-relaxed"
               >
-                <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-[#E8712A]" />
+                <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                 <span className="flex-1">{item}</span>
                 {isDraft && (
                   <button
@@ -337,7 +337,7 @@ export function ReportPreview({ report }: ReportPreviewProps) {
               <Button
                 variant="default"
                 onClick={() => setSendOpen(true)}
-                className="gap-1.5 bg-[#E8712A] hover:bg-[#d4651f]"
+                className="gap-1.5 bg-primary hover:bg-[#d4651f]"
               >
                 <Send className="h-4 w-4" />
                 Send Report
@@ -401,7 +401,7 @@ export function ReportPreview({ report }: ReportPreviewProps) {
             <Button
               onClick={handleSend}
               disabled={isSending || !sendEmail.trim()}
-              className="gap-1.5 bg-[#E8712A] hover:bg-[#d4651f]"
+              className="gap-1.5 bg-primary hover:bg-[#d4651f]"
             >
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

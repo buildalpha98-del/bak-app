@@ -32,7 +32,7 @@ export default async function AdminInvoicingPage() {
     <div className="space-y-6 animate-fade-up">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
             Finance
           </p>
           <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -48,7 +48,7 @@ export default async function AdminInvoicingPage() {
           href="/admin/invoicing/export"
           className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-secondary"
         >
-          <FileSpreadsheet className="h-4 w-4 text-[#E8712A]" />
+          <FileSpreadsheet className="h-4 w-4 text-primary" />
           Accountant export
         </Link>
       </div>

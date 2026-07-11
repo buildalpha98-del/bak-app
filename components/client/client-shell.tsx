@@ -90,7 +90,7 @@ export function ClientShell({
         // pushes our header below the system status bar instead of
         // letting it draw underneath.
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
-        className="sticky top-0 z-40 flex min-h-14 items-center border-b bg-white px-4"
+        className="sticky top-0 z-40 flex min-h-14 items-center border-b bg-card px-4"
       >
         {/* Mobile menu toggle */}
         <button
@@ -139,7 +139,7 @@ export function ClientShell({
                 onClick={() => setUserMenuOpen(false)}
               />
               {/* Dropdown */}
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-white py-1 shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-card py-1 shadow-lg">
                 <div className="border-b px-4 py-3">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {clientUser.name}
@@ -174,7 +174,7 @@ export function ClientShell({
 
       <div className="flex">
         {/* Desktop sidebar */}
-        <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:bg-white md:min-h-[calc(100dvh-3.5rem)]">
+        <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:bg-card md:min-h-[calc(100dvh-3.5rem)]">
           <nav className="flex flex-col gap-1 p-3">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -225,7 +225,7 @@ export function ClientShell({
               className="fixed inset-0 z-30 bg-black/30 md:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <aside className="fixed inset-y-0 left-0 z-30 w-64 bg-white pt-14 shadow-lg md:hidden">
+            <aside className="fixed inset-y-0 left-0 z-30 w-64 bg-card pt-14 shadow-lg md:hidden">
               <nav className="flex flex-col gap-1 p-3">
                 {navItems.map((item) => {
                   const Icon = item.icon;
@@ -275,7 +275,7 @@ export function ClientShell({
       <IosInstallPrompt />
 
       {/* Mobile bottom tabs */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);

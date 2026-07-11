@@ -45,7 +45,7 @@ export function TopBar({ profile }: TopBarProps) {
             new KeyboardEvent("keydown", { key: "k", metaKey: true })
           )
         }
-        className="hidden md:inline-flex items-center gap-2 h-8 rounded-lg border border-border/60 bg-secondary/30 px-3 text-xs text-muted-foreground hover:border-[#E8712A]/50 hover:bg-secondary/60 hover:text-foreground transition-all"
+        className="hidden md:inline-flex items-center gap-2 h-8 rounded-lg border border-border/60 bg-secondary/30 px-3 text-xs text-muted-foreground hover:border-primary/50 hover:bg-secondary/60 hover:text-foreground transition-all"
         aria-label="Open global search"
       >
         <Search className="h-3.5 w-3.5" />

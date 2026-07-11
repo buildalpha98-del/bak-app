@@ -78,7 +78,7 @@ export function EquipmentCard({ kit, onClick }: EquipmentCardProps) {
         {/* Header row */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <Package className="h-5 w-5 shrink-0 text-[#E8712A]" />
+            <Package className="h-5 w-5 shrink-0 text-primary" />
             <h3 className="truncate text-sm font-medium text-foreground">
               {kit.name}
             </h3>
@@ -100,7 +100,7 @@ export function EquipmentCard({ kit, onClick }: EquipmentCardProps) {
 
         {/* Item count */}
         <div
-          className={`mt-1.5 text-xs tabular-nums ${itemActive ? "text-[#E8712A] font-medium" : "text-muted-foreground"}`}
+          className={`mt-1.5 text-xs tabular-nums ${itemActive ? "text-primary font-medium" : "text-muted-foreground"}`}
         >
           {kit.item_count} item type{kit.item_count !== 1 ? "s" : ""}
         </div>

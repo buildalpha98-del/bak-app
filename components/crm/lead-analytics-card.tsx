@@ -143,7 +143,7 @@ export function LeadAnalyticsCard({ leadId }: LeadAnalyticsCardProps) {
     <Card className="animate-fade-up">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <TrendingUp className="size-4 text-[#E8712A]" />
+          <TrendingUp className="size-4 text-primary" />
           Lead Analytics
         </CardTitle>
       </CardHeader>
@@ -155,7 +155,7 @@ export function LeadAnalyticsCard({ leadId }: LeadAnalyticsCardProps) {
               <Clock className="size-3" />
               Current Stage
             </div>
-            <span className="text-lg font-semibold text-[#E8712A]">
+            <span className="text-lg font-semibold text-primary">
               {pluralise(data.daysInCurrentStage, "day")}
             </span>
           </div>
@@ -197,7 +197,7 @@ export function LeadAnalyticsCard({ leadId }: LeadAnalyticsCardProps) {
                   <div key={idx} className="flex gap-3">
                     {/* Vertical line + dot */}
                     <div className="flex flex-col items-center">
-                      <div className="flex size-3 shrink-0 items-center justify-center rounded-full border-2 border-[#E8712A] bg-white mt-1" />
+                      <div className="flex size-3 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-card mt-1" />
                       {!isLast && (
                         <div className="w-px flex-1 bg-border min-h-[24px]" />
                       )}

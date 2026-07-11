@@ -396,7 +396,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
                 size="sm"
                 onClick={handleCheckOut}
                 disabled={checkingOut}
-                className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+                className="bg-primary hover:bg-primary/90"
               >
                 {checkingOut && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -487,7 +487,7 @@ export function KitDetailView({ kit, userRole, basePath }: KitDetailProps) {
                       size="sm"
                       onClick={handleSaveEdit}
                       disabled={saving}
-                      className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+                      className="bg-primary hover:bg-primary/90"
                     >
                       {saving && (
                         <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />

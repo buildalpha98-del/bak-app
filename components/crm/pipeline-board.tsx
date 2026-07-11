@@ -675,7 +675,7 @@ export function PipelineBoard({
         <div className="flex gap-2">
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Add Lead
@@ -864,7 +864,7 @@ export function PipelineBoard({
             className={
               "inline-flex items-center gap-1 rounded-md px-2 py-1 transition hover:bg-muted/40 " +
               (showClosed
-                ? "text-[#E8712A] font-medium"
+                ? "text-primary font-medium"
                 : "text-muted-foreground")
             }
           >
@@ -1021,7 +1021,7 @@ export function PipelineBoard({
             <Button
               onClick={handleStageConfirm}
               disabled={isPending}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {isPending ? "Saving..." : "Confirm"}
             </Button>
@@ -1110,7 +1110,7 @@ function SequencesCard({
     <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md">
       <Link href={`${basePath}/sequences`} className="block">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Mail className="size-4 text-[#E8712A]" />
+          <Mail className="size-4 text-primary" />
           <span className="text-xs font-medium">Email Sequences</span>
         </div>
         <div className="mt-1 flex items-baseline gap-2">
@@ -1119,7 +1119,7 @@ function SequencesCard({
             active · {sent} sent this week
           </span>
         </div>
-        <p className="mt-1 text-xs text-[#E8712A] hover:underline">Manage →</p>
+        <p className="mt-1 text-xs text-primary hover:underline">Manage →</p>
       </Link>
     </Card>
   );
@@ -1139,13 +1139,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label={`Clear ${label}`}
       >
         <X className="size-3" />
@@ -1179,7 +1179,7 @@ function FilterChip({
         className={
           "h-8 w-auto min-w-[120px] rounded-full text-xs " +
           (isActive
-            ? "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A] ring-1 ring-[#E8712A]/30"
+            ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
             : "border")
         }
       >
@@ -1321,7 +1321,7 @@ function MobileStageView({
               className={
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition " +
                 (isActive
-                  ? "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A] ring-1 ring-[#E8712A]/30"
+                  ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
                   : "bg-background text-muted-foreground hover:bg-muted/40")
               }
             >
@@ -1330,7 +1330,7 @@ function MobileStageView({
                 className={
                   "rounded-full px-1.5 text-[10px] " +
                   (isActive
-                    ? "bg-[#E8712A]/20"
+                    ? "bg-primary/20"
                     : "bg-muted text-muted-foreground/70")
                 }
               >
@@ -1462,7 +1462,7 @@ function LeadCard({
       className={
         "group/lead relative rounded-2xl p-3 transition hover:shadow-md " +
         tint +
-        (selected ? " ring-2 ring-[#E8712A]/60" : "")
+        (selected ? " ring-2 ring-primary/60" : "")
       }
     >
       {/* Drag handle + checkbox affordance */}
@@ -1490,7 +1490,7 @@ function LeadCard({
               <TooltipTrigger
                 render={
                   <span aria-label="Hot lead">
-                    <Flame className="size-4 text-[#E8712A]" />
+                    <Flame className="size-4 text-primary" />
                   </span>
                 }
               />
@@ -1620,7 +1620,7 @@ function OwnerChip({ ownerName }: { ownerName: string | null }) {
           render={
             <span
               aria-label={`Owner: ${ownerName}`}
-              className="inline-flex size-5 items-center justify-center rounded-full bg-[#E8712A] text-[10px] font-semibold text-white"
+              className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-white"
             >
               {initialsOf(ownerName)}
             </span>
@@ -1744,7 +1744,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} lead{count === 1 ? "" : "s"} selected
@@ -1882,7 +1882,7 @@ function BulkActionBar({
             <Button
               onClick={handleBulkStageConfirm}
               disabled={isPending}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {isPending ? "Saving..." : "Confirm"}
             </Button>

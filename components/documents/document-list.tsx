@@ -529,12 +529,12 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label={`Clear ${label} filter`}
       >
         <X className="size-3" />
@@ -581,7 +581,7 @@ function DocumentTable({
             <li
               key={doc.id}
               className={`relative grid grid-cols-[36px_1fr_auto] items-start gap-3 px-4 py-3 transition hover:bg-muted/30 ${
-                selected ? "bg-[#E8712A]/5" : ""
+                selected ? "bg-primary/5" : ""
               }`}
             >
               <div
@@ -670,7 +670,7 @@ function DocumentTable({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-[#E8712A]"
+                className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-primary"
                 aria-label={`Open ${doc.title} in new tab`}
                 title="Open in new tab"
               >
@@ -707,7 +707,7 @@ function DocumentGrid({
           <div
             key={doc.id}
             className={`relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
-              selected ? "bg-[#E8712A]/5 ring-1 ring-[#E8712A]/30" : ""
+              selected ? "bg-primary/5 ring-1 ring-primary/30" : ""
             }`}
           >
             <div className="flex items-start gap-2">
@@ -778,7 +778,7 @@ function DocumentGrid({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-[#E8712A]"
+                className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-primary"
                 aria-label={`Open ${doc.title} in new tab`}
                 title="Open in new tab"
               >
@@ -936,7 +936,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} document{count === 1 ? "" : "s"} selected
@@ -1061,7 +1061,7 @@ function BulkActionBar({
             <Button
               onClick={handleTag}
               disabled={tagging || !tagValue.trim()}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {tagging && <Loader2 className="mr-1.5 size-4 animate-spin" />}
               Apply tag
@@ -1103,7 +1103,7 @@ function BulkActionBar({
             <Button
               onClick={handleVisibility}
               disabled={visChanging}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {visChanging && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />

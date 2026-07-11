@@ -132,8 +132,8 @@ function ConversionStep({
 }) {
   return (
     <li className="flex items-start gap-2.5">
-      <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#E8712A]/10">
-        <Icon className="size-3.5 text-[#E8712A]" />
+      <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+        <Icon className="size-3.5 text-primary" />
       </div>
       <span className="text-sm text-foreground">{text}</span>
     </li>

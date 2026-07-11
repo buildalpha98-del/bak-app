@@ -78,9 +78,9 @@ function Card({
   subtitle: string;
 }) {
   return (
-    <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+    <div className="rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="h-4 w-4 text-[#E8712A]" />
+        <Icon className="h-4 w-4 text-primary" />
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[#666666]">
           {label}
         </h3>

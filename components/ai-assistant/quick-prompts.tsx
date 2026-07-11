@@ -70,10 +70,10 @@ export function QuickPrompts({ onSelect }: QuickPromptsProps) {
             key={prompt.label}
             variant="outline"
             size="sm"
-            className="h-auto flex-col items-start gap-1 px-3 py-2.5 text-left text-xs whitespace-normal hover:bg-[#E8712A]/10 hover:border-[#E8712A]/30"
+            className="h-auto flex-col items-start gap-1 px-3 py-2.5 text-left text-xs whitespace-normal hover:bg-primary/10 hover:border-primary/30"
             onClick={() => onSelect(prompt.prompt)}
           >
-            <Icon className="h-3.5 w-3.5 text-[#E8712A] shrink-0" />
+            <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="leading-tight">{prompt.label}</span>
           </Button>
         );

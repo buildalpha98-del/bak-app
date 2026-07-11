@@ -62,7 +62,7 @@ function SportBadge({ sport }: { sport: string }) {
 
 export function StaffCard({ coach }: StaffCardProps) {
   return (
-    <Card className="rounded-2xl border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-5 space-y-4">
         {/* Header: photo + name + DOB */}
         <div className="flex items-center gap-4">

@@ -128,7 +128,7 @@ export function EquipmentList({
           </div>
           <Button
             onClick={() => setAddOpen(true)}
-            className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Add Kit
@@ -152,7 +152,7 @@ export function EquipmentList({
         {hideHeader && (
           <Button
             onClick={() => setAddOpen(true)}
-            className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Add Kit
@@ -231,7 +231,7 @@ export function EquipmentList({
             <Link
               key={kit.id}
               href={`${basePath}/${kit.id}`}
-              className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] rounded-2xl"
+              className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
             >
               <EquipmentCard kit={kit} />
             </Link>

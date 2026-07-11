@@ -221,7 +221,7 @@ export default function RegionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-heading text-foreground flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-[#E8712A]" />
+            <MapPin className="h-6 w-6 text-primary" />
             Regions
           </h1>
           <p className="mt-1 text-sm text-[#666666]">
@@ -230,7 +230,7 @@ export default function RegionsPage() {
         </div>
         <Button
           onClick={() => setShowCreate(!showCreate)}
-          className="bg-[#E8712A] hover:bg-[#d4631f] text-white"
+          className="bg-primary hover:bg-[#d4631f] text-white"
         >
           <Plus className="mr-1 h-4 w-4" />
           Create Region
@@ -252,7 +252,7 @@ export default function RegionsPage() {
 
       {/* Create form */}
       {showCreate && (
-        <div className="rounded-lg border bg-white p-4 space-y-4 shadow-sm">
+        <div className="rounded-lg border bg-card p-4 space-y-4 shadow-sm">
           <h2 className="font-semibold text-[#1A1A1A]">New Region</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -390,7 +390,7 @@ export default function RegionsPage() {
             <Button
               onClick={handleCreate}
               disabled={saving || !createForm.name || !createForm.code || !createForm.state}
-              className="bg-[#E8712A] hover:bg-[#d4631f] text-white"
+              className="bg-primary hover:bg-[#d4631f] text-white"
             >
               {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
               <Save className="mr-1 h-4 w-4" />
@@ -414,7 +414,7 @@ export default function RegionsPage() {
 
       {/* Regions list */}
       {!loading && regions.length === 0 && (
-        <div className="rounded-lg border bg-white p-8 text-center text-[#666666]">
+        <div className="rounded-lg border bg-card p-8 text-center text-[#666666]">
           <MapPin className="mx-auto mb-2 h-10 w-10 text-gray-300" />
           <p className="font-medium text-[#1A1A1A]">No regions yet</p>
           <p className="text-sm">
@@ -424,7 +424,7 @@ export default function RegionsPage() {
       )}
 
       {!loading && regions.length > 0 && (
-        <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+        <div className="rounded-lg border bg-card overflow-hidden shadow-sm">
           {/* Table header */}
           <div className="hidden md:grid grid-cols-[1fr_80px_60px_80px_80px_80px_80px_80px] gap-2 px-4 py-2.5 border-b bg-gray-50 text-xs font-medium text-[#666666] uppercase tracking-wider">
             <span>Region</span>
@@ -470,7 +470,7 @@ export default function RegionsPage() {
                 </span>
                 <span className="text-sm text-center font-medium">
                   <span className="inline-flex items-center gap-1">
-                    <Building2 className="h-3.5 w-3.5 text-[#E8712A]" />
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
                     {region.centre_count}
                   </span>
                 </span>
@@ -634,7 +634,7 @@ export default function RegionsPage() {
                     <Button
                       onClick={handleUpdate}
                       disabled={editSaving}
-                      className="bg-[#E8712A] hover:bg-[#d4631f] text-white"
+                      className="bg-primary hover:bg-[#d4631f] text-white"
                     >
                       {editSaving && (
                         <Loader2 className="mr-1 h-4 w-4 animate-spin" />

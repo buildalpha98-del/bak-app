@@ -49,7 +49,7 @@ export function SharedPortalView({
       </div>
 
       {/* Top bar */}
-      <header className="border-b bg-white px-4 py-3">
+      <header className="border-b bg-card px-4 py-3">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <AppLogo size="sm" />
           <span className="text-base font-semibold text-foreground">

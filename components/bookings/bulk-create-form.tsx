@@ -185,7 +185,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
   // ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-orange-100 bg-white p-6">
+    <div className="rounded-xl border border-orange-100 bg-card p-6">
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* ── Session Details ──────────────────────────────────── */}
         <section className="space-y-4">
@@ -315,7 +315,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
               <input
                 id="bulk-exclude-weekends"
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 checked={excludeWeekends}
                 onChange={(e) => setExcludeWeekends(e.target.checked)}
               />
@@ -328,10 +328,10 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
           {/* Preview */}
           {startDate && endDate && (
             <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-4 py-3 text-sm text-[#1A1A1A]">
-              <CalendarRange className="size-4 shrink-0 text-[#E8712A]" />
+              <CalendarRange className="size-4 shrink-0 text-primary" />
               <span>
                 This will create{" "}
-                <strong className="text-[#E8712A]">{sessionCount}</strong>{" "}
+                <strong className="text-primary">{sessionCount}</strong>{" "}
                 session{sessionCount !== 1 ? "s" : ""} from{" "}
                 {formatDateDisplay(startDate)} to {formatDateDisplay(endDate)}
               </span>
@@ -444,7 +444,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
               <input
                 id="bulk-package-eligible"
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 checked={packageEligible}
                 onChange={(e) => setPackageEligible(e.target.checked)}
               />
@@ -525,7 +525,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
         <Button
           type="submit"
           disabled={submitting || sessionCount === 0}
-          className="w-full bg-[#E8712A] text-white hover:bg-[#d4641f]"
+          className="w-full bg-primary text-white hover:bg-[#d4641f]"
         >
           {submitting ? (
             <>

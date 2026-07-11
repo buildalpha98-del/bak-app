@@ -406,11 +406,11 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
           {/* Duplicate warning — programmes already in the library
               that overlap on sport + at least one selected age band. */}
           {duplicateMatches.length > 0 && (
-            <div className="rounded-2xl border border-[#E8712A]/40 bg-[#E8712A]/10 p-4">
+            <div className="rounded-2xl border border-primary/40 bg-primary/10 p-4">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[#E8712A]" />
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-[#E8712A]">
+                  <p className="text-sm font-medium text-primary">
                     {duplicateMatches.length === 1
                       ? "A similar programme already exists"
                       : `${duplicateMatches.length} similar programmes already exist`}
@@ -424,7 +424,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
                       <li key={m.id} className="text-xs">
                         <Link
                           href={`${basePath}/${m.id}`}
-                          className="font-medium text-[#E8712A] hover:underline"
+                          className="font-medium text-primary hover:underline"
                         >
                           {m.title}
                         </Link>
@@ -444,7 +444,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
           <Button
             onClick={handleGenerate}
             disabled={!isFormValid || !canGenerate || status === "generating"}
-            className="w-full bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-white"
             size="lg"
           >
             {status === "generating" ? (

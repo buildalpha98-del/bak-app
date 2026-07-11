@@ -74,9 +74,9 @@ export function CoachQuickActions({
           <Link
             key={key}
             href={href}
-            className="group flex min-h-[72px] items-center gap-3 rounded-2xl border bg-background p-3 transition hover:-translate-y-0.5 hover:border-[#E8712A]/30 hover:shadow-sm active:translate-y-0"
+            className="group flex min-h-[72px] items-center gap-3 rounded-2xl border bg-background p-3 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm active:translate-y-0"
           >
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF3EB] text-[#E8712A]">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF3EB] text-primary">
               <Icon className="size-5" />
             </span>
             <span className="flex-1">

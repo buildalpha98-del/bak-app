@@ -71,7 +71,7 @@ export function SentimentDistribution({
   return (
     <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Star className="size-4 text-[#E8712A]" />
+        <Star className="size-4 text-primary" />
         <span>Sentiment distribution</span>
       </div>
       <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-muted">

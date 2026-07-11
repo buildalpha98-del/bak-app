@@ -71,7 +71,7 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
           key={i}
           className={`size-3.5 ${
             i < Math.round(rating)
-              ? "fill-[#E8712A] text-[#E8712A]"
+              ? "fill-primary text-primary"
               : "text-muted-foreground/30"
           }`}
         />
@@ -185,7 +185,7 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="size-4 text-[#E8712A]" />
+            <BarChart3 className="size-4 text-primary" />
             Trial Performance
           </CardTitle>
         </CardHeader>
@@ -209,7 +209,7 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="size-4 text-[#E8712A]" />
+            <BarChart3 className="size-4 text-primary" />
             Trial Performance
           </CardTitle>
           <CardDescription>
@@ -241,7 +241,7 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
               </div>
               {data.averageRating != null ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-semibold text-[#E8712A]">
+                  <span className="text-xl font-semibold text-primary">
                     {data.averageRating}
                   </span>
                   <StarRating rating={data.averageRating} />
@@ -292,7 +292,7 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
           {data.feedbackEntries.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <Star className="size-3.5 text-[#E8712A]" />
+                <Star className="size-3.5 text-primary" />
                 Feedback
               </h3>
               <div className="space-y-2">
@@ -320,7 +320,7 @@ export function TrialDashboard({ leadId }: TrialDashboardProps) {
           {sessionsWithNotes.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <MessageSquare className="size-3.5 text-[#E8712A]" />
+                <MessageSquare className="size-3.5 text-primary" />
                 Coach Observations
               </h3>
               <div className="space-y-2">
@@ -384,7 +384,7 @@ function MetricCard({
         <Icon className="size-3" />
         <span>{label}</span>
       </div>
-      <span className="text-xl font-semibold text-[#E8712A]">{value}</span>
+      <span className="text-xl font-semibold text-primary">{value}</span>
     </div>
   );
 }

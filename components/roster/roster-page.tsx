@@ -639,7 +639,7 @@ export function RosterPage({
           >
             Rerostering
             {rosterPulse && rosterPulse.unassignedCount > 0 && (
-              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E8712A] px-1.5 text-[11px] font-semibold text-white">
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
                 {rosterPulse.unassignedCount}
               </span>
             )}
@@ -773,7 +773,7 @@ export function RosterPage({
           <Button
             size="sm"
             onClick={() => setPublishConfirmOpen(true)}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Send className="size-4" />
             Publish week ({draftsCount})
@@ -1088,7 +1088,7 @@ export function RosterPage({
                 void handlePublishWeek();
               }}
               disabled={publishWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {publishWorking ? "Publishing…" : "Publish drafts"}
             </AlertDialogAction>
@@ -1118,7 +1118,7 @@ export function RosterPage({
                 void handleConfirmWeek();
               }}
               disabled={confirmWeekWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {confirmWeekWorking ? "Confirming…" : "Confirm sessions"}
             </AlertDialogAction>
@@ -1157,7 +1157,7 @@ function FilterSelectChip({
         className={[
           "h-8 w-auto rounded-full border px-3 text-xs",
           active
-            ? "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A] ring-1 ring-[#E8712A]/30"
+            ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
             : "border-border bg-background text-muted-foreground",
         ].join(" ")}
       >
@@ -1204,7 +1204,7 @@ function SportFilterChip({
             className={[
               "inline-flex h-8 items-center gap-1 rounded-full border px-3 text-xs font-medium transition",
               active
-                ? "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A] ring-1 ring-[#E8712A]/30"
+                ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
                 : "border-border bg-background text-muted-foreground hover:bg-muted",
             ].join(" ")}
             aria-label={`Sport filter — ${active ? `${selected.size} selected` : "none"}`}
@@ -1246,7 +1246,7 @@ function SportFilterChip({
                     {s}
                   </span>
                   {isOn && (
-                    <Check className="ml-auto size-3 text-[#E8712A]" />
+                    <Check className="ml-auto size-3 text-primary" />
                   )}
                 </label>
               </li>

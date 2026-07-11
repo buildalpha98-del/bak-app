@@ -120,7 +120,7 @@ export default function ParentRegistrationPage() {
             key={s}
             className={`flex items-center justify-center h-8 w-8 rounded-full text-sm font-semibold transition-colors ${
               s === step
-                ? "bg-[#E8712A] text-white"
+                ? "bg-primary text-white"
                 : s < step
                   ? "bg-green-100 text-green-700"
                   : "bg-gray-100 text-gray-400"
@@ -193,7 +193,7 @@ export default function ParentRegistrationPage() {
           <Button
             onClick={() => setStep(2)}
             disabled={!canProceedStep1()}
-            className="w-full h-12 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-lg text-base"
+            className="w-full h-12 bg-primary text-white hover:bg-[#D4651F] rounded-lg text-base"
           >
             Continue
             <ChevronRight className="ml-2 h-4 w-4" />
@@ -219,7 +219,7 @@ export default function ParentRegistrationPage() {
                 showRemove={children.length > 1}
               />
               {child.date_of_birth && (
-                <p className="text-xs text-[#E8712A] mt-1 ml-1 font-medium">
+                <p className="text-xs text-primary mt-1 ml-1 font-medium">
                   {getAgeGroupLabel(child.date_of_birth)}
                 </p>
               )}
@@ -230,7 +230,7 @@ export default function ParentRegistrationPage() {
             type="button"
             variant="outline"
             onClick={addChild}
-            className="w-full h-11 rounded-lg border-dashed border-orange-200 text-[#E8712A] hover:bg-orange-50"
+            className="w-full h-11 rounded-lg border-dashed border-orange-200 text-primary hover:bg-orange-50"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Another Child
@@ -248,7 +248,7 @@ export default function ParentRegistrationPage() {
             <Button
               onClick={() => setStep(3)}
               disabled={!canProceedStep2()}
-              className="h-12 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-lg flex-[2]"
+              className="h-12 bg-primary text-white hover:bg-[#D4651F] rounded-lg flex-[2]"
             >
               Continue
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -263,7 +263,7 @@ export default function ParentRegistrationPage() {
           <h2 className="text-lg font-semibold">Confirm Your Details</h2>
 
           {/* Parent summary */}
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-2 shadow-sm">
+          <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-2 shadow-sm">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Your Details
             </h3>
@@ -279,7 +279,7 @@ export default function ParentRegistrationPage() {
           </div>
 
           {/* Children summary */}
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm">
+          <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Children
             </h3>
@@ -328,7 +328,7 @@ export default function ParentRegistrationPage() {
             <Button
               onClick={handleSubmit}
               disabled={!termsAccepted || loading}
-              className="h-12 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-lg flex-[2] text-base"
+              className="h-12 bg-primary text-white hover:bg-[#D4651F] rounded-lg flex-[2] text-base"
             >
               {loading ? (
                 <>

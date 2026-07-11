@@ -158,7 +158,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
         <div className="mt-4">
           <Button
             render={<Link href={`${basePath}/pathways/new`} />}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Pathway
@@ -213,7 +213,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
         <div className="sm:ml-auto">
           <Button
             render={<Link href={`${basePath}/pathways/new`} />}
-            className="min-h-[40px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Pathway
@@ -257,7 +257,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">{pathway.title}</p>
                           {pathway.is_mandatory_onboarding && (
-                            <span className="inline-flex items-center rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                               Required
                             </span>
                           )}
@@ -278,7 +278,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                       </TableCell>
                       <TableCell className="text-center">
                         {pathway.is_mandatory_onboarding && (
-                          <CheckCircle className="size-4 text-[#E8712A] mx-auto" />
+                          <CheckCircle className="size-4 text-primary mx-auto" />
                         )}
                       </TableCell>
                       <TableCell>
@@ -321,7 +321,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                   className={
                     "relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:shadow-md " +
                     (pathway.is_mandatory_onboarding
-                      ? "ring-1 ring-[#E8712A]/30"
+                      ? "ring-1 ring-primary/30"
                       : "")
                   }
                 >
@@ -338,7 +338,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                           {statusBadge.label}
                         </Badge>
                         {pathway.is_mandatory_onboarding && (
-                          <span className="inline-flex items-center rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                          <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                             Required
                           </span>
                         )}

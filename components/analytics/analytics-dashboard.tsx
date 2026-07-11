@@ -275,7 +275,7 @@ export function AnalyticsDashboard({
     return (
       <div className="space-y-6 animate-fade-up">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
             Analytics
           </p>
           <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -293,7 +293,7 @@ export function AnalyticsDashboard({
               analysis, and pipeline insights.
             </p>
             <Button
-              className="mt-6 rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+              className="mt-6 rounded-2xl bg-primary hover:bg-primary/90 text-white"
               onClick={handleRegenerate}
               disabled={isRegenerating}
             >
@@ -315,7 +315,7 @@ export function AnalyticsDashboard({
       {/* ── Header ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
             Analytics
           </p>
           <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -347,7 +347,7 @@ export function AnalyticsDashboard({
           </Button>
           <Button
             size="sm"
-            className="rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+            className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
             onClick={handleRegenerate}
             disabled={isRegenerating}
           >
@@ -376,7 +376,7 @@ export function AnalyticsDashboard({
           </SelectContent>
         </Select>
         {focusFilter && (
-          <span className="inline-flex items-center gap-2 rounded-2xl bg-[#E8712A]/10 px-3 py-1 text-xs font-medium text-[#E8712A]">
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             Focus: {focusFilter === "loss" ? "loss months" : "overperforming"}
             <button
               type="button"

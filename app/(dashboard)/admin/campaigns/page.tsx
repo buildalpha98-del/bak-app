@@ -415,7 +415,7 @@ export default function AdminCampaignsPage() {
           Re-engagement
         </p>
         <div className="flex items-center gap-3">
-          <Megaphone className="h-7 w-7 text-[#E8712A]" />
+          <Megaphone className="h-7 w-7 text-primary" />
           <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight page-header-sport">
             Campaign Management
           </h1>
@@ -481,7 +481,7 @@ export default function AdminCampaignsPage() {
           onClick={() => setTab("campaigns")}
           className={`pb-2 text-sm font-medium transition-colors ${
             tab === "campaigns"
-              ? "border-b-2 border-[#E8712A] text-[#1A1A1A]"
+              ? "border-b-2 border-primary text-[#1A1A1A]"
               : "text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -491,7 +491,7 @@ export default function AdminCampaignsPage() {
           onClick={() => setTab("reporting")}
           className={`pb-2 text-sm font-medium transition-colors ${
             tab === "reporting"
-              ? "border-b-2 border-[#E8712A] text-[#1A1A1A]"
+              ? "border-b-2 border-primary text-[#1A1A1A]"
               : "text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -520,7 +520,7 @@ export default function AdminCampaignsPage() {
 
       {/* Sticky bulk-action bar */}
       {tab === "campaigns" && selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} campaign{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -547,7 +547,7 @@ export default function AdminCampaignsPage() {
             size="sm"
             onClick={() => handleBulkUpdate("activate")}
             disabled={bulkAction !== null}
-            className="bg-[#E8712A] text-white hover:bg-[#d4641f]"
+            className="bg-primary text-white hover:bg-[#d4641f]"
           >
             <Play className="mr-1 h-3.5 w-3.5" />
             {bulkAction === "activate" ? "Activating…" : "Activate"}
@@ -592,12 +592,12 @@ function FilterClearChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label="Clear filter"
       >
         <X className="h-3 w-3" />
@@ -903,7 +903,7 @@ function DetailPanel({
       <p className="text-xs font-semibold uppercase tracking-wide text-[#666666] mb-2">
         Recipients ({sends.length})
       </p>
-      <div className="max-h-64 overflow-y-auto rounded border bg-white">
+      <div className="max-h-64 overflow-y-auto rounded border bg-card">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b text-left text-[#666666]">
@@ -1010,7 +1010,7 @@ function ReportingTab({ reporting }: { reporting: ReportingData }) {
             <p className="text-xs font-medium uppercase tracking-wide text-[#666666]">
               Overall Rate
             </p>
-            <p className="mt-1 text-3xl font-bold text-[#E8712A]">
+            <p className="mt-1 text-3xl font-bold text-primary">
               {pct(reporting.totals.overallEngagementRate)}
             </p>
           </CardContent>

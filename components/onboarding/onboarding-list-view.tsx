@@ -258,7 +258,7 @@ function EmptyState({ search, basePath }: { search: string; basePath: string }) 
       {search && (
         <Link
           href={basePath}
-          className="mt-2 text-xs text-[#E8712A] underline"
+          className="mt-2 text-xs text-primary underline"
         >
           Clear filters
         </Link>
@@ -296,7 +296,7 @@ function OnboardingCard({ row }: { row: OnboardingListItem }) {
   return (
     <Link
       href={`/admin/centres/${row.centreId}/onboarding`}
-      className="group block rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:border-[#E8712A]/40 hover:shadow-md"
+      className="group block rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -326,7 +326,7 @@ function OnboardingCard({ row }: { row: OnboardingListItem }) {
         </div>
         <Progress
           value={pct}
-          className="h-1.5 [&>div]:bg-[#E8712A]"
+          className="h-1.5 [&>div]:bg-primary"
         />
       </div>
 
@@ -416,7 +416,7 @@ function OnboardingTable({
                     </div>
                     <Progress
                       value={pct}
-                      className="h-1.5 [&>div]:bg-[#E8712A]"
+                      className="h-1.5 [&>div]:bg-primary"
                     />
                   </div>
                 </TableCell>
@@ -475,7 +475,7 @@ function StatusBadge({
     return (
       <Badge
         variant="secondary"
-        className="gap-1 rounded-full bg-[#E8712A]/10 text-[#E8712A]"
+        className="gap-1 rounded-full bg-primary/10 text-primary"
       >
         <AlertTriangle className="size-3" /> Behind
       </Badge>

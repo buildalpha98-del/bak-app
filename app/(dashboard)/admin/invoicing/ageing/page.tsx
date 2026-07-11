@@ -138,7 +138,7 @@ export default async function AgeingReportPage() {
                       <td className="px-4 py-3">
                         <Link
                           href={`/admin/invoicing/outbound/${inv.id}`}
-                          className="text-[#E8712A] hover:underline font-medium"
+                          className="text-primary hover:underline font-medium"
                         >
                           {inv.invoiceNumber ?? "—"}
                         </Link>

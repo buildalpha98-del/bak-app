@@ -229,7 +229,7 @@ export default function AccountantExportPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileSpreadsheet className="h-5 w-5 text-[#E8712A]" />
+              <FileSpreadsheet className="h-5 w-5 text-primary" />
               Invoice Register
             </CardTitle>
           </CardHeader>

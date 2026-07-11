@@ -90,7 +90,7 @@ function getStatusBadge(status: string) {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
     sent: "bg-blue-50 text-blue-700 border-blue-200",
     registered: "bg-green-50 text-green-700 border-green-200",
-    converted: "bg-[#E8712A]/10 text-[#E8712A] border-[#E8712A]/20",
+    converted: "bg-primary/10 text-primary border-primary/20",
     awarded: "bg-green-100 text-green-800 border-green-200",
     redeemed: "bg-blue-100 text-blue-800 border-blue-200",
     expired: "bg-gray-100 text-gray-500 border-gray-200",
@@ -390,12 +390,12 @@ export default function AdminReferralsPage() {
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {rangeFilter === "this_week" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               This week
               <button
                 type="button"
                 onClick={() => clearJumpFilter("range")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear range filter"
               >
                 <X className="h-3 w-3" />
@@ -403,12 +403,12 @@ export default function AdminReferralsPage() {
             </span>
           )}
           {rewardStatusFilter && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               Status: {rewardStatusFilter}
               <button
                 type="button"
                 onClick={() => clearJumpFilter("status")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear status filter"
               >
                 <X className="h-3 w-3" />
@@ -427,7 +427,7 @@ export default function AdminReferralsPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? "border-b-2 border-[#E8712A] text-[#E8712A]"
+                  ? "border-b-2 border-primary text-primary"
                   : "text-[#666666] hover:text-[#1A1A1A]"
               }`}
             >
@@ -643,7 +643,7 @@ export default function AdminReferralsPage() {
                       type="text"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-[#E8712A]/30 focus:border-[#E8712A]"
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                     />
                     <button
                       onClick={() => handleSaveConfig(item.config_key)}
@@ -706,7 +706,7 @@ export default function AdminReferralsPage() {
               <Button
                 onClick={handleGenerateCodes}
                 disabled={generatingCodes}
-                className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px]"
+                className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px]"
               >
                 {generatingCodes ? (
                   <>

@@ -176,15 +176,15 @@ export function DocumentUploadDialog({
               onClick={() => fileRef.current?.click()}
               className={`group cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
                 dragOver
-                  ? "border-[#E8712A] bg-[#E8712A]/5 ring-2 ring-[#E8712A]/20"
-                  : "border-border hover:border-[#E8712A]/60 hover:ring-2 hover:ring-[#E8712A]/10"
+                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                  : "border-border hover:border-primary/60 hover:ring-2 hover:ring-primary/10"
               }`}
             >
               <Upload
                 className={`mx-auto h-10 w-10 transition ${
                   dragOver
-                    ? "text-[#E8712A]"
-                    : "text-muted-foreground/60 group-hover:text-[#E8712A]/80"
+                    ? "text-primary"
+                    : "text-muted-foreground/60 group-hover:text-primary/80"
                 }`}
               />
               <p className="mt-3 text-sm font-medium text-foreground">
@@ -333,7 +333,7 @@ export function DocumentUploadDialog({
             <Button
               onClick={handleUpload}
               disabled={!file || !title.trim() || uploading}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {uploading && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
               Upload

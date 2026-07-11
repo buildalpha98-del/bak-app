@@ -78,7 +78,7 @@ export function PayslipView({ invoice, coach }: Props) {
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A]">
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
                   Build Alpha Kids
                 </p>
                 <h1 className="text-2xl font-bold font-heading text-foreground">

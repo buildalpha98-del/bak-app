@@ -49,7 +49,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
     return (
       <div className="animate-fade-up">
         <h1 className="text-2xl font-bold font-heading text-foreground">Programs</h1>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
             <BookOpen className="h-6 w-6 text-[#0891B2]" />
           </div>

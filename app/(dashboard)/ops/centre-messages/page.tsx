@@ -29,7 +29,7 @@ export default async function OpsCentreMessagesPage({ searchParams }: Props) {
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#E8712A]">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
           Communication
         </p>
         <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">

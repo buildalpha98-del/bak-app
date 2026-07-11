@@ -70,7 +70,7 @@ function getStatusBadge(status: string) {
     expired: "bg-gray-100 text-gray-500 border-gray-200",
     sent: "bg-blue-50 text-blue-700 border-blue-200",
     registered: "bg-green-50 text-green-700 border-green-200",
-    converted: "bg-[#E8712A]/10 text-[#E8712A] border-[#E8712A]/20",
+    converted: "bg-primary/10 text-primary border-primary/20",
   };
   return (
     <Badge
@@ -183,7 +183,7 @@ export default function ParentReferralsPage() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#E8712A]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary">
           <Gift className="h-5 w-5" />
         </div>
         <div>
@@ -218,7 +218,7 @@ export default function ParentReferralsPage() {
 
       {/* Referral Code Card */}
       {code && (
-        <div className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-2xl border border-orange-100 bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-sm font-medium text-[#666666] mb-2">
             Your referral code
           </p>
@@ -233,7 +233,7 @@ export default function ParentReferralsPage() {
               className={`min-h-[44px] text-sm ${
                 copied
                   ? "bg-green-600 hover:bg-green-700"
-                  : "bg-[#E8712A] hover:bg-[#d4651f]"
+                  : "bg-primary hover:bg-[#d4651f]"
               } text-white`}
             >
               {copied ? (
@@ -251,7 +251,7 @@ export default function ParentReferralsPage() {
             <Button
               onClick={handleEmailShare}
               variant="outline"
-              className="min-h-[44px] text-sm border-[#E8712A] text-[#E8712A] hover:bg-orange-50"
+              className="min-h-[44px] text-sm border-primary text-primary hover:bg-orange-50"
             >
               <Mail className="h-4 w-4 mr-1.5" />
               Share via Email
@@ -259,7 +259,7 @@ export default function ParentReferralsPage() {
             <Button
               onClick={handleSmsShare}
               variant="outline"
-              className="min-h-[44px] text-sm border-[#E8712A] text-[#E8712A] hover:bg-orange-50"
+              className="min-h-[44px] text-sm border-primary text-primary hover:bg-orange-50"
             >
               <MessageSquare className="h-4 w-4 mr-1.5" />
               Share via SMS
@@ -270,27 +270,27 @@ export default function ParentReferralsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
-            <Users className="h-5 w-5 text-[#E8712A]" />
+            <Users className="h-5 w-5 text-primary" />
           </div>
           <p className="text-2xl font-bold text-[#1A1A1A]">
             {stats.totalReferrals}
           </p>
           <p className="text-xs text-[#666666] mt-1">Referred</p>
         </div>
-        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
-            <UserCheck className="h-5 w-5 text-[#E8712A]" />
+            <UserCheck className="h-5 w-5 text-primary" />
           </div>
           <p className="text-2xl font-bold text-[#1A1A1A]">
             {stats.registeredCount}
           </p>
           <p className="text-xs text-[#666666] mt-1">Registered</p>
         </div>
-        <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
           <div className="flex justify-center mb-2">
-            <Trophy className="h-5 w-5 text-[#E8712A]" />
+            <Trophy className="h-5 w-5 text-primary" />
           </div>
           <p className="text-2xl font-bold text-[#1A1A1A]">
             {stats.convertedCount}
@@ -300,14 +300,14 @@ export default function ParentReferralsPage() {
       </div>
 
       {/* Milestone Progress */}
-      <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-sm font-semibold text-[#1A1A1A] mb-3">
           Milestone Progress
         </h2>
         <div className="h-3 w-full rounded-full bg-gray-100 overflow-hidden mb-2">
           <div
             className={`h-full rounded-full transition-all ${
-              milestoneReached ? "bg-green-500" : "bg-[#E8712A]"
+              milestoneReached ? "bg-green-500" : "bg-primary"
             }`}
             style={{ width: `${progressPct}%` }}
           />
@@ -333,7 +333,7 @@ export default function ParentReferralsPage() {
           {availableRewards.map((reward) => (
             <div
               key={reward.id}
-              className="rounded-2xl border-2 border-[#E8712A] bg-orange-50 p-5 shadow-sm"
+              className="rounded-2xl border-2 border-primary bg-orange-50 p-5 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -364,7 +364,7 @@ export default function ParentReferralsPage() {
             {rewards.map((reward) => (
               <div
                 key={reward.id}
-                className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
+                className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A] truncate">
@@ -392,7 +392,7 @@ export default function ParentReferralsPage() {
             {referrals.map((referral) => (
               <div
                 key={referral.id}
-                className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
+                className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A]">
@@ -411,7 +411,7 @@ export default function ParentReferralsPage() {
       )}
 
       {referrals.length === 0 && (
-        <div className="rounded-2xl border border-orange-100 bg-white p-8 shadow-sm text-center">
+        <div className="rounded-2xl border border-orange-100 bg-card p-8 shadow-sm text-center">
           <Gift className="h-10 w-10 text-orange-200 mx-auto mb-3" />
           <p className="text-[#1A1A1A] font-medium">No referrals yet</p>
           <p className="text-sm text-[#666666] mt-1">

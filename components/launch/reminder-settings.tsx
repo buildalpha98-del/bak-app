@@ -54,7 +54,7 @@ export function ReminderSettings({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
-                <Bell className="h-5 w-5 text-[#E8712A]" />
+                <Bell className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <CardTitle className="text-base">Automated Session Reminders</CardTitle>

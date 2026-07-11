@@ -16,7 +16,7 @@
 //   between cells (mirrors the centres pulse `gap-x-5`).
 // - Brand orange (#E8712A) only when a count is positive; muted when
 //   zero so a clean week looks calm rather than alarming.
-// - Coverage uses `bg-secondary` track + `bg-[#E8712A]` fill so the
+// - Coverage uses `bg-secondary` track + `bg-primary` fill so the
 //   restrained-orange rule applies (orange = positive accent).
 
 import { FileEdit, UserX } from "lucide-react";
@@ -114,13 +114,13 @@ function PulseJumpStat({
       >
         <Icon
           className={
-            active ? "size-3.5 text-[#E8712A]" : "size-3.5 text-muted-foreground"
+            active ? "size-3.5 text-primary" : "size-3.5 text-muted-foreground"
           }
         />
         <span
           className={
             active
-              ? "text-base font-semibold tabular-nums text-[#E8712A]"
+              ? "text-base font-semibold tabular-nums text-primary"
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >
@@ -158,7 +158,7 @@ function CoverageStat({ percent }: { percent: number }) {
         aria-hidden
       >
         <span
-          className="block h-full bg-[#E8712A] transition-[width]"
+          className="block h-full bg-primary transition-[width]"
           style={{ width: `${Math.min(100, Math.max(0, percent))}%` }}
         />
       </span>
@@ -180,7 +180,7 @@ function WageStat({ amount }: { amount: number }) {
       <span
         className={
           active
-            ? "text-base font-semibold tabular-nums text-[#E8712A]"
+            ? "text-base font-semibold tabular-nums text-primary"
             : "text-base font-semibold tabular-nums text-muted-foreground"
         }
       >

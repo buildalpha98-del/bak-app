@@ -57,7 +57,7 @@ export default function ParentLoginPage() {
         <CardContent>
           {sent ? (
             <div className="text-center space-y-4 py-4 animate-fade-up">
-              <CheckCircle className="mx-auto h-12 w-12 text-[#E8712A]" />
+              <CheckCircle className="mx-auto h-12 w-12 text-primary" />
               <div>
                 <h3 className="text-lg font-semibold text-foreground">
                   Check your email
@@ -105,7 +105,7 @@ export default function ParentLoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-[#E8712A] text-white hover:bg-[#D4651F] shadow-md shadow-orange-600/20 transition-all duration-200 rounded-lg text-base"
+                className="w-full h-12 bg-primary text-white hover:bg-[#D4651F] shadow-md shadow-orange-600/20 transition-all duration-200 rounded-lg text-base"
                 disabled={loading || !email.trim()}
               >
                 {loading ? (

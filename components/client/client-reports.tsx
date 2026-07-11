@@ -72,7 +72,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
             Sync Calendar
           </a>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
             <FileText className="h-6 w-6 text-[#0891B2]" />
           </div>
@@ -137,7 +137,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                     <a
                       href={`/api/client/${centreId}/report-pdf?reportId=${report.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-card px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                       aria-label="Download PDF report"
                     >
                       <Download className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
 
                     {/* Sessions delivered */}
                     {content.sessions_delivered != null && (
-                      <div className="flex items-start gap-3 rounded-lg bg-white p-3">
+                      <div className="flex items-start gap-3 rounded-lg bg-card p-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-50">
                           <BarChart3 className="h-4 w-4 text-cyan-600" />
                         </div>
@@ -184,7 +184,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
 
                     {/* Average rating */}
                     {content.average_rating != null && (
-                      <div className="flex items-start gap-3 rounded-lg bg-white p-3">
+                      <div className="flex items-start gap-3 rounded-lg bg-card p-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-50">
                           <Star className="h-4 w-4 text-amber-500" />
                         </div>
@@ -212,7 +212,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                               <Badge
                                 key={sport}
                                 variant="outline"
-                                className="bg-white text-gray-700"
+                                className="bg-card text-gray-700"
                               >
                                 {sport}
                               </Badge>

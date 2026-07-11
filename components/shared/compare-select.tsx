@@ -62,7 +62,7 @@ export function CompareSelect({
           const query = sp.toString();
           router.replace(query ? `${pathname}?${query}` : pathname);
         }}
-        className="rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#E8712A]/40"
+        className="rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
       >
         {OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>

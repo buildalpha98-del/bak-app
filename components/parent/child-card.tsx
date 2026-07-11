@@ -23,10 +23,10 @@ export function ChildCard({ child }: ChildCardProps) {
   return (
     <Link
       href={`/parent/kids/${child.id}`}
-      className="group flex items-center gap-4 rounded-xl bg-white p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-[#E8712A]/30 transition-all"
+      className="group flex items-center gap-4 rounded-xl bg-card p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
     >
       {/* Avatar */}
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-[#E8712A] text-lg font-bold flex-shrink-0">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-primary text-lg font-bold flex-shrink-0">
         {child.first_name[0]}
         {child.last_name[0]}
       </div>
@@ -58,7 +58,7 @@ export function ChildCard({ child }: ChildCardProps) {
         )}
       </div>
 
-      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-[#E8712A] transition-colors flex-shrink-0" />
+      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
     </Link>
   );
 }

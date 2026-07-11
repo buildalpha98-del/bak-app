@@ -124,7 +124,7 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
           key={i}
           className={`h-4 w-4 ${
             i < rating
-              ? "fill-[#E8712A] text-[#E8712A]"
+              ? "fill-primary text-primary"
               : "fill-none text-muted-foreground/40"
           }`}
         />

@@ -161,7 +161,7 @@ export function AIGenerateDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="size-5 text-[#E8712A]" />
+            <Sparkles className="size-5 text-primary" />
             AI Generate Roster
           </DialogTitle>
           <DialogDescription>

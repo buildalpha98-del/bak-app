@@ -437,7 +437,7 @@ export default function AdminChurnPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? "border-b-2 border-[#E8712A] text-[#E8712A]"
+                  ? "border-b-2 border-primary text-primary"
                   : "text-[#666666] hover:text-[#1A1A1A]"
               }`}
             >
@@ -878,12 +878,12 @@ function FilterClearChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label="Clear filter"
       >
         <X className="h-3 w-3" />

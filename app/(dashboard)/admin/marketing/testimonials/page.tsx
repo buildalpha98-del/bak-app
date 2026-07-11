@@ -346,7 +346,7 @@ export default function TestimonialsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -483,7 +483,7 @@ export default function TestimonialsPage() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            className="gap-1 bg-[#E8712A] hover:bg-[#d4641f]"
+                            className="gap-1 bg-primary hover:bg-[#d4641f]"
                             onClick={() => confirmApprove(item)}
                             disabled={actionLoading === item.id}
                           >
@@ -507,7 +507,7 @@ export default function TestimonialsPage() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className="gap-1 bg-[#E8712A] hover:bg-[#d4641f]"
+                          className="gap-1 bg-primary hover:bg-[#d4641f]"
                           onClick={() => startApprove(item)}
                         >
                           <Check className="h-3 w-3" />
@@ -653,7 +653,7 @@ export default function TestimonialsPage() {
 
       {/* Sticky bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} testimonial{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -681,7 +681,7 @@ export default function TestimonialsPage() {
             size="sm"
             onClick={handleBulkApprove}
             disabled={bulkAction !== null}
-            className="bg-[#E8712A] text-white hover:bg-[#d4641f]"
+            className="bg-primary text-white hover:bg-[#d4641f]"
           >
             <CheckCheck className="size-4" />
             {bulkAction === "approve" ? "Approving…" : "Approve"}
@@ -709,7 +709,7 @@ function FilterChip({
       onClick={onClick}
       className={
         active
-          ? "inline-flex items-center gap-1.5 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-3 py-1 text-xs font-medium text-[#E8712A]"
+          ? "inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
           : "inline-flex items-center gap-1.5 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
       }
     >

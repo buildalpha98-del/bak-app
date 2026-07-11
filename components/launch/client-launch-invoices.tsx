@@ -55,7 +55,7 @@ export function LaunchClientInvoices({
   return (
     <div className="animate-fade-up">
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-lg border bg-white sm:block">
+      <div className="hidden overflow-hidden rounded-lg border bg-card sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -90,7 +90,7 @@ export function LaunchClientInvoices({
                     className="h-8 px-2"
                     onClick={() => handlePdf(inv.id)}
                   >
-                    <FileDown className="h-4 w-4 text-[#E8712A]" />
+                    <FileDown className="h-4 w-4 text-primary" />
                   </Button>
                 </td>
               </tr>
@@ -127,7 +127,7 @@ export function LaunchClientInvoices({
               <div className="pt-1">
                 <button
                   onClick={() => handlePdf(inv.id)}
-                  className="inline-flex items-center gap-1.5 text-sm text-[#E8712A] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                 >
                   <FileDown className="h-3.5 w-3.5" />
                   Download PDF
@@ -144,7 +144,7 @@ export function LaunchClientInvoices({
         <p>Please use your invoice number as the payment reference when making bank transfers.</p>
         <p className="mt-1 text-xs text-gray-500">
           Payment is due within 14 days of the invoice date. Contact us at{" "}
-          <a href="mailto:info@buildalphakids.com.au" className="text-[#E8712A] hover:underline">
+          <a href="mailto:info@buildalphakids.com.au" className="text-primary hover:underline">
             info@buildalphakids.com.au
           </a>{" "}
           if you have any questions.

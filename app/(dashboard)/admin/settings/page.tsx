@@ -96,8 +96,8 @@ export default function SettingsPage() {
             className="group rounded-2xl border bg-background p-5 transition hover:shadow-md hover:-translate-y-0.5"
           >
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 transition group-hover:bg-[#E8712A]/10">
-                <section.icon className="h-5 w-5 text-muted-foreground transition group-hover:text-[#E8712A]" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 transition group-hover:bg-primary/10">
+                <section.icon className="h-5 w-5 text-muted-foreground transition group-hover:text-primary" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">{section.label}</p>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
                   {section.description}
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 group-hover:text-[#E8712A]" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 group-hover:text-primary" />
             </div>
           </Link>
         ))}

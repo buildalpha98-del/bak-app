@@ -777,7 +777,7 @@ function ProgramFeedbackRow({
             onClick={() => submit(opt.value)}
             className={`min-h-[44px] rounded-full border px-3.5 text-xs font-medium transition ${
               rating === opt.value
-                ? "border-[#E8712A] bg-[#E8712A] text-white"
+                ? "border-primary bg-primary text-white"
                 : "bg-background text-foreground hover:bg-secondary"
             }`}
           >
@@ -793,7 +793,7 @@ function ProgramFeedbackRow({
           if (rating && comment.trim()) submit(rating);
         }}
         placeholder="Optional note — e.g. drill 2 too fiddly for 3yos"
-        className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-[#E8712A]/40"
+        className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/40"
         maxLength={500}
       />
     </div>

@@ -198,7 +198,7 @@ export function EmbedFormView() {
             <div className="mx-auto max-w-[480px]">
               <form
                 onSubmit={(e) => e.preventDefault()}
-                className="space-y-3.5 rounded-xl border-2 border-[#E8712A] bg-white p-7 shadow-sm"
+                className="space-y-3.5 rounded-xl border-2 border-primary bg-card p-7 shadow-sm"
               >
                 <div className="text-center">
                   <h2 className="text-[22px] font-bold text-[#1A1A1A]">
@@ -215,7 +215,7 @@ export function EmbedFormView() {
                   </label>
                   <input
                     placeholder="e.g. Little Stars Childcare"
-                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-primary"
                     readOnly
                   />
                 </div>
@@ -225,7 +225,7 @@ export function EmbedFormView() {
                     Type *
                   </label>
                   <select
-                    className="w-full rounded-lg border border-[#ddd] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full rounded-lg border border-[#ddd] bg-card px-3 py-2.5 text-sm outline-none focus:border-primary"
                     disabled
                   >
                     <option>Select type...</option>
@@ -240,7 +240,7 @@ export function EmbedFormView() {
                   </label>
                   <input
                     placeholder="Full name"
-                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-primary"
                     readOnly
                   />
                 </div>
@@ -252,7 +252,7 @@ export function EmbedFormView() {
                   <input
                     type="email"
                     placeholder="you@example.com"
-                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-primary"
                     readOnly
                   />
                 </div>
@@ -264,7 +264,7 @@ export function EmbedFormView() {
                   <input
                     type="tel"
                     placeholder="04XX XXX XXX"
-                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-primary"
                     readOnly
                   />
                 </div>
@@ -276,14 +276,14 @@ export function EmbedFormView() {
                   <textarea
                     rows={3}
                     placeholder="Tell us about your needs..."
-                    className="w-full resize-y rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#E8712A]"
+                    className="w-full resize-y rounded-lg border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-primary"
                     readOnly
                   />
                 </div>
 
                 <button
                   type="button"
-                  className="w-full rounded-lg bg-[#E8712A] px-4 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-[#d4631f]"
+                  className="w-full rounded-lg bg-primary px-4 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-[#d4631f]"
                 >
                   Send Enquiry
                 </button>

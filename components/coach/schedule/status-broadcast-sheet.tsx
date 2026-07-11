@@ -155,7 +155,7 @@ export function StatusBroadcastSheet({
       >
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-base">
-            <Megaphone className="size-4 text-[#E8712A]" />
+            <Megaphone className="size-4 text-primary" />
             Broadcast status
           </SheetTitle>
           <SheetDescription>
@@ -245,7 +245,7 @@ export function StatusBroadcastSheet({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="e.g. Traffic on M5"
-              className="min-h-[44px] w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-[#E8712A]"
+              className="min-h-[44px] w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-primary"
             />
             <p className="mt-1 text-right text-[10px] text-muted-foreground">
               {message.length}/100
@@ -268,8 +268,8 @@ export function StatusBroadcastSheet({
                       className={cn(
                         "min-h-[36px] rounded-full border px-3 text-xs font-medium transition-colors",
                         audience.includes(a)
-                          ? "border-[#E8712A] bg-[#E8712A]/10 text-[#E8712A]"
-                          : "border-border bg-background text-muted-foreground hover:border-[#E8712A]/40",
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/40",
                       )}
                       aria-pressed={audience.includes(a)}
                     >
@@ -285,7 +285,7 @@ export function StatusBroadcastSheet({
           <Button
             onClick={handleSend}
             disabled={!status || audience.length === 0 || isPending}
-            className="min-h-[48px] w-full rounded-xl bg-[#E8712A] text-base font-medium text-white hover:bg-[#d05f1f]"
+            className="min-h-[48px] w-full rounded-xl bg-primary text-base font-medium text-white hover:bg-[#d05f1f]"
           >
             {isPending ? (
               <>

@@ -123,7 +123,7 @@ export default function ProposalTemplatesPage() {
             return (
               <div
                 key={template.id}
-                className="rounded-lg border bg-white"
+                className="rounded-lg border bg-card"
               >
                 {/* Template header */}
                 <div className="flex items-center justify-between p-4">
@@ -131,7 +131,7 @@ export default function ProposalTemplatesPage() {
                     onClick={() => toggleExpand(template.id)}
                     className="flex flex-1 items-center gap-3 text-left"
                   >
-                    <FileText className="h-5 w-5 text-[#E8712A]" />
+                    <FileText className="h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium text-[#1A1A1A]">
                         {template.title}

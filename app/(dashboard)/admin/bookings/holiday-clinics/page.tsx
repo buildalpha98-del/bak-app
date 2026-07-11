@@ -410,7 +410,7 @@ export default function HolidayClinicPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -429,7 +429,7 @@ export default function HolidayClinicPage() {
         </div>
         {!showCreateForm && (
           <Button
-            className="bg-[#E8712A] hover:bg-[#D4641F] text-white"
+            className="bg-primary hover:bg-[#D4641F] text-white"
             onClick={() => {
               setShowCreateForm(true);
               setError(null);
@@ -458,7 +458,7 @@ export default function HolidayClinicPage() {
       {showCreateForm && (
         <form
           onSubmit={handleCreatePeriod}
-          className="rounded-xl border border-orange-100 bg-white p-6 space-y-5"
+          className="rounded-xl border border-orange-100 bg-card p-6 space-y-5"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[#1A1A1A]">
@@ -524,7 +524,7 @@ export default function HolidayClinicPage() {
                       exclude_weekends: e.target.checked,
                     }))
                   }
-                  className="rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 Skip Saturday and Sunday
               </label>
@@ -696,7 +696,7 @@ export default function HolidayClinicPage() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              className="bg-[#E8712A] hover:bg-[#D4641F] text-white"
+              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={creating}
             >
               {creating ? (
@@ -776,7 +776,7 @@ export default function HolidayClinicPage() {
           <div className="flex gap-3">
             <Button
               type="submit"
-              className="bg-[#E8712A] hover:bg-[#D4641F] text-white"
+              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={duplicating}
             >
               {duplicating ? (
@@ -799,8 +799,8 @@ export default function HolidayClinicPage() {
 
       {/* Periods List */}
       {periods.length === 0 && !showCreateForm ? (
-        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-white border border-orange-100">
-          <Calendar className="h-12 w-12 text-[#E8712A] mb-3 opacity-50" />
+        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-card border border-orange-100">
+          <Calendar className="h-12 w-12 text-primary mb-3 opacity-50" />
           <p className="text-[#666666] text-sm">
             No holiday clinic periods yet. Create your first one above.
           </p>
@@ -813,7 +813,7 @@ export default function HolidayClinicPage() {
             return (
               <div
                 key={period.name}
-                className="rounded-xl border border-orange-100 bg-white overflow-hidden"
+                className="rounded-xl border border-orange-100 bg-card overflow-hidden"
               >
                 {/* Period Header */}
                 <div

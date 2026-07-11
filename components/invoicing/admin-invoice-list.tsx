@@ -308,7 +308,7 @@ export function AdminInvoiceList({
           {showMarkPaid && (
             <Button
               size="sm"
-              className="rounded-2xl bg-[#E8712A] hover:bg-[#E8712A]/90 text-white"
+              className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
               onClick={handleBulkMarkPaid}
               disabled={bulkPending}
             >
@@ -346,7 +346,7 @@ export function AdminInvoiceList({
           return (
             <Card
               key={inv.id}
-              className="rounded-2xl border p-4 transition card-hover hover:border-[#E8712A]/40"
+              className="rounded-2xl border p-4 transition card-hover hover:border-primary/40"
             >
               <div className="flex items-start gap-3">
                 <Checkbox
@@ -437,7 +437,7 @@ export function AdminInvoiceList({
               return (
                 <TableRow
                   key={inv.id}
-                  className={isSelected ? "bg-[#E8712A]/5" : undefined}
+                  className={isSelected ? "bg-primary/5" : undefined}
                 >
                   <TableCell>
                     <Checkbox

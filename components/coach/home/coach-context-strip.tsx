@@ -49,7 +49,7 @@ export function CoachContextStrip({
           </p>
           <p className="text-base font-medium text-foreground">
             {greeting},{" "}
-            <span className="text-[#E8712A]">{firstName}</span>
+            <span className="text-primary">{firstName}</span>
           </p>
         </div>
 
@@ -118,14 +118,14 @@ function PulseStat({
         <Icon
           className={
             active
-              ? "size-3.5 text-[#E8712A]"
+              ? "size-3.5 text-primary"
               : "size-3.5 text-muted-foreground"
           }
         />
         <span
           className={
             active
-              ? "text-base font-semibold tabular-nums text-[#E8712A]"
+              ? "text-base font-semibold tabular-nums text-primary"
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >

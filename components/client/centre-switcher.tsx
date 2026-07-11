@@ -76,7 +76,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
           >
             <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <span className="truncate">{current.name}</span>
-            <span className="ml-1 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="ml-1 rounded-full bg-card px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {centres.length}
             </span>
             <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -137,7 +137,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
                       onClick={(e) => handleMakeDefault(e, c.id)}
                       title="Make default"
                       aria-label={`Make ${c.name} default`}
-                      className="hidden h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white hover:text-[#0891B2] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40 group-hover:flex"
+                      className="hidden h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-[#0891B2] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40 group-hover:flex"
                     >
                       {isSavingDefault ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

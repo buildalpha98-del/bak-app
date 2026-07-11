@@ -320,13 +320,13 @@ export function ReportsView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {overdueOnly && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <Clock className="size-3" />
               Overdue drafts only
               <button
                 type="button"
                 onClick={() => clearJumpFilter("overdue")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear overdue filter"
               >
                 <X className="size-3" />
@@ -334,13 +334,13 @@ export function ReportsView({
             </span>
           )}
           {missingReport && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               <Building2 className="size-3" />
               Centres without report
               <button
                 type="button"
                 onClick={() => clearJumpFilter("missing_report")}
-                className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
                 aria-label="Clear missing-report filter"
               >
                 <X className="size-3" />
@@ -395,7 +395,7 @@ export function ReportsView({
           <Button
             onClick={handleGenerate}
             disabled={!centreId || !termId || generating}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {generating ? (
               <Loader2 className="size-4 animate-spin" />
@@ -579,7 +579,7 @@ export function ReportsView({
                             {overdue && (
                               <Badge
                                 variant="outline"
-                                className="border-[#E8712A]/40 text-[#E8712A]"
+                                className="border-primary/40 text-primary"
                               >
                                 <Clock className="size-3" />
                                 Overdue
@@ -667,7 +667,7 @@ function BulkActionBar({
     <>
       <div
         className={
-          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6"
+          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6"
         }
       >
         <div className="flex items-center gap-3 pr-2 text-sm">
@@ -694,7 +694,7 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setSendOpen(true)}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <Send className="size-4" />
           Mark as sent
@@ -830,7 +830,7 @@ function BulkSendSheet({
           <Button
             onClick={handleSend}
             disabled={working || !recipients.trim() || eligibleCount === 0}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Marking…" : "Mark as sent"}
           </Button>

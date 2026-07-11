@@ -153,11 +153,11 @@ export function SessionDetailView({
       </div>
 
       {/* Details card */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5">
+      <div className="rounded-xl border border-orange-100 bg-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Session Details</h2>
         <dl className="grid gap-4 sm:grid-cols-2">
           <div className="flex items-start gap-3">
-            <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-[#E8712A]" />
+            <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <dt className="text-sm font-medium text-[#666666]">Date</dt>
               <dd className="text-[#1A1A1A]">{formatDate(session.date)}</dd>
@@ -165,7 +165,7 @@ export function SessionDetailView({
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-[#E8712A]" />
+            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <dt className="text-sm font-medium text-[#666666]">Time</dt>
               <dd className="text-[#1A1A1A]">
@@ -176,7 +176,7 @@ export function SessionDetailView({
           </div>
 
           <div className="flex items-start gap-3">
-            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#E8712A]" />
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <dt className="text-sm font-medium text-[#666666]">Location</dt>
               <dd className="text-[#1A1A1A]">
@@ -226,7 +226,7 @@ export function SessionDetailView({
           )}
 
           <div className="flex items-start gap-3">
-            <DollarSign className="mt-0.5 h-5 w-5 shrink-0 text-[#E8712A]" />
+            <DollarSign className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <dt className="text-sm font-medium text-[#666666]">Price</dt>
               <dd className="text-[#1A1A1A]">
@@ -263,9 +263,9 @@ export function SessionDetailView({
       </div>
 
       {/* Capacity card */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5">
+      <div className="rounded-xl border border-orange-100 bg-card p-5">
         <div className="mb-3 flex items-center gap-2">
-          <Users className="h-5 w-5 text-[#E8712A]" />
+          <Users className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Capacity</h2>
         </div>
         <p className="mb-2 text-sm text-[#666666]">
@@ -273,7 +273,7 @@ export function SessionDetailView({
         </p>
         <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
           <div
-            className="h-full rounded-full bg-[#E8712A] transition-all"
+            className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${capacityPercentage}%` }}
           />
         </div>
@@ -283,7 +283,7 @@ export function SessionDetailView({
       </div>
 
       {/* Status actions */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5">
+      <div className="rounded-xl border border-orange-100 bg-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Actions</h2>
         {error && (
           <p className="mb-3 text-sm text-red-600">{error}</p>
@@ -293,7 +293,7 @@ export function SessionDetailView({
             <Button
               onClick={() => handleStatusChange("open" as BookableSessionStatus)}
               disabled={changingStatus !== null}
-              className="bg-[#E8712A] hover:bg-[#d4641f]"
+              className="bg-primary hover:bg-[#d4641f]"
             >
               {changingStatus === "open" && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -350,7 +350,7 @@ export function SessionDetailView({
       </div>
 
       {/* Waitlist section */}
-      <div className="rounded-xl border border-orange-100 bg-white p-5">
+      <div className="rounded-xl border border-orange-100 bg-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Waitlist</h2>
         {waitlist.length === 0 ? (
           <p className="text-sm text-[#666666]">

@@ -178,7 +178,7 @@ export function SquarePayment({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="rounded-lg border border-gray-200 bg-card p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[#1A1A1A]">
           <CreditCard className="size-4" />
           Card Details

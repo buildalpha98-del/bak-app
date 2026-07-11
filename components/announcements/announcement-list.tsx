@@ -421,7 +421,7 @@ export function AnnouncementList({
 
       {/* Sticky bulk-action bar */}
       {canCreate && selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} announcement{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -491,7 +491,7 @@ function FilterChip({
   const activeClasses =
     tone === "red"
       ? "border-red-600/40 bg-red-600/10 text-red-600"
-      : "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A]";
+      : "border-primary/40 bg-primary/10 text-primary";
   return (
     <button
       type="button"

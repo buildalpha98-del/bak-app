@@ -384,7 +384,7 @@ function DroppableCell({
       ref={setNodeRef}
       className={`relative border-b border-l ${
         isHour ? "border-b-border" : "border-b-border/40"
-      } ${isOver ? "bg-[#E8712A]/10 outline-2 outline-dashed outline-[#E8712A]/50 outline-offset-[-2px]" : ""}`}
+      } ${isOver ? "bg-primary/10 outline-2 outline-dashed outline-primary/50 outline-offset-[-2px]" : ""}`}
       style={{ gridRow: rowIdx + 2, gridColumn: dayIdx + 2 }}
     >
       {/* Clickable empty area */}

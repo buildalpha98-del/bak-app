@@ -224,7 +224,7 @@ export default function AdminPackagesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function AdminPackagesPage() {
         </div>
         {!showForm && (
           <Button
-            className="bg-[#E8712A] hover:bg-[#D4641F] text-white"
+            className="bg-primary hover:bg-[#D4641F] text-white"
             onClick={openCreateForm}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -262,7 +262,7 @@ export default function AdminPackagesPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-orange-100 bg-white p-6 space-y-5"
+          className="rounded-xl border border-orange-100 bg-card p-6 space-y-5"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
@@ -371,7 +371,7 @@ export default function AdminPackagesPage() {
                   type="checkbox"
                   checked={form.all_types}
                   onChange={handleAllTypesToggle}
-                  className="rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 All Types
               </label>
@@ -388,7 +388,7 @@ export default function AdminPackagesPage() {
                     }
                     disabled={form.all_types}
                     onChange={() => handleSessionTypeToggle(type)}
-                    className="rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   {SESSION_TYPE_LABELS[type]}
                 </label>
@@ -409,7 +409,7 @@ export default function AdminPackagesPage() {
                     status: e.target.checked ? "active" : "inactive",
                   }))
                 }
-                className="rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                className="rounded border-gray-300 text-primary focus:ring-primary"
               />
               Active
             </label>
@@ -418,7 +418,7 @@ export default function AdminPackagesPage() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              className="bg-[#E8712A] hover:bg-[#D4641F] text-white"
+              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={saving}
             >
               {saving ? (
@@ -437,13 +437,13 @@ export default function AdminPackagesPage() {
 
       {/* Table */}
       {packages.length === 0 && !showForm ? (
-        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-white border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-card border border-orange-100">
           <p className="text-sm text-muted-foreground">
             No packages yet. Create your first session pack.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-orange-100 bg-white overflow-hidden">
+        <div className="rounded-xl border border-orange-100 bg-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>

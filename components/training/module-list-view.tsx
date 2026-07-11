@@ -318,7 +318,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
         <div className="mt-4">
           <Button
             render={<Link href={`${basePath}/modules/new`} />}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Module
@@ -426,7 +426,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
         <div className="sm:ml-auto">
           <Button
             render={<Link href={`${basePath}/modules/new`} />}
-            className="min-h-[40px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Module
@@ -488,13 +488,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label={`Clear ${label} filter`}
       >
         <X className="size-3" />
@@ -557,7 +557,7 @@ function ModuleTable({
                   key={m.id}
                   className={
                     "relative transition hover:bg-muted/30 " +
-                    (selected ? "bg-[#E8712A]/5" : "")
+                    (selected ? "bg-primary/5" : "")
                   }
                   data-state={selected ? "selected" : undefined}
                 >
@@ -577,7 +577,7 @@ function ModuleTable({
                       <span className="truncate">{m.title}</span>
                       {m.is_mandatory && (
                         <span
-                          className="inline-flex items-center gap-0.5 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]"
+                          className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
                           title="Required module"
                         >
                           Required
@@ -632,8 +632,8 @@ function ModuleTable({
               key={m.id}
               className={
                 "relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:shadow-md " +
-                (selected ? "bg-[#E8712A]/5 " : "") +
-                (m.is_mandatory ? "ring-1 ring-[#E8712A]/30" : "")
+                (selected ? "bg-primary/5 " : "") +
+                (m.is_mandatory ? "ring-1 ring-primary/30" : "")
               }
             >
               <div className="flex items-start gap-2">
@@ -660,7 +660,7 @@ function ModuleTable({
                       {statusBadge.label}
                     </Badge>
                     {m.is_mandatory && (
-                      <span className="inline-flex items-center rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                      <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                         Required
                       </span>
                     )}
@@ -790,7 +790,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} module{count === 1 ? "" : "s"} selected
@@ -849,7 +849,7 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setArchiveOpen(true)}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <Trash2 className="size-4" />
           Archive
@@ -875,7 +875,7 @@ function BulkActionBar({
                 e.preventDefault();
                 void handleArchive();
               }}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
               disabled={archiving}
             >
               {archiving ? (

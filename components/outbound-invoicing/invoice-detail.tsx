@@ -403,7 +403,7 @@ export function InvoiceDetail({ invoice, userRole }: Props) {
             href={invoice.pdf_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-[#E8712A] hover:underline"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             <FileDown className="h-4 w-4" />
             Download PDF

@@ -161,7 +161,7 @@ export function OutboundInvoiceList({ invoices, basePath }: Props) {
                   }
                   disabled={selectable.length === 0}
                   onChange={toggleAll}
-                  className="h-4 w-4 accent-[#E8712A]"
+                  className="h-4 w-4 accent-primary"
                 />
               </th>
               <th className="text-left px-4 py-3 font-medium text-foreground">Invoice #</th>
@@ -185,7 +185,7 @@ export function OutboundInvoiceList({ invoices, basePath }: Props) {
                       checked={selected.has(invoice.id)}
                       disabled={!canSelect}
                       onChange={() => toggle(invoice.id)}
-                      className="h-4 w-4 accent-[#E8712A] disabled:opacity-30"
+                      className="h-4 w-4 accent-primary disabled:opacity-30"
                     />
                   </td>
                   <td className="px-4 py-3">

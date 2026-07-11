@@ -429,7 +429,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <Button
             render={<Link href={`${basePath}/generate`} />}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             <Sparkles className="size-4" />
             Generate with AI
@@ -590,7 +590,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Folder view"
             className={
               viewMode === "folder"
-                ? "rounded-r-none bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "rounded-r-none bg-primary/10 text-primary hover:bg-primary/15"
                 : "rounded-r-none"
             }
           >
@@ -603,7 +603,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "rounded-none bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "rounded-none bg-primary/10 text-primary hover:bg-primary/15"
                 : "rounded-none"
             }
           >
@@ -616,7 +616,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "rounded-l-none bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "rounded-l-none bg-primary/10 text-primary hover:bg-primary/15"
                 : "rounded-l-none"
             }
           >
@@ -647,7 +647,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
           </Button>
           <Button
             render={<Link href={`${basePath}/generate`} />}
-            className="min-h-[40px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
           >
             <Sparkles className="size-4" />
             Generate with AI
@@ -718,13 +718,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label={`Clear ${label} filter`}
       >
         <X className="size-3" />
@@ -762,8 +762,8 @@ function FolderView({
               onClick={() => onToggleFolder(sport)}
               className="flex w-full items-center gap-3 px-4 py-3 text-left"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8712A]/10">
-                <FolderOpen className="h-4 w-4 text-[#E8712A]" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <FolderOpen className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium text-foreground">
@@ -836,7 +836,7 @@ function ProgramTile({
       href={`${basePath}/${program.id}`}
       className={
         "group relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-md " +
-        (noSkills ? "ring-1 ring-[#E8712A]/30" : "")
+        (noSkills ? "ring-1 ring-primary/30" : "")
       }
     >
       <div className="flex items-start justify-between gap-2">
@@ -869,13 +869,13 @@ function ProgramTile({
       {/* Status row */}
       <div className="flex flex-wrap items-center gap-1.5">
         {noSkills && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-[10px] font-medium text-[#E8712A]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
             <AlertTriangle className="size-2.5" />
             No skills
           </span>
         )}
         {unused && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-[10px] font-medium text-[#E8712A]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
             <CircleDashed className="size-2.5" />
             Unused
           </span>
@@ -991,7 +991,7 @@ function TableView({
                   key={p.id}
                   className={
                     "relative transition hover:bg-muted/30 " +
-                    (selected ? "bg-[#E8712A]/5" : "")
+                    (selected ? "bg-primary/5" : "")
                   }
                   data-state={selected ? "selected" : undefined}
                 >
@@ -1011,7 +1011,7 @@ function TableView({
                       <span className="truncate">{p.title}</span>
                       {noSkills && (
                         <span
-                          className="inline-flex items-center rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]"
+                          className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
                           title="No skills defined"
                         >
                           <AlertTriangle className="size-2.5" />
@@ -1039,7 +1039,7 @@ function TableView({
                     {p.session_count > 0 ? (
                       p.session_count
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                         <CircleDashed className="size-2.5" />
                         Unused
                       </span>
@@ -1081,8 +1081,8 @@ function TableView({
               key={p.id}
               className={
                 "relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:shadow-md " +
-                (noSkills ? "ring-1 ring-[#E8712A]/30 " : "") +
-                (selected ? "bg-[#E8712A]/5" : "")
+                (noSkills ? "ring-1 ring-primary/30 " : "") +
+                (selected ? "bg-primary/5" : "")
               }
             >
               <div className="flex items-start justify-between gap-2">
@@ -1098,13 +1098,13 @@ function TableView({
                       </Badge>
                     )}
                     {noSkills && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                         <AlertTriangle className="size-2.5" />
                         No skills
                       </span>
                     )}
                     {unused && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-[10px] font-medium text-[#E8712A]">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                         <CircleDashed className="size-2.5" />
                         Unused
                       </span>
@@ -1227,7 +1227,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} programme{count === 1 ? "" : "s"} selected
@@ -1272,7 +1272,7 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setDeleteOpen(true)}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <Trash2 className="size-4" />
           Delete

@@ -34,7 +34,7 @@ export function TaskColumn({
   return (
     <div
       className={`flex-1 min-w-[280px] max-w-[360px] rounded-2xl border bg-muted/30 transition ${
-        isOver ? "border-[#E8712A]/50 bg-[#E8712A]/5" : ""
+        isOver ? "border-primary/50 bg-primary/5" : ""
       } flex flex-col ${column.is_final ? "opacity-70" : ""}`}
     >
       <div className="px-3 py-2.5 border-b">

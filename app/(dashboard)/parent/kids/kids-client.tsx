@@ -113,7 +113,7 @@ export default function ParentKidsClient({
         {!showAdd && (
           <Button
             onClick={() => setShowAdd(true)}
-            className="bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-xl min-h-[44px]"
+            className="bg-primary text-white hover:bg-[#D4651F] rounded-xl min-h-[44px]"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add child
@@ -155,7 +155,7 @@ export default function ParentKidsClient({
 
       {/* Add child form */}
       {showAdd && (
-        <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm">
+        <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Add a child</h2>
             <Button
@@ -182,7 +182,7 @@ export default function ParentKidsClient({
               !newChild.last_name.trim() ||
               !newChild.date_of_birth
             }
-            className="w-full h-12 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-xl"
+            className="w-full h-12 bg-primary text-white hover:bg-[#D4651F] rounded-xl"
           >
             {adding ? (
               <>
@@ -199,11 +199,11 @@ export default function ParentKidsClient({
       {/* Children grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-[#E8712A]" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : children.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl bg-white border border-orange-100 shadow-sm">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#E8712A] mx-auto mb-3">
+        <div className="text-center py-12 rounded-2xl bg-card border border-orange-100 shadow-sm">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-primary mx-auto mb-3">
             <Plus className="h-7 w-7" />
           </div>
           <p className="font-medium text-[#1A1A1A]">No kids on your profile yet</p>
@@ -231,10 +231,10 @@ function KidPhotoCard({ child }: { child: Child }) {
   return (
     <Link
       href={`/parent/kids/${child.id}`}
-      className="group rounded-2xl border border-orange-100 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-[#E8712A]/30 transition-all flex flex-col gap-4"
+      className="group rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all flex flex-col gap-4"
     >
       <div className="flex items-center justify-between">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-orange-50 text-[#E8712A] text-2xl font-bold border-2 border-transparent group-hover:border-[#E8712A]/40 transition-all">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-orange-50 text-primary text-2xl font-bold border-2 border-transparent group-hover:border-primary/40 transition-all">
           {initials}
         </div>
         <Badge variant="outline" className={`text-xs ${ageGroupColour}`}>
@@ -259,10 +259,10 @@ function KidPhotoCard({ child }: { child: Child }) {
 
       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-orange-50">
         <span className="text-xs text-[#666666] inline-flex items-center justify-center gap-1 rounded-xl bg-orange-50 px-2 py-2 group-hover:bg-orange-100 transition-colors">
-          <Sparkles className="h-3 w-3 text-[#E8712A]" />
+          <Sparkles className="h-3 w-3 text-primary" />
           Insights
         </span>
-        <span className="text-xs font-medium text-[#E8712A] inline-flex items-center justify-center gap-1">
+        <span className="text-xs font-medium text-primary inline-flex items-center justify-center gap-1">
           View profile
           <ChevronRight className="h-3 w-3" />
         </span>

@@ -21,7 +21,7 @@ export default async function ReferralLandingPage({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="rounded-xl bg-white p-8 shadow-lg border border-gray-200">
+          <div className="rounded-xl bg-card p-8 shadow-lg border border-gray-200">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
               <span className="text-3xl text-red-400">!</span>
             </div>
@@ -33,7 +33,7 @@ export default async function ReferralLandingPage({
               with the person who shared it with you.
             </p>
             <Link href="/">
-              <Button className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[44px]">
+              <Button className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px]">
                 Visit Build Alpha Kids
               </Button>
             </Link>
@@ -46,9 +46,9 @@ export default async function ReferralLandingPage({
   const { referrerName } = result.data;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       {/* Hero Header */}
-      <div className="bg-[#E8712A] text-white">
+      <div className="bg-primary text-white">
         <div className="max-w-lg mx-auto px-6 py-12 text-center">
           <div className="mb-6">
             <h2 className="text-lg font-semibold tracking-wide uppercase opacity-90">
@@ -73,7 +73,7 @@ export default async function ReferralLandingPage({
 
         <div className="space-y-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#E8712A] flex-shrink-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-primary flex-shrink-0">
               <Trophy className="h-5 w-5" />
             </div>
             <div>
@@ -88,7 +88,7 @@ export default async function ReferralLandingPage({
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#E8712A] flex-shrink-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-primary flex-shrink-0">
               <Users className="h-5 w-5" />
             </div>
             <div>
@@ -103,7 +103,7 @@ export default async function ReferralLandingPage({
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#E8712A] flex-shrink-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-primary flex-shrink-0">
               <Star className="h-5 w-5" />
             </div>
             <div>
@@ -118,7 +118,7 @@ export default async function ReferralLandingPage({
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#E8712A] flex-shrink-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-primary flex-shrink-0">
               <Heart className="h-5 w-5" />
             </div>
             <div>
@@ -136,7 +136,7 @@ export default async function ReferralLandingPage({
         {/* CTA */}
         <div className="mt-10 text-center">
           <Link href={`/parent-login?ref=${code}`}>
-            <Button className="bg-[#E8712A] hover:bg-[#d4651f] text-white min-h-[52px] px-8 text-base font-semibold w-full sm:w-auto">
+            <Button className="bg-primary hover:bg-[#d4651f] text-white min-h-[52px] px-8 text-base font-semibold w-full sm:w-auto">
               Sign Up Now
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
@@ -150,7 +150,7 @@ export default async function ReferralLandingPage({
       {/* Footer */}
       <div className="border-t border-gray-100 bg-gray-50">
         <div className="max-w-lg mx-auto px-6 py-8 text-center">
-          <p className="text-sm font-semibold text-[#E8712A]">
+          <p className="text-sm font-semibold text-primary">
             Build Alpha Kids
           </p>
           <p className="text-xs text-[#666666] mt-1">

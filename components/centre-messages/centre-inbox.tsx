@@ -112,7 +112,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                     onClick={() => selectCentre(t.centre_id)}
                     className={cn(
                       "flex w-full items-start gap-2.5 px-3.5 py-3 text-left transition hover:bg-secondary/60",
-                      active && "border-l-2 border-[#E8712A] bg-secondary/60"
+                      active && "border-l-2 border-primary bg-secondary/60"
                     )}
                   >
                     <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -136,7 +136,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                       </p>
                     </div>
                     {t.unread_count > 0 && (
-                      <span className="mt-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#E8712A] px-1.5 text-[11px] font-semibold text-white">
+                      <span className="mt-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
                         {t.unread_count}
                       </span>
                     )}
@@ -178,8 +178,8 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                   className={cn(
                     "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
                     m.sender_type === "staff"
-                      ? "self-end rounded-br-md bg-[#E8712A] text-white"
-                      : "self-start rounded-bl-md border bg-white text-foreground"
+                      ? "self-end rounded-br-md bg-primary text-white"
+                      : "self-start rounded-bl-md border bg-card text-foreground"
                   )}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.content}</p>
@@ -214,12 +214,12 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                 }}
                 rows={2}
                 placeholder="Reply to the centre… (Enter to send)"
-                className="min-h-[44px] flex-1 resize-none rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#E8712A]/40"
+                className="min-h-[44px] flex-1 resize-none rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
               />
               <Button
                 onClick={handleSend}
                 disabled={isPending || !draft.trim()}
-                className="h-11 bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                className="h-11 bg-primary text-white hover:bg-primary/90"
               >
                 {isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

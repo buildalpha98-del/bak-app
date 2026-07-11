@@ -79,7 +79,7 @@ export default function ParentPackagesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function ParentPackagesPage() {
       {balances.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <PackageIcon className="h-5 w-5 text-[#E8712A]" />
+            <PackageIcon className="h-5 w-5 text-primary" />
             My Session Packs
           </h2>
 
@@ -135,7 +135,7 @@ export default function ParentPackagesPage() {
               return (
                 <div
                   key={balance.id}
-                  className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <h3 className="font-semibold text-foreground">
@@ -159,7 +159,7 @@ export default function ParentPackagesPage() {
                   {/* Progress bar */}
                   <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#E8712A] transition-all"
+                      className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
@@ -189,13 +189,13 @@ export default function ParentPackagesPage() {
       {/* Available Packages */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-[#E8712A]" />
+          <Sparkles className="h-5 w-5 text-primary" />
           Available Packages
         </h2>
 
         {packages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 rounded-2xl bg-white border border-orange-100 shadow-sm">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#E8712A] mb-3">
+          <div className="flex flex-col items-center justify-center py-12 rounded-2xl bg-card border border-orange-100 shadow-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-primary mb-3">
               <PackageIcon className="h-7 w-7" />
             </div>
             <p className="text-sm text-muted-foreground">
@@ -207,7 +207,7 @@ export default function ParentPackagesPage() {
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 flex flex-col shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 flex flex-col shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
                 <div className="flex items-start justify-between">
                   <h3 className="font-semibold text-foreground">{pkg.name}</h3>
@@ -233,7 +233,7 @@ export default function ParentPackagesPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Price</span>
-                    <span className="text-xl font-bold text-[#E8712A]">
+                    <span className="text-xl font-bold text-primary">
                       ${(pkg.price_cents / 100).toFixed(2)}
                     </span>
                   </div>
@@ -245,7 +245,7 @@ export default function ParentPackagesPage() {
 
                 <div className="mt-auto pt-2">
                   <Button
-                    className="w-full bg-[#E8712A] hover:bg-[#D4641F] text-white rounded-xl min-h-[44px]"
+                    className="w-full bg-primary hover:bg-[#D4641F] text-white rounded-xl min-h-[44px]"
                     onClick={() => {
                       setSelectedPackage(pkg);
                       setError(null);
@@ -265,7 +265,7 @@ export default function ParentPackagesPage() {
       {/* Payment modal */}
       {selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 space-y-4">
+          <div className="w-full max-w-md rounded-xl bg-card p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-foreground">
                 Purchase {selectedPackage.name}
@@ -292,7 +292,7 @@ export default function ParentPackagesPage() {
               </div>
               <div className="flex justify-between mt-2 pt-2 border-t border-orange-200">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-[#E8712A]">
+                <span className="font-bold text-primary">
                   ${(selectedPackage.price_cents / 100).toFixed(2)}
                 </span>
               </div>

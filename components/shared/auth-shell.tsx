@@ -17,7 +17,7 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
       {/* Decorative blurred orbs — logo colour extraction */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Orange glow — top right */}
-        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[#E8712A]/8 blur-[80px]" />
+        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-primary/8 blur-[80px]" />
         {/* Green glow — bottom left (field green from logo) */}
         <div className="absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-[#4CAF50]/6 blur-[60px]" />
         {/* Blue accent — top left */}
@@ -31,12 +31,12 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
 
       <Card className="w-full max-w-md border-0 shadow-2xl shadow-black/8 animate-scale-in relative bg-card/95 backdrop-blur-sm">
         {/* Orange top accent bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#E8712A] via-[#FFD600] to-[#4CAF50] rounded-t-xl" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-[#FFD600] to-[#4CAF50] rounded-t-xl" />
 
         <CardHeader className="space-y-4 text-center pb-2 pt-8">
           {/* Logo — larger, with subtle glow */}
           <div className="mx-auto relative">
-            <div className="absolute inset-0 bg-[#E8712A]/10 rounded-full blur-xl scale-150" />
+            <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150" />
             <img
               src="/logo-full.png"
               alt="Build Alpha Kids"

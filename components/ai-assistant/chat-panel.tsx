@@ -164,7 +164,7 @@ export function ChatPanel({ sessionId, sessionContext }: ChatPanelProps) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#E8712A] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:bottom-8"
+          className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:bottom-8"
           aria-label="Open AI Assistant"
         >
           <Sparkles className="h-6 w-6" />
@@ -187,7 +187,7 @@ export function ChatPanel({ sessionId, sessionContext }: ChatPanelProps) {
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#E8712A]" />
+            <Sparkles className="h-4 w-4 text-primary" />
             <h3 className="font-semibold text-sm">AI Assistant</h3>
           </div>
           <Button
@@ -212,7 +212,7 @@ export function ChatPanel({ sessionId, sessionContext }: ChatPanelProps) {
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
           {messages.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center h-full">
-              <Sparkles className="h-8 w-8 text-[#E8712A]/30 mb-3" />
+              <Sparkles className="h-8 w-8 text-primary/30 mb-3" />
               <p className="text-xs text-muted-foreground text-center mb-4">
                 Ask me anything about your session — activity ideas, behaviour tips, or adaptations.
               </p>
@@ -268,7 +268,7 @@ export function ChatPanel({ sessionId, sessionContext }: ChatPanelProps) {
             />
             <Button
               size="icon"
-              className="h-10 w-10 shrink-0 bg-[#E8712A] hover:bg-[#D4651F]"
+              className="h-10 w-10 shrink-0 bg-primary hover:bg-[#D4651F]"
               onClick={() => sendMessage(inputText)}
               disabled={!inputText.trim() || isLoading || isOffline}
             >

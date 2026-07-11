@@ -195,7 +195,7 @@ function assessmentBadge(status: AssessmentStatus) {
         label: "Overdue",
         icon: AlertTriangle,
         className:
-          "border-[#E8712A]/40 bg-[#E8712A]/10 text-[#E8712A]",
+          "border-primary/40 bg-primary/10 text-primary",
       };
     case "no_term":
     default:
@@ -584,7 +584,7 @@ export default function ChildrenListView({
             Import CSV
           </Button>
           <Button
-            className="min-h-[44px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
             onClick={() => setDialogOpen(true)}
           >
             <Plus className="size-4" />
@@ -730,7 +730,7 @@ export default function ChildrenListView({
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "rounded-r-none bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "rounded-r-none bg-primary/10 text-primary hover:bg-primary/15"
                 : "rounded-r-none"
             }
           >
@@ -743,7 +743,7 @@ export default function ChildrenListView({
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "rounded-l-none bg-[#E8712A]/10 text-[#E8712A] hover:bg-[#E8712A]/15"
+                ? "rounded-l-none bg-primary/10 text-primary hover:bg-primary/15"
                 : "rounded-l-none"
             }
           >
@@ -785,7 +785,7 @@ export default function ChildrenListView({
                 key={child.id}
                 className={
                   "group relative flex flex-col gap-3 rounded-2xl border bg-background p-4 transition hover:shadow-md hover:-translate-y-0.5 " +
-                  (selected ? "ring-1 ring-[#E8712A]/40" : "")
+                  (selected ? "ring-1 ring-primary/40" : "")
                 }
               >
                 {selectionActive ? (
@@ -829,7 +829,7 @@ export default function ChildrenListView({
                   {child.has_recent_insight && (
                     <Link
                       href={`${basePath}/${child.id}?tab=insights`}
-                      className="relative z-20 inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2 py-0.5 text-xs font-medium text-[#E8712A] hover:bg-[#E8712A]/20"
+                      className="relative z-20 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
                       title="Insight ready"
                     >
                       <Sparkles className="size-3" />
@@ -912,7 +912,7 @@ export default function ChildrenListView({
                   <span
                     className={
                       last.stale
-                        ? "text-[#E8712A]"
+                        ? "text-primary"
                         : "text-muted-foreground"
                     }
                   >
@@ -968,7 +968,7 @@ export default function ChildrenListView({
                       (last.stale && !last.label.includes("yrs")
                         ? "bg-muted/10 "
                         : "") +
-                      (selected ? "bg-[#E8712A]/5" : "")
+                      (selected ? "bg-primary/5" : "")
                     }
                     data-state={selected ? "selected" : undefined}
                   >
@@ -988,7 +988,7 @@ export default function ChildrenListView({
                         <span>{childName}</span>
                         {child.has_recent_insight && (
                           <span
-                            className="inline-flex items-center gap-0.5 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#E8712A]"
+                            className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
                             title="Insight ready"
                           >
                             <Sparkles className="size-2.5" />
@@ -1091,7 +1091,7 @@ export default function ChildrenListView({
                       <span
                         className={
                           last.stale && child.last_attended_at !== null
-                            ? "text-xs text-[#E8712A]"
+                            ? "text-xs text-primary"
                             : !child.last_attended_at
                               ? "text-xs text-muted-foreground"
                               : "text-xs text-foreground"
@@ -1385,7 +1385,7 @@ export default function ChildrenListView({
               Cancel
             </Button>
             <Button
-              className="min-h-[44px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
               onClick={handleSubmit}
               disabled={isPending}
             >
@@ -1424,13 +1424,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label={`Clear ${label} filter`}
       >
         <X className="size-3" />
@@ -1550,7 +1550,7 @@ function BulkActionBar({
     <>
       <div
         className={
-          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6"
+          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6"
         }
       >
         <div className="flex items-center gap-3 pr-2 text-sm">
@@ -1597,7 +1597,7 @@ function BulkActionBar({
                 size="sm"
                 onClick={handleLinkConfirm}
                 disabled={linkWorking || !linkCentreId}
-                className="w-full bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                className="w-full bg-primary text-white hover:bg-primary/90"
               >
                 {linkWorking ? "Linking…" : "Link"}
               </Button>
@@ -1627,7 +1627,7 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -1671,7 +1671,7 @@ function BulkActionBar({
                 void handleStatusConfirm();
               }}
               disabled={statusWorking}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {statusWorking ? "Saving…" : "Apply"}
             </AlertDialogAction>
@@ -1776,7 +1776,7 @@ function BulkMessageSheet({
           <Button
             onClick={handleSend}
             disabled={working || !title.trim() || !body.trim()}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>
@@ -1886,7 +1886,7 @@ function InviteParentSheet({
           <Button
             onClick={handleInvite}
             disabled={working}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send invite"}
           </Button>

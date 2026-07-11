@@ -308,7 +308,7 @@ export default function ChildDetailView({
             </AlertDialogContent>
           </AlertDialog>
           <Button
-            className="min-h-[44px] bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
             onClick={handleSave}
             disabled={isPending}
           >
@@ -782,7 +782,7 @@ export default function ChildDetailView({
             <CardHeader>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Sparkles className="h-5 w-5 text-[#E8712A]" />
+                  <Sparkles className="h-5 w-5 text-primary" />
                   AI insights
                   {data.insights.length > 0 && (
                     <Badge variant="secondary">{data.insights.length}</Badge>

@@ -71,7 +71,7 @@ export function WelcomeBanner({
         {STEPS.map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.title} className="rounded-xl bg-white/70 p-3">
+            <div key={s.title} className="rounded-xl bg-card/70 p-3">
               <Icon className="h-5 w-5 text-cyan-600" />
               <p className="mt-1.5 text-sm font-semibold text-foreground">
                 {s.title}

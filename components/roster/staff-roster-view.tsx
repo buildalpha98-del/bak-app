@@ -488,7 +488,7 @@ function DroppableDayCell({
       ref={setNodeRef}
       className={`${className} ${
         isOver
-          ? "bg-[#E8712A]/10 outline-2 outline-dashed outline-[#E8712A]/50 outline-offset-[-2px]"
+          ? "bg-primary/10 outline-2 outline-dashed outline-primary/50 outline-offset-[-2px]"
           : ""
       }`}
     >
@@ -731,7 +731,7 @@ export function StaffRosterView({
                     title={`${formatHoursMinutes(stat.minutes)} rostered · ${stat.shiftCount} shift${stat.shiftCount === 1 ? "" : "s"}`}
                   >
                     <div
-                      className="h-full rounded-full bg-[#E8712A] transition-all"
+                      className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${coveragePct}%` }}
                     />
                   </div>
@@ -927,7 +927,7 @@ function StaffRow({
             className={`flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white ${
               isUnassigned
                 ? "bg-muted-foreground/40"
-                : "bg-[#E8712A]"
+                : "bg-primary"
             }`}
           >
             {isUnassigned ? (

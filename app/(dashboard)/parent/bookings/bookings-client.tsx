@@ -164,7 +164,7 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
   }, [expiresAt]);
 
   return (
-    <span className="font-mono text-sm font-semibold text-[#E8712A]">
+    <span className="font-mono text-sm font-semibold text-primary">
       {remaining}
     </span>
   );
@@ -315,7 +315,7 @@ export default function ParentBookingsClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -372,7 +372,7 @@ export default function ParentBookingsClient() {
             onClick={() => changeTab(tab.key)}
             className={`flex-1 min-w-[80px] min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.key
-                ? "bg-white text-[#E8712A] shadow-sm"
+                ? "bg-card text-primary shadow-sm"
                 : "text-[#666666] hover:text-[#1A1A1A]"
             }`}
           >
@@ -381,7 +381,7 @@ export default function ParentBookingsClient() {
               <span
                 className={`ml-1.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs ${
                   activeTab === tab.key
-                    ? "bg-orange-100 text-[#E8712A]"
+                    ? "bg-orange-100 text-primary"
                     : "bg-gray-200 text-[#666666]"
                 }`}
               >
@@ -408,7 +408,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -587,7 +587,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -641,7 +641,7 @@ export default function ParentBookingsClient() {
                             key={child.child_id}
                             variant="outline"
                             size="sm"
-                            className="min-h-[44px] text-[#E8712A] border-[#E8712A]/40 hover:bg-orange-50 rounded-xl"
+                            className="min-h-[44px] text-primary border-primary/40 hover:bg-orange-50 rounded-xl"
                             render={
                               <Link
                                 href={`/parent/kids/${child.child_id}/insights`}
@@ -675,7 +675,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-white p-5 space-y-3 shadow-sm"
+                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -772,12 +772,12 @@ export default function ParentBookingsClient() {
                   key={entry.id}
                   className={`rounded-2xl border p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow ${
                     isOffered
-                      ? "border-[#E8712A] bg-orange-50"
-                      : "border-orange-100 bg-white"
+                      ? "border-primary bg-orange-50"
+                      : "border-orange-100 bg-card"
                   }`}
                 >
                   {isOffered && (
-                    <div className="flex flex-wrap items-center gap-2 text-[#E8712A] font-semibold text-sm">
+                    <div className="flex flex-wrap items-center gap-2 text-primary font-semibold text-sm">
                       <AlertTriangle className="h-4 w-4" />
                       <span>Spot available! Offer expires in:</span>
                       {entry.offer_expires_at && (
@@ -794,7 +794,7 @@ export default function ParentBookingsClient() {
                       variant={isOffered ? "default" : "secondary"}
                       className={
                         isOffered
-                          ? "bg-[#E8712A] text-white hover:bg-[#E8712A]"
+                          ? "bg-primary text-white hover:bg-primary"
                           : ""
                       }
                     >
@@ -832,7 +832,7 @@ export default function ParentBookingsClient() {
                     {isOffered && (
                       <Button
                         size="sm"
-                        className="min-h-[44px] bg-[#E8712A] hover:bg-[#d4651f] text-white rounded-xl"
+                        className="min-h-[44px] bg-primary hover:bg-[#d4651f] text-white rounded-xl"
                         render={
                           <Link
                             href={`/parent/book/${entry.bookable_session_id}?waitlist=${entry.id}`}
@@ -877,15 +877,15 @@ function EmptyTab({
   cta?: { label: string; href: string };
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-white border border-orange-100">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-[#E8712A] mb-4">
+    <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-card border border-orange-100">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-primary mb-4">
         <Icon className="h-8 w-8" />
       </div>
       <h2 className="text-lg font-semibold text-[#1A1A1A]">{title}</h2>
       <p className="text-sm text-[#666666] mt-1 text-center max-w-sm">{body}</p>
       {cta && (
         <Button
-          className="mt-4 bg-[#E8712A] hover:bg-[#d4651f] text-white rounded-xl min-h-[44px]"
+          className="mt-4 bg-primary hover:bg-[#d4651f] text-white rounded-xl min-h-[44px]"
           render={<Link href={cta.href} />}
         >
           {cta.label}

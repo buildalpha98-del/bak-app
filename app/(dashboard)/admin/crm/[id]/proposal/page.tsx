@@ -325,7 +325,7 @@ export default function ProposalPage() {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="bg-[#E8712A] hover:bg-[#D4651F] text-white"
+          className="bg-primary hover:bg-[#D4651F] text-white"
         >
           {generating ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -354,7 +354,7 @@ export default function ProposalPage() {
           onClick={() => setActiveTab("editor")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "editor"
-              ? "border-[#E8712A] text-[#E8712A]"
+              ? "border-primary text-primary"
               : "border-transparent text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -364,7 +364,7 @@ export default function ProposalPage() {
           onClick={() => setActiveTab("list")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "list"
-              ? "border-[#E8712A] text-[#E8712A]"
+              ? "border-primary text-primary"
               : "border-transparent text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -376,9 +376,9 @@ export default function ProposalPage() {
       {activeTab === "editor" && activeProposal && editedContent ? (
         <div className="space-y-6">
           {/* Proposal header */}
-          <div className="flex items-center justify-between rounded-lg border bg-white p-4">
+          <div className="flex items-center justify-between rounded-lg border bg-card p-4">
             <div className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-[#E8712A]" />
+              <FileText className="h-5 w-5 text-primary" />
               <div>
                 <h2 className="font-medium text-[#1A1A1A]">
                   {activeProposal.title}
@@ -431,7 +431,7 @@ export default function ProposalPage() {
                 size="sm"
                 onClick={handleSend}
                 disabled={sending || activeProposal.status === "sent"}
-                className="bg-[#E8712A] hover:bg-[#D4651F] text-white"
+                className="bg-primary hover:bg-[#D4651F] text-white"
               >
                 {sending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -463,7 +463,7 @@ export default function ProposalPage() {
                 );
               }
               return (
-                <div key={key} className="rounded-lg border bg-white p-4">
+                <div key={key} className="rounded-lg border bg-card p-4">
                   <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                     {label}
                   </h3>
@@ -471,14 +471,14 @@ export default function ProposalPage() {
                     value={(value as string) ?? ""}
                     onChange={(e) => updateSection(key, e.target.value)}
                     rows={4}
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               );
             })}
 
             {/* Pricing section */}
-            <div className="rounded-lg border bg-white p-4">
+            <div className="rounded-lg border bg-card p-4">
               <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                 Pricing
               </h3>
@@ -491,7 +491,7 @@ export default function ProposalPage() {
                     type="text"
                     value={editedContent.pricing?.model ?? ""}
                     onChange={(e) => updatePricing("model", e.target.value)}
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 <div>
@@ -502,7 +502,7 @@ export default function ProposalPage() {
                     type="text"
                     value={editedContent.pricing?.rate ?? ""}
                     onChange={(e) => updatePricing("rate", e.target.value)}
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -514,13 +514,13 @@ export default function ProposalPage() {
                   value={editedContent.pricing?.details ?? ""}
                   onChange={(e) => updatePricing("details", e.target.value)}
                   rows={3}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
 
             {/* Testimonial quotes */}
-            <div className="rounded-lg border bg-white p-4">
+            <div className="rounded-lg border bg-card p-4">
               <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                 Testimonial Quotes
               </h3>
@@ -528,14 +528,14 @@ export default function ProposalPage() {
                 <div className="space-y-2">
                   {editedContent.testimonial_quotes.map((quote, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <span className="mt-2 text-sm text-[#E8712A] font-bold">
+                      <span className="mt-2 text-sm text-primary font-bold">
                         &ldquo;
                       </span>
                       <textarea
                         value={quote}
                         onChange={(e) => updateQuote(i, e.target.value)}
                         rows={2}
-                        className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#E8712A] focus:outline-none focus:ring-1 focus:ring-[#E8712A]"
+                        className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm text-[#1A1A1A] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                     </div>
                   ))}
@@ -550,7 +550,7 @@ export default function ProposalPage() {
         </div>
       ) : activeTab === "editor" && !activeProposal ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 py-16">
-          <Sparkles className="mb-3 h-10 w-10 text-[#E8712A]" />
+          <Sparkles className="mb-3 h-10 w-10 text-primary" />
           <h3 className="mb-1 text-lg font-medium text-[#1A1A1A]">
             No proposals yet
           </h3>
@@ -560,7 +560,7 @@ export default function ProposalPage() {
           <Button
             onClick={handleGenerate}
             disabled={generating}
-            className="bg-[#E8712A] hover:bg-[#D4651F] text-white"
+            className="bg-primary hover:bg-[#D4651F] text-white"
           >
             {generating ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -584,15 +584,15 @@ export default function ProposalPage() {
               <button
                 key={proposal.id}
                 onClick={() => selectProposal(proposal)}
-                className={`w-full rounded-lg border p-4 text-left transition-colors hover:border-[#E8712A]/50 ${
+                className={`w-full rounded-lg border p-4 text-left transition-colors hover:border-primary/50 ${
                   activeProposal?.id === proposal.id
-                    ? "border-[#E8712A] bg-orange-50"
-                    : "bg-white"
+                    ? "border-primary bg-orange-50"
+                    : "bg-card"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-[#E8712A]" />
+                    <FileText className="h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium text-[#1A1A1A]">
                         {proposal.title}

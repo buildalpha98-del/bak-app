@@ -25,7 +25,7 @@ interface TaskCardProps {
 
 function ageingBorderClass(daysOld: number, inFinalColumn: boolean): string {
   if (inFinalColumn) return "border-l-2 border-l-transparent";
-  if (daysOld >= 14) return "border-l-2 border-l-[#E8712A]/60";
+  if (daysOld >= 14) return "border-l-2 border-l-primary/60";
   if (daysOld >= 7) return "border-l-2 border-l-amber-400/70";
   return "border-l-2 border-l-transparent";
 }
@@ -70,7 +70,7 @@ function TaskCardInner({
     low: "bg-muted text-muted-foreground",
     medium: "bg-blue-50 text-blue-700",
     high: "bg-amber-50 text-amber-700",
-    urgent: "bg-[#E8712A]/10 text-[#E8712A]",
+    urgent: "bg-primary/10 text-primary",
   };
   const p = priorityClass[task.priority] ?? priorityClass.medium;
 
@@ -91,7 +91,7 @@ function TaskCardInner({
       className={`group relative mb-2 cursor-grab rounded-2xl border bg-background p-4 transition hover:shadow-md active:cursor-grabbing min-h-[44px] ${ageingBorderClass(
         age,
         inFinal,
-      )} ${selected ? "ring-2 ring-[#E8712A]/40" : ""}`}
+      )} ${selected ? "ring-2 ring-primary/40" : ""}`}
     >
       {/* Drag handle wraps the actual card content so the checkbox
           stays clickable without instantly initiating a drag. */}
@@ -131,7 +131,7 @@ function TaskCardInner({
                     className="w-5 h-5 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-[#E8712A] text-white text-[10px] font-semibold flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
                     {task.assignee.name.charAt(0).toUpperCase()}
                   </div>
                 )}

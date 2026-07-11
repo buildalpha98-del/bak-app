@@ -209,7 +209,7 @@ export default function ParentAccountPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -237,7 +237,7 @@ export default function ParentAccountPage() {
       )}
 
       {/* ── Profile Details ── */}
-      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Your Details
         </h2>
@@ -298,7 +298,7 @@ export default function ParentAccountPage() {
         <Button
           onClick={handleSave}
           disabled={saving || !firstName.trim() || !lastName.trim()}
-          className="w-full h-11 bg-[#E8712A] text-white hover:bg-[#D4651F] rounded-lg"
+          className="w-full h-11 bg-primary text-white hover:bg-[#D4651F] rounded-lg"
         >
           {saving ? (
             <>
@@ -316,10 +316,10 @@ export default function ParentAccountPage() {
 
       {/* ── Children ── */}
       <Link href="/parent/kids" className="block">
-        <div className="rounded-2xl border border-orange-100 bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md hover:border-[#E8712A]/40 transition-all">
+        <div className="rounded-2xl border border-orange-100 bg-card p-5 flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/40 transition-all">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-              <Users className="h-5 w-5 text-[#E8712A]" />
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -330,21 +330,21 @@ export default function ParentAccountPage() {
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="border-orange-200 text-[#E8712A]">
+          <Badge variant="outline" className="border-orange-200 text-primary">
             {childrenCount}
           </Badge>
         </div>
       </Link>
 
       {/* ── Packages ── */}
-      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Packages
           </h2>
           <Link
             href="/parent/packages"
-            className="text-xs font-medium text-[#E8712A] hover:underline"
+            className="text-xs font-medium text-primary hover:underline"
           >
             Browse Packages
           </Link>
@@ -390,7 +390,7 @@ export default function ParentAccountPage() {
 
                   <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#E8712A] transition-all"
+                      className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
@@ -402,7 +402,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Payment History ── */}
-      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -448,7 +448,7 @@ export default function ParentAccountPage() {
                       href={`https://squareup.com/receipt/preview/${payment.square_payment_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-[#E8712A] transition-colors"
+                      className="text-muted-foreground hover:text-primary transition-colors"
                       title="View receipt"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -462,7 +462,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Settings ── */}
-      <div className="rounded-2xl border border-orange-100 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Settings
         </h2>
@@ -487,12 +487,12 @@ export default function ParentAccountPage() {
               aria-checked={marketingOptIn}
               onClick={() => handleMarketingToggle(!marketingOptIn)}
               disabled={savingMarketing}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                marketingOptIn ? "bg-[#E8712A]" : "bg-gray-200"
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                marketingOptIn ? "bg-primary" : "bg-gray-200"
               }`}
             >
               <span
-                className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                className={`pointer-events-none block h-4 w-4 rounded-full bg-card shadow-sm transition-transform ${
                   marketingOptIn ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -520,12 +520,12 @@ export default function ParentAccountPage() {
               aria-checked={smsOptIn}
               onClick={() => handleSmsToggle(!smsOptIn)}
               disabled={savingSms}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8712A] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                smsOptIn ? "bg-[#E8712A]" : "bg-gray-200"
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                smsOptIn ? "bg-primary" : "bg-gray-200"
               }`}
             >
               <span
-                className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                className={`pointer-events-none block h-4 w-4 rounded-full bg-card shadow-sm transition-transform ${
                   smsOptIn ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />

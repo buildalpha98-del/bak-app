@@ -234,7 +234,7 @@ export default function InvoicingSettingsPage() {
               type="checkbox"
               checked={settings.gst_enabled}
               onChange={(e) => updateField("gst_enabled", e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <span className="text-sm font-medium">GST Registered</span>
           </label>
@@ -248,7 +248,7 @@ export default function InvoicingSettingsPage() {
                   onChange={(e) =>
                     updateField("gst_inclusive", e.target.checked)
                   }
-                  className="h-4 w-4 rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <span className="text-sm font-medium">
                   Prices are GST Inclusive
@@ -287,7 +287,7 @@ export default function InvoicingSettingsPage() {
               onChange={(e) =>
                 updateField("square_online_enabled", e.target.checked)
               }
-              className="h-4 w-4 rounded border-gray-300 text-[#E8712A] focus:ring-[#E8712A]"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <span className="text-sm font-medium">
               Enable Square Online Payments
@@ -319,7 +319,7 @@ export default function InvoicingSettingsPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#E8712A] hover:bg-[#d4651f] text-white"
+          className="bg-primary hover:bg-[#d4651f] text-white"
         >
           {saving ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

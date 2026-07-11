@@ -81,7 +81,7 @@ function PulseStat({
         <span
           className={
             active
-              ? "text-base font-semibold tabular-nums text-[#E8712A]"
+              ? "text-base font-semibold tabular-nums text-primary"
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >

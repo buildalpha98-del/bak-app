@@ -33,7 +33,7 @@ export default async function OpsInvoicingPage() {
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
           Finance
         </p>
         <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -51,7 +51,7 @@ export default async function OpsInvoicingPage() {
           <TabsTrigger value="flagged">
             Flagged Reviews
             {flaggedResult.data.length > 0 && (
-              <span className="ml-2 rounded-full bg-[#E8712A] px-2 py-0.5 text-xs text-white tabular-nums">
+              <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white tabular-nums">
                 {flaggedResult.data.length}
               </span>
             )}

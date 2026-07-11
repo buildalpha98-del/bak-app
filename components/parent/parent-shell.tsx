@@ -22,7 +22,7 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
   return (
     <div className="flex min-h-screen bg-[#FAFAFA]">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 flex-col border-r border-orange-100 bg-white">
+      <aside className="hidden md:flex w-56 flex-col border-r border-orange-100 bg-card">
         <div className="flex items-center gap-2 px-4 py-5 border-b border-orange-100">
           <AppLogo size="sm" />
           <span className="text-sm font-medium text-muted-foreground truncate">
@@ -39,7 +39,7 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   active
-                    ? "bg-orange-50 text-[#E8712A]"
+                    ? "bg-orange-50 text-primary"
                     : "text-muted-foreground hover:bg-orange-50/50 hover:text-foreground"
                 )}
               >
@@ -59,7 +59,7 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
           // black-translucent status bar, the inset pushes our header
           // content down so it isn't hidden under the system bar.
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
-          className="flex items-center justify-between px-4 pb-3 bg-white border-b border-orange-100 md:px-6"
+          className="flex items-center justify-between px-4 pb-3 bg-card border-b border-orange-100 md:px-6"
         >
           <div className="flex items-center gap-2 md:hidden">
             <AppLogo size="sm" />
@@ -82,7 +82,7 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
       <IosInstallPrompt />
 
       {/* Mobile bottom tabs */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 px-1 pb-[env(safe-area-inset-bottom)] z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-orange-100 px-1 pb-[env(safe-area-inset-bottom)] z-50">
         <div className="flex items-center justify-around">
           {mobileItems.map((item) => {
             const active = isNavItemActive(item.href, pathname);
@@ -92,7 +92,7 @@ export function ParentShell({ parentName, userId, children }: ParentShellProps) 
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-2 px-3 min-w-[56px] transition-colors",
-                  active ? "text-[#E8712A]" : "text-muted-foreground"
+                  active ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 <item.icon className="h-5 w-5" />

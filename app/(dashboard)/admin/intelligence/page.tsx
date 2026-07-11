@@ -146,11 +146,11 @@ function retentionCellColour(percentage: number): string {
 function suburbHeatColour(value: number, max: number): string {
   if (max === 0) return "bg-gray-100";
   const ratio = value / max;
-  if (ratio >= 0.8) return "bg-[#E8712A] text-white";
-  if (ratio >= 0.6) return "bg-[#E8712A]/70 text-white";
-  if (ratio >= 0.4) return "bg-[#E8712A]/40 text-gray-900";
-  if (ratio >= 0.2) return "bg-[#E8712A]/20 text-gray-900";
-  return "bg-[#E8712A]/5 text-gray-700";
+  if (ratio >= 0.8) return "bg-primary text-white";
+  if (ratio >= 0.6) return "bg-primary/70 text-white";
+  if (ratio >= 0.4) return "bg-primary/40 text-gray-900";
+  if (ratio >= 0.2) return "bg-primary/20 text-gray-900";
+  return "bg-primary/5 text-gray-700";
 }
 
 // ============================================================
@@ -191,7 +191,7 @@ function KpiCard({
               {display}
             </p>
           </div>
-          <div className="rounded-xl bg-[#E8712A]/10 p-2.5 text-[#E8712A]">
+          <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
             {icon}
           </div>
         </div>
@@ -789,7 +789,7 @@ function FinancialTab({
                         <div className="flex items-center justify-end gap-2">
                           <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-200">
                             <div
-                              className="h-full rounded-full bg-[#E8712A]"
+                              className="h-full rounded-full bg-primary"
                               style={{ width: `${row.utilisationRate}%` }}
                             />
                           </div>
@@ -955,7 +955,7 @@ function SortableHeader({
 }) {
   return (
     <th
-      className="cursor-pointer px-3 py-2 text-right font-medium text-[#666666] hover:text-[#E8712A]"
+      className="cursor-pointer px-3 py-2 text-right font-medium text-[#666666] hover:text-primary"
       onClick={() => onSort(field)}
     >
       {label}
@@ -1076,11 +1076,11 @@ export default function IntelligencePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-[#E8712A]/10 p-2 text-[#E8712A]">
+          <div className="rounded-xl bg-primary/10 p-2 text-primary">
             <Brain className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-0.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-0.5">
               Intelligence
             </p>
             <h1 className="text-3xl font-bold font-heading text-[#1A1A1A] tracking-tight">
@@ -1116,7 +1116,7 @@ export default function IntelligencePage() {
             onClick={() => setTab(tab)}
             className={`flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? "border-b-2 border-[#E8712A] text-[#E8712A]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-[#666666] hover:text-[#1A1A1A]"
             }`}
           >
@@ -1129,7 +1129,7 @@ export default function IntelligencePage() {
       {/* Loading */}
       {loading && (
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       )}
 

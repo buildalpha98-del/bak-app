@@ -35,7 +35,7 @@ function StarRating({ rating }: { rating: number }) {
           key={star}
           className={`size-4 ${
             star <= Math.round(rating)
-              ? "fill-[#E8712A] text-[#E8712A]"
+              ? "fill-primary text-primary"
               : "text-muted-foreground/40"
           }`}
         />
@@ -94,7 +94,7 @@ export function AdminFeedbackClient({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Star className="size-4 text-[#E8712A]" />
+            <Star className="size-4 text-primary" />
             <span>Average rating</span>
           </div>
           <div className="mt-3 flex items-center gap-2">
@@ -107,7 +107,7 @@ export function AdminFeedbackClient({
 
         <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MessageSquare className="size-4 text-[#E8712A]" />
+            <MessageSquare className="size-4 text-primary" />
             <span>Total responses</span>
           </div>
           <p className="mt-3 text-2xl font-semibold tabular-nums text-foreground">

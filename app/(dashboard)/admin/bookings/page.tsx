@@ -558,7 +558,7 @@ export default function AdminBookingsDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E8712A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -586,7 +586,7 @@ export default function AdminBookingsDashboard() {
         </div>
         <Button
           render={<Link href="/admin/bookings/sessions/new" />}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <CalendarDays className="size-4" />
           Create Session
@@ -1233,7 +1233,7 @@ export default function AdminBookingsDashboard() {
                         onClick={() => setRevenueChartView(v)}
                         className={
                           revenueChartView === v
-                            ? "bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+                            ? "bg-primary text-white hover:bg-primary/90"
                             : ""
                         }
                       >
@@ -1363,13 +1363,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[#E8712A]/40 bg-[#E8712A]/10 px-2.5 py-1 text-xs font-medium text-[#E8712A]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-[#E8712A]/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
         aria-label="Clear filter"
       >
         <X className="size-3" />
@@ -1429,7 +1429,7 @@ function SessionsBulkBar({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
       <div className="flex items-center gap-3 pr-2 text-sm">
         <span className="font-medium text-foreground">
           {count} session{count === 1 ? "" : "s"} selected
@@ -1455,7 +1455,7 @@ function SessionsBulkBar({
         size="sm"
         onClick={handleActivate}
         disabled={working !== null}
-        className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+        className="bg-primary text-white hover:bg-primary/90"
       >
         <CircleCheck className="size-4" />
         {working === "activate" ? "Activating…" : "Activate"}
@@ -1503,7 +1503,7 @@ function BookingsBulkBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-[#E8712A]/40 bg-background px-4 py-3 shadow-lg ring-1 ring-[#E8712A]/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} booking{count === 1 ? "" : "s"} selected
@@ -1519,7 +1519,7 @@ function BookingsBulkBar({
         <Button
           size="sm"
           onClick={() => setCancelOpen(true)}
-          className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+          className="bg-primary text-white hover:bg-primary/90"
         >
           <CircleSlash className="size-4" />
           Cancel bookings
@@ -1557,7 +1557,7 @@ function BookingsBulkBar({
             <Button
               onClick={handleCancel}
               disabled={working}
-              className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+              className="bg-primary text-white hover:bg-primary/90"
             >
               {working ? "Cancelling…" : "Cancel bookings"}
             </Button>

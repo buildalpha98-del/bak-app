@@ -134,7 +134,7 @@ export function ProfileChecklistView({ centreId }: ProfileChecklistViewProps) {
     <Card className="animate-fade-up">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <ClipboardCheck className="size-4 text-[#E8712A]" />
+          <ClipboardCheck className="size-4 text-primary" />
           Profile Checklist
         </CardTitle>
       </CardHeader>
@@ -143,7 +143,7 @@ export function ProfileChecklistView({ centreId }: ProfileChecklistViewProps) {
         <div className="flex items-center gap-2">
           <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#E8712A] transition-all duration-300"
+              className="h-full rounded-full bg-primary transition-all duration-300"
               style={{
                 width: `${(completedCount / CHECKLIST_ITEMS.length) * 100}%`,
               }}

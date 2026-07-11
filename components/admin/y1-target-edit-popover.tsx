@@ -98,7 +98,7 @@ export function Y1TargetEditPopover({
             variant="ghost"
             size="icon-xs"
             aria-label={`Edit ${label} target`}
-            className="opacity-0 transition group-hover/card:opacity-100 hover:text-[#E8712A] focus-visible:opacity-100"
+            className="opacity-0 transition group-hover/card:opacity-100 hover:text-primary focus-visible:opacity-100"
           >
             <Pencil className="size-3.5" />
           </Button>
@@ -119,7 +119,7 @@ export function Y1TargetEditPopover({
           <p className="text-xs text-muted-foreground">Year-1 goal</p>
         </div>
 
-        <label className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-[#E8712A]/30">
+        <label className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-primary/30">
           {prefix && (
             <span className="text-sm text-muted-foreground">{prefix}</span>
           )}
@@ -143,7 +143,7 @@ export function Y1TargetEditPopover({
             size="sm"
             onClick={handleSave}
             disabled={saving || draft === String(current)}
-            className="bg-[#E8712A] text-white hover:bg-[#E8712A]/90"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {saving ? <Loader2 className="size-3.5 animate-spin" /> : "Save"}
           </Button>

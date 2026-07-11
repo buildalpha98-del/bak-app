@@ -129,7 +129,7 @@ export function CommandCentre(props: CommandCentreProps) {
       {/* Section header — sits beneath the OpsContextStrip + Quick Actions */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#E8712A] mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
             Operations
           </p>
           <h1 className="text-3xl font-bold text-foreground font-heading tracking-tight page-header-sport">

@@ -78,7 +78,7 @@ function PulseStat({
 }) {
   const active = count > 0;
   const ticked = useCountUp(count);
-  const activeText = tone === "red" ? "text-red-600" : "text-[#E8712A]";
+  const activeText = tone === "red" ? "text-red-600" : "text-primary";
   return (
     <li>
       <Link

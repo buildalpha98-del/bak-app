@@ -401,7 +401,7 @@ export function LaunchDashboard({
                       <td className="py-3">
                         <Link
                           href={`/admin/staff/${c.id}`}
-                          className="flex min-h-[44px] items-center font-medium hover:text-[#E8712A] hover:underline"
+                          className="flex min-h-[44px] items-center font-medium hover:text-primary hover:underline"
                         >
                           {c.name}
                         </Link>
@@ -496,12 +496,12 @@ function MetricCard({
           <div
             className={
               "flex size-10 items-center justify-center rounded-xl " +
-              (isPrimary ? "bg-[#E8712A]/10" : "bg-muted")
+              (isPrimary ? "bg-primary/10" : "bg-muted")
             }
           >
             <Icon
               className={
-                "size-5 " + (isPrimary ? "text-[#E8712A]" : "text-foreground")
+                "size-5 " + (isPrimary ? "text-primary" : "text-foreground")
               }
             />
           </div>

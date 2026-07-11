@@ -88,8 +88,8 @@ const CONDITION_COLOURS: Record<InventoryCondition, string> = {
   good: "bg-green-100 text-green-800",
   fair: "bg-yellow-100 text-yellow-800",
   // Restrained brand orange tint for poor / retired
-  poor: "bg-[#E8712A]/10 text-[#E8712A]",
-  retired: "bg-[#E8712A]/10 text-[#E8712A]",
+  poor: "bg-primary/10 text-primary",
+  retired: "bg-primary/10 text-primary",
 };
 
 const LOCATION_OPTIONS = [
@@ -506,7 +506,7 @@ export function InventoryList({
         </Select>
         <Button
           onClick={openAdd}
-          className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+          className="bg-primary hover:bg-primary/90"
         >
           <Plus className="mr-1.5 h-4 w-4" />
           Add Item
@@ -808,7 +808,7 @@ export function InventoryList({
             <Button
               onClick={handleBulkMove}
               disabled={bulkActing || !moveLocation}
-              className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+              className="bg-primary hover:bg-primary/90"
             >
               {bulkActing ? "Moving..." : "Move"}
             </Button>
@@ -833,7 +833,7 @@ export function InventoryList({
             <Button
               onClick={handleCreate}
               disabled={saving || !formName.trim()}
-              className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+              className="bg-primary hover:bg-primary/90"
             >
               {saving ? "Adding..." : "Add Item"}
             </Button>
@@ -872,7 +872,7 @@ export function InventoryList({
             <Button
               onClick={handleUpdate}
               disabled={saving || !formName.trim()}
-              className="bg-[#E8712A] hover:bg-[#E8712A]/90"
+              className="bg-primary hover:bg-primary/90"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>

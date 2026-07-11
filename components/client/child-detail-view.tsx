@@ -210,7 +210,7 @@ export function ChildDetailView({ child, centreId }: ChildDetailViewProps) {
               onClick={() => setActiveTab(tab.key)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-white text-cyan-700 shadow-sm"
+                  ? "bg-card text-cyan-700 shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

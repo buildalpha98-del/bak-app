@@ -114,7 +114,7 @@ export function InboxView({ items, basePath }: InboxViewProps) {
       <div className="rounded-2xl border bg-background px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-full bg-[#E8712A]/10 text-[#E8712A]">
+            <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
               <Inbox className="size-4" />
             </span>
             <div>
@@ -211,14 +211,14 @@ function InboxRow({ item }: { item: InboxItem }) {
     item.tier === "urgent"
       ? "border-l-[4px] border-l-red-500"
       : item.tier === "important"
-        ? "border-l-[3px] border-l-[#E8712A]"
+        ? "border-l-[3px] border-l-primary"
         : "border-l-2 border-l-muted-foreground/40";
 
   const iconColour =
     item.tier === "urgent"
       ? "text-red-500"
       : item.tier === "important"
-        ? "text-[#E8712A]"
+        ? "text-primary"
         : "text-muted-foreground";
 
   const onAction = (actionKey: string) => {
@@ -314,7 +314,7 @@ function TierChip({ tier }: { tier: InboxTier }) {
     tier === "urgent"
       ? "bg-red-500/10 text-red-600"
       : tier === "important"
-        ? "bg-[#E8712A]/10 text-[#E8712A]"
+        ? "bg-primary/10 text-primary"
         : "bg-muted text-muted-foreground";
   return (
     <span

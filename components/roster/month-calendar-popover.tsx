@@ -363,7 +363,7 @@ export function MonthCalendarPopover({
                   setOpen(false);
                   onPresetSelect?.(p.months);
                 }}
-                className="rounded-full border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground transition hover:border-[#E8712A] hover:text-[#E8712A]"
+                className="rounded-full border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground transition hover:border-primary hover:text-primary"
               >
                 {p.label}
               </button>
@@ -445,7 +445,7 @@ export function MonthCalendarPopover({
                   inMonth ? "text-foreground" : "text-muted-foreground/50",
                   inSelectedRange ? "bg-secondary" : "hover:bg-muted",
                   isToday
-                    ? "ring-1 ring-[#E8712A] ring-offset-1 ring-offset-background"
+                    ? "ring-1 ring-primary ring-offset-1 ring-offset-background"
                     : "",
                   isFocused
                     ? "ring-2 ring-ring ring-offset-1 ring-offset-background"

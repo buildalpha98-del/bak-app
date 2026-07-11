@@ -172,7 +172,7 @@ export function BookableSessionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-orange-100 bg-white p-6"
+      className="rounded-xl border border-orange-100 bg-card p-6"
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Title — full width */}
@@ -441,7 +441,7 @@ export function BookableSessionForm({
             type="checkbox"
             checked={packageEligible}
             onChange={(e) => setPackageEligible(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 accent-[#E8712A]"
+            className="h-4 w-4 rounded border-gray-300 accent-primary"
           />
           <Label htmlFor="sf-pkg" className="cursor-pointer select-none">
             Eligible for session packages
