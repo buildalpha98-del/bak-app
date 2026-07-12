@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2 } from "lucide-react";
+import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2, UserPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,8 +83,12 @@ export function SessionCardMenu({
           className="w-44"
         >
           <DropdownMenuItem onSelect={() => setSwapping(true)}>
-            <ArrowLeftRight className="mr-2 h-3.5 w-3.5" />
-            Swap coach
+            {session.coach_id ? (
+              <ArrowLeftRight className="mr-2 h-3.5 w-3.5" />
+            ) : (
+              <UserPlus className="mr-2 h-3.5 w-3.5" />
+            )}
+            {session.coach_id ? "Swap coach" : "Assign coach"}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setNoting(true)}>
             <FileText className="mr-2 h-3.5 w-3.5" />

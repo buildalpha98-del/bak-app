@@ -152,6 +152,7 @@ export function SessionDetailSheet({
   // Rerostering event (for needs_replacement sessions)
   const [rerosteringEvent, setRerosteringEvent] = useState<Record<string, unknown> | null>(null);
   const [loadingRerostering, setLoadingRerostering] = useState(false);
+  const [startingReroster, setStartingReroster] = useState(false);
 
   // Equipment mismatch — programme needs vs the session's kit
   const [equipmentCheck, setEquipmentCheck] =
@@ -206,9 +207,11 @@ export function SessionDetailSheet({
 
   async function handleCancel() {
     if (!cancelReason.trim()) return;
+    const sessionId = session!.id;
+    const prevStatus = session!.status;
     setSaving(true);
     const { error } = await updateSessionStatus(
-      session!.id,
+      sessionId,
       "cancelled",
       cancelReason.trim()
     );
@@ -217,7 +220,21 @@ export function SessionDetailSheet({
       toast.error(error);
       return;
     }
-    toast.success("Session cancelled.");
+    toast.success("Session cancelled.", {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          updateSessionStatus(sessionId, prevStatus).then(({ error: undoErr }) => {
+            if (undoErr) {
+              toast.error(undoErr);
+              return;
+            }
+            toast.success("Cancellation undone.");
+            onUpdate();
+          });
+        },
+      },
+    });
     setShowCancel(false);
     setCancelReason("");
     onUpdate();
@@ -234,6 +251,27 @@ export function SessionDetailSheet({
     toast.success("Session deleted.");
     setShowDeleteConfirm(false);
     onOpenChange(false);
+    onUpdate();
+  }
+
+  async function handleStartRerostering() {
+    const sessionId = session!.id;
+    setStartingReroster(true);
+    const { startRerosteringForSession, getActiveRerosteringEvents } =
+      await import("@/lib/rerostering/actions");
+    const result = await startRerosteringForSession(sessionId);
+    if (result?.error) {
+      toast.error(result.error);
+      setStartingReroster(false);
+      return;
+    }
+    toast.success("Rerostering started — replacement options ready.");
+    const events = await getActiveRerosteringEvents();
+    const match = (events as Record<string, unknown>[]).find(
+      (e) => e.session_id === sessionId
+    );
+    setRerosteringEvent(match ?? null);
+    setStartingReroster(false);
     onUpdate();
   }
 
@@ -934,11 +972,22 @@ export function SessionDetailSheet({
                   sessionTime={session.time}
                 />
               ) : (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <div className="space-y-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3">
                   <p className="text-sm text-amber-700">
-                    This session needs a replacement coach. No rerostering event
-                    found.
+                    This session needs a replacement coach, but rerostering
+                    hasn&apos;t started yet.
                   </p>
+                  <Button
+                    size="sm"
+                    disabled={startingReroster}
+                    onClick={handleStartRerostering}
+                    className="bg-primary text-white hover:bg-primary/90"
+                  >
+                    {startingReroster ? (
+                      <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                    ) : null}
+                    Start rerostering
+                  </Button>
                 </div>
               )}
             </>

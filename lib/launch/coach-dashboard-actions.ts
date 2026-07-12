@@ -10,6 +10,7 @@ import { createNotification } from "@/lib/launch/notifications";
 import { sendEmail } from "@/lib/launch/email";
 import { feedbackRequest } from "@/lib/launch/email-templates";
 import { revalidatePath } from "next/cache";
+import { minutesUntilSydney } from "@/lib/utils/sydney-time";
 
 // ========================
 // Types
@@ -308,13 +309,40 @@ export async function markAttendance(params: {
   try {
     const supabase = await createSupabaseServerClient();
 
+    // marked_by comes from the session cookie, never from the client
+    // payload — params.coachId is kept only for call-site compatibility.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated." };
+
+    // Attendance opens 30 minutes before the Sydney-local start time.
+    // Marking earlier means guessing who'll turn up.
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("date, time")
+      .eq("id", params.sessionId)
+      .maybeSingle();
+    if (!session) return { success: false, error: "Session not found." };
+    const minutesUntil = minutesUntilSydney(session.date, session.time);
+    if (minutesUntil > 30) {
+      return {
+        success: false,
+        error: `Attendance opens 30 minutes before the session starts (${
+          minutesUntil >= 120
+            ? `${Math.floor(minutesUntil / 60)} hours`
+            : `${minutesUntil} minutes`
+        } to go).`,
+      };
+    }
+
     // Upsert enrolled children's attendance
     if (params.attendanceRecords.length > 0) {
       const rows = params.attendanceRecords.map((r) => ({
         session_id: params.sessionId,
         child_id: r.childId,
         status: r.status,
-        marked_by: params.coachId,
+        marked_by: user.id,
         marked_at: new Date().toISOString(),
       }));
 
@@ -359,7 +387,7 @@ export async function markAttendance(params: {
           session_id: params.sessionId,
           child_id: newChild.id,
           status: "walk_in",
-          marked_by: params.coachId,
+          marked_by: user.id,
           marked_at: new Date().toISOString(),
           parent_name: walkIn.parentName,
           parent_phone: walkIn.parentPhone,

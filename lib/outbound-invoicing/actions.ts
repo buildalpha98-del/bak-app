@@ -258,9 +258,33 @@ export async function generateOutboundInvoices(
     dueDate.setDate(dueDate.getDate() + paymentTermsDays);
     const dueDateStr = dueDate.toISOString().split("T")[0];
 
+    // Duplicate guard: skip centres that already have a live (non-void)
+    // invoice for this exact period — re-running month-end generation
+    // must never double-invoice a centre.
+    const { data: existingRows } = await admin
+      .from("outbound_invoices")
+      .select("centre_id")
+      .eq("period_start", periodStart)
+      .eq("period_end", periodEnd)
+      .neq("status", "void")
+      .in("centre_id", previews.map((p) => p.centreId));
+    const alreadyInvoiced = new Set(
+      (existingRows ?? []).map((r) => r.centre_id as string)
+    );
+    const freshPreviews = previews.filter(
+      (p) => !alreadyInvoiced.has(p.centreId)
+    );
+    if (freshPreviews.length === 0) {
+      return {
+        data: null,
+        error:
+          "Every selected centre already has an invoice for this period. Void the existing invoices first if you need to regenerate.",
+      };
+    }
+
     const invoices = [];
 
-    for (const preview of previews) {
+    for (const preview of freshPreviews) {
       const { data: numberResult } = await admin.rpc(
         "next_outbound_invoice_number",
         { year_month: yearMonth }

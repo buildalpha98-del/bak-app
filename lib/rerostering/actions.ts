@@ -110,6 +110,79 @@ export async function cancelSessionAsCoach(
 }
 
 /**
+ * Admin/ops manually kicks off rerostering for a needs_replacement
+ * session that has no active event — the coach-cancellation path
+ * creates events automatically, but sessions can reach
+ * needs_replacement without one (coach removed via the sheet, bulk
+ * edits, imports).
+ */
+export async function startRerosteringForSession(sessionId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!profile || !["admin", "ops"].includes(profile.role)) {
+    return { error: "Admin or operations access required." };
+  }
+
+  const { data: session } = await supabase
+    .from("sessions")
+    .select("id, coach_id, status")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session) return { error: "Session not found." };
+  if (session.status !== "needs_replacement") {
+    return { error: "Only needs-replacement sessions can start rerostering." };
+  }
+
+  const { data: existing } = await supabase
+    .from("rerostering_events")
+    .select("id")
+    .eq("session_id", sessionId)
+    .in("offer_status", ["pending_offer", "offer_sent"])
+    .limit(1);
+  if (existing && existing.length > 0) {
+    return { error: "A rerostering event is already running for this session." };
+  }
+
+  const suggestions = await suggestReplacements(sessionId);
+
+  const { data: event, error: insertErr } = await supabase
+    .from("rerostering_events")
+    .insert({
+      session_id: sessionId,
+      original_coach_id: session.coach_id ?? null,
+      cancellation_reason: "other" as CancellationReasonType,
+      cancellation_details: "Rerostering started manually from the roster",
+      suggestions_json: suggestions,
+      offer_status: "pending_offer",
+    })
+    .select()
+    .single();
+  if (insertErr || !event) {
+    return { error: "Failed to start rerostering." };
+  }
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "rerostering_started_manually",
+    entity_type: "session",
+    entity_id: sessionId,
+    metadata: { rerostering_event_id: event.id, suggestions_count: suggestions.length },
+  });
+
+  revalidatePath("/ops/roster");
+  revalidatePath("/admin/roster");
+
+  return { data: event };
+}
+
+/**
  * Ops sends a replacement offer to a coach.
  */
 export async function sendReplacementOffer(

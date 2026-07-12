@@ -30,6 +30,37 @@ export function sydneyWeekday(now: Date = new Date()): string {
   }).format(now);
 }
 
+/** Current Sydney wall-clock time as minutes since midnight. */
+export function sydneyMinutesNow(now: Date = new Date()): number {
+  const parts = new Intl.DateTimeFormat("en-AU", {
+    timeZone: SYDNEY_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0") % 24;
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  return hour * 60 + minute;
+}
+
+/**
+ * Minutes from Sydney-now until a session's Sydney-local start
+ * ("YYYY-MM-DD" + "HH:MM" or "HH:MM:SS"). Positive = session is in
+ * the future, negative = already started. DST-safe because both sides
+ * are computed as Sydney wall-clock values, never via server-local
+ * Date parsing.
+ */
+export function minutesUntilSydney(
+  dateIso: string,
+  time: string,
+  now: Date = new Date()
+): number {
+  const dayDiff = daysFromSydneyToday(dateIso, now);
+  const startMinutes =
+    Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+  return dayDiff * 24 * 60 + startMinutes - sydneyMinutesNow(now);
+}
+
 /**
  * Whole days from Sydney-today until a "YYYY-MM-DD" date.
  * 0 = today, 1 = tomorrow, negative = past.
