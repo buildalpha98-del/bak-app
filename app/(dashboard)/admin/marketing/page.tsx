@@ -27,6 +27,7 @@ import {
   Calendar,
   Baby,
   Activity,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +85,7 @@ const STAT_CONFIG: {
   },
 ];
 
-const TAB_VALUES = ["stats", "testimonials", "widgets"] as const;
+const TAB_VALUES = ["stats", "testimonials", "widgets", "subscribers"] as const;
 type Tab = (typeof TAB_VALUES)[number];
 
 function isTab(v: string | null): v is Tab {
@@ -208,6 +209,11 @@ export default function AdminMarketingPage() {
       icon: <MessageSquareQuote className="h-4 w-4" />,
     },
     { key: "widgets", label: "Widgets", icon: <Code2 className="h-4 w-4" /> },
+    {
+      key: "subscribers",
+      label: "Subscribers",
+      icon: <Mail className="h-4 w-4" />,
+    },
   ];
 
   return (
@@ -375,6 +381,44 @@ export default function AdminMarketingPage() {
                 </div>
               )
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Subscribers — a jump-off point, not a summary. The count lives
+          on the destination page: this page is "use client", and
+          newsletter_subscribers is service-role only (RLS on, no
+          policies), so a count can't be read from here without a new
+          server action. Not worth one for a number shown twice. */}
+      {activeTab === "subscribers" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                Newsletter Subscribers
+              </h2>
+              <p className="text-sm text-[#666666]">
+                View and export signups from the marketing website.
+              </p>
+            </div>
+            <Link href="/admin/marketing/subscribers">
+              <Button variant="outline" size="sm" className="gap-2">
+                View Subscribers
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+          <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
+            <Mail className="mx-auto h-12 w-12 text-primary opacity-50" />
+            <p className="mt-3 text-sm text-[#666666]">
+              Everyone who has signed up through the website newsletter form,
+              newest first. Export the list as a CSV.
+            </p>
+            <Link href="/admin/marketing/subscribers">
+              <Button className="mt-4 bg-primary hover:bg-[#d4641f]">
+                Go to Subscribers
+              </Button>
+            </Link>
           </div>
         </div>
       )}
