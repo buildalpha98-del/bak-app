@@ -15,8 +15,24 @@
 
 import { getAuthCallbackUrl } from "@/lib/utils/base-url";
 
+// Dot-segments (`..` / `.`) normalise at the redirect sinks, so
+// `/parent/../admin` would escape the parent scope while passing a
+// plain prefix check. Reject any segment that is `.` or `..` — either
+// literally or percent-encoded (`%2e`/`%2E`), since a literal encoded
+// form decodes to a dot-segment at the sink.
+function hasDotSegment(path: string): boolean {
+  return path.split("/").some((segment) => {
+    const normalised = segment.toLowerCase().split("%2e").join(".");
+    return normalised === "." || normalised === "..";
+  });
+}
+
 export function parentSafeNext(raw?: string | null): string {
-  if (raw && (raw === "/parent" || raw.startsWith("/parent/"))) {
+  if (
+    raw &&
+    (raw === "/parent" || raw.startsWith("/parent/")) &&
+    !hasDotSegment(raw)
+  ) {
     return raw;
   }
   return "/parent-login";

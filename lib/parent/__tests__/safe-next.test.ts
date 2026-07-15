@@ -40,6 +40,34 @@ describe("parentSafeNext", () => {
   it("rejects the empty string", () => {
     expect(parentSafeNext("")).toBe("/parent-login");
   });
+
+  it("rejects dot-segment escapes like /parent/../admin", () => {
+    expect(parentSafeNext("/parent/../admin")).toBe("/parent-login");
+  });
+
+  it("rejects percent-encoded dot-segments (/parent/%2e%2e/admin)", () => {
+    expect(parentSafeNext("/parent/%2e%2e/admin")).toBe("/parent-login");
+  });
+
+  it("rejects uppercase percent-encoded dot-segments (/parent/%2E%2E/admin)", () => {
+    expect(parentSafeNext("/parent/%2E%2E/admin")).toBe("/parent-login");
+  });
+
+  it("rejects single-dot segments (/parent/./x)", () => {
+    expect(parentSafeNext("/parent/./x")).toBe("/parent-login");
+  });
+
+  it("rejects a trailing dot-dot segment (/parent/..)", () => {
+    expect(parentSafeNext("/parent/..")).toBe("/parent-login");
+  });
+
+  it("rejects mixed literal/encoded dot-segments (/parent/.%2e/admin)", () => {
+    expect(parentSafeNext("/parent/.%2e/admin")).toBe("/parent-login");
+  });
+
+  it("still allows dotted but non-dot-segment paths", () => {
+    expect(parentSafeNext("/parent/book/v1.2")).toBe("/parent/book/v1.2");
+  });
 });
 
 describe("buildParentMagicLinkRedirect", () => {
