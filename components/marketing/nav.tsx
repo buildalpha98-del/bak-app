@@ -104,6 +104,13 @@ export function MarketingNav() {
         <div className="md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
+              // Explicit stable id: base-ui otherwise assigns a
+              // React-useId-generated one, whose value depends on the
+              // exact tree path above the nav. This button is the only
+              // sheet element in the SSR HTML, so pinning its id keeps
+              // hydration stable even if the provider tree shifts
+              // (observed once in dev via an HMR stale-SSR window).
+              id="marketing-nav-menu-trigger"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "icon" }),
                 "size-11"
@@ -126,6 +133,10 @@ export function MarketingNav() {
                 {LINKS.map((link) => (
                   <SheetClose
                     key={link.href}
+                    // Rendering an <a> (next/link), not a <button> —
+                    // without this base-ui logs a nativeButton
+                    // console error for every menu item.
+                    nativeButton={false}
                     render={
                       <Link
                         href={link.href}
@@ -139,6 +150,7 @@ export function MarketingNav() {
               </nav>
               <div className="mt-auto flex flex-col gap-2 p-4">
                 <SheetClose
+                  nativeButton={false}
                   render={
                     <Link
                       href={accountHref}
@@ -149,6 +161,7 @@ export function MarketingNav() {
                   {accountLabel}
                 </SheetClose>
                 <SheetClose
+                  nativeButton={false}
                   render={
                     <Link
                       href="/holiday-clinics"
