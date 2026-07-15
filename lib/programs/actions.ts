@@ -729,12 +729,42 @@ export async function assignProgramToSession(
     } = await supabase.auth.getUser();
     if (!user) return { error: "Not authenticated." };
 
-    const { error } = await supabase
+    // Authorize explicitly: admin/ops, or a coach assigned to THIS
+    // session. Coaches have no sessions UPDATE policy, so the old
+    // cookie-client update was silently blocked by RLS — PostgREST
+    // reports a blocked update as success with zero rows, the dialog
+    // closed as if saved, and the programme never appeared.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    let authorised = profile?.role === "admin" || profile?.role === "ops";
+    if (!authorised) {
+      const { data: assignment } = await supabase
+        .from("session_coaches")
+        .select("user_id")
+        .eq("session_id", sessionId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      authorised = !!assignment;
+    }
+    if (!authorised) {
+      return { error: "You can only set the programme on your own sessions." };
+    }
+
+    const { createSupabaseAdmin } = await import("@/lib/supabase/admin");
+    const admin = createSupabaseAdmin();
+    const { data: updated, error } = await admin
       .from("sessions")
       .update({ program_id: programId })
-      .eq("id", sessionId);
+      .eq("id", sessionId)
+      .select("id");
 
     if (error) throw error;
+    if (!updated || updated.length === 0) {
+      return { error: "Session not found." };
+    }
 
     await supabase.from("activity_log").insert({
       user_id: user.id,

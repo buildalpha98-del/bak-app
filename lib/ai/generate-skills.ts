@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AssessmentSkill } from "@/lib/types/database";
+import { AI_MODEL } from "@/lib/ai/model";
 
 // ============================================================
 // Claude API Skill Framework Generator (server-only)
@@ -75,7 +76,7 @@ export async function generateSkills(
   }
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: AI_MODEL,
     max_tokens: 1500,
     temperature: 0.5,
     system: SYSTEM_PROMPT,

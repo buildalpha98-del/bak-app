@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { AI_MODEL } from "@/lib/ai/model";
 
 export const dynamic = "force-dynamic";
 
@@ -249,7 +250,7 @@ Sessions attended: ${termAttendances.filter((a) => a.present).length}`;
 
       const anthropic = getAnthropicClient();
       const message = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: AI_MODEL,
         max_tokens: 1500,
         temperature: 0.7,
         system: SYSTEM_PROMPT,

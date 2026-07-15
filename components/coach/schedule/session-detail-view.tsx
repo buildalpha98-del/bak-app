@@ -43,6 +43,7 @@ import { ProgramView } from "@/components/programs/program-view";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import type { CoachSessionDetail } from "@/lib/sessions/coach-actions";
 import { Play } from "lucide-react";
+import { CoachProgramPicker } from "./coach-program-picker";
 
 // ============================================================
 // Helpers
@@ -327,11 +328,29 @@ export function SessionDetailView({
                 sessionId={session.id}
                 sessionStatus={session.status}
               />
+              {session.status !== "completed" &&
+                session.status !== "cancelled" && (
+                  <CoachProgramPicker
+                    sessionId={session.id}
+                    sport={session.sport}
+                    currentProgramId={program.id}
+                  />
+                )}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">
-              No programme assigned to this session.
-            </p>
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                No programme assigned to this session yet.
+              </p>
+              {session.status !== "completed" &&
+                session.status !== "cancelled" && (
+                  <CoachProgramPicker
+                    sessionId={session.id}
+                    sport={session.sport}
+                    currentProgramId={null}
+                  />
+                )}
+            </div>
           )}
         </CardContent>
       </Card>

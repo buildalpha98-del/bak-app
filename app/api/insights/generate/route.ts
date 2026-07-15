@@ -4,6 +4,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { insightGenerateSchema } from "@/lib/validation/schemas";
 import { requireAuth, requireRateLimit } from "@/lib/utils/apiProtection";
 import { captureError } from "@/lib/utils/errorTracking";
+import { AI_MODEL } from "@/lib/ai/model";
 
 export const dynamic = "force-dynamic";
 
@@ -220,7 +221,7 @@ Sessions attended: ${attendances?.filter((a) => a.present).length ?? 0}`;
     // 7. Call Claude API
     const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: AI_MODEL,
       max_tokens: 1500,
       temperature: 0.7,
       system: SYSTEM_PROMPT,

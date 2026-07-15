@@ -11,6 +11,7 @@ import {
 } from "@/lib/ai/assistant-actions";
 import { assembleSessionContext } from "@/lib/ai/context-assembly";
 import type { SessionContextData } from "@/lib/ai/context-assembly";
+import { AI_MODEL } from "@/lib/ai/model";
 
 // ============================================================
 // AI Coach Assistant — API Route
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
 
     const anthropic = getAnthropicClient();
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: AI_MODEL,
       max_tokens: 1024,
       temperature: 0.7,
       system: fullSystemPrompt,

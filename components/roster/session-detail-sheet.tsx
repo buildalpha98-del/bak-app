@@ -364,10 +364,13 @@ export function SessionDetailSheet({
     const pid = programId === "none" ? null : programId;
     const { error } = await assignProgramToSession(session!.id, pid);
     setSaving(false);
-    if (!error) {
-      setAssigningProgram(false);
-      onUpdate();
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success(pid ? "Programme assigned." : "Programme removed.");
+    setAssigningProgram(false);
+    onUpdate();
   }
 
   return (

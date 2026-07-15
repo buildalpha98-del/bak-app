@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { ProgramContentJson } from "./types";
 import { buildProgramPrompt, type BuildProgramPromptInput } from "./program-prompt";
+import { AI_MODEL } from "@/lib/ai/model";
 
 export type GenerateProgramInput = BuildProgramPromptInput;
 
@@ -165,7 +166,7 @@ export async function generateProgram(
   }
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: AI_MODEL,
     max_tokens: 2000,
     temperature: 0.7,
     system: SYSTEM_PROMPT,

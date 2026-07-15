@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireClientCentreAccess } from "@/lib/client/access";
 import Anthropic from "@anthropic-ai/sdk";
+import { AI_MODEL } from "@/lib/ai/model";
 
 export interface WeeklyProgramEntry {
   weekNumber: number;
@@ -128,7 +129,7 @@ export async function generateSessionReflection(
 
   const anthropic = new Anthropic();
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: AI_MODEL,
     max_tokens: 300,
     system: "You are an Australian early childhood / primary school educator writing a brief reflection for your learning journal. Write in first person, past tense, 3-4 sentences. Reference specific activities and curriculum outcomes. Use Australian English.",
     messages: [{

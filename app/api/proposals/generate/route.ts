@@ -9,6 +9,7 @@ import {
 import { proposalGenerateSchema } from "@/lib/validation/schemas";
 import { requireRateLimit } from "@/lib/utils/apiProtection";
 import { captureError } from "@/lib/utils/errorTracking";
+import { AI_MODEL } from "@/lib/ai/model";
 
 export async function POST(req: NextRequest) {
   try {
@@ -118,7 +119,7 @@ ${
     });
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: AI_MODEL,
       max_tokens: 2000,
       temperature: 0.6,
       system:
