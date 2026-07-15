@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { BRAND } from "@/lib/marketing/content";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -57,12 +59,15 @@ export function MarketingNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-black/5 bg-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex min-h-11 shrink-0 items-center font-heading text-xl font-extrabold tracking-tight sm:text-2xl"
-        >
-          <span className="text-[#1A1A1A]">Build Alpha</span>{" "}
-          <span className="text-[#E8712A]">Kids</span>
+        <Link href="/" className="flex min-h-11 shrink-0 items-center">
+          <Image
+            src={BRAND.logo}
+            alt="Build Alpha Kids"
+            width={73}
+            height={48}
+            priority
+            className="h-12 w-auto"
+          />
         </Link>
 
         {/* Desktop links */}
@@ -91,10 +96,7 @@ export function MarketingNav() {
           </Link>
           <Link
             href="/holiday-clinics"
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "h-11 rounded-full bg-[#E8712A] px-6 text-sm font-semibold text-[#1A1A1A] hover:bg-[#E8712A]/90"
-            )}
+            className="inline-flex h-11 items-center justify-center rounded-full border-2 border-[#111] bg-[#FFD23F] px-6 font-heading text-sm font-bold text-[#111] shadow-[3px_3px_0_#111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_#111]"
           >
             Book now
           </Link>
@@ -121,9 +123,14 @@ export function MarketingNav() {
             </SheetTrigger>
             <SheetContent side="right" className="w-3/4 sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle className="font-heading text-lg">
-                  <span className="text-[#1A1A1A]">Build Alpha</span>{" "}
-                  <span className="text-[#E8712A]">Kids</span>
+                <SheetTitle>
+                  <Image
+                    src={BRAND.logo}
+                    alt="Build Alpha Kids"
+                    width={61}
+                    height={40}
+                    className="h-10 w-auto"
+                  />
                 </SheetTitle>
               </SheetHeader>
               <nav
@@ -165,7 +172,7 @@ export function MarketingNav() {
                   render={
                     <Link
                       href="/holiday-clinics"
-                      className="flex h-11 items-center justify-center rounded-full bg-[#E8712A] px-4 text-sm font-semibold text-[#1A1A1A] hover:bg-[#E8712A]/90"
+                      className="flex h-11 items-center justify-center rounded-full border-2 border-[#111] bg-[#FFD23F] px-4 font-heading text-sm font-bold text-[#111] shadow-[3px_3px_0_#111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_#111]"
                     />
                   }
                 >

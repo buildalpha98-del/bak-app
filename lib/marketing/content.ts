@@ -1,12 +1,11 @@
 // ============================================================
-// Marketing site content — single source of static copy
+// Marketing site content — shared/reused copy and constants
 // ============================================================
 //
-// Every piece of static marketing content (site identity, program
-// copy, image paths) lives here so later tasks (homepage, nav,
-// footer, /programs/[slug], enquiry form) import from one place.
-// Swapping a hero photo or fixing a phone number is a one-line
-// change in this file — never edit copy inside page components.
+// Shared/reused copy and constants live here (site identity,
+// program copy, brand asset paths) so marketing surfaces import
+// from one place. Section-specific copy may live with its
+// component; anything used twice belongs here.
 //
 // Copy conventions: brand name is always "Build Alpha Kids"
 // (never abbreviated in user-facing copy), Australian English,
@@ -68,6 +67,51 @@ export const SITE: SiteInfo = {
 
 /** Shown as a badge on holiday clinic cards and the booking CTA. */
 export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
+
+// ------------------------------------------------------------
+// Brand assets + palette
+// ------------------------------------------------------------
+
+/**
+ * Real brand artwork (public/images/brand/). The crest logo is the
+ * badge with fanned sports balls; the ball rows are the illustrated
+ * t-shirt strips (alt = mirrored variant) used as section motifs.
+ */
+export const BRAND = {
+  /** Crest logo, raster — use with next/image (1604×1060). */
+  logo: "/images/brand/logo.png",
+  /** Crest logo, vector. */
+  logoSvg: "/images/brand/logo.svg",
+  /** Illustrated ball row strip (viewBox 298×96, ~3.1:1). */
+  ballsRow: "/images/brand/balls-row.svg",
+  /** Mirrored ball row variant. */
+  ballsRowAlt: "/images/brand/balls-row-alt.svg",
+} as const;
+
+/**
+ * The six sports we coach, in display order, each with its ball
+ * colour from the brand artwork. `fg` is the AA-verified text
+ * colour when the sport colour is used as a chip/badge FILL:
+ * black passes on green 8.5:1 / yellow 13.1:1 / orange 6.1:1;
+ * red and blue need white (4.7:1 / 5.2:1). As small dots the
+ * colours are decorative and always carry a black outline.
+ */
+export interface Sport {
+  name: string;
+  /** Ball colour from the brand artwork. */
+  color: string;
+  /** AA-verified foreground for text set ON the colour. */
+  fg: "#111111" | "#FFFFFF";
+}
+
+export const SPORTS: Sport[] = [
+  { name: "Soccer", color: "#7BC043", fg: "#111111" },
+  { name: "Basketball", color: "#E8712A", fg: "#111111" },
+  { name: "Cricket", color: "#D8342C", fg: "#FFFFFF" },
+  { name: "Tennis", color: "#FFD23F", fg: "#111111" },
+  { name: "Volleyball", color: "#2D6FB5", fg: "#FFFFFF" },
+  { name: "Rugby", color: "#111111", fg: "#FFFFFF" },
+];
 
 /** Homepage-specific copy shared between components and metadata. */
 export const HOMEPAGE = {

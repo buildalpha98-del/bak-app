@@ -1,6 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Mail, Phone } from "lucide-react";
-import { PROGRAMS, SITE } from "@/lib/marketing/content";
+import { BRAND, PROGRAMS, SITE } from "@/lib/marketing/content";
 
 const SOCIAL_ICONS = {
   instagram: Instagram,
@@ -18,13 +19,20 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
+            {/* Light sticker tile keeps the black-outlined crest crisp on the dark band. */}
             <Link
               href="/"
-              className="font-heading text-xl font-extrabold tracking-tight text-white"
+              className="inline-block rounded-2xl border-2 border-[#111] bg-[#FFF7F2] p-3 shadow-[4px_4px_0_#E8712A]"
             >
-              Build Alpha <span className="text-[#E8712A]">Kids</span>
+              <Image
+                src={BRAND.logo}
+                alt="Build Alpha Kids"
+                width={109}
+                height={72}
+                className="h-[72px] w-auto"
+              />
             </Link>
-            <p className="mt-3 max-w-xs text-sm text-white/60">
+            <p className="mt-4 max-w-xs text-sm text-white/60">
               {SITE.tagline}
             </p>
             {socials.length > 0 && (

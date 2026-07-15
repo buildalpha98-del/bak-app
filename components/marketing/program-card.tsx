@@ -1,20 +1,20 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { Program } from "@/lib/marketing/content";
 
 /**
- * Orange ramp across the grid — cards run light cream → deep rust in
- * PROGRAMS order. Foregrounds are paired per step to hold AA contrast:
- * near-black everywhere except the deepest card, which flips to white
- * (white on #993C1D ≈ 6.9:1).
+ * Sticker cards: white fill, thick black outline, hard shadow. Each
+ * card takes a ball colour from the brand artwork as its accent —
+ * the ages chip fill and the hover shadow. Chip foregrounds are
+ * AA-verified per fill: black on green 8.5:1 / orange 6.1:1 /
+ * yellow 13.1:1; white on blue 5.2:1 / red 4.7:1.
  */
-const RAMP = [
-  { bg: "#FFF7F2", fg: "#1A1A1A", sub: "#993C1D", chip: "#E8712A" },
-  { bg: "#FBDCC5", fg: "#1A1A1A", sub: "#993C1D", chip: "#E8712A" },
-  { bg: "#F5A567", fg: "#1A1A1A", sub: "#7A2E12", chip: "#FFF7F2" },
-  { bg: "#E8712A", fg: "#1A1A1A", sub: "#3D1708", chip: "#FFF7F2" },
-  { bg: "#993C1D", fg: "#FFFFFF", sub: "#FBDCC5", chip: "#E8712A" },
+const ACCENTS = [
+  { color: "#7BC043", fg: "#111111" }, // green
+  { color: "#2D6FB5", fg: "#FFFFFF" }, // blue
+  { color: "#D8342C", fg: "#FFFFFF" }, // red
+  { color: "#FFD23F", fg: "#111111" }, // yellow
+  { color: "#E8712A", fg: "#111111" }, // orange
 ] as const;
 
 export function ProgramCard({
@@ -24,42 +24,34 @@ export function ProgramCard({
   program: Program;
   index: number;
 }) {
-  const tone = RAMP[index % RAMP.length];
-  const deepCard = tone.bg === "#993C1D";
+  const accent = ACCENTS[index % ACCENTS.length];
 
   return (
     <Link
       href={`/programs/${program.slug}`}
-      className="group flex h-full flex-col rounded-3xl p-7 transition-all duration-200 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/10 sm:p-8"
-      style={{ backgroundColor: tone.bg, color: tone.fg }}
+      className="group flex h-full flex-col rounded-2xl border-2 border-[#111] bg-white p-7 shadow-[4px_4px_0_#111] transition-all duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--accent)] sm:p-8"
+      style={
+        {
+          "--accent": accent.color,
+        } as React.CSSProperties
+      }
     >
-      {/* Skewed ages chip — the row's shared accent */}
+      {/* Ages chip in the card's ball colour */}
       <span
-        className="inline-block max-w-max -skew-x-3 px-2.5 py-1 font-heading text-[11px] font-bold uppercase tracking-wider"
-        style={{
-          backgroundColor: tone.chip,
-          color: "#1A1A1A",
-        }}
+        className="inline-block max-w-max rounded-full border-2 border-[#111] px-3 py-1 font-heading text-[11px] font-bold uppercase tracking-wider"
+        style={{ backgroundColor: accent.color, color: accent.fg }}
       >
-        <span className="inline-block skew-x-3">{program.ages}</span>
+        {program.ages}
       </span>
 
-      <h3 className="mt-5 font-heading text-2xl font-extrabold tracking-tight">
+      <h3 className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-[#111]">
         {program.title}
       </h3>
-      <p
-        className="mt-2 text-sm font-semibold leading-snug"
-        style={{ color: tone.sub }}
-      >
+      <p className="mt-2 text-sm font-semibold leading-snug text-[#1A1A1A]/70">
         {program.tagline}
       </p>
 
-      <span
-        className={cn(
-          "mt-auto inline-flex min-h-11 items-center gap-2 pt-6 font-heading text-sm font-bold",
-          deepCard ? "text-white" : "text-[#1A1A1A]"
-        )}
-      >
+      <span className="mt-auto inline-flex min-h-11 items-center gap-2 pt-6 font-heading text-sm font-bold text-[#111]">
         Explore program
         <ArrowRight
           className="size-4 transition-transform duration-200 group-hover:translate-x-1"
