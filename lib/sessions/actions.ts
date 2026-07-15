@@ -12,7 +12,11 @@ import {
   setSessionCoaches,
   type SessionCoachInput,
 } from "@/lib/sessions/session-coaches";
-import { toLocalIso } from "@/lib/utils/roster";
+import {
+  toLocalIso,
+  buildRecurrenceDates,
+  type RecurrenceFrequency,
+} from "@/lib/utils/roster";
 
 // ============================================================
 // Types
@@ -751,6 +755,141 @@ export async function deleteSession(
   } catch (err) {
     console.error("deleteSession error:", err);
     return { error: "Failed to delete session." };
+  }
+}
+
+// ============================================================
+// Recurring sessions — repeat a shift across weeks
+// ============================================================
+
+export interface RecurrenceInput {
+  frequency: RecurrenceFrequency;
+  /** Last date ("YYYY-MM-DD") a repeat may land on, inclusive. */
+  until: string;
+}
+
+export interface RecurrenceResult {
+  created: number;
+  /** Dates skipped because an identical shift already existed. */
+  skipped: string[];
+  /** First per-date failure message, if any date errored. */
+  firstError: string | null;
+}
+
+/**
+ * Create the same session on each date, routing through createSession
+ * so every invariant (cert checks, session_coaches write path,
+ * activity log) applies per occurrence. Dates where an identical
+ * shift already exists (centre + date + time + sport) are skipped —
+ * re-running a recurrence can't double-book a centre.
+ */
+async function createSessionsOnDates(
+  data: CreateSessionData,
+  dates: string[]
+): Promise<{ data: RecurrenceResult | null; error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+
+  const { data: existing } = await supabase
+    .from("sessions")
+    .select("date, time")
+    .eq("centre_id", data.centre_id)
+    .eq("sport", data.sport)
+    .neq("status", "cancelled")
+    .in("date", dates);
+  const taken = new Set(
+    (existing ?? [])
+      .filter((s) => (s.time as string).slice(0, 5) === data.time.slice(0, 5))
+      .map((s) => s.date as string)
+  );
+
+  const result: RecurrenceResult = { created: 0, skipped: [], firstError: null };
+  for (const date of dates) {
+    if (taken.has(date)) {
+      result.skipped.push(date);
+      continue;
+    }
+    const { error } = await createSession({ ...data, date });
+    if (error) {
+      result.firstError = result.firstError ?? `${date}: ${error}`;
+      continue;
+    }
+    result.created++;
+  }
+
+  if (result.created === 0 && result.firstError) {
+    return { data: result, error: result.firstError };
+  }
+  return { data: result, error: null };
+}
+
+export async function createRecurringSessions(
+  data: CreateSessionData,
+  recurrence: RecurrenceInput
+): Promise<{ data: RecurrenceResult | null; error: string | null }> {
+  try {
+    const dates = buildRecurrenceDates(
+      data.date,
+      recurrence.frequency,
+      recurrence.until
+    );
+    if (dates.length === 0) {
+      return { data: null, error: "End date must be on or after the first session." };
+    }
+    return await createSessionsOnDates(data, dates);
+  } catch (err) {
+    console.error("createRecurringSessions error:", err);
+    return { data: null, error: "Failed to create recurring sessions." };
+  }
+}
+
+/**
+ * Repeat an EXISTING session into future weeks — the recurrence starts
+ * one step after the source session's date, so the original is never
+ * duplicated onto itself.
+ */
+export async function repeatSessionForward(
+  sessionId: string,
+  recurrence: RecurrenceInput
+): Promise<{ data: RecurrenceResult | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: source } = await supabase
+      .from("sessions")
+      .select(
+        "id, term_id, date, time, duration_minutes, centre_id, sport, coach_id, pay_rate_override"
+      )
+      .eq("id", sessionId)
+      .maybeSingle();
+    if (!source) return { data: null, error: "Session not found." };
+
+    const dates = buildRecurrenceDates(
+      source.date,
+      recurrence.frequency,
+      recurrence.until
+    ).slice(1); // exclude the source's own date
+    if (dates.length === 0) {
+      return {
+        data: null,
+        error: "End date must be at least one repeat after this session.",
+      };
+    }
+
+    return await createSessionsOnDates(
+      {
+        term_id: source.term_id,
+        date: source.date,
+        time: (source.time as string).slice(0, 5),
+        duration_minutes: source.duration_minutes,
+        centre_id: source.centre_id,
+        sport: source.sport,
+        coach_id: source.coach_id ?? undefined,
+        pay_rate_override: source.pay_rate_override ?? undefined,
+      },
+      dates
+    );
+  } catch (err) {
+    console.error("repeatSessionForward error:", err);
+    return { data: null, error: "Failed to repeat the session." };
   }
 }
 

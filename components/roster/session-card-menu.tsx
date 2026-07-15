@@ -1,16 +1,34 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2, UserPlus } from "lucide-react";
+import { MoreVertical, Copy, ArrowLeftRight, FileText, Loader2, UserPlus, Repeat } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { duplicateSession } from "@/lib/sessions/actions";
+import { duplicateSession, repeatSessionForward } from "@/lib/sessions/actions";
+import type { RecurrenceFrequency } from "@/lib/utils/roster";
 import { SwapCoachPopover } from "./swap-coach-popover";
 import { SessionNotesPopover } from "./session-notes-popover";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
@@ -32,6 +50,37 @@ export function SessionCardMenu({
   const [swapping, setSwapping] = useState(false);
   const [noting, setNoting] = useState(false);
   const [localNotes, setLocalNotes] = useState(session.notes);
+  const [repeatOpen, setRepeatOpen] = useState(false);
+  const [repeatFreq, setRepeatFreq] = useState<RecurrenceFrequency>("weekly");
+  const [repeatUntil, setRepeatUntil] = useState("");
+  const [repeating, setRepeating] = useState(false);
+
+  async function handleRepeat() {
+    if (!repeatUntil) {
+      toast.error("Choose an end date.");
+      return;
+    }
+    setRepeating(true);
+    const { data, error } = await repeatSessionForward(session.id, {
+      frequency: repeatFreq,
+      until: repeatUntil,
+    });
+    setRepeating(false);
+    if (error || !data) {
+      toast.error(error ?? "Failed to repeat the shift.");
+      return;
+    }
+    toast.success(
+      `${data.created} shift${data.created === 1 ? "" : "s"} created` +
+        (data.skipped.length > 0
+          ? ` — ${data.skipped.length} skipped (already booked)`
+          : "") +
+        "."
+    );
+    setRepeatOpen(false);
+    setRepeatUntil("");
+    onChange();
+  }
 
   // Resync localNotes when session.notes changes (e.g. after router.refresh)
   useEffect(() => {
@@ -102,8 +151,74 @@ export function SessionCardMenu({
             )}
             Duplicate
           </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setRepeatOpen(true)}>
+            <Repeat className="mr-2 h-3.5 w-3.5" />
+            Repeat into future weeks…
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Repeat-forward dialog */}
+      <Dialog open={repeatOpen} onOpenChange={setRepeatOpen}>
+        <DialogContent
+          className="sm:max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DialogHeader>
+            <DialogTitle>Repeat this shift</DialogTitle>
+            <DialogDescription>
+              Copies this shift (same time, coach and centre) into future
+              weeks, starting one step after {session.date}. Dates already
+              booked are skipped.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 py-1">
+            <div className="space-y-1.5">
+              <Label>Frequency</Label>
+              <Select
+                value={repeatFreq}
+                onValueChange={(v) =>
+                  setRepeatFreq((v as RecurrenceFrequency) ?? "weekly")
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Weekly" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="fortnightly">Fortnightly</SelectItem>
+                  <SelectItem value="four_weekly">
+                    Monthly (every 4 weeks)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`repeat-until-${session.id}`}>Until</Label>
+              <Input
+                id={`repeat-until-${session.id}`}
+                type="date"
+                value={repeatUntil}
+                min={session.date}
+                onChange={(e) => setRepeatUntil(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRepeatOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRepeat}
+              disabled={repeating}
+              className="bg-primary text-white hover:bg-primary/90"
+            >
+              {repeating ? <Loader2 className="size-4 animate-spin" /> : null}
+              Create shifts
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Headless popovers — controlled by menu items. Render a hidden
           trigger so the Popover anchors to this menu's container. */}

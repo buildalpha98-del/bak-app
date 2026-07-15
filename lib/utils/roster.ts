@@ -45,6 +45,57 @@ export function mondayOfIso(dateIso: string): string {
   return utc.toISOString().split("T")[0];
 }
 
+// ============================================================
+// Recurrence — repeat a session across weeks
+// ============================================================
+
+export type RecurrenceFrequency = "weekly" | "fortnightly" | "four_weekly";
+
+export const RECURRENCE_STEP_DAYS: Record<RecurrenceFrequency, number> = {
+  weekly: 7,
+  fortnightly: 14,
+  // "Monthly" for a coaching roster means every 4 weeks — stepping by
+  // calendar month would drift off the weekday the centre expects.
+  four_weekly: 28,
+};
+
+/**
+ * Dates ("YYYY-MM-DD") for a recurring session: the start date plus
+ * every `frequency` step up to and including `until`. Pure UTC string
+ * arithmetic (no timezone drift), capped to keep a typo'd end date
+ * from generating hundreds of rows.
+ */
+export function buildRecurrenceDates(
+  startIso: string,
+  frequency: RecurrenceFrequency,
+  untilIso: string,
+  cap = 26
+): string[] {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(startIso) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(untilIso) ||
+    untilIso < startIso
+  ) {
+    return [];
+  }
+  const step = RECURRENCE_STEP_DAYS[frequency];
+  const dates: string[] = [];
+  const cursor = new Date(
+    Date.UTC(
+      Number(startIso.slice(0, 4)),
+      Number(startIso.slice(5, 7)) - 1,
+      Number(startIso.slice(8, 10))
+    )
+  );
+  while (dates.length < cap) {
+    const iso = cursor.toISOString().split("T")[0];
+    if (iso > untilIso) break;
+    dates.push(iso);
+    cursor.setUTCDate(cursor.getUTCDate() + step);
+  }
+  return dates;
+}
+
 /** Get Monday of the week containing the given date */
 export function getMonday(date: Date): Date {
   const d = new Date(date);

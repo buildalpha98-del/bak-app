@@ -19,7 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
-import { createSession, updateSession, deleteSession } from "@/lib/sessions/actions";
+import { toast } from "sonner";
+import {
+  createSession,
+  createRecurringSessions,
+  updateSession,
+  deleteSession,
+} from "@/lib/sessions/actions";
+import type { RecurrenceFrequency } from "@/lib/utils/roster";
 import { SPORTS } from "@/lib/types/enums";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Centre, Profile } from "@/lib/types/database";
@@ -77,6 +84,10 @@ export function CreateSessionDialog({
   const [sport, setSport] = useState("");
   const [coachId, setCoachId] = useState("");
   const [payRateOverride, setPayRateOverride] = useState("");
+  const [repeatFreq, setRepeatFreq] = useState<RecurrenceFrequency | "none">(
+    "none"
+  );
+  const [repeatUntil, setRepeatUntil] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -103,6 +114,8 @@ export function CreateSessionDialog({
         setCoachId(defaultCoachId ?? "");
         setPayRateOverride("");
       }
+      setRepeatFreq("none");
+      setRepeatUntil("");
       setError(null);
       setConfirmDelete(false);
     }
@@ -136,7 +149,7 @@ export function CreateSessionDialog({
         return;
       }
     } else {
-      const { error: err } = await createSession({
+      const input = {
         term_id: termId,
         date,
         time,
@@ -147,11 +160,42 @@ export function CreateSessionDialog({
         pay_rate_override: payRateOverride
           ? parseFloat(payRateOverride)
           : undefined,
-      });
-      if (err) {
-        setError(err);
-        setSaving(false);
-        return;
+      };
+
+      if (repeatFreq !== "none") {
+        if (!repeatUntil) {
+          setError("Choose an end date for the repeat.");
+          setSaving(false);
+          return;
+        }
+        const { data: result, error: err } = await createRecurringSessions(
+          input,
+          { frequency: repeatFreq, until: repeatUntil }
+        );
+        if (err || !result) {
+          setError(err ?? "Failed to create recurring sessions.");
+          setSaving(false);
+          return;
+        }
+        toast.success(
+          `${result.created} session${result.created === 1 ? "" : "s"} created` +
+            (result.skipped.length > 0
+              ? ` — ${result.skipped.length} date${
+                  result.skipped.length === 1 ? "" : "s"
+                } skipped (already booked)`
+              : "") +
+            "."
+        );
+        if (result.firstError) {
+          toast.warning(`Some dates failed — first: ${result.firstError}`);
+        }
+      } else {
+        const { error: err } = await createSession(input);
+        if (err) {
+          setError(err);
+          setSaving(false);
+          return;
+        }
       }
     }
 
@@ -293,6 +337,46 @@ export function CreateSessionDialog({
               placeholder="Leave empty for default rate"
             />
           </div>
+
+          {/* Recurrence — create mode only; edits touch a single shift */}
+          {!isEdit && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Repeats</Label>
+                <Select
+                  value={repeatFreq}
+                  onValueChange={(v) =>
+                    setRepeatFreq((v as RecurrenceFrequency | "none") ?? "none")
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Does not repeat" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Does not repeat</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="fortnightly">Fortnightly</SelectItem>
+                    <SelectItem value="four_weekly">
+                      Monthly (every 4 weeks)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {repeatFreq !== "none" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="repeat-until">Until</Label>
+                  <Input
+                    id="repeat-until"
+                    type="date"
+                    value={repeatUntil}
+                    min={date || undefined}
+                    onChange={(e) => setRepeatUntil(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <p className="text-sm text-red-600">{error}</p>

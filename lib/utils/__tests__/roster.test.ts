@@ -6,6 +6,7 @@ import {
   getWeekDatesFull,
   formatDayHeaderShort,
   getMonday,
+  buildRecurrenceDates,
 } from "../roster";
 
 // Regression tests for the Saturday-start roster grid: local-midnight
@@ -70,6 +71,46 @@ describe("formatDayHeaderShort", () => {
   it("renders day/month (Australian order), not month/day", () => {
     expect(formatDayHeaderShort("2026-07-18")).toBe("Sat 18/7");
     expect(formatDayHeaderShort("2026-07-13")).toBe("Mon 13/7");
+  });
+});
+
+describe("buildRecurrenceDates", () => {
+  it("repeats weekly up to and including the end date", () => {
+    expect(buildRecurrenceDates("2026-07-15", "weekly", "2026-08-05")).toEqual([
+      "2026-07-15",
+      "2026-07-22",
+      "2026-07-29",
+      "2026-08-05",
+    ]);
+  });
+
+  it("repeats fortnightly and stops before an off-cycle end date", () => {
+    expect(
+      buildRecurrenceDates("2026-07-15", "fortnightly", "2026-08-20")
+    ).toEqual(["2026-07-15", "2026-07-29", "2026-08-12"]);
+  });
+
+  it("steps four-weekly across month boundaries without weekday drift", () => {
+    expect(
+      buildRecurrenceDates("2026-07-15", "four_weekly", "2026-10-10")
+    ).toEqual(["2026-07-15", "2026-08-12", "2026-09-09", "2026-10-07"]);
+  });
+
+  it("returns just the start date when until equals start", () => {
+    expect(buildRecurrenceDates("2026-07-15", "weekly", "2026-07-15")).toEqual([
+      "2026-07-15",
+    ]);
+  });
+
+  it("returns nothing for a backwards or malformed range", () => {
+    expect(buildRecurrenceDates("2026-07-15", "weekly", "2026-07-01")).toEqual([]);
+    expect(buildRecurrenceDates("bad", "weekly", "2026-08-01")).toEqual([]);
+  });
+
+  it("caps runaway ranges", () => {
+    expect(
+      buildRecurrenceDates("2026-01-01", "weekly", "2030-01-01").length
+    ).toBe(26);
   });
 });
 
