@@ -4,9 +4,9 @@
 // Sidebar badge — urgent + important counts
 // ============================================================
 //
-// Polls `getInboxCounts` every 30s. Shows nothing when both
-// urgent and important are zero (informational doesn't deserve a
-// badge nudge — that's the timeline's job).
+// Polls `getInboxCounts` every 60s while the tab is visible. Shows
+// nothing when both urgent and important are zero (informational
+// doesn't deserve a badge nudge — that's the timeline's job).
 //
 // Rendered inside the sidebar nav slot for the "Inbox" item only.
 
@@ -34,6 +34,9 @@ export function InboxBadge({
   React.useEffect(() => {
     let cancelled = false;
     const tick = async () => {
+      // Backgrounded tabs skip the poll — every tick is a server-action
+      // round trip, and idle tabs were a steady source of them.
+      if (document.hidden) return;
       try {
         const next = await getInboxCounts();
         if (!cancelled) setCounts(next);
@@ -41,7 +44,7 @@ export function InboxBadge({
         console.error("InboxBadge poll error:", err);
       }
     };
-    const id = setInterval(tick, 30_000);
+    const id = setInterval(tick, 60_000);
     return () => {
       cancelled = true;
       clearInterval(id);

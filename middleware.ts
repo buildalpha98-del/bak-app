@@ -30,6 +30,41 @@ const ROLE_PORTAL: Record<string, string> = {
   parent: "/parent",
 };
 
+// Role-hint cookie: middleware route-gating needs the user's role on
+// every request, but querying `profiles` from the edge adds a full
+// round trip to the database region per navigation. The hint caches
+// `${userId}:${role}:${status}` for 10 minutes. It is a ROUTING hint
+// only — every page and server action still authenticates itself and
+// RLS enforces data access — so a stale hint can at worst route a
+// just-demoted user to a portal whose pages immediately reject them.
+const ROLE_HINT_COOKIE = "bak-role";
+const ROLE_HINT_MAX_AGE = 600;
+
+function readRoleHint(
+  request: NextRequest,
+  userId: string
+): { role: string; status: string } | null {
+  const raw = request.cookies.get(ROLE_HINT_COOKIE)?.value;
+  if (!raw) return null;
+  const [uid, role, status] = raw.split(":");
+  if (uid !== userId || !role || !status) return null;
+  return { role, status };
+}
+
+function setRoleHint(
+  response: NextResponse,
+  userId: string,
+  role: string,
+  status: string
+) {
+  response.cookies.set(ROLE_HINT_COOKIE, `${userId}:${role}:${status}`, {
+    maxAge: ROLE_HINT_MAX_AGE,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+}
+
 export async function middleware(request: NextRequest) {
   // Skip auth refresh if Supabase is not configured yet
   if (
@@ -37,6 +72,24 @@ export async function middleware(request: NextRequest) {
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
     return NextResponse.next();
+  }
+
+  // Prefetch requests (sidebar hover, viewport Links) don't need auth
+  // work — the real navigation that follows is fully checked. Without
+  // this, hovering the 30-item sidebar fired dozens of concurrent
+  // auth round-trips from the edge to the auth server.
+  if (
+    request.headers.get("next-router-prefetch") ||
+    request.headers.get("purpose") === "prefetch"
+  ) {
+    return NextResponse.next({ request });
+  }
+
+  // Server-action POSTs authenticate inside the action handler; the
+  // middleware adds nothing but latency (the sidebar badge polls an
+  // action every 60s from every open tab).
+  if (request.method === "POST") {
+    return NextResponse.next({ request });
   }
 
   const { response, supabase } = createSupabaseMiddlewareClient(request);
@@ -64,6 +117,7 @@ export async function middleware(request: NextRequest) {
         login.cookies.delete(cookie.name);
       }
     }
+    login.cookies.delete(ROLE_HINT_COOKIE);
     return login;
   }
 
@@ -90,37 +144,48 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Check if user is a client user and extract their centre ID
-    const { data: clientUser } = await supabase
-      .from("client_users")
-      .select("centre_id")
-      .eq("user_id", user.id)
-      .single();
+    // Check if user is a client user and extract their centre ID.
+    // Cached in the role hint as `client:<centreId>` so repeat
+    // navigations skip the database round trip.
+    const hint = readRoleHint(request, user.id);
+    let centreId: string | null = hint?.role === "client" ? hint.status : null;
 
-    if (!clientUser) {
-      // Not a client user — check if they're staff
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+    if (!centreId) {
+      const { data: clientUser } = await supabase
+        .from("client_users")
+        .select("centre_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (profile) {
-        const portalUrl = request.nextUrl.clone();
-        portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
-        return NextResponse.redirect(portalUrl);
+      if (!clientUser) {
+        // Not a client user — check if they're staff
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, status")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profile) {
+          setRoleHint(response, user.id, profile.role, profile.status);
+          const portalUrl = request.nextUrl.clone();
+          portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
+          return NextResponse.redirect(portalUrl);
+        }
+
+        const loginUrl = request.nextUrl.clone();
+        loginUrl.pathname = "/client-login";
+        return NextResponse.redirect(loginUrl);
       }
 
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/client-login";
-      return NextResponse.redirect(loginUrl);
+      centreId = clientUser.centre_id;
+      setRoleHint(response, user.id, "client", centreId!);
     }
 
     // Client users can only access their own centre's portal
     const centreIdMatch = pathname.match(/^\/client\/([^/]+)/);
-    if (centreIdMatch && centreIdMatch[1] !== clientUser.centre_id) {
+    if (centreIdMatch && centreIdMatch[1] !== centreId) {
       const correctUrl = request.nextUrl.clone();
-      correctUrl.pathname = `/client/${clientUser.centre_id}`;
+      correctUrl.pathname = `/client/${centreId}`;
       return NextResponse.redirect(correctUrl);
     }
 
@@ -138,14 +203,25 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Check if parent has completed registration
-    const { data: parentProfile } = await supabase
-      .from("parent_profiles")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+    // Check if parent has completed registration (hint-cached — a
+    // registered parent stays registered, so 10 minutes of caching
+    // only ever skips the redundant lookup).
+    const hint = readRoleHint(request, user.id);
+    let registered = hint?.role === "parent";
 
-    if (!parentProfile && !pathname.startsWith("/parent/register")) {
+    if (!registered) {
+      const { data: parentProfile } = await supabase
+        .from("parent_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      registered = !!parentProfile;
+      if (registered) {
+        setRoleHint(response, user.id, "parent", "registered");
+      }
+    }
+
+    if (!registered && !pathname.startsWith("/parent/register")) {
       const registerUrl = request.nextUrl.clone();
       registerUrl.pathname = "/parent/register";
       return NextResponse.redirect(registerUrl);
@@ -259,32 +335,37 @@ export async function middleware(request: NextRequest) {
     );
 
     if (isDashboardRoute) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, status")
-        .eq("id", user.id)
-        .single();
+      let hint = readRoleHint(request, user.id);
+      if (!hint) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, status")
+          .eq("id", user.id)
+          .maybeSingle();
 
-      if (!profile) {
-        const loginUrl = request.nextUrl.clone();
-        loginUrl.pathname = "/login";
-        return NextResponse.redirect(loginUrl);
+        if (!profile) {
+          const loginUrl = request.nextUrl.clone();
+          loginUrl.pathname = "/login";
+          return NextResponse.redirect(loginUrl);
+        }
+        hint = { role: profile.role, status: profile.status };
+        setRoleHint(response, user.id, profile.role, profile.status);
       }
 
-      if (profile.status === "onboarding") {
+      if (hint.status === "onboarding") {
         const setPasswordUrl = request.nextUrl.clone();
         setPasswordUrl.pathname = "/set-password";
         return NextResponse.redirect(setPasswordUrl);
       }
 
-      const allowedPrefixes = ROLE_ROUTES[profile.role] || [];
+      const allowedPrefixes = ROLE_ROUTES[hint.role] || [];
       const hasAccess = allowedPrefixes.some(
         (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
       );
 
       if (!hasAccess) {
         const portalUrl = request.nextUrl.clone();
-        portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
+        portalUrl.pathname = ROLE_PORTAL[hint.role] || "/login";
         return NextResponse.redirect(portalUrl);
       }
     }
