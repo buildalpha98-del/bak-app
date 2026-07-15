@@ -1,18 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
-
-// Routes that don't require authentication
-const PUBLIC_ROUTES = [
-  "/login",
-  "/client-login",
-  "/parent-login",
-  "/reset-password",
-  "/update-password",
-  "/auth/callback", // Supabase code-exchange — sets the session; must never be gated
-  "/feedback",
-  "/refer", // public referral landing pages
-  "/client/shared", // shared read-only links (token-based, no auth)
-];
+import { isPublicRoute } from "@/lib/marketing/public-routes";
 
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
@@ -122,9 +110,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if current route is public
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
+  const publicRoute = isPublicRoute(pathname);
 
   // ---- Client portal route handling ----
   const isClientRoute =
@@ -137,7 +123,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Client portal routes require auth but use client_users table
-  if (isClientRoute && !isPublicRoute) {
+  if (isClientRoute && !publicRoute) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/client-login";
@@ -261,7 +247,7 @@ export async function middleware(request: NextRequest) {
   // ---- Standard staff auth flow ----
 
   // Unauthenticated user on protected route → redirect to login
-  if (!user && !isPublicRoute) {
+  if (!user && !publicRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     return NextResponse.redirect(loginUrl);
@@ -329,7 +315,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Role-based route protection for dashboard routes
-  if (user && !isPublicRoute && pathname !== "/set-password") {
+  if (user && !publicRoute && pathname !== "/set-password") {
     const isDashboardRoute = ["/admin", "/ops", "/coach"].some(
       (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
     );
