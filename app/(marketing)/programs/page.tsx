@@ -29,8 +29,18 @@ export default function ProgramsPage() {
 
       <Section aria-label="All programs" className="bg-white">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/*
+            headingLevel={2}: this grid sits directly under the page h1
+            with no section heading between, so the card titles are the
+            page's top-level sections. The default (3) is correct on the
+            homepage, where a section h2 sits above the same grid.
+          */}
           {PROGRAMS.map((program) => (
-            <ProgramCard key={program.slug} program={program} />
+            <ProgramCard
+              key={program.slug}
+              program={program}
+              headingLevel={2}
+            />
           ))}
         </div>
       </Section>

@@ -56,10 +56,20 @@ export function MarketingFooter() {
             )}
           </div>
 
+          {/*
+            These three column headings are h2, not h3, and must stay h2.
+            They are the top-level groupings inside the footer landmark, and
+            the footer renders under pages whose main content has no h2 at
+            all (/holiday-clinics is one). As h3 they skipped a level
+            straight from the page h1 — a WCAG heading-order failure that
+            only some pages showed, which is exactly what made it easy to
+            miss. Size comes from text-sm, not the tag, so the level is free
+            to be correct.
+          */}
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
               Programs
-            </h3>
+            </h2>
             <ul className="mt-4 space-y-3">
               {PROGRAMS.map((program) => (
                 <li key={program.slug}>
@@ -75,9 +85,9 @@ export function MarketingFooter() {
           </div>
 
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
               Get in touch
-            </h3>
+            </h2>
             <ul className="mt-4 space-y-3 text-sm text-white/60">
               <li>
                 <a
@@ -102,9 +112,9 @@ export function MarketingFooter() {
           </div>
 
           <div>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
               Parents
-            </h3>
+            </h2>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link

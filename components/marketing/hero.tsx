@@ -74,12 +74,31 @@ export function Hero() {
             means replacing this block only. */}
         <div className="relative mx-auto w-full max-w-sm lg:max-w-none">
           <div className="rotate-2 rounded-[2rem] border-2 border-[#111] bg-[#FFF7F2] p-8 shadow-[8px_8px_0_#111] sm:p-10">
+            {/*
+              `sizes` is what stops this from being the page's worst byte.
+              This crest is the LCP element, so the candidate the browser
+              picks IS the LCP. Without `sizes`, next/image derives a srcset
+              from the `width` prop alone (513 → a 1x/2x pair) and a DPR-2
+              phone downloads the w=1080 candidate: 78.5 KiB of WebP to fill
+              a box that is never wider than ~380 CSS px.
+
+              The real display width is small at every breakpoint — the card
+              is capped at max-w-sm (384px) until lg, and above lg it is the
+              0.9fr column of a max-w-6xl grid, minus the card's own padding
+              and border. That lands at roughly 275/300/420 px, which is what
+              the three entries below say. Stating them lets the browser take
+              the w=640 candidate (43.7 KiB) instead — a ~35 KiB saving on
+              the one image that gates LCP.
+
+              Re-check these if the grid ratio or the card padding changes.
+            */}
             <Image
               src={BRAND.logo}
               alt="Build Alpha Kids club crest — fanned sports balls behind the club banner"
               width={513}
               height={339}
               priority
+              sizes="(min-width: 1024px) 420px, (min-width: 640px) 300px, 280px"
               className="h-auto w-full"
             />
           </div>

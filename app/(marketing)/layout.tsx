@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { JsonLd } from "@/components/marketing/json-ld";
@@ -39,6 +39,36 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [OG_IMAGE.url],
   },
+};
+
+/**
+ * Marketing pages must be pinch-zoomable.
+ *
+ * The root layout sets `maximumScale: 1`, which suppresses iOS Safari's
+ * zoom-on-input-focus in the installed PWA. That trade-off is defensible
+ * for the operator/parent portals — they are data-entry surfaces used by
+ * signed-in people on their own device. It is NOT defensible on public
+ * pages: locking the scale is a WCAG 1.4.4 (Resize Text) failure, and a
+ * parent reading a program page on a phone must be able to zoom.
+ *
+ * Overriding `viewport` here rather than in the root layout confines the
+ * change to this route group, so no portal behaviour moves.
+ *
+ * `maximumScale: 5` (not the `undefined`/omitted default) is deliberate:
+ * Lighthouse's meta-viewport audit requires maximum-scale >= 5, and
+ * stating it keeps the intent explicit for the next reader.
+ *
+ * viewportFit is re-declared because a nested `viewport` export REPLACES
+ * the root's rather than merging into it — dropping it here would remove
+ * viewport-fit=cover from every marketing page.
+ */
+export const viewport: Viewport = {
+  themeColor: "#E8712A",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
 };
 
 export default function MarketingLayout({
