@@ -63,8 +63,8 @@ export function getBaseUrl(): string {
 // SENT — not at the host we intend to use later.
 //
 // This is why the fallback is getBaseUrl() and not a `.com.au` literal.
-// There is a window — merge and deploy are steps 6 of the cutover
-// runbook, DNS is step 8 — where this code is live in production but
+// There is a window — merge and deploy are step 6 of the cutover
+// runbook, DNS is step 7 — where this code is live in production but
 // `.com.au` is still WordPress. A hard default would send parent invites
 // to WordPress during that window, and would do it SILENTLY: Supabase
 // substitutes its project Site URL for any `emailRedirectTo` that is not
@@ -110,7 +110,7 @@ export function getMarketingUrl(): string {
 // submitting anything. Nothing is indexed yet, so the literal costs us
 // nothing pre-cutover and prevents a mess post-cutover.
 //
-// It also fails safe: if step 7 of the runbook (the env flip) is missed,
+// It also fails safe: if step 8 of the runbook (the env flip) is missed,
 // links degrade to `.app` — which still works, since both hosts serve
 // every route — instead of the index quietly splitting in two.
 //

@@ -590,7 +590,7 @@ Rejected (for now): moving the dashboard to `app.buildalphakids.com.au`. It was 
 
 **Audience principle (decided 2026-07-15):** **parents live on `buildalphakids.com.au`; staff live on `buildalphakids.app`.** The parent portal is the consumer product and belongs on the consumer brand; the dashboard is the operational tool. Both hosts serve every route (one app), so nothing breaks either way — but every *parent-facing* outbound link should target the marketing origin so a parent has ONE cookie jar and the nav's "My account" swap works. This includes staff-initiated parent invites (`lib/parent/actions.ts` bulk invite), which currently emit `.app` links because staff trigger them from `.app`. Staff-facing links (login, password reset, coach/ops/admin, client portal, invoice PDFs, internal crons) keep `getBaseUrl()` → `.app`.
 
-**Owner config (not code):** add `buildalphakids.com.au` + `www` to the Vercel project; set `NEXT_PUBLIC_MARKETING_URL`; add both origins to Supabase's redirect allowlist; keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app`. **These are ORDER-DEPENDENT and are sequenced in the Task 6.4 runbook (steps 4, 5, 7) — execute them from there, not from this list.** The allowlist must precede the env flip, and the env flip is a redeploy rather than a dashboard toggle.
+**Owner config (not code):** add `buildalphakids.com.au` + `www` to the Vercel project; set `NEXT_PUBLIC_MARKETING_URL`; add both origins to Supabase's redirect allowlist; keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app`. **These are ORDER-DEPENDENT and are sequenced in the Task 6.4 runbook (steps 4, 5, 8) — execute them from there, not from this list.** The allowlist must precede the env flip, the env flip must follow the DNS cutover, and the env flip is a redeploy rather than a dashboard toggle.
 
 **Future move to `app.buildalphakids.com.au`** then becomes: attach the domain, redirect `buildalphakids.app` → it, change `NEXT_PUBLIC_SITE_URL`, add one Supabase allowlist entry. No code change. The nav's "My account" swap starts working on `.com.au` automatically once both are same-site.
 
@@ -635,9 +635,9 @@ The three ordering constraints that actually bite, stated up front so the reason
 
 - **Content before traffic.** The WP redirect map funnels 11 previously-indexed post URLs into `/blog/*`. `/blog/[slug]` throws while `blog_posts` is absent (verified: `/blogs/<post>` → 308 → `/blog/<post>` → **500**). So migrations and the import must land before anything can follow a redirect there.
 - **Allowlist before origin.** Supabase silently substitutes its project Site URL for any `emailRedirectTo` not on the redirect allowlist. It does not error. So the allowlist entry must exist before the marketing origin is armed, or parent magic links break with no signal anywhere.
-- **Origin before DNS.** `NEXT_PUBLIC_MARKETING_URL` is inlined at BUILD time, so arming it is a redeploy, not a dashboard toggle.
+- **DNS before origin.** Cut DNS over FIRST, then flip `NEXT_PUBLIC_MARKETING_URL`. This order has no broken window at any point; the reverse has one (parent links naming `.com.au` while WordPress still answers there, failing silently). Full trace in step 7. Note `NEXT_PUBLIC_*` is inlined at BUILD time, so arming the origin is a redeploy, not a dashboard toggle.
 
-Reversibility is called out per step. Steps 1–7 are all reversible in minutes. **Step 8 (DNS) is the one-way door** — TTL propagation means a mistake past that point is not instantly undoable, so everything that can be verified must be verified before it.
+Reversibility is called out per step. Every step except one is reversible in minutes. **Step 7 (DNS) is the one-way door** — TTL propagation means a mistake past that point is not instantly undoable, so everything that can be verified must be verified before it.
 
 ---
 
@@ -673,19 +673,19 @@ Must precede step 3: the import writes into `blog_posts`. Both are additive tabl
 - [ ] Add `https://www.buildalphakids.com.au/auth/callback`
 - [ ] Keep the existing `https://buildalphakids.app/auth/callback` — staff flows and the pre-cutover fallback both still use it. **Do not swap; add.**
 
-Before step 7, always — see the allowlist-before-origin constraint. Adding these early is harmless: an allowlisted URL nobody sends yet does nothing.
+Before step 8, always — see the allowlist-before-origin constraint. Adding these early is harmless: an allowlisted URL nobody sends yet does nothing.
 
 #### Step 5 — Attach the domains to Vercel (reversible: detach)
 
 - [ ] Attach `buildalphakids.com.au` + `www` to the Vercel `bak-app` project.
 - [ ] Keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app` (staff origin — unchanged by this whole exercise).
-- [ ] Leave `NEXT_PUBLIC_MARKETING_URL` **unset** for now. That is step 7, deliberately.
+- [ ] Leave `NEXT_PUBLIC_MARKETING_URL` **unset** for now. That is step 8, deliberately — after DNS.
 
 Attaching does not move traffic — DNS still points at WordPress. This only makes Vercel ready to answer for the name.
 
 #### Step 5b — Manual QA, on the Vercel preview, WITH Jayden (reversible; this is the gate)
 
-**Run this here, pre-DNS.** It is the last point where a failure costs nothing. Every item below is broken-in-production if it first runs after step 8.
+**Run this here, pre-DNS.** It is the last point where a failure costs nothing. Every item below is broken-in-production if it first runs after step 7.
 
 - [ ] **Live data actually renders** — clinic cards and stat numbers appear, NOT em-dashes/empty states. This is the step-0 service-role-key risk, positively verified. Do this one first; if it fails, stop and fix the key before anything else.
 - [ ] Home → clinic card "Book now" → parent-login (with `next`) → magic link email → lands on `/parent/book/[id]` → Square sandbox payment completes
@@ -701,23 +701,37 @@ Attaching does not move traffic — DNS still points at WordPress. This only mak
 
 - [ ] Merge `feature/marketing-site` → `main`; let Vercel deploy.
 
-At this moment `.com.au` still serves WordPress and `NEXT_PUBLIC_MARKETING_URL` is still unset — so `getMarketingUrl()` resolves to `.app` and **every parent link behaves exactly as it does on main today**. That is the whole point of the fallback: this deploy is safe to sit in production indefinitely. If step 8 slips a week, nothing is broken in the meantime.
+At this moment `.com.au` still serves WordPress and `NEXT_PUBLIC_MARKETING_URL` is still unset — so `getMarketingUrl()` resolves to `.app` and **every parent link behaves exactly as it does on main today**. That is the whole point of the fallback: this deploy is safe to sit in production indefinitely. If the cutover slips a week, nothing is broken in the meantime.
 
-#### Step 7 — Arm the marketing origin (reversible: unset + redeploy)
+#### Step 7 — DNS cutover (**ONE-WAY DOOR** — propagation is not instant)
+
+- [ ] Point `buildalphakids.com.au` at Vercel per spec §Launch cutover.
+- [ ] Keep WP hosting up as an archive — do not decommission yet.
+
+Do not start this until 5b is green.
+
+**DNS comes BEFORE the env flip, and this order is not a preference — it is the only one with no broken window.** Trace both against the fallback in `lib/utils/base-url.ts`:
+
+| | parent links (`getMarketingUrl`) | SEO (`getCanonicalSiteUrl`) |
+|---|---|---|
+| Pre-DNS, env unset | `.app` — **works** | `.com.au` — harmless, nothing indexed yet |
+| Post-DNS, env unset | `.app` — **still works** (`.app` stays attached) | `.com.au` — now correct and live |
+| Post-DNS, env set | `.com.au` — **works**, it's the new site | `.com.au` — correct |
+
+Every window is safe. The only cost is that parent links sit on the `.app` brand for the gap between step 7 and step 8 — cosmetic, and it self-heals the moment step 8 lands.
+
+The reverse order (env before DNS) has a genuinely broken window: parent links would name `.com.au` while WordPress still serves it, and Supabase would swap the non-matching redirect **silently**. So there is no trade to weigh here — do not "optimise" this back into one deploy.
+
+Why post-DNS/env-unset is safe, since it is the row that carries the argument: `.app` remains attached to the Vercel project and `NEXT_PUBLIC_SITE_URL` still points at it, so `getBaseUrl()` — and therefore the fallback — keeps resolving to a live host. Step 4 **adds** the `.com.au` callbacks rather than swapping them, so `.app/auth/callback` stays allowlisted throughout. Both conditions must hold for this row; if anyone ever detaches `.app` or swaps the allowlist entry, re-derive this table before cutting over.
+
+#### Step 8 — Arm the marketing origin (reversible: unset + redeploy)
 
 - [ ] Set `NEXT_PUBLIC_MARKETING_URL=https://buildalphakids.com.au` in the Vercel production env.
 - [ ] **Redeploy.** `NEXT_PUBLIC_*` is inlined at build time — setting it in the dashboard alone changes nothing.
 
 Everything parent-facing (invites, booking emails, referral links, embed snippets) moves to `.com.au` in one flip. Requires step 4 done, or the magic links silently break. SEO surfaces are unaffected either way — they never used the fallback.
 
-Note the ordering here is a genuine trade: for the short gap between step 7 and step 8, parent links name a host that is still WordPress. Keep the gap to minutes by having the DNS change staged and ready before you flip. If the gap must be long, do step 8 first and step 7 immediately after instead — the reverse order costs you `.app` links for the gap, which merely works rather than being wrong.
-
-#### Step 8 — DNS cutover (**ONE-WAY DOOR** — propagation is not instant)
-
-- [ ] Point `buildalphakids.com.au` at Vercel per spec §Launch cutover.
-- [ ] Keep WP hosting up as an archive — do not decommission yet.
-
-Do not start this until 5b is green.
+No rush between 7 and 8: per the table above, the interim state is fully working. Do it in the same session, but do not skip verification to get there faster.
 
 #### Step 9 — Post-cutover verification (do immediately, not tomorrow)
 

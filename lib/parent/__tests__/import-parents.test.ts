@@ -357,9 +357,9 @@ describe("importParents — invite links target the marketing origin", () => {
   });
 
   it("targets the app domain pre-cutover, when NEXT_PUBLIC_MARKETING_URL is unset", async () => {
-    // Merged and deployed, DNS not yet moved (runbook steps 6→8). The
-    // link must name a host that serves this app TODAY. This is exactly
-    // main's behaviour, preserved.
+    // Merged and deployed, DNS not yet moved (after runbook step 6,
+    // before step 7). The link must name a host that serves this app
+    // TODAY. This is exactly main's behaviour, preserved.
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
     vi.stubEnv("VERCEL_URL", "");
@@ -383,7 +383,8 @@ describe("importParents — invite links target the marketing origin", () => {
   });
 
   it("moves to the .com.au callback once the cutover env is set", async () => {
-    // Runbook step 7 — the flip that realises the audience principle.
+    // Runbook step 8 — the post-DNS flip that realises the audience
+    // principle.
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
     vi.stubEnv("VERCEL_URL", "");
