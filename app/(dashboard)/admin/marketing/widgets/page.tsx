@@ -4,8 +4,17 @@ import { useState } from "react";
 import { Check, Copy, Code2, BarChart3, Grid3X3, MessageSquareQuote, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://app.buildalphakids.com.au";
+// These snippets are pasted onto CENTRES' own websites and call our
+// public, unauthenticated endpoints (/api/public/*, /api/crm/enquiry), so
+// they must name the public face: the marketing origin.
+//
+// This was `window.location.origin` with a dead-domain SSR fallback, which
+// baked whatever host the ADMIN happened to be on into the snippet — an
+// admin on localhost or a preview URL generated a snippet pointing there.
+// The embed origin must be stable and public, never the viewer's host.
+const APP_URL = getMarketingUrl();
 
 interface Widget {
   name: string;

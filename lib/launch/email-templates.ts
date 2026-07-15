@@ -3,21 +3,34 @@
 // Each function takes typed data and returns { subject, html }
 // Uses inline CSS, BAK branding, mobile-friendly layout
 // ============================================================
+//
+// AUDIENCE SPLIT (see the marketing-site plan's audience principle):
+// parents live on the marketing origin (buildalphakids.com.au), staff and
+// centres-as-clients live on the app domain (buildalphakids.app). This
+// module serves BOTH, so it must never share one origin constant —
+// every template declares its audience and links accordingly.
+
+import { getBaseUrl, getMarketingUrl } from "@/lib/utils/base-url";
+
+type Audience = "parent" | "staff";
+
+/** Parents -> the consumer brand; staff/centres -> the operational app. */
+function originFor(audience: Audience): string {
+  return audience === "parent" ? getMarketingUrl() : getBaseUrl();
+}
 
 const BRAND_ORANGE = "#E8712A";
 const BRAND_WARM_BG = "#FFF7ED";
 const BRAND_DARK = "#1A1A1A";
 const BRAND_GREY = "#666666";
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
-
 // ========================
 // Shared layout
 // ========================
 
-function layout(content: string): string {
-  const logoUrl = `${APP_URL}/logo.png`;
+function layout(content: string, audience: Audience): string {
+  const origin = originFor(audience);
+  const logoUrl = `${origin}/logo.png`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -38,8 +51,12 @@ function layout(content: string): string {
         <tr><td style="padding:16px 24px;border-top:1px solid #F0E6DC;color:${BRAND_GREY};font-size:11px;text-align:center;">
           Build Alpha Kids Pty Ltd${process.env.BAK_ABN ? ` | ABN: ${process.env.BAK_ABN}` : ""}<br>
           Multi-Sport Coaching for Kids &bull; South-West Sydney<br>
-          <a href="${APP_URL}" style="color:${BRAND_ORANGE};text-decoration:none;">Open App</a><br>
-          <span style="color:#999;">To manage your notification preferences, <a href="${APP_URL}/parent/settings" style="color:#999;">visit your account settings</a>.</span>
+          <a href="${origin}" style="color:${BRAND_ORANGE};text-decoration:none;">Open App</a><br>
+          ${
+            audience === "parent"
+              ? `<span style="color:#999;">To manage your notification preferences, <a href="${origin}/parent/settings" style="color:#999;">visit your account settings</a>.</span>`
+              : ""
+          }
         </td></tr>
       </table>
     </td></tr>
@@ -47,6 +64,9 @@ function layout(content: string): string {
 </body>
 </html>`;
 }
+
+const parentLayout = (content: string): string => layout(content, "parent");
+const staffLayout = (content: string): string => layout(content, "staff");
 
 function cta(label: string, url: string): string {
   return `<div style="text-align:center;margin:24px 0;">
@@ -83,9 +103,10 @@ function formatDollars(cents: number): string {
 export function welcomeParent(data: {
   name: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: "Welcome to Build Alpha Kids!",
-    html: layout(`
+    html: parentLayout(`
       <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.name},</p>
       <p>Welcome to <strong>Build Alpha Kids</strong>! We're excited to have you and your family on board.</p>
       <p>From your parent portal you can:</p>
@@ -95,7 +116,7 @@ export function welcomeParent(data: {
         <li>Track upcoming and past bookings</li>
         <li>View your kids' progress and skills</li>
       </ul>
-      ${cta("Go to Your Portal", `${APP_URL}/parent`)}
+      ${cta("Go to Your Portal", `${origin}/parent`)}
       <p>We can't wait to see your kids in action!</p>
       <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
     `),
@@ -109,9 +130,10 @@ export function welcomeParent(data: {
 export function welcomeCoach(data: {
   name: string;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   return {
     subject: "Welcome to the Build Alpha Kids team!",
-    html: layout(`
+    html: staffLayout(`
       <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.name},</p>
       <p>Welcome to the <strong>Build Alpha Kids</strong> coaching team! Your account is now active.</p>
       <p>Here's what you'll find in your dashboard:</p>
@@ -122,7 +144,7 @@ export function welcomeCoach(data: {
         <li><strong>Invoicing</strong> &mdash; generate and submit your invoices</li>
         <li><strong>AI Coach Assistant</strong> &mdash; get session plans and activity ideas</li>
       </ul>
-      ${cta("View Your Dashboard", `${APP_URL}/coach`)}
+      ${cta("View Your Dashboard", `${origin}/coach`)}
       <p>Looking forward to having you on the team!</p>
       <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
     `),
@@ -139,9 +161,10 @@ export function parentBulkInvite(data: {
   firstName: string;
   magicLinkUrl: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: "You've been invited to Build Alpha Kids",
-    html: layout(`
+    html: parentLayout(`
       <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.firstName},</p>
       <p>Welcome to <strong>Build Alpha Kids</strong>! We've set up your parent account so you can join the beta and start booking sport sessions for your kids.</p>
       <p>From your parent portal you can:</p>
@@ -153,7 +176,7 @@ export function parentBulkInvite(data: {
       </ul>
       <p>Tap the button below to sign in &mdash; no password needed.</p>
       ${cta("Sign In to Your Portal", data.magicLinkUrl)}
-      <p style="color:${BRAND_GREY};font-size:13px;">This sign-in link expires in 1 hour. If it's expired by the time you tap it, just head to <a href="${APP_URL}/parent-login" style="color:${BRAND_ORANGE};text-decoration:none;">${APP_URL}/parent-login</a> and request a new one with the same email address.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">This sign-in link expires in 1 hour. If it's expired by the time you tap it, just head to <a href="${origin}/parent-login" style="color:${BRAND_ORANGE};text-decoration:none;">${origin}/parent-login</a> and request a new one with the same email address.</p>
       <p style="color:${BRAND_GREY};font-size:13px;">If you weren't expecting this email, you can safely ignore it.</p>
       <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
     `),
@@ -171,6 +194,7 @@ export function staffOnboarding(data: {
   tempPassword: string;
   role: "admin" | "ops" | "coach";
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   const roleLabel =
     data.role === "admin" ? "Admin" : data.role === "ops" ? "Operations" : "Coach";
   const dashboardPath =
@@ -178,17 +202,17 @@ export function staffOnboarding(data: {
 
   return {
     subject: `Welcome to Build Alpha Kids — your ${roleLabel} account is ready`,
-    html: layout(`
+    html: staffLayout(`
       <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.name},</p>
       <p>Welcome to the <strong>Build Alpha Kids</strong> team. Your ${roleLabel} account is ready to use.</p>
       <p>Here are your login details:</p>
       ${detailTable(
-        detailRow("Login URL", `<a href="${APP_URL}/login" style="color:${BRAND_ORANGE};text-decoration:none;">${APP_URL}/login</a>`) +
+        detailRow("Login URL", `<a href="${origin}/login" style="color:${BRAND_ORANGE};text-decoration:none;">${origin}/login</a>`) +
         detailRow("Email", data.email) +
         detailRow("Temporary password", `<code style="font-family:'SF Mono',Monaco,monospace;background:#F5F5F5;padding:2px 6px;border-radius:4px;">${data.tempPassword}</code>`)
       )}
       <p><strong>You will be prompted to set a new password on first login.</strong> Please choose something memorable and don't share it.</p>
-      ${cta(`Open ${roleLabel} Dashboard`, `${APP_URL}${dashboardPath}`)}
+      ${cta(`Open ${roleLabel} Dashboard`, `${origin}${dashboardPath}`)}
       <p>If you weren't expecting this email or didn't request an account, please reply to this email straight away.</p>
       <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
     `),
@@ -203,9 +227,10 @@ export function welcomeCentre(data: {
   name: string;
   centreName: string;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   return {
     subject: `Welcome to Build Alpha Kids — ${data.centreName}`,
-    html: layout(`
+    html: staffLayout(`
       <p style="font-size:16px;font-weight:600;margin-top:0;">Hi ${data.name},</p>
       <p>Welcome to <strong>Build Alpha Kids</strong>! We're thrilled to be partnering with <strong>${data.centreName}</strong>.</p>
       <p>Through your Client Portal you can:</p>
@@ -216,7 +241,7 @@ export function welcomeCentre(data: {
         <li>View and download invoices</li>
         <li>Message the Build Alpha Kids team</li>
       </ul>
-      ${cta("Access Your Portal", `${APP_URL}/client`)}
+      ${cta("Access Your Portal", `${origin}/client`)}
       <p style="color:${BRAND_GREY};font-size:13px;">You'll receive a magic link each time you log in &mdash; no password needed.</p>
       <p style="color:${BRAND_GREY};font-size:13px;">&mdash; The Build Alpha Kids Team</p>
     `),
@@ -235,9 +260,10 @@ export function bookingConfirmation(data: {
   time: string;
   location: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: `Booking Confirmed — ${data.sessionName}`,
-    html: layout(`
+    html: parentLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Booking Confirmed!</h2>
       <p>Hi ${data.parentName},</p>
       <p>Great news &mdash; your booking for <strong>${data.childName}</strong> has been confirmed.</p>
@@ -262,7 +288,7 @@ export function bookingConfirmation(data: {
         <strong>Cancellation Policy:</strong> Cancel more than 24 hours before the session for a full refund. Cancellations within 24 hours are not eligible for a refund.
       </p>
 
-      ${cta("View My Bookings", `${APP_URL}/parent/bookings`)}
+      ${cta("View My Bookings", `${origin}/parent/bookings`)}
     `),
   };
 }
@@ -277,14 +303,15 @@ export function bookingCancellation(data: {
   sessionName: string;
   date: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: `Booking Cancelled — ${data.sessionName}`,
-    html: layout(`
+    html: parentLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Booking Cancelled</h2>
       <p>Hi ${data.parentName},</p>
       <p>Your booking for <strong>${data.childName}</strong> at <strong>${data.sessionName}</strong> on <strong>${formatDate(data.date)}</strong> has been cancelled.</p>
       <p>If you'd like to book another session, browse available sessions in your parent portal.</p>
-      ${cta("Browse Sessions", `${APP_URL}/parent/book`)}
+      ${cta("Browse Sessions", `${origin}/parent/book`)}
     `),
   };
 }
@@ -299,9 +326,10 @@ export function paymentReceipt(data: {
   description: string;
   date: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: `Payment Receipt — ${data.amount}`,
-    html: layout(`
+    html: parentLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Payment Receipt</h2>
       <p>Hi ${data.parentName},</p>
       <p>We've received your payment. Here are the details:</p>
@@ -312,7 +340,7 @@ export function paymentReceipt(data: {
         detailRow("Date", formatDate(data.date))
       )}
 
-      ${cta("View Payments", `${APP_URL}/parent/payments`)}
+      ${cta("View Payments", `${origin}/parent/payments`)}
     `),
   };
 }
@@ -327,9 +355,10 @@ export function packageConfirmation(data: {
   sessions: number;
   amount: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   return {
     subject: `Session Pack Purchased — ${data.packageName}`,
-    html: layout(`
+    html: parentLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Session Pack Purchased!</h2>
       <p>Hi ${data.parentName},</p>
       <p>Thanks for your purchase! Your session pack is ready to use.</p>
@@ -342,7 +371,7 @@ export function packageConfirmation(data: {
 
       <p>You can use your pack sessions when booking any eligible session. Just select "Use Session Pack" at checkout.</p>
 
-      ${cta("Browse Sessions", `${APP_URL}/parent/book`)}
+      ${cta("Browse Sessions", `${origin}/parent/book`)}
     `),
   };
 }
@@ -360,13 +389,14 @@ export function sessionReminderParent(data: {
   location: string;
   whatToBring?: string;
 }): { subject: string; html: string } {
+  const origin = originFor("parent");
   const bringSection = data.whatToBring
     ? `<p style="font-weight:600;">What to Bring:</p><p>${data.whatToBring}</p>`
     : `<p>Remember to bring comfortable clothes, a water bottle, and sun protection.</p>`;
 
   return {
     subject: `Reminder: ${data.childName}'s session tomorrow`,
-    html: layout(`
+    html: parentLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Session Tomorrow!</h2>
       <p>Hi ${data.parentName},</p>
       <p>Just a friendly reminder &mdash; <strong>${data.childName}</strong> has a session tomorrow:</p>
@@ -380,7 +410,7 @@ export function sessionReminderParent(data: {
 
       ${bringSection}
 
-      ${cta("View Booking", `${APP_URL}/parent/bookings`)}
+      ${cta("View Booking", `${origin}/parent/bookings`)}
     `),
   };
 }
@@ -401,6 +431,7 @@ export function sessionReminderCoach(data: {
     contactPhone: string;
   }>;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   const sessionRows = data.sessions
     .map(
       (s) => `
@@ -416,7 +447,7 @@ export function sessionReminderCoach(data: {
 
   return {
     subject: `Tomorrow's Sessions — ${data.sessions.length} session${data.sessions.length > 1 ? "s" : ""}`,
-    html: layout(`
+    html: staffLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Your Sessions Tomorrow</h2>
       <p>Hi ${data.coachName},</p>
       <p>Here's your schedule for tomorrow:</p>
@@ -434,7 +465,7 @@ export function sessionReminderCoach(data: {
 
       <p>Please arrive 10 minutes early to set up. Good luck!</p>
 
-      ${cta("View Full Schedule", `${APP_URL}/coach/schedule`)}
+      ${cta("View Full Schedule", `${origin}/coach/schedule`)}
     `),
   };
 }
@@ -451,11 +482,12 @@ export function rosterAssignment(data: {
   time: string;
   address: string;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
 
   return {
     subject: `New Shift: ${data.sessionName} at ${data.centreName}`,
-    html: layout(`
+    html: staffLayout(`
       <p>Hi ${data.coachName},</p>
       <p>You've been assigned a new session:</p>
 
@@ -469,7 +501,7 @@ export function rosterAssignment(data: {
 
       <p>Please confirm or decline this shift in the app.</p>
 
-      ${cta("View Shift", `${APP_URL}/coach/schedule`)}
+      ${cta("View Shift", `${origin}/coach/schedule`)}
     `),
   };
 }
@@ -484,6 +516,7 @@ export function rosterChange(data: {
   originalSession: string;
   newSession?: string;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   const isCancelled = data.changeType === "cancelled";
   const detail = isCancelled
     ? `<p>Your session <strong>${data.originalSession}</strong> has been <strong>cancelled</strong>.</p>`
@@ -493,11 +526,11 @@ export function rosterChange(data: {
     subject: isCancelled
       ? `Shift Cancelled: ${data.originalSession}`
       : `Shift Update: ${data.originalSession}`,
-    html: layout(`
+    html: staffLayout(`
       <p>Hi ${data.coachName},</p>
       ${detail}
       <p>Please check your schedule for the latest updates.</p>
-      ${cta("View Updated Schedule", `${APP_URL}/coach/schedule`)}
+      ${cta("View Updated Schedule", `${origin}/coach/schedule`)}
     `),
   };
 }
@@ -517,6 +550,7 @@ export function weeklySchedule(data: {
     programme: string;
   }>;
 }): { subject: string; html: string } {
+  const origin = originFor("staff");
   const sessionRows = data.sessions
     .map(
       (s) => `
@@ -535,7 +569,7 @@ export function weeklySchedule(data: {
 
   return {
     subject: `Your Week Ahead — ${formatDate(data.weekStartDate)}`,
-    html: layout(`
+    html: staffLayout(`
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">Your Week Ahead</h2>
       <p>Hi ${data.coachName},</p>
       <p>Here's your schedule for the week of <strong>${formatDate(data.weekStartDate)}</strong>:</p>
@@ -552,7 +586,7 @@ export function weeklySchedule(data: {
 
       <p><strong>${data.sessions.length} session${data.sessions.length !== 1 ? "s" : ""}</strong> this week.</p>
 
-      ${cta("View Full Schedule", `${APP_URL}/coach/schedule`)}
+      ${cta("View Full Schedule", `${origin}/coach/schedule`)}
     `),
   };
 }
@@ -570,7 +604,7 @@ export function feedbackRequest(data: {
 }): { subject: string; html: string } {
   return {
     subject: `How was today's session? — Build Alpha Kids`,
-    html: layout(`
+    html: staffLayout(`
       <p>Hi ${data.directorName},</p>
       <p>We hope today's session at <strong>${data.centreName}</strong> went well!</p>
       <p><strong>${data.coachName}</strong> delivered a session on <strong>${formatDate(data.sessionDate)}</strong>. We'd love your quick feedback &mdash; it only takes 10 seconds:</p>
@@ -594,7 +628,7 @@ export function invoiceReady(data: {
 }): { subject: string; html: string } {
   return {
     subject: `Invoice ${data.invoiceNumber} — Build Alpha Kids`,
-    html: layout(`
+    html: staffLayout(`
       <p>Hi ${data.directorName},</p>
       <p>Your invoice for <strong>${data.centreName}</strong> is ready:</p>
 
@@ -628,13 +662,18 @@ export function invitation(data: {
 
   return {
     subject: "You're invited to Build Alpha Kids",
-    html: layout(`
+    html: layout(
+      `
       <h2 style="margin:0 0 16px;font-size:20px;color:${BRAND_DARK};">You're Invited!</h2>
       <p>Hi ${data.name},</p>
       <p><strong>${data.invitedBy}</strong> has invited you to join <strong>Build Alpha Kids</strong> as a <strong>${roleLabel}</strong>.</p>
       <p>Click below to accept and set up your account:</p>
       ${cta("Accept Invitation", data.inviteUrl)}
       <p style="color:${BRAND_GREY};font-size:13px;">This invitation expires in 30 days. If you weren't expecting this, you can safely ignore it.</p>
-    `),
+    `,
+      // A parent invite must land on the consumer brand; coach and
+      // centre_director invites are operational.
+      data.role === "parent" ? "parent" : "staff"
+    ),
   };
 }

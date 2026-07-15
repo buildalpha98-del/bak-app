@@ -8,9 +8,7 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
 import { invitation as invitationTemplate } from "@/lib/launch/email-templates";
-
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
+import { getBaseUrl, getMarketingUrl } from "@/lib/utils/base-url";
 
 // ========================
 // Send individual invitation
@@ -58,14 +56,18 @@ export async function sendIndividualInvitation(params: {
       return { success: false, error: invErr?.message || "Failed to create invitation." };
     }
 
-    // Determine invite URL based on role
+    // Determine invite URL based on role. The ORIGIN follows the role
+    // too (audience principle): a parent invite must land on the
+    // consumer brand so their session shares the site's cookie jar;
+    // coach and centre_director invites are operational, so they go to
+    // the app domain.
     let inviteUrl: string;
     if (params.role === "coach") {
-      inviteUrl = `${APP_URL}/auth/accept-invite?token=${inv.id}`;
+      inviteUrl = `${getBaseUrl()}/auth/accept-invite?token=${inv.id}`;
     } else if (params.role === "centre_director") {
-      inviteUrl = `${APP_URL}/client-login?invite=${inv.id}`;
+      inviteUrl = `${getBaseUrl()}/client-login?invite=${inv.id}`;
     } else {
-      inviteUrl = `${APP_URL}/parent-login?invite=${inv.id}`;
+      inviteUrl = `${getMarketingUrl()}/parent-login?invite=${inv.id}`;
     }
 
     // Get inviter name

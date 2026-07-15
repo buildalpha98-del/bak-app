@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
 // ============================================================
 // Embeddable HTML snippet
@@ -186,7 +187,7 @@ export function EmbedFormView() {
             </code>{" "}
             with your actual application URL (e.g.{" "}
             <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs">
-              https://app.buildalphakids.com.au
+              {getMarketingUrl()}
             </code>
             ).
           </div>

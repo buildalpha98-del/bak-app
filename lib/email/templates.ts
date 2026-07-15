@@ -1,6 +1,15 @@
 // ============================================================
 // Email templates — inline-styled HTML with BAK branding
 // ============================================================
+//
+// Audience: STAFF and CENTRES-as-clients only (coach shifts/invoices,
+// admin invoicing, centre onboarding, B2B enquiry acks). Per the plan's
+// audience principle those live on the app domain, so every link here
+// resolves via getBaseUrl(). Parent-facing mail lives in
+// lib/bookings/booking-emails.ts and lib/parent/email-templates.ts,
+// which use getMarketingUrl() instead.
+
+import { getBaseUrl } from "@/lib/utils/base-url";
 
 const BRAND_ORANGE = "#E8712A";
 const BRAND_DARK = "#1A1A1A";
@@ -49,7 +58,7 @@ function layout(content: string): string {
         <!-- Footer -->
         <tr><td style="padding:16px 24px;border-top:1px solid #E5E5E5;color:${BRAND_GREY};font-size:12px;text-align:center;">
           Build Alpha Kids &bull; Multi-Sport Coaching<br>
-          <a href="https://app.buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">Open App</a>
+          <a href="${getBaseUrl()}" style="color:${BRAND_ORANGE};text-decoration:none;">Open App</a>
         </td></tr>
       </table>
     </td></tr>
@@ -81,7 +90,7 @@ export function shiftAssignmentEmail(
         <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Time</td><td style="padding:4px 8px;font-weight:600;">${time}</td></tr>
       </table>
       <p>Please confirm or decline this shift in the app.</p>
-      <a href="https://app.buildalphakids.com.au/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Shift</a>
+      <a href="${getBaseUrl()}/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Shift</a>
     `),
   };
 }
@@ -98,7 +107,7 @@ export function shiftCancellationEmail(
       <p>Hi ${coachName},</p>
       <p>Your ${sport} session at <strong>${centreName}</strong> on <strong>${date}</strong> has been cancelled.</p>
       <p>Please check your schedule for any updates.</p>
-      <a href="https://app.buildalphakids.com.au/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Schedule</a>
+      <a href="${getBaseUrl()}/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Schedule</a>
     `),
   };
 }
@@ -116,7 +125,7 @@ export function swapRequestEmail(
       <p>Hi ${coachName},</p>
       <p><strong>${requestingCoachName}</strong> has requested you to take over their <strong>${sport}</strong> session at <strong>${centreName}</strong> on <strong>${date}</strong>.</p>
       <p>Please respond in the app.</p>
-      <a href="https://app.buildalphakids.com.au/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Request</a>
+      <a href="${getBaseUrl()}/coach/schedule" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Request</a>
     `),
   };
 }
@@ -132,7 +141,7 @@ export function formReminderEmail(
       <p>Hi ${coachName},</p>
       <p>You have a pending <strong>${formType}</strong> form for: ${sessionDetails}.</p>
       <p>Please complete it at your earliest convenience.</p>
-      <a href="https://app.buildalphakids.com.au/coach" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Open App</a>
+      <a href="${getBaseUrl()}/coach" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Open App</a>
     `),
   };
 }
@@ -150,7 +159,7 @@ export function complianceExpiryEmail(
       <p>Hi ${coachName},</p>
       <p>Your <strong>${docType}</strong> is ${daysRemaining <= 7 ? `expiring in <strong>${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}</strong>` : `expiring on <strong>${expiryDate}</strong>`}.</p>
       <p>Please update your compliance documents to continue receiving session assignments.</p>
-      <a href="https://app.buildalphakids.com.au/coach/profile" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Update Documents</a>
+      <a href="${getBaseUrl()}/coach/profile" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Update Documents</a>
     `),
   };
 }
@@ -164,7 +173,7 @@ export function invoiceReceivedEmail(
     html: layout(`
       <p>Hi ${coachName},</p>
       <p>Your invoice for the period <strong>${period}</strong> is ready for review.</p>
-      <a href="https://app.buildalphakids.com.au/coach/invoices" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoice</a>
+      <a href="${getBaseUrl()}/coach/invoices" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoice</a>
     `),
   };
 }
@@ -187,7 +196,7 @@ export function invoiceSentToAdminEmail(
         <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Total</td><td style="padding:4px 8px;font-weight:600;color:${BRAND_ORANGE};">${totalAmount}</td></tr>
       </table>
       <p>The invoice PDF is attached to this email. You can also view it in the app.</p>
-      <a href="https://app.buildalphakids.com.au/admin/invoicing" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoices</a>
+      <a href="${getBaseUrl()}/admin/invoicing" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoices</a>
     `),
   };
 }
@@ -204,7 +213,7 @@ export function invoiceFlagResolvedEmail(
       <p>The flagged items on your invoice <strong>${invoiceNumber}</strong> have been reviewed and resolved by the operations team.</p>
       ${resolutionNote ? `<p style="padding:12px;background:#F5F5F5;border-radius:6px;border-left:3px solid ${BRAND_ORANGE};"><strong>Resolution note:</strong> ${resolutionNote}</p>` : ""}
       <p>Your invoice is now ready to send. Please review the updated amounts and send when you're happy.</p>
-      <a href="https://app.buildalphakids.com.au/coach/invoicing" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoice</a>
+      <a href="${getBaseUrl()}/coach/invoicing" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View Invoice</a>
     `),
   };
 }
@@ -221,7 +230,7 @@ export function genericNotificationEmail(
     html: layout(`
       <p>Hi ${escapeHtml(userName)},</p>
       <p>${escapeHtml(body)}</p>
-      <a href="https://app.buildalphakids.com.au" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Open App</a>
+      <a href="${getBaseUrl()}" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Open App</a>
     `),
   };
 }
@@ -254,7 +263,7 @@ export function dailyDigestEmail(
         </tr>
         ${rows}
       </table>
-      <a href="https://app.buildalphakids.com.au" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View All in App</a>
+      <a href="${getBaseUrl()}" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View All in App</a>
     `),
   };
 }
@@ -445,7 +454,7 @@ export function onboardingCompletionCelebrationEmail(
         <li style="margin-bottom:8px;">Invoices are issued at the end of each billing period</li>
       </ul>
       <div style="text-align:center;margin:24px 0;">
-        <a href="https://app.buildalphakids.com.au" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Open Your Portal</a>
+        <a href="${getBaseUrl()}" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Open Your Portal</a>
       </div>
       <p>Anything you need, just reply — we're a quick email away.</p>
       <p style="margin-top:24px;">Cheers,<br><strong>The Build Alpha Kids Team</strong></p>
