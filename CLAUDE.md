@@ -12,7 +12,28 @@ Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in
 - **P5** (`4207c68 … 0558b3f`) — multi-coach per shift: `session_coaches` join table (migration 048) with sync-trigger maintaining `sessions.coach_id` as a read-only cache; `setSessionCoaches` helper is the single write path; CI guard test (`lib/__tests__/no-direct-coach-id-writes.test.ts`) enforces it; cost projection per-rate-summed; conflict detection reads from `session_coaches`; UI roster grid renders "+N others" badge on primary and "↔ shared" on secondaries; detail sheet uses a drag-to-reorder `CoachChipMultiselect`.
 - **P4** (drag-and-drop scheduling + colour coding + mobile polish) — **deferred**, planned for post-beta.
 
-**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`). See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
+**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`).
+
+**Email (verified working 2026-07-15):** sending on `hello@buildalphakids.app`,
+both domains verified in Resend, test message delivered to inbox. Two failures
+had stacked here: a Resend 403 ("domain is not verified") that killed every
+send, and a *duplicate* `resend._domainkey` TXT record. The duplicate is the
+one to remember — nothing anywhere reported an error, because Resend finds a
+matching key and calls the domain verified while receivers pick between the two
+at random and fail DKIM on the stale one. Symptom is intermittent spam-foldering,
+not a hard failure. If mail starts landing in junk, check for more than one TXT
+at that name first:
+`dig +short TXT resend._domainkey.buildalphakids.app @ns1.vercel-dns.com` —
+expect exactly one.
+
+**Vercel CLI gotchas** (both cost real time):
+- `vercel dns …` needs `--scope buildalpha98-dels-projects`, or it fails with a
+  misleading "You don't have permission to list the domain record".
+- `vercel env pull` writes a trailing newline into some values (both Supabase
+  keys, the QuickBooks vars); any local script using them then 401s. Vercel's
+  stored values are clean, so production is unaffected — trim after pulling.
+  Never pull into `.env.local`: it replaces the file with the *development*
+  env and destroys the local Supabase/Anthropic keys. See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
 
 ## Tech Stack
 
