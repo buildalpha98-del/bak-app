@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
+import { pickCurrentTerm, type TermRow } from "@/lib/marketing/public-stats";
 
 export const dynamic = "force-dynamic";
 
@@ -33,27 +35,35 @@ export async function GET(request: NextRequest) {
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    // 1. Total sessions all time (completed)
+    // Sessions are counted as "everything not cancelled" — the repo-wide
+    // convention (client portal, launch dashboard). Ops runs a
+    // headcount-only workflow and never flips sessions to 'completed',
+    // so the previous .eq("status", "completed") filters matched zero
+    // rows and wrote 0s to the marketing homepage.
+
+    // 1. Total sessions all time (non-cancelled)
     const { count: totalSessionsAllTime } = await supabase
       .from("sessions")
       .select("id", { count: "exact", head: true })
-      .eq("status", "completed");
+      .neq("status", "cancelled");
 
-    // 2. Sessions this term (completed, in current active term)
-    const { data: activeTerm } = await supabase
+    // 2. Sessions this term (non-cancelled, in the current term)
+    const { data: termRows } = await supabase
       .from("terms")
-      .select("id")
-      .eq("status", "active")
-      .limit(1)
-      .single();
+      .select("id, start_date, end_date, status");
+
+    const currentTerm = pickCurrentTerm(
+      (termRows ?? []) as TermRow[],
+      sydneyTodayIso()
+    );
 
     let sessionsThisTerm = 0;
-    if (activeTerm) {
+    if (currentTerm) {
       const { count } = await supabase
         .from("sessions")
         .select("id", { count: "exact", head: true })
-        .eq("status", "completed")
-        .eq("term_id", activeTerm.id);
+        .neq("status", "cancelled")
+        .eq("term_id", currentTerm.id);
       sessionsThisTerm = count ?? 0;
     }
 
@@ -85,7 +95,12 @@ export async function GET(request: NextRequest) {
       averageRating = Math.round((sum / ratingData.length) * 10) / 10;
     }
 
-    // 6. Total active children
+    // 6. Total active children — the per-child roster is the only
+    // honest source for this stat. It renders publicly as "Kids
+    // coached", so it must never be estimated from centre capacity or
+    // any other proxy. The roster is empty while ops runs a
+    // headcount-only workflow; 0 is the correct value until it's
+    // populated, and the marketing band renders 0 as an em-dash.
     const { count: totalChildren } = await supabase
       .from("children")
       .select("id", { count: "exact", head: true })
