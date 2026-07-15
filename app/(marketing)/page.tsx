@@ -8,6 +8,7 @@ import { ImpactBand } from "@/components/marketing/impact-band";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { B2bBand } from "@/components/marketing/b2b-band";
 import { HolidayClinicsSection } from "@/components/marketing/holiday-clinics-section";
+import { NewsletterForm } from "@/components/marketing/newsletter-form";
 import { TestimonialCard } from "@/components/marketing/testimonial-card";
 import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
 import {
@@ -18,6 +19,7 @@ import { safeFetch } from "@/lib/marketing/safe-fetch";
 import {
   HOMEPAGE,
   HOMEPAGE_CLINICS,
+  NEWSLETTER,
   PROGRAMS,
   PROGRAMS_INDEX,
   SITE,
@@ -47,7 +49,7 @@ export const metadata: Metadata = {
  *  9. Testimonials — live approved testimonials
  * 10. B2B band
  * 11. Blog teasers — Chunk 5
- * 12. Newsletter signup — Chunk 4
+ * 12. Newsletter signup
  * 13. Footer       — (marketing)/layout.tsx
  */
 export default function HomePage() {
@@ -90,8 +92,45 @@ export default function HomePage() {
 
       {/* INSERTION POINT — Chunk 5: latest blog teasers (<BlogTeasers />) */}
 
-      {/* INSERTION POINT — Chunk 4: newsletter signup (<NewsletterSignup />) */}
+      <NewsletterSection />
     </>
+  );
+}
+
+/**
+ * Newsletter capture — the page's last word, and the only orange band
+ * on it, which is the point: it has to read as a different kind of ask
+ * to the B2B band above it.
+ *
+ * Contrast (AA): black-on-yellow eyebrow 13.1:1; the white heading is
+ * ≥30px, where white on #E8712A is fine; the intro is #1A1A1A on
+ * orange (~5.8:1) rather than white/70, which would fail at body size.
+ *
+ * The form is the only client component here — the section is static
+ * and the page stays ISR (revalidate 300).
+ */
+function NewsletterSection() {
+  return (
+    <Section aria-labelledby="newsletter-heading" className="bg-[#E8712A]">
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+        <div>
+          <p className="inline-block -rotate-1 rounded-full border-2 border-[#111] bg-[#FFD23F] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[2px_2px_0_#111]">
+            {NEWSLETTER.eyebrow}
+          </p>
+          <h2
+            id="newsletter-heading"
+            className="mt-5 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl"
+          >
+            {NEWSLETTER.title}
+          </h2>
+          <p className="mt-4 text-base font-medium leading-relaxed text-[#1A1A1A] sm:text-lg">
+            {NEWSLETTER.intro}
+          </p>
+        </div>
+
+        <NewsletterForm sourcePage="/" />
+      </div>
+    </Section>
   );
 }
 

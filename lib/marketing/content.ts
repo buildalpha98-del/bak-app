@@ -762,6 +762,45 @@ export const ENQUIRE_FORM = {
 } as const;
 
 /**
+ * Every user-visible string in <NewsletterForm /> and the homepage
+ * section around it. `errors` is keyed by the codes returned by
+ * subscribeToNewsletter() in lib/marketing/newsletter.ts — that action
+ * returns codes, not prose, for the same reason the enquiry form does.
+ *
+ * Copy discipline: this list makes no promise we cannot keep. No
+ * frequency ("weekly"), no subscriber count, no unsubscribe claim —
+ * there is no unsubscribe flow yet (the status column exists; the
+ * front end for it does not), so saying "unsubscribe any time" would
+ * be writing a cheque Task 4.4 has not cashed.
+ */
+export const NEWSLETTER = {
+  eyebrow: "Stay in the loop",
+  title: "Clinic dates, straight to your inbox",
+  intro:
+    "Holiday clinic dates and Build Alpha Kids news, sent to your inbox when there's something worth telling you. No spam.",
+  emailLabel: "Email address",
+  emailPlaceholder: "you@example.com",
+  /** Honeypot field label — off-screen, only bots ever read it. */
+  honeypotLabel: "Website",
+  submitLabel: "Sign me up",
+  submittingLabel: "Signing up…",
+
+  errors: {
+    emailRequired: "Please add an email address.",
+    emailInvalid: "That email address doesn't look right — please check it.",
+    rateLimited: "That's a few too many tries. Give it a minute and go again.",
+  },
+
+  successTitle: "You're on the list",
+  successBody: "Thanks — we'll be in touch.",
+
+  failureTitle: "That didn't send",
+  failureBody:
+    "Something went wrong at our end and we couldn't add you to the list. Give it another go.",
+  failureRetry: "Try again",
+} as const;
+
+/**
  * The /contact variant's overrides. Same form, fewer fields: the org
  * type is fixed to "other" there, so the name field has to work for a
  * parent as well as a centre director.
