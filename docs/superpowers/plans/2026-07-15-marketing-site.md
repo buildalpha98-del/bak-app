@@ -372,6 +372,11 @@ Pages: `export const revalidate = 300;` on both homepage and `/holiday-clinics`.
 
 Stats: server fetch from `public_stats_cache` (same admin-client pattern). Actual `stat_key` values: `total_sessions_all_time`, `sessions_this_term`, `centre_count`, `sport_count`, `average_rating`, `total_children`. Pick four for the bar — suggested: `total_children` ("kids coached"), `centre_count` ("centres and schools"), `sport_count` ("sports offered"), `sessions_this_term` ("sessions this term"). Dark band, numbers count up on scroll — client component receiving final values as props, one `IntersectionObserver`, no libraries. Testimonials: fetch `approved_testimonials` (reuse column names from `app/api/public/testimonials/route.ts`), render 2–4 cards. Failure posture (confirmed 2026-07-15): testimonials — fetch failure or empty → section renders nothing (return null). Impact/stats band — stays VISIBLE with em-dash placeholder values on failure (the band is core page structure; vanishing it would reflow the page). Homepage never breaks either way.
 
+**Band stat selection (owner decision, 2026-07-15):** the `children` roster table is empty — ops runs headcount-only, so there are no per-child records and `total_children` would publish as a permanent em-dash. Jayden's call: **drop `total_children` from the band and use `total_sessions_all_time` ("Sessions delivered") in that slot** — real (11 as of 2026-07-15) and grows over time. Final four: `total_sessions_all_time`, `centre_count`, `sport_count`, `sessions_this_term`. Do NOT substitute a proxy (e.g. summed centre `group_size`) for a kids count — that publishes contracted capacity as if it were children coached.
+
+**Owner-confirmed facts (2026-07-15)** — sourced by Jayden directly, not from repo copy; treat as authoritative:
+- NSW Active Kids vouchers apply to **both after-school clinics and holiday clinics** (so the Active Kids badge/mention is correct on both program pages, not just holiday).
+
 - [ ] Build + verify + full suite. Commit `feat(marketing): live stats bar and testimonials`.
 
 ### Task 2.4: Book-now redirect (parent-login `next` param)
