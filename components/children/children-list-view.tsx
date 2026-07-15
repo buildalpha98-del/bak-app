@@ -1108,21 +1108,26 @@ export default function ChildrenListView({
                       >
                         {child.status}
                       </Badge>
+                      {/* Overlay link covers the whole row for keyboard
+                          + right-click nav. Checkbox sits above via
+                          z-10 + stopPropagation. It lives inside this
+                          cell because an <a> is invalid as a child of
+                          <tr> — the parser relocates it and hydration
+                          breaks (React #418). The cell is statically
+                          positioned, so inset-0 still resolves against
+                          the relative <tr>. */}
+                      <Link
+                        href={`${basePath}/${child.id}`}
+                        className="absolute inset-0"
+                        aria-label={`View ${childName}`}
+                        onClick={(e) => {
+                          if (selectionActive) {
+                            e.preventDefault();
+                            toggleSelect(child.id);
+                          }
+                        }}
+                      />
                     </TableCell>
-                    {/* Overlay link covers the whole row for keyboard
-                        + right-click nav. Checkbox sits above via
-                        z-10 + stopPropagation. */}
-                    <Link
-                      href={`${basePath}/${child.id}`}
-                      className="absolute inset-0"
-                      aria-label={`View ${childName}`}
-                      onClick={(e) => {
-                        if (selectionActive) {
-                          e.preventDefault();
-                          toggleSelect(child.id);
-                        }
-                      }}
-                    />
                   </TableRow>
                 );
               })}

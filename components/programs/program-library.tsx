@@ -1076,18 +1076,21 @@ function TableView({
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(p.created_at)}
+                    {/* Inside the cell, not the row: an <a> is invalid as
+                        a child of <tr> and the parser moves it, breaking
+                        hydration (React #418). */}
+                    <Link
+                      href={`${basePath}/${p.id}`}
+                      className="absolute inset-0"
+                      aria-label={`View ${p.title}`}
+                      onClick={(e) => {
+                        if (selectionActive) {
+                          e.preventDefault();
+                          onToggleSelect(p.id);
+                        }
+                      }}
+                    />
                   </TableCell>
-                  <Link
-                    href={`${basePath}/${p.id}`}
-                    className="absolute inset-0"
-                    aria-label={`View ${p.title}`}
-                    onClick={(e) => {
-                      if (selectionActive) {
-                        e.preventDefault();
-                        onToggleSelect(p.id);
-                      }
-                    }}
-                  />
                 </TableRow>
               );
             })}
