@@ -219,6 +219,7 @@ unit/integration plus a manual QA checklist):
   field mapping (org type "other" → NULL + notes).
 - Newsletter action: validation, upsert-on-email, honeypot.
 - Clinic query helper: filters `open` + `holiday_clinic` + future only;
+  booking-window filter (null windows pass; closed windows excluded);
   spots-left arithmetic; sold-out flag.
 - Blog: only `published` posts appear publicly; draft slugs 404.
 - Middleware matrix: marketing routes public (anon 200), portal routes still
