@@ -1,4 +1,4 @@
-import { resend, FROM_EMAIL } from "./client";
+import { getResend, FROM_EMAIL } from "./client";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 // ============================================================
@@ -50,7 +50,7 @@ export async function sendEmail(
   emailType: string = "generic"
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
@@ -84,7 +84,7 @@ export async function sendEmailWithAttachment(
   emailType: string = "generic_attachment"
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
