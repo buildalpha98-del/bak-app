@@ -614,3 +614,150 @@ export const CONTACT_ROUTES: ContactRoute[] = [
     ball: BALL_COLORS.blue,
   },
 ];
+
+// ------------------------------------------------------------
+// Enquiry funnel (/enquire + the /contact form)
+// ------------------------------------------------------------
+//
+// Sourcing note (read before editing): the only response-time promise
+// anywhere on this site is "within one business day" — it is the
+// spec'd wording and the ONLY one allowed. Do not add an hours figure,
+// a "we usually reply in X" line, or a same-day claim. The trust
+// points below are the Working With Children Check and first aid (both
+// tracked per coach in the app), the coaches-bring-the-gear point and
+// the framework line — every one of them a restatement of copy already
+// in this module. No counts, no years, no named schools or centres.
+
+/** One "what happens next" step on /enquire. */
+export interface EnquireStep {
+  title: string;
+  body: string;
+  /** Card accent from the canonical ball palette. */
+  ball: BallColor;
+}
+
+export const ENQUIRE_PAGE = {
+  eyebrow: "Schools & centres",
+  title: "Request a quote",
+  intro:
+    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote for multi-sport coaching run on your grounds by our coaches, with all equipment supplied.",
+  /** Meta description (≤160 chars). */
+  description:
+    "Request a quote for Build Alpha Kids multi-sport coaching at your childcare centre or school across South-West Sydney. All equipment supplied.",
+
+  formEyebrow: "Your details",
+  formTitle: "Tell us about your place",
+  formIntro:
+    "The more you can tell us, the sharper the quote. Only the name of your school or centre and an email address are required.",
+
+  nextEyebrow: "What happens next",
+  nextTitle: "How this goes from here",
+  nextIntro:
+    "No call centre and no drip campaign — a real reply from the people who run the coaching.",
+
+  trustEyebrow: "Every coach, every session",
+  trustTitle: "What you're getting either way",
+} as const;
+
+export const ENQUIRE_STEPS: EnquireStep[] = [
+  {
+    title: "It lands with our team",
+    body: "Your enquiry goes straight to the crew who run the coaching — nobody in between, no queue.",
+    ball: BALL_COLORS.green,
+  },
+  {
+    title: "We get back to you",
+    body: "We'll be in touch within one business day to talk through your site, your ages and the timeslot you have in mind.",
+    ball: BALL_COLORS.blue,
+  },
+  {
+    title: "You get a quote",
+    body: "A quote for multi-sport coaching run on your grounds by our coaches, with every bit of equipment supplied.",
+    ball: BALL_COLORS.yellow,
+  },
+];
+
+/** Trust strip on /enquire — all four already asserted elsewhere in this module. */
+export const ENQUIRE_TRUST_POINTS: string[] = [
+  "Working With Children Check on every coach",
+  "First-aid certified coaches at every session",
+  "Coaches bring the gear and the session plan",
+  "EYLF-aligned in centres, curriculum-aligned in schools",
+];
+
+/**
+ * The org-type choices. `value` is the wire value the enquiry route
+ * expects (`school` | `childcare_centre` | anything else → "other",
+ * which the route stores as a null `leads.type` plus a note).
+ */
+export interface OrgTypeOption {
+  value: "school" | "childcare_centre" | "other";
+  label: string;
+}
+
+export const ORG_TYPES: OrgTypeOption[] = [
+  { value: "school", label: "School" },
+  { value: "childcare_centre", label: "Childcare centre" },
+  { value: "other", label: "Something else" },
+];
+
+/**
+ * Every user-visible string in <EnquiryForm />. `errors` is keyed by
+ * the field/code pairs returned by validateEnquiryForm() in
+ * lib/marketing/enquiry.ts — that module returns codes, not prose, so
+ * the copy stays here and stays testable there.
+ */
+export const ENQUIRE_FORM = {
+  requiredNote: "Required",
+  orgNameLabel: "School or centre name",
+  contactNameLabel: "Your name",
+  emailLabel: "Email address",
+  phoneLabel: "Phone",
+  suburbLabel: "Suburb",
+  orgTypeLabel: "What kind of place is this?",
+  programsLabel: "Which programs are you interested in?",
+  programsHint: "Pick as many as you like.",
+  messageLabel: "Anything else we should know?",
+  messageHint:
+    "Your ages, the timeslot you have in mind, how many kids — whatever you've got.",
+  /** Honeypot field label — off-screen, only bots and nobody else read it. */
+  honeypotLabel: "Website",
+  submitLabel: "Request a quote",
+  submittingLabel: "Sending…",
+
+  errors: {
+    orgNameRequired: "Please tell us the name of your school or centre.",
+    emailRequired: "Please add an email address so we can reply.",
+    emailInvalid: "That email address doesn't look right — please check it.",
+    orgTypeRequired: "Please pick the option that fits best.",
+    /** Heading above the server's own 4xx message. */
+    serverTitle: "We couldn't send that",
+  },
+
+  successTitle: "Got it — thanks!",
+  successBody: "We'll be in touch within one business day.",
+  successCta: "Have a look at what we run",
+
+  failureTitle: "That didn't send",
+  failureBody:
+    "Something went wrong at our end and your details didn't reach us. Give it another go — or call us and we'll take it down over the phone.",
+  failureRetry: "Try again",
+  failurePhonePrefix: "Call us on",
+} as const;
+
+/**
+ * The /contact variant's overrides. Same form, fewer fields: the org
+ * type is fixed to "other" there, so the name field has to work for a
+ * parent as well as a centre director.
+ */
+export const CONTACT_FORM = {
+  eyebrow: "Send a message",
+  title: "Or just send us a message",
+  intro:
+    "Not sure which door you need? Send it through here and we'll point you the right way.",
+  orgNameLabel: "Who are you with?",
+  orgNameHint:
+    "Your school, centre or club — or just your family name if you're a parent.",
+  orgNameRequired: "Please pop a name in so we know who we're replying to.",
+  submitLabel: "Send message",
+} as const;

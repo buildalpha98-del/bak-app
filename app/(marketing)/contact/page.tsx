@@ -3,8 +3,10 @@ import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { StickerButton } from "@/components/marketing/sticker-button";
+import { EnquiryForm } from "@/components/marketing/enquiry-form";
 import {
   BALL_COLORS,
+  CONTACT_FORM,
   CONTACT_PAGE,
   CONTACT_ROUTES,
   PROGRAM_PAGE,
@@ -19,11 +21,8 @@ export const metadata: Metadata = {
 /**
  * /contact — fully static. Phone, email and service area straight from
  * SITE, then the two funnel doors (parents → clinics, schools and
- * centres → enquiry).
- *
- * The general-contact FORM is deliberately absent: it is Task 4.2's
- * <EnquiryForm /> in "contact" mode, which does not exist yet. Until
- * then this page ships as links only — see the insertion point below.
+ * centres → enquiry), then the general-contact form for everyone who
+ * fits neither.
  *
  * SITE.phone is still the TODO-CONFIRM placeholder and renders as-is,
  * exactly as the footer does. Do not substitute a real-looking number;
@@ -53,11 +52,33 @@ export default function ContactPage() {
 
       <ContactRoutes />
 
-      {/* INSERTION POINT — Chunk 4 (Task 4.2): the slim general-contact
-          form, <EnquiryForm mode="contact" />, posting to
-          /api/crm/enquiry with type "other". Slots in here, between the
-          route cards and the footer. */}
+      <ContactFormSection />
     </>
+  );
+}
+
+/**
+ * The slim general-contact form — the third door, for anyone the two
+ * route cards above don't fit. Same <EnquiryForm /> as /enquire in its
+ * "contact" variant: fewer fields, and the org type pinned to "other"
+ * so a parent's message never lands in the centre pipeline.
+ *
+ * It reads no search params, so it needs no Suspense boundary and this
+ * page stays static.
+ */
+function ContactFormSection() {
+  return (
+    <Section aria-label={CONTACT_FORM.title} className="bg-white">
+      <SectionHeading
+        eyebrow={CONTACT_FORM.eyebrow}
+        title={CONTACT_FORM.title}
+        intro={CONTACT_FORM.intro}
+      />
+
+      <div className="mt-12 max-w-3xl">
+        <EnquiryForm mode="contact" sourcePage="/contact" />
+      </div>
+    </Section>
   );
 }
 
