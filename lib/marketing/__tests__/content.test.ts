@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { adjacentPrograms, getProgram, PROGRAMS } from "../content";
+import {
+  ABOUT_PAGE,
+  adjacentPrograms,
+  CONTACT_PAGE,
+  ENQUIRE_PAGE,
+  getProgram,
+  HOMEPAGE,
+  PROGRAMS,
+  PROGRAMS_INDEX,
+} from "../content";
 
 describe("PROGRAMS integrity", () => {
   it("has unique slugs (duplicates would collide in generateStaticParams)", () => {
@@ -11,11 +20,35 @@ describe("PROGRAMS integrity", () => {
     const accents = PROGRAMS.map((p) => p.accent.color);
     expect(new Set(accents).size).toBe(PROGRAMS.length);
   });
+});
 
-  it("keeps every meta description inside the ~155 char search cutoff", () => {
-    for (const program of PROGRAMS) {
-      expect(program.metaDescription.length).toBeLessThanOrEqual(160);
+/**
+ * Every string that ends up in a page's <meta name="description">.
+ * The homepage passes HOMEPAGE.heroSub; the rest each expose a
+ * purpose-written `description`. Add new marketing pages here — the
+ * guard is only worth having if it covers all of them.
+ */
+const META_DESCRIPTIONS: [name: string, text: string][] = [
+  ["homepage", HOMEPAGE.heroSub],
+  ["programs index", PROGRAMS_INDEX.description],
+  ["about", ABOUT_PAGE.description],
+  ["contact", CONTACT_PAGE.description],
+  ["enquire", ENQUIRE_PAGE.description],
+  ...PROGRAMS.map(
+    (p): [string, string] => [`program: ${p.slug}`, p.metaDescription]
+  ),
+];
+
+describe("meta descriptions", () => {
+  it.each(META_DESCRIPTIONS)(
+    "%s stays inside the ~155 char search cutoff",
+    (_name, text) => {
+      expect(text.length).toBeLessThanOrEqual(160);
     }
+  );
+
+  it("covers every marketing page (guard is useless if one slips through)", () => {
+    expect(META_DESCRIPTIONS).toHaveLength(5 + PROGRAMS.length);
   });
 });
 

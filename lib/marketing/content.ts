@@ -76,6 +76,24 @@ export const SITE: SiteInfo = {
  */
 export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
 
+/**
+ * Trust claims made on more than one surface — the program pages'
+ * trust strips (Program.trustPoints) and the /about coach-standards
+ * cards (COACH_STANDARDS) make these promises in the same words, so
+ * the words live once. Same reasoning as ACTIVE_KIDS_BLURB above: a
+ * claim repeated across surfaces must move as one, not drift.
+ *
+ * SCOPE: `wwcc` and `firstAid` are the ONLY credential claims this
+ * site is permitted to make. Do not add another accreditation,
+ * qualification or award here — nothing else is sourceable. `gearAndPlan`
+ * is operational, not a credential.
+ */
+export const TRUST_POINTS = {
+  wwcc: "Working With Children Check on every coach",
+  firstAid: "First-aid certified coaches at every session",
+  gearAndPlan: "Coaches bring the gear and the session plan",
+} as const;
+
 // ------------------------------------------------------------
 // Brand assets + palette
 // ------------------------------------------------------------
@@ -234,8 +252,8 @@ export const PROGRAMS: Program[] = [
       "A genuine love of active play",
     ],
     trustPoints: [
-      "Working With Children Check on every coach",
-      "First-aid certified coaches at every session",
+      TRUST_POINTS.wwcc,
+      TRUST_POINTS.firstAid,
       "EYLF-aligned session plans that fit your centre's day",
       "All equipment supplied — no extra admin for your educators",
     ],
@@ -273,10 +291,10 @@ export const PROGRAMS: Program[] = [
       "Habits for lifelong fitness",
     ],
     trustPoints: [
-      "Working With Children Check on every coach",
-      "First-aid certified coaches at every session",
+      TRUST_POINTS.wwcc,
+      TRUST_POINTS.firstAid,
       "Curriculum-friendly structure your teachers can plan around",
-      "Coaches bring the gear and the session plan",
+      TRUST_POINTS.gearAndPlan,
     ],
     heroImage: "/images/marketing/primary-school-hero.jpg",
   },
@@ -312,10 +330,10 @@ export const PROGRAMS: Program[] = [
       "A pathway towards competitive sport",
     ],
     trustPoints: [
-      "Working With Children Check on every coach",
-      "First-aid certified coaches at every session",
+      TRUST_POINTS.wwcc,
+      TRUST_POINTS.firstAid,
       "Curriculum-friendly structure your sport coordinator can plan around",
-      "Coaches bring the gear and the session plan",
+      TRUST_POINTS.gearAndPlan,
     ],
     heroImage: "/images/marketing/high-school-hero.jpg",
   },
@@ -351,8 +369,8 @@ export const PROGRAMS: Program[] = [
       "A weekly session kids count down to",
     ],
     trustPoints: [
-      "Working With Children Check on every coach",
-      "First-aid certified coaches at every session",
+      TRUST_POINTS.wwcc,
+      TRUST_POINTS.firstAid,
       "Capped numbers — every kid gets coached, not supervised",
       ACTIVE_KIDS_BLURB,
     ],
@@ -390,8 +408,8 @@ export const PROGRAMS: Program[] = [
       "Coaching from people they already know",
     ],
     trustPoints: [
-      "Working With Children Check on every coach",
-      "First-aid certified coaches at every session",
+      TRUST_POINTS.wwcc,
+      TRUST_POINTS.firstAid,
       "Capped numbers — every kid gets coached, not supervised",
       ACTIVE_KIDS_BLURB,
     ],
@@ -514,7 +532,7 @@ export const ABOUT_PAGE = {
   story: [
     "Kids are wired to move. Build Alpha Kids exists to turn that energy into skills — and to make sure the kid who would never put their hand up for a rep team gets coached just as hard as the one who would.",
     "So we go to where kids already are. Our coaches turn up at childcare centres with every bit of equipment and build sessions into the day. They run curriculum-friendly sessions on school grounds during sport time or straight after the bell. And in the school holidays they run full-throttle multi-sport days that parents book online in about 60 seconds.",
-    "Nothing we run is a one-code academy. Every program mixes soccer, basketball, cricket, tennis, volleyball and rugby, so kids find the sports they love instead of specialising before they can tie their laces. From two-year-olds learning to kick and catch through to Year 12 students working on conditioning and game sense, the thread never changes: real coaching, scaled so every kid is in the game.",
+    "Nothing we run is a one-code academy — kids rotate through the lot. From two-year-olds learning to kick and catch through to Year 12 students working on conditioning and game sense, the thread never changes: real coaching, scaled so every kid is in the game.",
   ],
 
   beliefsTitle: "What we back",
@@ -526,31 +544,29 @@ export const ABOUT_PAGE = {
     "Habits that outlast the school bell",
   ],
 
-  standardsEyebrow: "Every coach, every session",
+  /**
+   * The eyebrow is PROGRAM_PAGE.trustEyebrow — the standards section
+   * makes the same promise the program pages' trust strip does, so it
+   * carries the same label rather than a second copy of the string.
+   */
   standardsTitle: "The standards behind every session",
   standardsIntro:
     "The bits parents, educators and sport coordinators ask about first — and the answers we hold every coach to.",
-
-  ctaEyebrow: "Schools & centres",
-  ctaTitle: "Want this running at your place?",
-  ctaBody:
-    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote.",
-  ctaLabel: "Request a quote",
 } as const;
 
 export const COACH_STANDARDS: CoachStandard[] = [
   {
-    title: "Working With Children Check on every coach",
+    title: TRUST_POINTS.wwcc,
     body: "Every coach who runs a Build Alpha Kids session holds a current Working With Children Check. We track it per coach, and centres and schools can see it.",
     ball: BALL_COLORS.green,
   },
   {
-    title: "First-aid certified coaches at every session",
+    title: TRUST_POINTS.firstAid,
     body: "First aid is a condition of coaching with us, not a nice-to-have. It is tracked the same way the Working With Children Check is, for every coach on every session.",
     ball: BALL_COLORS.blue,
   },
   {
-    title: "Coaches bring the gear and the session plan",
+    title: TRUST_POINTS.gearAndPlan,
     body: "Our coaches arrive set up, with every bit of equipment and a plan for the hour. Childcare session plans are EYLF-aligned; school sessions are curriculum-friendly. Either way, your team lifts nothing.",
     ball: BALL_COLORS.yellow,
   },
@@ -679,9 +695,9 @@ export const ENQUIRE_STEPS: EnquireStep[] = [
 
 /** Trust strip on /enquire — all four already asserted elsewhere in this module. */
 export const ENQUIRE_TRUST_POINTS: string[] = [
-  "Working With Children Check on every coach",
-  "First-aid certified coaches at every session",
-  "Coaches bring the gear and the session plan",
+  TRUST_POINTS.wwcc,
+  TRUST_POINTS.firstAid,
+  TRUST_POINTS.gearAndPlan,
   "EYLF-aligned in centres, curriculum-aligned in schools",
 ];
 

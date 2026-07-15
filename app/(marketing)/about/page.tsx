@@ -9,7 +9,9 @@ import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
 import {
   ABOUT_PAGE,
+  BALL_COLORS,
   COACH_STANDARDS,
+  PROGRAM_PAGE,
   SITE,
 } from "@/lib/marketing/content";
 
@@ -77,7 +79,8 @@ export default function AboutPage() {
                 <li key={belief} className="flex items-start gap-3">
                   <span
                     aria-hidden="true"
-                    className="mt-1 size-4 shrink-0 rounded-full border-2 border-[#111] bg-[#E8712A]"
+                    className="mt-1 size-4 shrink-0 rounded-full border-2 border-[#111]"
+                    style={{ backgroundColor: BALL_COLORS.orange.color }}
                   />
                   <span className="font-heading text-base font-bold leading-snug text-[#111]">
                     {belief}
@@ -98,13 +101,15 @@ export default function AboutPage() {
           Same job the homepage's testimonials do before its B2B band. */}
       <SportsStrip />
 
+      {/* The same quote band the program pages close on — same words,
+          so it reads from PROGRAM_PAGE rather than restating them. */}
       <CtaBand
-        label={ABOUT_PAGE.ctaTitle}
-        eyebrow={ABOUT_PAGE.ctaEyebrow}
-        title={ABOUT_PAGE.ctaTitle}
-        body={ABOUT_PAGE.ctaBody}
+        label={PROGRAM_PAGE.quoteTitle}
+        eyebrow={PROGRAM_PAGE.quoteEyebrow}
+        title={PROGRAM_PAGE.quoteTitle}
+        body={PROGRAM_PAGE.quoteBody}
         href={SITE.enquiryUrl}
-        cta={ABOUT_PAGE.ctaLabel}
+        cta={PROGRAM_PAGE.quoteCta}
       />
     </>
   );
@@ -120,7 +125,7 @@ function CoachStandardsSection() {
   return (
     <Section aria-label={ABOUT_PAGE.standardsTitle} className="bg-[#FFF7F2]">
       <SectionHeading
-        eyebrow={ABOUT_PAGE.standardsEyebrow}
+        eyebrow={PROGRAM_PAGE.trustEyebrow}
         title={ABOUT_PAGE.standardsTitle}
         intro={ABOUT_PAGE.standardsIntro}
       />

@@ -155,7 +155,8 @@ function ContactDetails() {
               {card.href ? (
                 <a
                   href={card.href}
-                  className="mt-2 inline-flex min-h-11 items-center break-words font-heading text-lg font-extrabold leading-snug text-[#111] underline decoration-[#E8712A] decoration-2 underline-offset-4 transition-colors hover:text-[#993C1D]"
+                  className="mt-2 inline-flex min-h-11 items-center break-words font-heading text-lg font-extrabold leading-snug text-[#111] underline decoration-2 underline-offset-4 transition-colors hover:text-[#993C1D]"
+                  style={{ textDecorationColor: BALL_COLORS.orange.color }}
                 >
                   {card.value}
                 </a>
