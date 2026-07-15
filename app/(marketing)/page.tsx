@@ -9,9 +9,16 @@ import { ImpactBand } from "@/components/marketing/impact-band";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { B2bBand } from "@/components/marketing/b2b-band";
 import { ClinicCard, ClinicsEmptyState } from "@/components/marketing/clinic-card";
+import { TestimonialCard } from "@/components/marketing/testimonial-card";
 import { StickerButton } from "@/components/marketing/sticker-button";
 import { getOpenHolidayClinics } from "@/lib/marketing/clinics";
 import type { PublicClinic } from "@/lib/marketing/clinics-shared";
+import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
+import {
+  getApprovedTestimonials,
+  type PublicTestimonial,
+} from "@/lib/marketing/testimonials";
+import type { ImpactStat } from "@/components/marketing/impact-band";
 import { HOMEPAGE, PROGRAMS, SITE } from "@/lib/marketing/content";
 
 /** ISR — clinic dates/spot counts refresh within 5 minutes. */
@@ -23,18 +30,6 @@ export const metadata: Metadata = {
 };
 
 /**
- * Placeholder impact stats — Task 2.3 (Chunk 2) replaces these
- * values with live counts from public_stats_cache via the same
- * <ImpactBand stats={...} /> prop. Labels are real; values are em
- * dashes until the live feed lands.
- */
-const IMPACT_PLACEHOLDER = [
-  { label: "Kids coached", value: "—" },
-  { label: "Centres & schools", value: "—" },
-  { label: "Sports on rotation", value: "—" },
-];
-
-/**
  * Homepage — sections render in the approved order. Live-data
  * sections land in later chunks; the comments below mark exactly
  * where each one slots in.
@@ -44,10 +39,10 @@ const IMPACT_PLACEHOLDER = [
  *  3. Sports strip
  *  4. What we do
  *  5. Programs grid
- *  6. Impact band  — Chunk 2 feeds live values (placeholder now)
- *  7. Holiday clinic cards — Chunk 2 (live upcoming clinics)
+ *  6. Impact band  — live values from public_stats_cache
+ *  7. Holiday clinic cards — live upcoming clinics
  *  8. How it works
- *  9. Testimonials — Chunk 2
+ *  9. Testimonials — live approved testimonials
  * 10. B2B band
  * 11. Blog teasers — Chunk 5
  * 12. Newsletter signup — Chunk 4
@@ -75,14 +70,13 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* INSERTION POINT — Chunk 2: live stats band — feed <ImpactBand /> live values (swap stats prop, not markup) */}
-      <ImpactBand stats={IMPACT_PLACEHOLDER} />
+      <ImpactBandSection />
 
       <HolidayClinicsSection />
 
       <HowItWorks />
 
-      {/* INSERTION POINT — Chunk 2: parent testimonials (<Testimonials />) */}
+      <TestimonialsSection />
 
       <B2bBand />
 
@@ -90,6 +84,60 @@ export default function HomePage() {
 
       {/* INSERTION POINT — Chunk 4: newsletter signup (<NewsletterSignup />) */}
     </>
+  );
+}
+
+/**
+ * Live impact band — four counts from public_stats_cache. A failed
+ * fetch degrades to the em-dash placeholders (IMPACT_FALLBACK) and
+ * per-key gaps degrade inside getImpactStats, so the band always
+ * renders. Refreshes with the page's ISR window (revalidate 300).
+ */
+async function ImpactBandSection() {
+  let stats: ImpactStat[];
+  try {
+    stats = await getImpactStats();
+  } catch {
+    stats = IMPACT_FALLBACK;
+  }
+
+  return <ImpactBand stats={stats} />;
+}
+
+/**
+ * Live testimonials — up to four approved quotes, newest first. An
+ * empty table or a failed fetch renders nothing at all (no heading,
+ * no gap): the homepage flows straight from how-it-works to the B2B
+ * band, exactly as it did before this section existed.
+ */
+async function TestimonialsSection() {
+  let testimonials: PublicTestimonial[] = [];
+  try {
+    testimonials = await getApprovedTestimonials(4);
+  } catch {
+    testimonials = [];
+  }
+
+  if (testimonials.length === 0) return null;
+
+  return (
+    <Section aria-label="Testimonials" className="bg-white">
+      <SectionHeading
+        eyebrow="What parents and schools say"
+        title="Loved on both sides of the sideline"
+        intro="Real feedback from the parents, centres and schools we coach for every week."
+      />
+
+      <div className="mt-12 grid gap-6 sm:grid-cols-2">
+        {testimonials.map((testimonial, i) => (
+          <TestimonialCard
+            key={`${testimonial.display_name}-${i}`}
+            testimonial={testimonial}
+            className={i === 1 ? "sm:rotate-1" : undefined}
+          />
+        ))}
+      </div>
+    </Section>
   );
 }
 
