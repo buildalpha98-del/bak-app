@@ -13,7 +13,7 @@ const RAMP = [
   { bg: "#FFF7F2", fg: "#1A1A1A", sub: "#993C1D", chip: "#E8712A" },
   { bg: "#FBDCC5", fg: "#1A1A1A", sub: "#993C1D", chip: "#E8712A" },
   { bg: "#F5A567", fg: "#1A1A1A", sub: "#7A2E12", chip: "#FFF7F2" },
-  { bg: "#E8712A", fg: "#1A1A1A", sub: "#5C2410", chip: "#FFF7F2" },
+  { bg: "#E8712A", fg: "#1A1A1A", sub: "#3D1708", chip: "#FFF7F2" },
   { bg: "#993C1D", fg: "#FFFFFF", sub: "#FBDCC5", chip: "#E8712A" },
 ] as const;
 

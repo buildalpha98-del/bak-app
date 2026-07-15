@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 import { isPublicRoute } from "@/lib/marketing/public-routes";
+import { isRevokedSessionError } from "@/lib/auth/session-errors";
 
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
@@ -93,19 +94,7 @@ export async function middleware(request: NextRequest) {
     error: authError,
   } = await supabase.auth.getUser();
 
-  // AuthSessionMissingError (status 400, no code) is the normal
-  // anonymous state — every logged-out marketing visitor hits it.
-  // Only a *broken* session (banned, revoked, malformed token)
-  // should trigger the cookie wipe + login redirect; treating the
-  // missing-session 400 as broken redirect-looped /login and bounced
-  // anonymous visitors off every public page.
-  if (
-    authError &&
-    authError.name !== "AuthSessionMissingError" &&
-    (authError.code === "user_banned" ||
-      authError.code === "refresh_token_not_found" ||
-      authError.status === 400)
-  ) {
+  if (authError && isRevokedSessionError(authError)) {
     const login = NextResponse.redirect(new URL("/login", request.url));
     for (const cookie of request.cookies.getAll()) {
       if (cookie.name.startsWith("sb-")) {

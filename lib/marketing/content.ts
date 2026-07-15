@@ -69,6 +69,13 @@ export const SITE: SiteInfo = {
 /** Shown as a badge on holiday clinic cards and the booking CTA. */
 export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
 
+/** Homepage-specific copy shared between components and metadata. */
+export const HOMEPAGE = {
+  /** Hero sub copy — also the homepage meta description. */
+  heroSub:
+    "Multi-sport coaching across South-West Sydney childcare centres, schools and holiday clinics. Book online in 60 seconds — then watch them grow all term.",
+} as const;
+
 // ------------------------------------------------------------
 // Programs
 // ------------------------------------------------------------

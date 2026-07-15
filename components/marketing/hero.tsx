@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { ACTIVE_KIDS_BLURB } from "@/lib/marketing/content";
+import { ACTIVE_KIDS_BLURB, HOMEPAGE } from "@/lib/marketing/content";
 
 /**
  * Homepage hero — full-bleed orange, oversized heading, action
@@ -35,9 +35,7 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-[#1A1A1A] sm:text-xl">
-            Multi-sport coaching across South-West Sydney childcare centres,
-            schools and holiday clinics. Book online in 60 seconds — then watch
-            them grow all term.
+            {HOMEPAGE.heroSub}
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">

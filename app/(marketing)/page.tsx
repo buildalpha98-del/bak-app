@@ -4,12 +4,11 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { ProgramCard } from "@/components/marketing/program-card";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { B2bBand } from "@/components/marketing/b2b-band";
-import { PROGRAMS, SITE } from "@/lib/marketing/content";
+import { HOMEPAGE, PROGRAMS, SITE } from "@/lib/marketing/content";
 
 export const metadata: Metadata = {
   title: `${SITE.name} — ${SITE.tagline}`,
-  description:
-    "Multi-sport coaching across South-West Sydney childcare centres, schools and holiday clinics. Book online in 60 seconds — then watch them grow all term.",
+  description: HOMEPAGE.heroSub,
 };
 
 /**
