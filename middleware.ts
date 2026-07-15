@@ -14,6 +14,10 @@ const PUBLIC_ROUTES = [
   "/client/shared", // shared read-only links (token-based, no auth)
 ];
 
+// The sign-in pages themselves. Redirecting one of these to /login is
+// always a loop, never a fix.
+const LOGIN_ROUTES = ["/login", "/client-login", "/parent-login"];
+
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
   admin: ["/admin", "/ops", "/coach"], // admin can access all portals
@@ -105,20 +109,32 @@ export async function middleware(request: NextRequest) {
     error: authError,
   } = await supabase.auth.getUser();
 
+  // Only STALE cookies need clearing — and only a request that actually
+  // carries some can be carrying stale ones. Acting on authError alone
+  // took down production login: with no session at all, getUser() fails
+  // with AuthSessionMissingError, whose status IS 400, so every signed-out
+  // visitor to /login was redirected to /login, forever.
+  const staleAuthCookies = request.cookies
+    .getAll()
+    .filter((cookie) => cookie.name.startsWith("sb-"));
+
   if (
     authError &&
+    staleAuthCookies.length > 0 &&
     (authError.code === "user_banned" ||
       authError.code === "refresh_token_not_found" ||
       authError.status === 400)
   ) {
-    const login = NextResponse.redirect(new URL("/login", request.url));
-    for (const cookie of request.cookies.getAll()) {
-      if (cookie.name.startsWith("sb-")) {
-        login.cookies.delete(cookie.name);
-      }
+    // Already on a login page: clear the cookies and let it render. A
+    // redirect here would just point the page at itself.
+    const response = LOGIN_ROUTES.includes(pathname)
+      ? NextResponse.next({ request })
+      : NextResponse.redirect(new URL("/login", request.url));
+    for (const cookie of staleAuthCookies) {
+      response.cookies.delete(cookie.name);
     }
-    login.cookies.delete(ROLE_HINT_COOKIE);
-    return login;
+    response.cookies.delete(ROLE_HINT_COOKIE);
+    return response;
   }
 
   // Check if current route is public
