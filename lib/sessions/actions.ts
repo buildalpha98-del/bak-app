@@ -12,6 +12,7 @@ import {
   setSessionCoaches,
   type SessionCoachInput,
 } from "@/lib/sessions/session-coaches";
+import { toLocalIso } from "@/lib/utils/roster";
 
 // ============================================================
 // Types
@@ -99,7 +100,7 @@ export async function getSessionsForWeek(
     const monday = new Date(weekStartDate + "T00:00:00");
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     const { data: raw, error } = await supabase
       .from("sessions")

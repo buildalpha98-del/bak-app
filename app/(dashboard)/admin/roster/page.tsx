@@ -13,7 +13,8 @@ import {
 import { getRegions } from "@/lib/regions/actions";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getMonday } from "@/lib/utils/roster";
+import { mondayOfIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import { LoadError } from "@/components/ui/load-error";
 
 interface AdminRosterPageProps {
@@ -24,8 +25,13 @@ export default async function AdminRosterPage({
   searchParams,
 }: AdminRosterPageProps) {
   const { week } = await searchParams;
-  const weekStart =
-    week ?? getMonday(new Date()).toISOString().split("T")[0];
+  // Week keys are always the Monday, computed on Sydney's calendar —
+  // the server runs in bom1 and its local "today"/toISOString drifted
+  // a day, starting the grid on Saturday. Normalising ?week also heals
+  // old Sunday-keyed URLs from the pre-fix navigation.
+  const weekParam =
+    week && /^\d{4}-\d{2}-\d{2}$/.test(week) ? week : sydneyTodayIso();
+  const weekStart = mondayOfIso(weekParam);
 
   // Batch every data fetch the shell needs. Regions + the centre/region
   // lookup are new — they back the Region filter chip without forcing

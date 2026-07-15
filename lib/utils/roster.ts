@@ -15,6 +15,36 @@ for (let h = 7; h <= 17; h++) {
   }
 }
 
+/**
+ * Serialise a local-time Date as "YYYY-MM-DD" WITHOUT the UTC shift.
+ * `toISOString()` converts to UTC first, which moves local-midnight
+ * dates back a day in any timezone east of UTC (Sydney is +10/+11) —
+ * that was the root cause of the roster grid starting on Saturday.
+ */
+export function toLocalIso(d: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/**
+ * Monday of the week containing a "YYYY-MM-DD" date, as "YYYY-MM-DD".
+ * Pure string→string calendar arithmetic (UTC-internal), so it gives
+ * the same answer on every server and browser regardless of timezone.
+ * Sunday belongs to the week that started the previous Monday.
+ */
+export function mondayOfIso(dateIso: string): string {
+  const utc = new Date(
+    Date.UTC(
+      Number(dateIso.slice(0, 4)),
+      Number(dateIso.slice(5, 7)) - 1,
+      Number(dateIso.slice(8, 10))
+    )
+  );
+  const day = utc.getUTCDay(); // 0=Sun, 1=Mon, ...
+  utc.setUTCDate(utc.getUTCDate() + (day === 0 ? -6 : 1 - day));
+  return utc.toISOString().split("T")[0];
+}
+
 /** Get Monday of the week containing the given date */
 export function getMonday(date: Date): Date {
   const d = new Date(date);
@@ -102,7 +132,7 @@ export function getWeekDates(monday: Date): string[] {
   for (let i = 0; i < 5; i++) {
     const d = new Date(monday);
     d.setDate(d.getDate() + i);
-    dates.push(d.toISOString().split("T")[0]);
+    dates.push(toLocalIso(d));
   }
   return dates;
 }
@@ -140,20 +170,21 @@ export function getWeekDatesFull(monday: Date): string[] {
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(d.getDate() + i);
-    dates.push(d.toISOString().split("T")[0]);
+    dates.push(toLocalIso(d));
   }
   return dates;
 }
 
 /**
- * Format "YYYY-MM-DD" as a compact staff-grid column header: "Mon 7/6"
- * (weekday abbreviation + month/day). Weekend-safe — unlike
- * `formatDayHeader`, which relies on `dateToDay` returning 0 for Sat/Sun.
+ * Format "YYYY-MM-DD" as a compact staff-grid column header: "Mon 6/7"
+ * (weekday abbreviation + day/month, Australian order). Weekend-safe —
+ * unlike `formatDayHeader`, which relies on `dateToDay` returning 0
+ * for Sat/Sun.
  */
 export function formatDayHeaderShort(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
   const dayName = d.toLocaleDateString("en-AU", { weekday: "short" });
-  return `${dayName} ${d.getMonth() + 1}/${d.getDate()}`;
+  return `${dayName} ${d.getDate()}/${d.getMonth() + 1}`;
 }
 
 /**

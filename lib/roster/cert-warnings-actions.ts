@@ -10,6 +10,7 @@ import type {
   ExpiringCert,
   SessionCertWarning,
 } from "@/lib/utils/compliance/cert-warnings";
+import { toLocalIso } from "@/lib/utils/roster";
 
 const EXPIRING_WINDOW_DAYS = 14;
 
@@ -48,7 +49,7 @@ export async function getSessionCertWarningsForWeek(
     const start = new Date(weekStartDate + "T00:00:00");
     const end = new Date(start);
     end.setDate(end.getDate() + (weekDays - 1));
-    const weekEndDate = end.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(end);
 
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")

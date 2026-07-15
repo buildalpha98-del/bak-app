@@ -17,6 +17,7 @@ import {
   type AvailabilityStatus,
 } from "@/lib/utils/scheduling";
 import type { SessionWithRelations } from "./actions";
+import { toLocalIso } from "@/lib/utils/roster";
 
 // ============================================================
 // 1. getCoachAvailabilityForSession
@@ -176,7 +177,7 @@ export async function checkWeekClashes(
     const monday = new Date(weekStartDate + "T00:00:00");
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     // Get all sessions for the week with joins
     const { data: raw, error: sessError } = await supabase
@@ -402,8 +403,8 @@ export async function getReplacementSuggestions(
     monday.setDate(monday.getDate() + dayDiff);
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekStart = monday.toISOString().split("T")[0];
-    const weekEnd = friday.toISOString().split("T")[0];
+    const weekStart = toLocalIso(monday);
+    const weekEnd = toLocalIso(friday);
 
     // Get all active coaches except the current one
     const { data: coaches } = await supabase
@@ -625,7 +626,7 @@ export async function publishDraftSessionsForWeek(weekStart: string): Promise<{
     const monday = new Date(weekStart + "T00:00:00");
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     // Pull only the drafts so the activity log is accurate even if a
     // race between the count query and the update lets a non-draft
@@ -716,7 +717,7 @@ export async function confirmSessionsForWeek(weekStart: string): Promise<{
     const monday = new Date(weekStart + "T00:00:00Z");
     const friday = new Date(monday);
     friday.setUTCDate(friday.getUTCDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     const { data: candidates, error: selErr } = await supabase
       .from("sessions")

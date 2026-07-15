@@ -14,7 +14,8 @@ import {
 import { getRegions } from "@/lib/regions/actions";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getMonday } from "@/lib/utils/roster";
+import { mondayOfIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import { LoadError } from "@/components/ui/load-error";
 
 interface OpsRosterPageProps {
@@ -25,8 +26,10 @@ export default async function OpsRosterPage({
   searchParams,
 }: OpsRosterPageProps) {
   const { week } = await searchParams;
-  const weekStart =
-    week ?? getMonday(new Date()).toISOString().split("T")[0];
+  // Sydney-anchored Monday week key — see admin/roster/page.tsx.
+  const weekParam =
+    week && /^\d{4}-\d{2}-\d{2}$/.test(week) ? week : sydneyTodayIso();
+  const weekStart = mondayOfIso(weekParam);
 
   const supabase = await createSupabaseServerClient();
   const [

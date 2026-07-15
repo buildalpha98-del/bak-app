@@ -12,6 +12,7 @@ import {
   type PricedSession,
 } from "@/lib/utils/roster/cost-projection";
 import type { CentreType } from "@/lib/types/enums";
+import { toLocalIso } from "@/lib/utils/roster";
 
 export type { CostProjection } from "@/lib/utils/roster/cost-projection";
 
@@ -81,7 +82,7 @@ export async function getWeekCostProjection(
     const start = new Date(weekStartDate + "T00:00:00");
     const end = new Date(start);
     end.setDate(end.getDate() + (weekDays - 1));
-    const weekEndDate = end.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(end);
 
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")

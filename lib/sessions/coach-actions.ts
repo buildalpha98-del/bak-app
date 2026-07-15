@@ -11,6 +11,8 @@ import type {
   ItemCondition,
 } from "@/lib/types/enums";
 import type { Session, Program, FeedbackRating } from "@/lib/types/database";
+import { toLocalIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 // ============================================================
 // Types
@@ -119,7 +121,9 @@ export interface CoachSessionDetail {
 // ============================================================
 
 function todayString(): string {
-  return new Date().toISOString().split("T")[0];
+  // Sydney's calendar day, not UTC's — the UTC date lags Sydney by 10
+  // hours, so coaches opening the app before 10am saw yesterday.
+  return sydneyTodayIso();
 }
 
 function mapSession(raw: Record<string, unknown>): CoachSessionWithCentre {
@@ -239,7 +243,7 @@ export async function getCoachSessionsForWeek(
     const monday = new Date(weekStartDate + "T00:00:00");
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     const { data: raw, error } = await supabase
       .from("sessions")

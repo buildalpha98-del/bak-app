@@ -15,6 +15,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { getWeekCostProjection } from "@/lib/roster/cost-actions";
 import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
+import { toLocalIso } from "@/lib/utils/roster";
 
 export interface RosterStatusPulse {
   /** Sessions in the week with `status='draft'`. */
@@ -57,7 +58,7 @@ export async function getRosterStatusPulse(
     const monday = new Date(weekStart + "T00:00:00");
     const friday = new Date(monday);
     friday.setDate(friday.getDate() + 4);
-    const weekEndDate = friday.toISOString().split("T")[0];
+    const weekEndDate = toLocalIso(friday);
 
     // Fan out the cheap counts. Each is `head: true` so no row data
     // crosses the wire — just the count.

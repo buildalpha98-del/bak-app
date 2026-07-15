@@ -14,26 +14,28 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toLocalIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 // ============================================================
 // Helpers
 // ============================================================
 
-/** Get next Monday from today */
+/** Get next Monday from Sydney-today */
 function getNextMonday(): string {
-  const today = new Date();
+  const today = new Date(sydneyTodayIso() + "T00:00:00");
   const day = today.getDay();
   const daysUntil = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
   const monday = new Date(today);
   monday.setDate(monday.getDate() + daysUntil);
-  return monday.toISOString().split("T")[0];
+  return toLocalIso(monday);
 }
 
 /** Get Friday from a Monday date string */
 function getFridayFromMonday(monday: string): string {
   const d = new Date(monday + "T00:00:00");
   d.setDate(d.getDate() + 4);
-  return d.toISOString().split("T")[0];
+  return toLocalIso(d);
 }
 
 // ============================================================
@@ -94,7 +96,7 @@ export function AIGenerateDialog({
       const diff = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
       d.setDate(d.getDate() + diff);
     }
-    setWeekStart(d.toISOString().split("T")[0]);
+    setWeekStart(toLocalIso(d));
   }
 
   async function handleGenerate() {

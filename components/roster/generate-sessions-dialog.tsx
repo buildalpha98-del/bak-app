@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { generateSessionsForWeek } from "@/lib/terms/actions";
 import type { Term } from "@/lib/types/database";
+import { toLocalIso } from "@/lib/utils/roster";
 
 // ============================================================
 // Helpers
@@ -43,10 +44,10 @@ function getWeeksInTerm(
   current.setDate(current.getDate() + daysUntilMon);
 
   while (current <= end) {
-    const monday = current.toISOString().split("T")[0];
+    const monday = toLocalIso(current);
     const friday = new Date(current);
     friday.setDate(friday.getDate() + 4);
-    const fridayStr = friday.toISOString().split("T")[0];
+    const fridayStr = toLocalIso(friday);
 
     const monLabel = current.toLocaleDateString("en-AU", {
       day: "numeric",

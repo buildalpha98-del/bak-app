@@ -100,7 +100,8 @@ import { ClashDetectionDialog } from "./clash-detection-dialog";
 import { RosterStatusPulseStrip } from "./roster-status-pulse";
 import { MonthCalendarPopover } from "./month-calendar-popover";
 import { useSessionsRealtime } from "@/lib/hooks/useSessionsRealtime";
-import { getMonday, formatWeekLabel } from "@/lib/utils/roster";
+import { getMonday, formatWeekLabel, toLocalIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import {
   bulkUpdateSessionStatus,
   bulkReassignCoach,
@@ -435,7 +436,10 @@ export function RosterPage({
 
   function navigateToWeek(date: Date) {
     const monday = getMonday(date);
-    const dateStr = monday.toISOString().split("T")[0];
+    // toLocalIso, NOT toISOString — the UTC conversion used to shift
+    // the week key back a day (Sydney is ahead of UTC), which is how
+    // "next week" landed on a Sunday and the grid started on Saturday.
+    const dateStr = toLocalIso(monday);
     // Preserve filter params on navigation so jumping across weeks
     // doesn't blow away the operator's filter set.
     const next = new URLSearchParams(Array.from(params.entries()));
@@ -454,7 +458,8 @@ export function RosterPage({
     navigateToWeek(next);
   }
   function goToToday() {
-    navigateToWeek(new Date());
+    // Anchor "today" to Sydney's calendar, not the browser's.
+    navigateToWeek(new Date(sydneyTodayIso() + "T00:00:00"));
   }
 
   // ---- Session actions ----
@@ -481,7 +486,7 @@ export function RosterPage({
     setReviewRunId(runId);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 4);
-    const weekEndStr = weekEnd.toISOString().split("T")[0];
+    const weekEndStr = toLocalIso(weekEnd);
 
     const run = await getSchedulingRun(initialWeekStart, weekEndStr);
     if (run) {
