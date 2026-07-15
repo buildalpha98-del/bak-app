@@ -97,7 +97,7 @@ export const PROGRAMS: Program[] = [
     tagline: "Big energy for little athletes.",
     description: [
       "Little kids are wired to move — we turn that energy into skills. Build Alpha Kids brings fun, fast-paced multi-sport sessions straight into your childcare centre, building coordination, confidence and a genuine love of active play from the very first session.",
-      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. We coach at around 40 centres across South-West Sydney, and we'd love yours to be next.",
+      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. Centres across South-West Sydney trust Build Alpha Kids every week — and we'd love yours to be next.",
     ],
     ages: "Ages 2–5 (preschool and kindy-ready)",
     highlights: [
