@@ -10,6 +10,10 @@ export const PUBLIC_ROUTES = [
   "/blog",
   "/enquire",
   "/contact",
+  // Legal pages must be reachable signed-out: the footer links them from
+  // every page, and the old WP URLs 301 here for anonymous crawlers.
+  "/privacy",
+  "/terms",
   "/login",
   "/client-login",
   "/parent-login",

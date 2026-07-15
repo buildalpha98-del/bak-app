@@ -107,15 +107,20 @@ describe("WP_REDIRECTS", () => {
     expect(postRules).toHaveLength(13);
   });
 
-  // Legal pages have no destination on the new site. A 301 to "/" is a
-  // soft 404 and a 308 is hard-cached by browsers, so guessing is worse
-  // than a plain 404. Locks in the reported decision.
-  it.each(["/terms-of-use", "/privacy-policy"])(
-    "deliberately does not guess a destination for %s",
-    (source) => {
-      expect(WP_REDIRECTS.find((r) => r.source === source)).toBeUndefined();
-    }
-  );
+  // Legal pages. Task 6.2 deliberately left these UNMAPPED — the new site
+  // had no privacy or terms page, and a 301 to "/" would have been a soft
+  // 404. Task 3.3 built the real pages, so the reason for the gap is gone
+  // and the assertion inverts: they must now be mapped, and mapped to the
+  // real page rather than back to "/".
+  it.each([
+    ["/privacy-policy", "/privacy"],
+    ["/terms-of-use", "/terms"],
+  ])("maps %s to its real page at %s", (source, destination) => {
+    const rule = WP_REDIRECTS.find((r) => r.source === source);
+    expect(rule).toBeDefined();
+    expect(rule?.destination).toBe(destination);
+    expect(rule?.permanent).toBe(true);
+  });
 
   // A blanket catch-all would match portal routes and silently turn
   // every 404 into a homepage redirect.

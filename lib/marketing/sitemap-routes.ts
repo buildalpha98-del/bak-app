@@ -50,6 +50,11 @@ export const STATIC_MARKETING_ROUTES: MarketingRoute[] = [
   { path: "/enquire", changeFrequency: "yearly", priority: 0.7 },
   { path: "/about", changeFrequency: "yearly", priority: 0.6 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.6 },
+  // Legal pages: indexed (they're linked site-wide and the old WP URLs
+  // 301 here, so Google will fetch them regardless) but at the bottom of
+  // the priority range — nobody should reach us via a policy page.
+  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 /**

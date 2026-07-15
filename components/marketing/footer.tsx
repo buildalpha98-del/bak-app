@@ -139,11 +139,14 @@ export function MarketingFooter() {
             &copy; {year} {SITE.name}. ABN {SITE.abn}.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/contact" className="hover:text-[#E8712A]">
-              Privacy policy
+            {/* Labels match the page <h1>/<title> exactly — a link that
+                says "Terms of service" landing on "Terms of Use" reads as
+                the wrong page. */}
+            <Link href="/privacy" className="hover:text-[#E8712A]">
+              Privacy Policy
             </Link>
-            <Link href="/contact" className="hover:text-[#E8712A]">
-              Terms of service
+            <Link href="/terms" className="hover:text-[#E8712A]">
+              Terms of Use
             </Link>
           </div>
         </div>

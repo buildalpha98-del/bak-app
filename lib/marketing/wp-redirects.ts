@@ -83,6 +83,14 @@ const PAGE_REDIRECTS: WpRedirect[] = [
   // after-school program — NOT the school-holiday clinics.
   { source: "/our-services/after-school-clinic", destination: "/programs/after-school", permanent: true },
 
+  // Legal pages. These were left UNMAPPED at Task 6.2 — the new site had
+  // no privacy or terms page, and a 301 to "/" would have been a soft 404.
+  // Task 3.3 built the real pages, so the honest destination now exists and
+  // these become straight renames. Short slugs, hence the rename rather than
+  // keeping the WP paths.
+  { source: "/privacy-policy", destination: "/privacy", permanent: true },
+  { source: "/terms-of-use", destination: "/terms", permanent: true },
+
   // Genuinely valueless: the stock WordPress "Sample Page" (still the
   // default Lorem-ipsum-ish boilerplate) and an empty Elementor
   // "Coming Soon" placeholder with no real copy. Nothing to preserve,
@@ -144,11 +152,6 @@ const CRUFT_REDIRECTS: WpRedirect[] = [
  * The complete old-WordPress → new-site 301 map.
  *
  * Not included, deliberately:
- *   /terms-of-use, /privacy-policy — live pages with real legal copy
- *     and NO equivalent on the new site. A 301 to "/" would be a soft
- *     404 (Google treats an irrelevant redirect as one) and browsers
- *     cache a 308 hard, so a wrong guess is expensive to undo. These
- *     need real pages; leaving them to 404 is honest and reversible.
  *   /wp-content/*, /wp-includes/* — media and asset URLs. Images can
  *     be indexed in their own right; redirecting them to HTML pages
  *     helps nothing.

@@ -5,6 +5,9 @@ describe("isPublicRoute", () => {
   it.each([
     "/", "/programs", "/programs/childcare", "/holiday-clinics",
     "/about", "/blog", "/blog/some-post", "/enquire", "/contact",
+    // Legal pages: footer-linked from every page, and the old WP URLs
+    // 301 here for signed-out crawlers.
+    "/privacy", "/terms",
     "/login", "/parent-login", "/refer/abc",
     // Crawler endpoints: gating these hides the sitemap from Google.
     "/sitemap.xml", "/robots.txt",

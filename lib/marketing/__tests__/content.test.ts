@@ -13,6 +13,10 @@ import {
   PROGRAMS_INDEX,
   truncateDescription,
 } from "../content";
+// Legal copy lives in its own module (see lib/marketing/legal.ts's header),
+// but its meta descriptions ship in the same <head> as everything else — so
+// they belong under the same guard rather than a second copy of it.
+import { LEGAL_PAGES } from "../legal";
 
 describe("PROGRAMS integrity", () => {
   it("has unique slugs (duplicates would collide in generateStaticParams)", () => {
@@ -43,6 +47,9 @@ const META_DESCRIPTIONS: [name: string, text: string][] = [
   ...PROGRAMS.map(
     (p): [string, string] => [`program: ${p.slug}`, p.metaDescription]
   ),
+  ...LEGAL_PAGES.map(
+    ([name, page]): [string, string] => [`legal: ${name}`, page.description]
+  ),
 ];
 
 describe("meta descriptions", () => {
@@ -54,7 +61,9 @@ describe("meta descriptions", () => {
   );
 
   it("covers every marketing page (guard is useless if one slips through)", () => {
-    expect(META_DESCRIPTIONS).toHaveLength(7 + PROGRAMS.length);
+    expect(META_DESCRIPTIONS).toHaveLength(
+      7 + PROGRAMS.length + LEGAL_PAGES.length
+    );
   });
 });
 
