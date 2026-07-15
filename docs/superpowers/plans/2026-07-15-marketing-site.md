@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-07-15-marketing-site-design.md` — read it before starting. Design direction: **bold and energetic** (orange-dominant heroes, oversized Bricolage Grotesque headings, cream `#FFF7F2` tints, near-black `#1A1A1A` bands, subtle skews).
 
+**Accessibility convention (established Task 1.3 review):** white text on brand orange `#E8712A` is ~3.1:1 — FAILS WCAG AA at button sizes. On orange fills use near-black `#1A1A1A` text (~5.8:1, passes). On white/cream, orange TEXT is only for large headings (≥24px) — for small text/hover states use `#993C1D` (~6.9:1). On orange hero backgrounds, white text is fine at heading sizes (≥24px) only; body text on orange should be `#1A1A1A` or cream panels.
+
 **Conventions (from repo + user standards):**
 - Australian English in all copy. Brand name is always "Build Alpha Kids", never abbreviated.
 - Tests colocated in `__tests__/` dirs, Vitest, factory helpers in `tests/factories.ts`.
