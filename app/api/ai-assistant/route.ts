@@ -133,7 +133,6 @@ export async function POST(request: Request) {
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 1024,
-      temperature: 0.7,
       system: fullSystemPrompt,
       messages: claudeMessages,
     });

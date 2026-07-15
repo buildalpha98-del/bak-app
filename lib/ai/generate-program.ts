@@ -9,7 +9,17 @@ export type GenerateProgramInput = BuildProgramPromptInput;
 // Claude API Programme Generator (server-only)
 // ============================================================
 
-const anthropic = new Anthropic();
+// Lazily constructed. The SDK reads ANTHROPIC_API_KEY at CONSTRUCTION
+// time, so a module-level client captures the environment as it was at
+// import — and ES imports hoist above a script's dotenv.config(), so
+// any CLI script got a permanently key-less client ("Could not resolve
+// authentication method"). Building on first use is identical for the
+// app (Next loads env before modules) and correct everywhere else.
+let client: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!client) client = new Anthropic();
+  return client;
+}
 
 const SYSTEM_PROMPT = `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools in Sydney.
 
@@ -165,10 +175,9 @@ export async function generateProgram(
     );
   }
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 2000,
-    temperature: 0.7,
     system: SYSTEM_PROMPT,
     messages: [
       {

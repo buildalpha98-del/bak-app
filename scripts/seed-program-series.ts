@@ -24,7 +24,11 @@ import * as dotenv from "dotenv";
 import { resolve } from "path";
 import { randomUUID } from "crypto";
 
+// .env.local wins where it defines a var; the Vercel production pull
+// (`vercel env pull .env.production.local --environment=production`)
+// fills the rest — that's where the Supabase + Anthropic keys live.
 dotenv.config({ path: resolve(__dirname, "../.env.local") });
+dotenv.config({ path: resolve(__dirname, "../.env.production.local") });
 
 import { generateProgram } from "../lib/ai/generate-program";
 import { STANDARD_EQUIPMENT } from "../lib/ai/types";

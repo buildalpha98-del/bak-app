@@ -6,7 +6,14 @@ import { AI_MODEL } from "@/lib/ai/model";
 // Claude API Skill Framework Generator (server-only)
 // ============================================================
 
-const anthropic = new Anthropic();
+// Lazily constructed — see the note in generate-program.ts: a
+// module-level client snapshots the env at import, before any script's
+// dotenv.config() has run.
+let client: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!client) client = new Anthropic();
+  return client;
+}
 
 const SYSTEM_PROMPT = `You are a children's sports development specialist in Australia. Generate 5-8 measurable skills appropriate for assessing children in the specified sport for the given age group. Each skill should be observable during a coaching session and rateable on a 1-5 scale.
 
@@ -75,10 +82,9 @@ export async function generateSkills(
     );
   }
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 1500,
-    temperature: 0.5,
     system: SYSTEM_PROMPT,
     messages: [
       {
