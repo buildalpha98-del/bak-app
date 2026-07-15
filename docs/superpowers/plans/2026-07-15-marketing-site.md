@@ -566,6 +566,34 @@ Blog index: card grid of published posts. Post page: `generateStaticParams` from
 
 ## Chunk 6: SEO, redirects, performance, QA gate
 
+### Task 6.0: Domain configuration (added 2026-07-15 — owner decision)
+
+**Decision (Jayden, 2026-07-15):** the dashboard **stays at `buildalphakids.app`** (it is already live there — verified via the Vercel project `bak-app`, which currently has `buildalphakids.app` + `bak-app.vercel.app` + two preview domains attached). The public site launches at **`buildalphakids.com.au`**. Both domains point at the **same Vercel project / same Next app** — this is not a second deployment.
+
+Rejected (for now): moving the dashboard to `app.buildalphakids.com.au`. It was considered and is still the nicer end-state (one brand, shared session cookies), but it means migrating a live product — everyone re-logs in, `buildalphakids.app` needs a permanent redirect, Supabase allowlist + env changes — and stacking that on top of the DNS cutover doubles the blast radius during launch week. The platform is beta (~4 centres) so the migration cost barely grows; revisit after the site is stable. **Build so that move is a config change, not a rewrite.**
+
+**The consequence that needs code:** with both domains on one app, a parent can arrive on either host. `sendParentMagicLink` currently builds its redirect from `getBaseUrl()`, which is pinned to the app domain — so a parent who starts on `buildalphakids.com.au` would receive a magic link to `buildalphakids.app`, land there, get their session cookie set on `.app`, and appear logged-OUT when they return to `.com.au`. Cookies cannot span the two TLDs.
+
+**Files:**
+- Modify: `lib/utils/base-url.ts` (add a marketing-canonical helper + a request-host-aware auth callback builder), `lib/parent/actions.ts` + `lib/parent/safe-next.ts` (host-aware redirect), `app/(marketing)/layout.tsx` (canonical metadata)
+- Create: `lib/utils/__tests__/base-url.test.ts` if not present
+
+**Changes:**
+1. **`NEXT_PUBLIC_MARKETING_URL`** (new env, default `https://buildalphakids.com.au`) — the canonical public origin. Add `getMarketingUrl()`. Tasks 6.1 (metadata/OG/JSON-LD) and 6.2 (sitemap/robots) MUST build absolute URLs from this, never from `getBaseUrl()` (which is the app domain).
+2. **Parent magic links follow the host the parent is actually on.** Derive the callback origin from the request host, validated against a strict allowlist (`buildalphakids.com.au`, `www.buildalphakids.com.au`, `buildalphakids.app`, the `VERCEL_URL` preview, `localhost:3000`); fall back to `getBaseUrl()` if the host is unrecognised. Staff flows (login, password reset, crons, invoice PDFs) keep using `getBaseUrl()` — do NOT make those host-aware.
+3. **Both hosts must be in the Supabase auth redirect allowlist** — owner config step, document it.
+4. **Duplicate-content protection**: marketing pages are reachable on both hosts. Emit `<link rel="canonical">` pointing at the `getMarketingUrl()` origin on every marketing page (Task 6.1 does this — this task just supplies the helper), and Task 6.2's `robots.ts` should only advertise the sitemap on the canonical host.
+5. **Book-now / parent links stay RELATIVE** (`/parent/book/[id]`) — that is what keeps a parent on whichever host they arrived on, so their session and the nav's "My account" swap work. Do not hardcode an absolute app-domain URL into marketing CTAs.
+6. Fix the one hardcoded domain: `app/api/cron/onboarding-emails/route.ts:270` hardcodes `https://app.buildalphakids.com.au` (a domain that isn't even attached to the project) — route it through `getBaseUrl()`.
+
+**Owner config (not code — document in the QA checklist):** add `buildalphakids.com.au` + `www` to the Vercel project; set `NEXT_PUBLIC_MARKETING_URL`; add both origins to Supabase's redirect allowlist; keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app`.
+
+**Future move to `app.buildalphakids.com.au`** then becomes: attach the domain, redirect `buildalphakids.app` → it, change `NEXT_PUBLIC_SITE_URL`, add one Supabase allowlist entry. No code change. The nav's "My account" swap starts working on `.com.au` automatically once both are same-site.
+
+Verification: unit tests for the host allowlist (valid hosts pass, unknown/spoofed `Host` falls back, no open redirect); `npx vitest run`; `npm run build`.
+
+
+
 ### Task 6.1: Metadata + JSON-LD
 
 **Files:**
