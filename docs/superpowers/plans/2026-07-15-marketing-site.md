@@ -468,14 +468,14 @@ Client form: org name, contact name, email, phone, suburb, org type (school / ch
 ### Task 4.3: Newsletter
 
 **Files:**
-- Create: `supabase/migrations/069_newsletter_subscribers.sql`, `lib/marketing/newsletter.ts`, `components/marketing/newsletter-form.tsx`
+- Create: `supabase/migrations/070_newsletter_subscribers.sql`, `lib/marketing/newsletter.ts`, `components/marketing/newsletter-form.tsx`
 - Test: `lib/marketing/__tests__/newsletter.test.ts`
 - Modify: `app/(marketing)/page.tsx` (section 10)
 
-(Migration numbering matches chunk order: 069 here in Chunk 4, 070 for blog in Chunk 5 — if you execute Chunk 5 first, that's fine, `supabase db push` applies whatever exists; just never renumber an already-pushed migration.)
+(Renumbered to 070/071 on 2026-07-15: `069` collided with `069_program_series.sql`, which landed on main while this branch was in flight. Renumbering was safe ONLY because neither had been applied to any database — never renumber an applied migration. Do NOT use `supabase db push` in this repo; see the Step 2 note in the runbook.)
 
 ```sql
--- 069_newsletter_subscribers.sql
+-- 070_newsletter_subscribers.sql
 CREATE TABLE newsletter_subscribers (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email       text NOT NULL UNIQUE,
@@ -493,7 +493,7 @@ CREATE TRIGGER newsletter_subscribers_updated_at
 
 `subscribeToNewsletter(formData)` server action: zod email validation, honeypot check, per-call rate limit reuse (same in-memory pattern), upsert on email (re-subscribe sets status back to subscribed). Tests: invalid email rejected, honeypot silently succeeds without insert, upsert called with normalised (lowercased/trimmed) email.
 
-- [ ] TDD cycle as above; apply migration to local/branch DB per repo workflow (check `supabase/` README or existing practice — likely `npx supabase db push` locally or migration applied on deploy); full suite; commit `feat(marketing): newsletter capture`.
+- [ ] TDD cycle as above; do NOT apply the migration (see runbook Step 2 — this repo does not use `db push`; migrations are applied deliberately at cutover); full suite; commit `feat(marketing): newsletter capture`.
 
 ### Task 4.4: Admin subscribers view + CSV export
 
@@ -509,11 +509,11 @@ Spec §Newsletter requires "admin views/exports subscribers". Minimal surface: a
 ### Task 5.1: blog_posts migration + query lib
 
 **Files:**
-- Create: `supabase/migrations/070_blog_posts.sql`, `lib/marketing/blog.ts`
+- Create: `supabase/migrations/071_blog_posts.sql`, `lib/marketing/blog.ts`
 - Test: `lib/marketing/__tests__/blog.test.ts`
 
 ```sql
--- 070_blog_posts.sql
+-- 071_blog_posts.sql
 CREATE TABLE blog_posts (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug            text NOT NULL UNIQUE,
@@ -656,9 +656,22 @@ This is first because it is on a **clock, not on our sequence**: every 05:00 tha
 
 #### Step 2 — Apply migrations (forward-only; treat as irreversible)
 
-- [ ] `supabase db push` — applies **069** (newsletter) and **070** (blog).
+- [ ] Apply **`070_newsletter_subscribers.sql`** and **`071_blog_posts.sql`**, in that order.
 
-Must precede step 3: the import writes into `blog_posts`. Both are additive table creations, so nothing existing is at risk, but rolling a migration back on production is not a thing you want to do live — verify on a branch DB first if unsure.
+**⚠️ DO NOT RUN `supabase db push`.** It was in an earlier draft of this runbook and it is wrong for this repo — running it would attempt to re-apply ~28 migrations against a database where those tables already exist.
+
+**Why (verified 2026-07-15 against the live project `yhairjbwqvmrbbvatrze`):** this repo's migration files and the remote's migration history are two parallel universes.
+- Remote versions `001`–`041` are sequential and match the local filenames.
+- Remote versions from 042 onward are **timestamps** (e.g. `20260715071543` / name `program_series`), while the local files are hand-numbered (`069_program_series.sql`).
+- No timestamp-named file has ever existed in git, and none were ever renamed (`git log --diff-filter=R` is empty) — so those rows were written by applying SQL **directly** (Supabase dashboard SQL editor, or the Supabase MCP's `apply_migration`, which stamps its own timestamp version).
+
+The CLI reconciles by version string, so it sees 042–069 as un-applied. That is exactly what the permanently-failing **"Supabase Preview" GitHub check** is reporting: *"Remote migration versions not found in local migrations directory."* It has been failing since long before this branch — it is not caused by this work, and it is not a signal you can use to gate this deploy.
+
+**Apply them the way every migration since 042 has actually been applied:** paste each file's SQL into the Supabase dashboard SQL editor (or use the Supabase MCP `apply_migration` with the name `070_newsletter_subscribers` / `071_blog_posts`, matching the `042_crm_enhancements` naming precedent already in the history). Both are additive `CREATE TABLE`s — nothing existing is at risk — but rolling back a migration on production live is not something you want to do, so apply them deliberately.
+
+Must precede step 3: the import writes into `blog_posts`.
+
+**Separate follow-up (do NOT attempt during cutover):** reconciling the two universes — via `supabase migration repair` to align the remote history with the local filenames — would fix the check permanently and make `db push` usable again. That is its own carefully-tested piece of work against a branch DB, not a launch-night task.
 
 #### Step 3 — Import the WordPress posts (reversible: truncate and re-run)
 

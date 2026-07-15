@@ -14,7 +14,7 @@
 // rather than happening invisibly at runtime. See the seed's _README
 // for provenance and the HTML->markdown conversion rules.
 //
-// RUN IT (after 070_blog_posts.sql is applied — the table must exist):
+// RUN IT (after 071_blog_posts.sql is applied — the table must exist):
 //
 //   node --env-file=.env.production.local scripts/import-wp-posts.mjs
 //
@@ -102,7 +102,7 @@ async function main() {
   if (readError) {
     console.error(`Could not read blog_posts: ${readError.message}`);
     console.error(
-      "If the table does not exist, apply supabase/migrations/070_blog_posts.sql first."
+      "If the table does not exist, apply supabase/migrations/071_blog_posts.sql first."
     );
     process.exit(1);
   }

@@ -28,7 +28,7 @@ export const revalidate = 300;
  * because a build must never be hostage to the database: on any error
  * this returns [] and every post falls back to on-demand rendering
  * (dynamicParams defaults to true), which is exactly what happens
- * today — 070_blog_posts.sql is deliberately unapplied, so the table
+ * today — 071_blog_posts.sql is deliberately unapplied, so the table
  * does not exist and this route prerenders ZERO paths. The build still
  * succeeds; posts render on first request once the table is there.
  */
