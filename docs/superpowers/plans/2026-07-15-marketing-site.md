@@ -6,7 +6,7 @@
 
 **Architecture:** New `app/(marketing)/` route group (homepage + 10 public pages) with its own layout. Public data (clinics, stats, testimonials, blog) is read server-side via `createSupabaseAdmin()` selecting public-safe columns, rendered static/ISR. Two new tables (`blog_posts`, `newsletter_subscribers`); everything else reuses shipped infrastructure (enquiry route, auth callback `next` param, parent booking flow).
 
-**Tech Stack:** Next.js 14 App Router, Tailwind v4 (`--brand-orange: #E8712A`, orange `--primary` already tokenised), shadcn/ui, Supabase, Resend, Vitest.
+**Tech Stack:** Next.js 16 App Router + React 19 (**`params`/`searchParams` are Promises in server components — always `await` them**; in client components use `useSearchParams()`), Tailwind v4 (`--brand-orange: #E8712A`, orange `--primary` already tokenised), shadcn/ui, Supabase, Resend, Vitest.
 
 **Spec:** `docs/superpowers/specs/2026-07-15-marketing-site-design.md` — read it before starting. Design direction: **bold and energetic** (orange-dominant heroes, oversized Bricolage Grotesque headings, cream `#FFF7F2` tints, near-black `#1A1A1A` bands, subtle skews).
 
@@ -219,7 +219,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 - Delete: `app/page.tsx` (the `redirect("/login")`)
 - Create: `app/(marketing)/page.tsx`, `components/marketing/hero.tsx`, `components/marketing/section.tsx`, `components/marketing/program-card.tsx`, `components/marketing/how-it-works.tsx`, `components/marketing/b2b-band.tsx`
 
-Homepage renders sections in the approved order (spec "Homepage structure"). This task ships sections 1, 2, 4, 6, 8, 11 with static content; live-data sections (3, 5, 7, 9) land in Chunk 2 as components with graceful empty states.
+Homepage renders sections in the approved order (spec "Homepage structure"). This task ships sections 1, 2, 4, 6, 8, 11 with static content; live-data sections land later with graceful empty states (3 stats + 5 clinics + 7 testimonials in Chunk 2, 9 blog teasers in Chunk 5, 10 newsletter in Chunk 4).
 
 Hero copy (approved direction):
 - H1: `Where kids build skills for life` (oversized, clamp 40→72px, Bricolage Grotesque)
@@ -332,7 +332,7 @@ export async function getOpenHolidayClinics(limit?: number): Promise<PublicClini
 
 Card fields per spec: title, sport, formatted date ("Mon 21 Jul"), time range, location + suburb, ages ("Ages 5–12"), price (`(price_cents / 100).toLocaleString("en-AU", { style: "currency", currency: "AUD" })`), badges: `Active Kids vouchers accepted` always; `X spots left` amber when `lowSpots`; `Sold out` grey + CTA becomes outline `Join waitlist` → same booking URL. CTA: `Book now` → `/parent/book/${id}`.
 
-Pages: `export const revalidate = 300;` on both homepage and `/holiday-clinics`. Homepage shows `getOpenHolidayClinics(4)`; listing page all, with client-side filters (suburb select, sport select, week grouping — filter in-page over the server-fetched array, no extra queries). Empty state: "New clinic dates drop soon — call us on {SITE.phone} or check back shortly." Wrap the section's data fetch in try/catch → render empty state on error (never a broken hero, per spec).
+Pages: `export const revalidate = 300;` on both homepage and `/holiday-clinics`. Homepage shows `getOpenHolidayClinics(4)`; listing page all, with client-side filters (suburb select, sport select, week grouping — filter in-page over the server-fetched array, no extra queries) in a dedicated client component `components/marketing/clinic-filters.tsx` that receives the fetched array as props (keeps the page file a small server component). Empty state: "New clinic dates drop soon — call us on {SITE.phone} or check back shortly." Wrap the section's data fetch in try/catch → render empty state on error (never a broken hero, per spec).
 
 - [ ] Build; `npm run build`; dev-verify both pages with real data (if DB empty locally, temporarily verify empty state renders). Commit `feat(marketing): live holiday clinic cards + listing page`.
 
@@ -342,7 +342,7 @@ Pages: `export const revalidate = 300;` on both homepage and `/holiday-clinics`.
 - Create: `components/marketing/stats-bar.tsx`, `components/marketing/testimonial-card.tsx`
 - Modify: `app/(marketing)/page.tsx`
 
-Stats: server fetch from `public_stats_cache` (same admin-client pattern; map `stat_key` → labels: schools partnered, students coached, sports offered, centres — use whatever keys exist in the table; check with `SELECT stat_key FROM public_stats_cache` via the existing `/api/public/stats` handler code for key names). Dark band, numbers count up on scroll — client component receiving final values as props, one `IntersectionObserver`, no libraries. Testimonials: fetch `approved_testimonials` (reuse column names from `app/api/public/testimonials/route.ts`), render 2–4 cards. Both sections: fetch failure or empty → section renders nothing (return null), homepage never breaks.
+Stats: server fetch from `public_stats_cache` (same admin-client pattern). Actual `stat_key` values: `total_sessions_all_time`, `sessions_this_term`, `centre_count`, `sport_count`, `average_rating`, `total_children`. Pick four for the bar — suggested: `total_children` ("kids coached"), `centre_count` ("centres and schools"), `sport_count` ("sports offered"), `sessions_this_term` ("sessions this term"). Dark band, numbers count up on scroll — client component receiving final values as props, one `IntersectionObserver`, no libraries. Testimonials: fetch `approved_testimonials` (reuse column names from `app/api/public/testimonials/route.ts`), render 2–4 cards. Both sections: fetch failure or empty → section renders nothing (return null), homepage never breaks.
 
 - [ ] Build + verify + full suite. Commit `feat(marketing): live stats bar and testimonials`.
 
@@ -361,18 +361,18 @@ export async function sendParentMagicLink(
   next?: string
 ): Promise<{ error: string | null }> {
   // Only same-origin /parent paths may override the default target.
-  const safe = next && next.startsWith("/parent") && !next.startsWith("//")
+  const safe = next && (next.startsWith("/parent/") || next === "/parent")
     ? next
-    : "/parent-login";
+    : "/parent-login"; // matches middleware isParentRoute semantics; excludes // and /parents-*
   // ...
   emailRedirectTo: getAuthCallbackUrl(safe),
 ```
 
-`parent-login/page.tsx`: read `searchParams.next`, thread into the form's action call (find the existing form component — it calls `sendParentMagicLink(email)`; pass the second arg). Also update the existing authed-user redirect in `middleware.ts:233-244`: when an authenticated parent hits `/parent-login?next=/parent/...`, redirect to the `next` value instead of bare `/parent` (apply the same `startsWith("/parent")` guard).
+`parent-login/page.tsx` is a `"use client"` page with the form INLINE (the `sendParentMagicLink(email)` call is at line ~25 — there is no separate form component): read `next` via `useSearchParams()` and pass it as the second arg. Also update the existing authed-user redirect in `middleware.ts:234-244`: when an authenticated parent hits `/parent-login?next=/parent/...`, redirect to the `next` value instead of bare `/parent` (same guard).
 
-- [ ] **Step 1: Failing test** — extract the safe-target logic into `lib/parent/safe-next.ts` (`parentSafeNext(raw?: string): string`) so it's testable pure; test: `/parent/book/abc` passes through; `undefined`, `https://evil.com`, `//evil`, `/admin` all → `/parent-login`.
+- [ ] **Step 1: Failing test** — extract the safe-target logic into `lib/parent/safe-next.ts` (`parentSafeNext(raw?: string): string`) so it's testable pure; test: `/parent/book/abc` and `/parent` pass through; `undefined`, `https://evil.com`, `//evil`, `/admin`, `/parents-hack` all → `/parent-login`.
 - [ ] **Step 2-4: Implement, PASS, wire both callers** (action + middleware).
-- [ ] **Step 5: Manual verify** — dev server: visit `/parent/book/x` logged out → redirected to `/parent-login`… note the CURRENT middleware redirect (line ~200) drops the original path; update it to append `?next=<pathname>` when the target is a parent route so the whole loop closes.
+- [ ] **Step 5: Manual verify** — dev server: visit `/parent/book/x` logged out → redirected to `/parent-login`… note the CURRENT middleware redirect (lines 199-204) drops the original path; update it to send `?next=<pathname>` when the target is a parent route so the whole loop closes. Careful: `request.nextUrl.clone()` preserves the ORIGINAL query string — set `loginUrl.search = ""` then `loginUrl.searchParams.set("next", pathname)` deliberately.
 - [ ] Full suite + commit `feat(parent): carry booking destination through magic-link login`.
 
 ## Chunk 3: Program pages, about, contact
@@ -404,12 +404,12 @@ About: story/mission (adapt current WP "Growing stronger, together" copy, bolder
 - Test: `app/api/crm/enquiry/__tests__/route.test.ts`
 
 Changes (each from the spec, all covered by tests):
-1. **Self-origin CORS**: build `allowedOrigins` as the existing WP list **plus** `getBaseUrl()` and (when set) `https://${process.env.VERCEL_URL}`. Same-origin browser POSTs then pass during vercel.app QA. Keep WP entries until decommission.
+1. **Self-origin CORS**: build `allowedOrigins` as the existing WP list **plus** `getBaseUrl()` and (when set) `https://${process.env.VERCEL_URL}`. Same-origin browser POSTs then pass during vercel.app QA. Keep WP entries until decommission. The route currently duplicates the allowlist in the `POST` and `OPTIONS` handlers (lines 28-32 and 133-137) — extract ONE module-level `getAllowedOrigins()` and use it in both, or the lists will diverge.
 2. **Honeypot**: accept optional `website` field (hidden input named `website`); if non-empty, return `{ success: true }` WITHOUT inserting (silent discard).
 3. **"other" org type**: `type === "school" ? "school" : type === "other" ? null : "childcare_centre"`; when null, prepend `Org type: other.` to `notes`.
 4. **New optional fields**: `suburb` → `leads.suburb`; `programs_of_interest` (string[]) → appended to `notes`; `source_page` → `leads.source_detail`.
 5. **Dedupe**: before insert, select `leads` where `contact_email` matches and `created_at >= today` (Sydney day is fine at this granularity — reuse `lib/utils/sydney-time` helpers if exported); on hit, skip insert/notify and return success with `deduped: true`.
-6. **Auto-acknowledgement**: after lead insert, send branded Resend email to `contact_email` (find the repo's Resend send helper — grep `from("Resend")|resend.emails.send`; follow the existing email template pattern in `lib/` — subject: `Thanks for your enquiry — Build Alpha Kids`). Failure to send must NOT fail the request (log + continue).
+6. **Auto-acknowledgement**: after lead insert, send branded email to `contact_email` using the existing `sendEmail(to, subject, html, emailType)` helper in `lib/email/send.ts` (non-throwing, audit-logged — exactly the "failure must not fail the request" behaviour needed) with a template following `lib/email/templates.ts` patterns — subject: `Thanks for your enquiry — Build Alpha Kids`.
 
 Tests (mock `createSupabaseAdmin`, `triggerNotification`, and the Resend helper with `vi.mock`; use input-based `mockImplementation` routing, never `mockResolvedValueOnce` chains; clear the module-level rate-limit map between tests by `vi.resetModules()` + dynamic import):
 - 400 when email missing; 400 when centre_name missing
@@ -417,7 +417,7 @@ Tests (mock `createSupabaseAdmin`, `triggerNotification`, and the Resend helper 
 - honeypot filled → 200, zero inserts
 - `type: "other"` → insert has `type: null`, notes prefixed
 - dedupe: existing same-email lead today → 200 `deduped`, zero inserts
-- 403 for disallowed origin; 200 for `getBaseUrl()` origin; 429 after 11th request same IP
+- 403 for disallowed origin; 200 for the self origin — set `NEXT_PUBLIC_SITE_URL=https://qa-preview.example.com` in the test (via `vi.stubEnv`) and send that as `Origin`, since `getBaseUrl()`'s localhost fallback is already allowlisted and would pass against unmodified code; 429 after 11th request same IP
 
 - [ ] Write failing tests → run (FAIL) → implement → run (PASS) → full suite → commit `feat(crm): harden enquiry route for same-origin marketing form`.
 
@@ -434,12 +434,14 @@ Client form: org name, contact name, email, phone, suburb, org type (school / ch
 ### Task 4.3: Newsletter
 
 **Files:**
-- Create: `supabase/migrations/070_newsletter_subscribers.sql`, `lib/marketing/newsletter.ts`, `components/marketing/newsletter-form.tsx`
+- Create: `supabase/migrations/069_newsletter_subscribers.sql`, `lib/marketing/newsletter.ts`, `components/marketing/newsletter-form.tsx`
 - Test: `lib/marketing/__tests__/newsletter.test.ts`
 - Modify: `app/(marketing)/page.tsx` (section 10)
 
+(Migration numbering matches chunk order: 069 here in Chunk 4, 070 for blog in Chunk 5 — if you execute Chunk 5 first, that's fine, `supabase db push` applies whatever exists; just never renumber an already-pushed migration.)
+
 ```sql
--- 070_newsletter_subscribers.sql
+-- 069_newsletter_subscribers.sql
 CREATE TABLE newsletter_subscribers (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email       text NOT NULL UNIQUE,
@@ -459,16 +461,25 @@ CREATE TRIGGER newsletter_subscribers_updated_at
 
 - [ ] TDD cycle as above; apply migration to local/branch DB per repo workflow (check `supabase/` README or existing practice — likely `npx supabase db push` locally or migration applied on deploy); full suite; commit `feat(marketing): newsletter capture`.
 
+### Task 4.4: Admin subscribers view + CSV export
+
+**Files:**
+- Create: `app/(dashboard)/admin/marketing/subscribers/page.tsx`, `app/api/admin/subscribers/export/route.ts`
+
+Spec §Newsletter requires "admin views/exports subscribers". Minimal surface: a table (email, status, source_page, created_at, newest first) following the `/admin/marketing/testimonials` page structure, plus an "Export CSV" button hitting the export route (admin-authed per existing admin API route conventions — copy the auth guard from a neighbouring `app/api/admin/*` route) that streams `email,status,source_page,created_at` rows.
+
+- [ ] Build page + route, verify in dev (subscribe via the homepage form, see the row, download CSV), commit `feat(marketing): admin subscriber list + CSV export`.
+
 ## Chunk 5: Blog
 
 ### Task 5.1: blog_posts migration + query lib
 
 **Files:**
-- Create: `supabase/migrations/069_blog_posts.sql`, `lib/marketing/blog.ts`
+- Create: `supabase/migrations/070_blog_posts.sql`, `lib/marketing/blog.ts`
 - Test: `lib/marketing/__tests__/blog.test.ts`
 
 ```sql
--- 069_blog_posts.sql
+-- 070_blog_posts.sql
 CREATE TABLE blog_posts (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug            text NOT NULL UNIQUE,
@@ -503,7 +514,7 @@ CREATE TRIGGER blog_posts_updated_at
 - Create: `lib/blog/admin-actions.ts`, `app/(dashboard)/admin/marketing/blog/page.tsx`, `app/(dashboard)/admin/marketing/blog/[id]/page.tsx`
 - Test: `lib/blog/__tests__/admin-actions.test.ts`
 
-Follow the existing `/admin/marketing/testimonials` page as the structural template (read it first). List page: table of posts (title, status, published_at), "New post" button. Editor: title, slug (auto from title, editable), excerpt, markdown `Textarea`, cover image URL, SEO fields, Save draft / Publish / Unpublish. Server actions with zod; slug uniqueness surfaced as a friendly error; publish sets `published_at` if null. Markdown rendering on public side: check `package.json` for an existing markdown lib; if none, add `marked` + `sanitize-html` (or render with a small trusted-content component — content is admin-authored) — pick ONE and note it in the commit.
+Follow the existing `/admin/marketing/testimonials` page as the structural template (read it first). List page: table of posts (title, status, published_at), "New post" button. Editor: title, slug (auto from title, editable), excerpt, markdown `Textarea` **with a live preview pane** (Edit / Preview tabs using `components/ui/tabs` — spec requires "markdown textarea with preview"), cover image URL, SEO fields, Save draft / Publish / Unpublish. Server actions with zod; slug uniqueness surfaced as a friendly error; publish sets `published_at` if null. Markdown rendering (both the preview and the public post page): **`react-markdown` — already in package.json and already used in `components/announcements/announcement-detail.tsx`** — follow that usage; add nothing new.
 
 Tests: create/update happy paths, invalid payload rejected, publish stamps `published_at`, slug collision error.
 
@@ -527,7 +538,7 @@ Blog index: card grid of published posts. Post page: `generateStaticParams` from
 - Create: `lib/marketing/jsonld.ts`
 - Modify: every `app/(marketing)/*/page.tsx` (add `export const metadata` / `generateMetadata`), `app/(marketing)/layout.tsx` (metadata template `"%s | Build Alpha Kids"`, default OG image)
 
-`jsonld.ts`: `localBusinessJsonLd()` (name, url, phone, area served), `eventJsonLd(clinic)` (name, startDate combining date+start_time with `+10:00`, location, offers with AUD price + availability from spots), `articleJsonLd(post)`. Render via `<script type="application/ld+json">` — LocalBusiness in marketing layout, Event per clinic card page (`/holiday-clinics`), Article on blog posts. Unit-test `eventJsonLd` date/price shaping in `lib/marketing/__tests__/jsonld.test.ts`.
+`jsonld.ts`: `localBusinessJsonLd()` (name, url, phone, area served), `eventJsonLd(clinic)` (name, startDate combining date+start_time with the **correct Sydney offset for that date** — AEDT `+11:00` during daylight saving, AEST `+10:00` otherwise; use the existing `lib/utils/sydney-time.ts` helpers to derive it rather than hardcoding, since October/December–January clinic seasons are all AEDT), location, offers with AUD price + availability from spots), `articleJsonLd(post)`. The jsonld test must cover one AEST date and one AEDT date. Render via `<script type="application/ld+json">` — LocalBusiness in marketing layout, Event per clinic card page (`/holiday-clinics`), Article on blog posts. Unit-test `eventJsonLd` date/price shaping in `lib/marketing/__tests__/jsonld.test.ts`.
 
 - [ ] TDD for jsonld, metadata sweep, build. Commit `feat(marketing): metadata + structured data`.
 
