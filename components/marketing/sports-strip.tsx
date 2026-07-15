@@ -31,7 +31,7 @@ export function SportsStrip() {
               <span
                 aria-hidden="true"
                 className="size-4 shrink-0 rounded-full border-2 border-[#111]"
-                style={{ backgroundColor: sport.color }}
+                style={{ backgroundColor: sport.ball.color }}
               />
               {sport.name}
             </span>

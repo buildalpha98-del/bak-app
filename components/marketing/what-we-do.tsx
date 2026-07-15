@@ -1,36 +1,34 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/marketing/section";
+import { BALL_COLORS } from "@/lib/marketing/content";
 
 /**
  * The three ways Build Alpha Kids actually operates — concrete copy
  * (who turns up, what a session looks like, how you book) so the
  * homepage answers "what do you actually do?" before the program
- * grid. Sticker cards; each pillar keyed to a ball colour used as a
- * fill behind AA-verified text (black on green 8.5:1 and yellow
- * 13.1:1; white on blue 5.2:1).
+ * grid. Sticker cards; each pillar keyed to a ball colour from the
+ * canonical palette, used as a label fill with its AA-verified
+ * foreground pairing.
  */
 const PILLARS = [
   {
     label: "In childcare centres",
-    labelBg: "#7BC043",
-    labelFg: "#111111",
+    ball: BALL_COLORS.green,
     body: "Our qualified coaches arrive at your centre with every bit of equipment and run structured, age-appropriate sessions built into the childcare day. Two- to five-year-olds learn to run, jump, throw, kick and catch through games — with zero extra admin for your educators.",
     href: "/programs/childcare",
     cta: "Childcare programs",
   },
   {
     label: "In schools",
-    labelBg: "#2D6FB5",
-    labelFg: "#FFFFFF",
+    ball: BALL_COLORS.blue,
     body: "Curriculum-aligned multi-sport sessions delivered on your grounds, during sport time or straight after the bell. Coaches bring the gear and the session plan, progress skills week on week, and get every student involved — not just the sporty ones.",
     href: "/programs/primary-school",
     cta: "School programs",
   },
   {
     label: "Holiday clinics",
-    labelBg: "#FFD23F",
-    labelFg: "#111111",
+    ball: BALL_COLORS.yellow,
     body: "Full-throttle multi-sport days in the school holidays that parents book and pay for online in about 60 seconds. Numbers are capped so every kid gets coached, NSW Active Kids vouchers are accepted — and the best days sell out fast.",
     href: "/holiday-clinics",
     cta: "See clinic dates",
@@ -58,8 +56,8 @@ export function WhatWeDo() {
                 (i === 1 ? " rotate-1" : "")
               }
               style={{
-                backgroundColor: pillar.labelBg,
-                color: pillar.labelFg,
+                backgroundColor: pillar.ball.color,
+                color: pillar.ball.fg,
               }}
             >
               {pillar.label}

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/marketing/content";
+import { StickerButton } from "@/components/marketing/sticker-button";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -94,12 +95,9 @@ export function MarketingNav() {
           >
             {accountLabel}
           </Link>
-          <Link
-            href="/holiday-clinics"
-            className="inline-flex h-11 items-center justify-center rounded-full border-2 border-[#111] bg-[#FFD23F] px-6 font-heading text-sm font-bold text-[#111] shadow-[3px_3px_0_#111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_#111]"
-          >
+          <StickerButton href="/holiday-clinics" size="sm">
             Book now
-          </Link>
+          </StickerButton>
         </div>
 
         {/* Mobile menu */}
@@ -170,9 +168,10 @@ export function MarketingNav() {
                 <SheetClose
                   nativeButton={false}
                   render={
-                    <Link
+                    <StickerButton
                       href="/holiday-clinics"
-                      className="flex h-11 items-center justify-center rounded-full border-2 border-[#111] bg-[#FFD23F] px-4 font-heading text-sm font-bold text-[#111] shadow-[3px_3px_0_#111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_#111]"
+                      size="sm"
+                      className="flex w-full"
                     />
                   }
                 >

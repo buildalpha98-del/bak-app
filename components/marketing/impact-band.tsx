@@ -24,16 +24,18 @@ export function ImpactBand({ stats }: { stats: ImpactStat[] }) {
           <div
             key={stat.label}
             className={
-              "rounded-2xl border-2 border-[#111] bg-[#FFD23F] p-7 text-center shadow-[5px_5px_0_#E8712A]" +
+              // dt precedes dd in source (HTML content model);
+              // flex-col-reverse keeps the value on top visually.
+              "flex flex-col-reverse rounded-2xl border-2 border-[#111] bg-[#FFD23F] p-7 text-center shadow-[5px_5px_0_#E8712A]" +
               (i === 1 ? " -rotate-1" : "")
             }
           >
-            <dd className="font-heading text-5xl font-extrabold tracking-tight text-[#111]">
-              {stat.value}
-            </dd>
             <dt className="mt-2 font-heading text-sm font-bold uppercase tracking-wider text-[#111]">
               {stat.label}
             </dt>
+            <dd className="font-heading text-5xl font-extrabold tracking-tight text-[#111]">
+              {stat.value}
+            </dd>
           </div>
         ))}
       </dl>

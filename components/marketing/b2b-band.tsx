@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { StickerButton } from "@/components/marketing/sticker-button";
 import { SITE } from "@/lib/marketing/content";
 
 /**
@@ -25,13 +25,14 @@ export function B2bBand() {
             {SITE.serviceArea}.
           </p>
         </div>
-        <Link
+        <StickerButton
           href={SITE.enquiryUrl}
-          className="inline-flex h-13 shrink-0 items-center justify-center gap-2 rounded-full border-2 border-[#111] bg-[#FFD23F] px-8 font-heading text-base font-bold text-[#111] shadow-[4px_4px_0_#E8712A] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#E8712A]"
+          shadow="orange"
+          className="shrink-0"
         >
           Enquire now
           <ArrowRight className="size-5" aria-hidden="true" />
-        </Link>
+        </StickerButton>
       </div>
     </section>
   );

@@ -80,8 +80,6 @@ export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
 export const BRAND = {
   /** Crest logo, raster — use with next/image (1604×1060). */
   logo: "/images/brand/logo.png",
-  /** Crest logo, vector. */
-  logoSvg: "/images/brand/logo.svg",
   /** Illustrated ball row strip (viewBox 298×96, ~3.1:1). */
   ballsRow: "/images/brand/balls-row.svg",
   /** Mirrored ball row variant. */
@@ -89,28 +87,42 @@ export const BRAND = {
 } as const;
 
 /**
- * The six sports we coach, in display order, each with its ball
- * colour from the brand artwork. `fg` is the AA-verified text
- * colour when the sport colour is used as a chip/badge FILL:
- * black passes on green 8.5:1 / yellow 13.1:1 / orange 6.1:1;
- * red and blue need white (4.7:1 / 5.2:1). As small dots the
- * colours are decorative and always carry a black outline.
+ * Canonical ball palette from the brand artwork — the ONLY place
+ * these hexes are declared. `fg` is the AA-verified text colour
+ * when the ball colour is used as a chip/badge FILL: black passes
+ * on green 8.5:1 / yellow 13.1:1 / orange 6.1:1; red and blue need
+ * white (4.7:1 / 5.2:1). As small dots the colours are decorative
+ * and always carry a black outline.
  */
-export interface Sport {
-  name: string;
-  /** Ball colour from the brand artwork. */
+export interface BallColor {
+  /** Fill colour. */
   color: string;
   /** AA-verified foreground for text set ON the colour. */
   fg: "#111111" | "#FFFFFF";
 }
 
+export const BALL_COLORS = {
+  green: { color: "#7BC043", fg: "#111111" },
+  orange: { color: "#E8712A", fg: "#111111" },
+  red: { color: "#D8342C", fg: "#FFFFFF" },
+  yellow: { color: "#FFD23F", fg: "#111111" },
+  blue: { color: "#2D6FB5", fg: "#FFFFFF" },
+  black: { color: "#111111", fg: "#FFFFFF" },
+} as const satisfies Record<string, BallColor>;
+
+/** The six sports we coach, in display order, keyed to their ball colour. */
+export interface Sport {
+  name: string;
+  ball: BallColor;
+}
+
 export const SPORTS: Sport[] = [
-  { name: "Soccer", color: "#7BC043", fg: "#111111" },
-  { name: "Basketball", color: "#E8712A", fg: "#111111" },
-  { name: "Cricket", color: "#D8342C", fg: "#FFFFFF" },
-  { name: "Tennis", color: "#FFD23F", fg: "#111111" },
-  { name: "Volleyball", color: "#2D6FB5", fg: "#FFFFFF" },
-  { name: "Rugby", color: "#111111", fg: "#FFFFFF" },
+  { name: "Soccer", ball: BALL_COLORS.green },
+  { name: "Basketball", ball: BALL_COLORS.orange },
+  { name: "Cricket", ball: BALL_COLORS.red },
+  { name: "Tennis", ball: BALL_COLORS.yellow },
+  { name: "Volleyball", ball: BALL_COLORS.blue },
+  { name: "Rugby", ball: BALL_COLORS.black },
 ];
 
 /** Homepage-specific copy shared between components and metadata. */

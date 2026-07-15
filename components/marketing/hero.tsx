@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { StickerButton } from "@/components/marketing/sticker-button";
 import { ACTIVE_KIDS_BLURB, BRAND, HOMEPAGE } from "@/lib/marketing/content";
 
 /**
@@ -54,19 +54,13 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <Link
-              href="/holiday-clinics"
-              className="inline-flex h-13 items-center justify-center gap-2 rounded-full border-2 border-[#111] bg-[#FFD23F] px-8 font-heading text-base font-bold text-[#111] shadow-[4px_4px_0_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#111]"
-            >
+            <StickerButton href="/holiday-clinics">
               Book a holiday clinic
               <ArrowRight className="size-5" aria-hidden="true" />
-            </Link>
-            <Link
-              href="/enquire"
-              className="inline-flex h-13 items-center justify-center rounded-full border-2 border-[#111] bg-white px-8 font-heading text-base font-bold text-[#111] shadow-[4px_4px_0_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#111]"
-            >
+            </StickerButton>
+            <StickerButton href="/enquire" fill="white">
               Enquire for your school
-            </Link>
+            </StickerButton>
           </div>
         </div>
 
@@ -93,7 +87,7 @@ export function Hero() {
           clears the overhang with its own top padding. */}
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 justify-center gap-10 px-4"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 justify-center gap-10 px-4"
       >
         <Image
           src={BRAND.ballsRow}
@@ -109,7 +103,7 @@ export function Hero() {
           width={298}
           height={96}
           unoptimized
-          className="hidden h-16 w-auto sm:h-20 md:block lg:h-24"
+          className="hidden h-20 w-auto md:block lg:h-24"
         />
         <Image
           src={BRAND.ballsRow}
@@ -117,7 +111,7 @@ export function Hero() {
           width={298}
           height={96}
           unoptimized
-          className="hidden h-16 w-auto xl:block lg:h-24"
+          className="hidden h-24 w-auto xl:block"
         />
       </div>
     </section>
