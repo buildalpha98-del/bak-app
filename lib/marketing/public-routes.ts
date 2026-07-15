@@ -1,5 +1,7 @@
 // Single source of truth for unauthenticated-accessible paths.
-// Matching: exact, or prefix + "/" — so "/" matches only the homepage.
+// Matching: exact, or prefix + "/". The "/" entry is explicitly
+// guarded so it matches only the homepage — without the guard, a raw
+// "//admin" request would satisfy startsWith("/" + "/").
 export const PUBLIC_ROUTES = [
   "/",
   "/programs",
@@ -21,6 +23,8 @@ export const PUBLIC_ROUTES = [
 
 export function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
+    (route) =>
+      pathname === route ||
+      (route !== "/" && pathname.startsWith(route + "/"))
   );
 }

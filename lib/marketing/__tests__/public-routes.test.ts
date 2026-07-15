@@ -11,5 +11,6 @@ describe("isPublicRoute", () => {
   it.each([
     "/admin", "/parent", "/parent/book", "/ops", "/coach",
     "/client/some-centre", "/programsfoo", // prefix must not bleed
+    "//admin", "/admin/", // "/" must not act as a wildcard prefix
   ])("gates %s", (p) => expect(isPublicRoute(p)).toBe(false));
 });
