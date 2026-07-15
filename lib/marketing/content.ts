@@ -143,12 +143,33 @@ export interface Program {
   title: string;
   /** One-line hook under the title. */
   tagline: string;
+  /** Small uppercase sticker label on the program page hero. */
+  eyebrow: string;
   /** Body copy, one string per paragraph. */
   description: string[];
   /** Human-readable age range shown on cards and hero. */
   ages: string;
   /** 3–5 punchy bullets — skills and benefits. */
   highlights: string[];
+  /**
+   * What a session actually looks like on the ground — one sentence
+   * per string, 2–3 of them. Concrete only: who turns up, what they
+   * bring, how the hour runs.
+   */
+  sessionShape: string[];
+  /** What kids walk away with — short outcome phrases. */
+  outcomes: string[];
+  /**
+   * Trust strip items. Working With Children Check + first aid on
+   * every program (both are tracked per coach in the app and shown
+   * to centres); the remaining points are program-specific.
+   */
+  trustPoints: string[];
+  /**
+   * Card/page accent from the canonical ball palette — the ages chip
+   * fill (with its AA-verified `fg`), hover shadow and page rules.
+   */
+  accent: BallColor;
   /** Placeholder path — real photography swapped in later, here only. */
   heroImage: string;
 }
@@ -158,6 +179,8 @@ export const PROGRAMS: Program[] = [
     slug: "childcare",
     title: "Childcare Programs",
     tagline: "Big energy for little athletes.",
+    eyebrow: "In your centre",
+    accent: BALL_COLORS.green,
     description: [
       "Little kids are wired to move — we turn that energy into skills. Build Alpha Kids brings fun, fast-paced multi-sport sessions straight into your childcare centre, building coordination, confidence and a genuine love of active play from the very first session.",
       "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. Centres across South-West Sydney trust Build Alpha Kids every week — and we'd love yours to be next.",
@@ -170,12 +193,31 @@ export const PROGRAMS: Program[] = [
       "Safe, nurturing coaching from qualified, kid-first coaches",
       "Delivered in-centre — zero extra admin for your team",
     ],
+    sessionShape: [
+      "Coaches arrive at your centre with every bit of equipment and set up before the kids come out — your educators don't lift a thing.",
+      "The session runs as games: a warm-up chase, skill stations for kicking, throwing, catching and balancing, then a whole-group game to finish.",
+      "Rotations are short and everything is scaled for two- to five-year-olds, so every child is in the game the whole way through.",
+    ],
+    outcomes: [
+      "Coordination, balance and body control",
+      "Confidence to join in a group game",
+      "Turn-taking and playing alongside other kids",
+      "A genuine love of active play",
+    ],
+    trustPoints: [
+      "Working With Children Check on every coach",
+      "First-aid certified coaches at every session",
+      "Curriculum-friendly session plans that fit your centre's day",
+      "All equipment supplied — no extra admin for your educators",
+    ],
     heroImage: "/images/marketing/childcare-hero.jpg",
   },
   {
     slug: "primary-school",
     title: "Primary School Programs",
     tagline: "Where lifelong athletes get their start.",
+    eyebrow: "On your grounds",
+    accent: BALL_COLORS.blue,
     description: [
       "Primary school is where kids decide whether sport is for them. Build Alpha Kids makes the answer a loud yes — dynamic multi-sport programs that sharpen physical skills, build real teamwork and get every kid in the class moving, not just the sporty ones.",
       "Our coaches deliver structured, curriculum-friendly sessions across footy, soccer, basketball, athletics and more, laying the foundation for lifelong fitness and personal growth. Schools across South-West Sydney trust us to run sport their teachers rave about and their students count down to.",
@@ -188,12 +230,31 @@ export const PROGRAMS: Program[] = [
       "Curriculum-friendly structure that schools love",
       "Foundations for lifelong fitness and personal growth",
     ],
+    sessionShape: [
+      "Coaches turn up to your grounds with the gear and the session plan, and run sessions during sport time or straight after the bell.",
+      "Each session moves from skill drills into fast games across footy, soccer, basketball, athletics and more, progressing week on week.",
+      "Games are scaled to all abilities, so every student is involved — not just the sporty ones.",
+    ],
+    outcomes: [
+      "Skills that transfer across codes",
+      "Teamwork and sportsmanship",
+      "The confidence to have a go",
+      "Habits for lifelong fitness",
+    ],
+    trustPoints: [
+      "Working With Children Check on every coach",
+      "First-aid certified coaches at every session",
+      "Curriculum-friendly structure your teachers can plan around",
+      "Coaches bring the gear and the session plan",
+    ],
     heroImage: "/images/marketing/primary-school-hero.jpg",
   },
   {
     slug: "high-school",
     title: "High School Programs",
     tagline: "Train harder. Play smarter. Level up.",
+    eyebrow: "On your grounds",
+    accent: BALL_COLORS.red,
     description: [
       "High schoolers don't want babysitting — they want to be challenged. Build Alpha Kids runs advanced sports programs that push students harder, sharpen athletic skills and get them match-ready for competitive sport.",
       "From strength and conditioning fundamentals to game-day tactics and team culture, our coaches treat students like athletes. The result: fitter, more confident young people with habits that outlast the school bell — and school sport programs that actually go somewhere.",
@@ -206,12 +267,31 @@ export const PROGRAMS: Program[] = [
       "Teamwork and leadership under real pressure",
       "Pathways towards competitive sport and lifelong fitness",
     ],
+    sessionShape: [
+      "Coaches treat students like athletes: a proper warm-up, conditioning work, then skill and tactical blocks that build into game play.",
+      "Sessions cover strength and conditioning fundamentals, game-day tactics and team culture, with the intensity lifted to match the age group.",
+      "Delivered on your grounds during sport time or after the bell, with all equipment brought in.",
+    ],
+    outcomes: [
+      "Game sense under real pressure",
+      "Injury-smart training habits",
+      "Fitness that outlasts the school bell",
+      "A pathway towards competitive sport",
+    ],
+    trustPoints: [
+      "Working With Children Check on every coach",
+      "First-aid certified coaches at every session",
+      "Curriculum-friendly structure your sport coordinator can plan around",
+      "Coaches bring the gear and the session plan",
+    ],
     heroImage: "/images/marketing/high-school-hero.jpg",
   },
   {
     slug: "after-school",
     title: "After School Clinics",
     tagline: "The best hour of their school day — after it ends.",
+    eyebrow: "After the bell",
+    accent: BALL_COLORS.yellow,
     description: [
       "The bell rings and the fun starts. Build Alpha Kids after school clinics are exciting, structured sessions that turn the after-school slump into the highlight of the week — kids build physical skills, sharpen teamwork and burn energy in a fun, supportive environment.",
       "Each clinic mixes skill drills with fast-paced games, so kids improve every week without ever feeling like they're training. Parents get a kid who's active, confident and happily worn out; schools and centres get a program that runs itself.",
@@ -224,12 +304,31 @@ export const PROGRAMS: Program[] = [
       "Runs on-site straight after the bell — easy for parents",
       "Qualified coaches, every session",
     ],
+    sessionShape: [
+      "Coaches are set up on site before the bell goes, so kids walk straight from the classroom into the session.",
+      "Each clinic mixes skill drills with fast-paced games — kids improve every week without ever feeling like they're training.",
+      "Numbers are capped, so every kid gets coached rather than supervised, and parents collect a kid who's active, confident and happily worn out.",
+    ],
+    outcomes: [
+      "Skills that visibly sharpen each week",
+      "Energy burnt off before dinner",
+      "A kid who's active, confident and happily worn out",
+      "A weekly session kids count down to",
+    ],
+    trustPoints: [
+      "Working With Children Check on every coach",
+      "First-aid certified coaches at every session",
+      "Capped numbers — every kid gets coached, not supervised",
+      ACTIVE_KIDS_BLURB,
+    ],
     heroImage: "/images/marketing/after-school-hero.jpg",
   },
   {
     slug: "holiday-programs",
     title: "Holiday Programs",
     tagline: "School's out. Game on.",
+    eyebrow: "School holidays",
+    accent: BALL_COLORS.orange,
     description: [
       "Forget screen-time marathons — our holiday clinics are full-throttle multi-sport days packed with games, challenges and new mates. Kids rotate through footy, soccer, basketball, athletics and more, coached by the same crew they love during term.",
       "Booking is easy: pick a day, book and pay online in about 60 seconds, and you're done. NSW Active Kids vouchers accepted. Spots are capped so every kid gets coached, not just supervised — and the best days sell out fast.",
@@ -242,6 +341,79 @@ export const PROGRAMS: Program[] = [
       "Capped numbers — every kid gets coached, not supervised",
       "Run by the qualified coaches kids already know",
     ],
+    sessionShape: [
+      "Full-throttle multi-sport days in the school holidays — kids rotate through footy, soccer, basketball, athletics and more, with games and challenges between.",
+      "The crew running the day is the same crew kids know from term-time sessions.",
+      "Pick a day, book and pay online in about 60 seconds; numbers are capped, so every kid gets coached rather than supervised.",
+    ],
+    outcomes: [
+      "A full day of sport instead of a screen-time marathon",
+      "A rotation through footy, soccer, basketball and more",
+      "New mates, not just new skills",
+      "Coaching from people they already know",
+    ],
+    trustPoints: [
+      "Working With Children Check on every coach",
+      "First-aid certified coaches at every session",
+      "Capped numbers — every kid gets coached, not supervised",
+      ACTIVE_KIDS_BLURB,
+    ],
     heroImage: "/images/marketing/holiday-programs-hero.jpg",
   },
 ];
+
+/** Lookup by URL segment — `undefined` drives the [slug] page's notFound(). */
+export function getProgram(slug: string): Program | undefined {
+  return PROGRAMS.find((p) => p.slug === slug);
+}
+
+/**
+ * Cross-link targets for a program page: the programs either side of
+ * it in PROGRAMS (which is ordered youngest → oldest, then the two
+ * clinic formats). Holiday programs are excluded because every
+ * program page links to /holiday-clinics separately. An unknown slug
+ * yields no neighbours.
+ */
+export function adjacentPrograms(slug: string): Program[] {
+  const i = PROGRAMS.findIndex((p) => p.slug === slug);
+  if (i === -1) return [];
+  return [PROGRAMS[i - 1], PROGRAMS[i + 1]].filter(
+    (p): p is Program => Boolean(p) && p.slug !== "holiday-programs"
+  );
+}
+
+/**
+ * Copy shared by /programs and every /programs/[slug] page. Section
+ * headings and CTA labels live here rather than in the components so
+ * a copy change is a one-file change.
+ */
+export const PROGRAM_PAGE = {
+  /** The repeated primary CTA — top, middle and bottom of each page. */
+  quoteCta: "Request a quote",
+  /** Parent-facing CTA — holiday programs only. */
+  clinicsCta: "See clinic dates",
+  sessionShapeTitle: "What a session actually looks like",
+  outcomesTitle: "What kids walk away with",
+  overviewTitle: "Inside the program",
+  trustEyebrow: "Every coach, every session",
+  trustTitle: "The bits parents and coordinators ask about first",
+  crossLinkTitle: "Keep exploring",
+  quoteEyebrow: "Schools & centres",
+  quoteTitle: "Want this running at your place?",
+  quoteBody:
+    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote.",
+  clinicsSectionEyebrow: "Book direct",
+  clinicsSectionTitle: "The next clinic dates",
+  clinicsSectionIntro:
+    "Book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
+} as const;
+
+/** Copy for the /programs index page (also its meta description). */
+export const PROGRAMS_INDEX = {
+  eyebrow: "Programs",
+  title: "A program for every age and stage",
+  intro:
+    "From first steps on the grass to game-day tactics — five programs that grow with your kids, run by the same coaches across South-West Sydney childcare centres, schools and holiday clinics.",
+  description:
+    "Multi-sport programs from Build Alpha Kids — childcare, primary school, high school, after school clinics and school holiday programs across South-West Sydney.",
+} as const;

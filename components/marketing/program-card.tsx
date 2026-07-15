@@ -1,29 +1,16 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { BALL_COLORS, type Program } from "@/lib/marketing/content";
+import { type Program } from "@/lib/marketing/content";
 
 /**
  * Sticker cards: white fill, thick black outline, hard shadow. Each
- * card takes a ball colour from the canonical brand palette as its
- * accent — the ages chip fill (with its AA-verified `fg` pairing)
- * and the hover shadow.
+ * card takes its ball colour from `program.accent` (declared once in
+ * content.ts, so the card and the program's own page always agree) —
+ * used as the ages chip fill, with the accent's AA-verified `fg`
+ * pairing, and as the hover shadow.
  */
-const ACCENTS = [
-  BALL_COLORS.green,
-  BALL_COLORS.blue,
-  BALL_COLORS.red,
-  BALL_COLORS.yellow,
-  BALL_COLORS.orange,
-] as const;
-
-export function ProgramCard({
-  program,
-  index,
-}: {
-  program: Program;
-  index: number;
-}) {
-  const accent = ACCENTS[index % ACCENTS.length];
+export function ProgramCard({ program }: { program: Program }) {
+  const accent = program.accent;
 
   return (
     <Link

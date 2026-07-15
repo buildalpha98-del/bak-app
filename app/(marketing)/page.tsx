@@ -64,8 +64,8 @@ export default function HomePage() {
           intro="From first steps on the grass to game-day tactics — five programs that grow with your kids."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PROGRAMS.map((program, index) => (
-            <ProgramCard key={program.slug} program={program} index={index} />
+          {PROGRAMS.map((program) => (
+            <ProgramCard key={program.slug} program={program} />
           ))}
         </div>
       </Section>
