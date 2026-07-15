@@ -78,6 +78,24 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **P5 — Multi-coach per shift** (048): `session_coaches` join table with sync trigger + `set_session_coaches` atomic RPC; `sessions.coach_id` becomes a trigger-maintained primary cache. The `setSessionCoaches` helper at `lib/sessions/session-coaches.ts` is the **only** write path; CI guard at `lib/__tests__/no-direct-coach-id-writes.test.ts` enforces this at build time.
 - **Performance enrichment**: `coach_badges` (029), `ai_assistant_usage` (032)
 
+### July 2026 — beta hardening
+- **Client portal RLS** (061): `auth_client_centre_ids()` SECURITY DEFINER + client SELECT policies on 13 tables. Before this the `client` role could read only 2 tables — every portal page was empty for real directors (admin preview masked it).
+- **Portal + staff misc** (062–063): `client_users.welcomed_at`, `profiles.credentials_purged_at`
+- **Centre inbox realtime** (064): `centre_messages` added to the `supabase_realtime` publication — subscriptions connected but received nothing without it.
+- **Manual rerostering** (065): `rerostering_events.original_coach_id` relaxed to nullable so ops can start rerostering on a shift that never had a coach.
+- **Programme tags** (066): `programs.tags` text[] (GIN), operator-curated labels.
+- **Digest dedup** (067): `notifications.delivered_channels` — the daily digest skips anything already emailed/SMS'd.
+- **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
+- **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
+
+## AI conventions
+
+- **Model id lives in one place**: `lib/ai/model.ts` (`AI_MODEL`). Never hardcode a model string — seven files each pinned a retired id and the whole platform's AI 404'd at once.
+- **No `temperature`** — the current model rejects it (400).
+- **`max_tokens` is a ceiling, not a target.** A full multi-age programme needs real headroom (8000); too low returns *truncated JSON* that surfaces as a bogus parse error. `generateProgram` checks `stop_reason === "max_tokens"` and says so.
+- **Construct the Anthropic client lazily.** The SDK reads `ANTHROPIC_API_KEY` at construction, and ES imports hoist above a script's `dotenv.config()` — a module-level client leaves CLI scripts permanently key-less.
+- **The output schema in the SYSTEM prompt is what the model actually follows.** Requirements stated only in the user prompt get obeyed intermittently (per-age `scaffolds` were dropped on ~50% of drills until the schema named them).
+
 ## Key Business Rules
 
 ### Scheduling
