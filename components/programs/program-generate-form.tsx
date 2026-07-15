@@ -209,7 +209,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
     setError(null);
 
     try {
-      const { error: saveError } = await saveProgram({
+      const { data: saved, error: saveError } = await saveProgram({
         sport: sport as string,
         ageGroups,
         durationMinutes: durationMinutes as number,
@@ -218,10 +218,15 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         equipmentUsed: contentToSave.equipmentNeeded ?? selectedEquipment,
       });
 
-      if (saveError) throw new Error(saveError);
+      if (saveError || !saved) throw new Error(saveError ?? "Failed to save programme.");
 
-      toast.success("Programme saved to library.");
-      router.push(basePath);
+      toast.success(
+        "Programme saved — grab the PDF or apply it to the roster from here."
+      );
+      // Land ON the new programme, where Download PDF and Apply to
+      // roster live — pushing back to the library made the builder
+      // feel like it dead-ended after generation.
+      router.push(`${basePath}/${saved.id}`);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save programme.";

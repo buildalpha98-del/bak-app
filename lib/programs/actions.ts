@@ -31,6 +31,8 @@ export interface ProgramListItem {
   version_number: number;
   parent_version_id: string | null;
   equipment_used: string[];
+  /** Operator-curated labels (migration 066). */
+  tags: string[];
   /** Number of `sessions` rows with `program_id = id`. 0 means unused. */
   session_count: number;
   /** Most-recent `sessions.date` for this programme, or null if never used. */
@@ -212,6 +214,7 @@ export async function getPrograms(
           created_by_name: (profile?.name as string) ?? null,
           version_number: r.version_number as number,
           parent_version_id: r.parent_version_id as string | null,
+          tags: (r.tags as string[]) ?? [],
           equipment_used: (r.equipment_used as string[]) ?? [],
           session_count: usage.count,
           last_used_at: usage.lastUsedAt,
@@ -412,6 +415,7 @@ export async function getProgramDetail(
       version_number: data.version_number,
       parent_version_id: data.parent_version_id,
       equipment_used: data.equipment_used ?? [],
+      tags: (data.tags as string[]) ?? [],
       content_json: data.content_json as unknown as Record<string, unknown>,
       session_count: sessionCount,
       last_used_at: lastUsedAt,
@@ -696,6 +700,7 @@ export async function getProgramsForSport(
           created_by_name: (profile?.name as string) ?? null,
           version_number: r.version_number as number,
           parent_version_id: r.parent_version_id as string | null,
+          tags: (r.tags as string[]) ?? [],
           equipment_used: (r.equipment_used as string[]) ?? [],
           // Session-assignment dropdown doesn't need usage stats —
           // keep them at zero/null. The library list is the only

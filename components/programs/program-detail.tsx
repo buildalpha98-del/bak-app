@@ -97,6 +97,7 @@ import { mondayOfIso } from "@/lib/utils/roster";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 import { ProgramView } from "./program-view";
+import { ProgramTagsEditor } from "./program-tags-editor";
 import { ProgramEditor } from "./program-editor";
 import {
   createNewVersion,
@@ -378,6 +379,12 @@ export function ProgramDetailView({
                   <GitBranch className="size-3" />v{program.version_number}
                 </Badge>
               )}
+            </div>
+            <div className="mt-2">
+              <ProgramTagsEditor
+                programId={program.id}
+                initialTags={program.tags ?? []}
+              />
             </div>
           </div>
         </div>
