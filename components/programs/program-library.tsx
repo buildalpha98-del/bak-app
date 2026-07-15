@@ -324,6 +324,11 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
       result = result.filter((p) => (p.tags ?? []).includes(tagFilter));
     }
 
+    // Series collapse: a multi-week series shows as ONE entry (its
+    // week 1) — the detail page's week switcher reaches the rest.
+    // Without this, seeding 19 sports × 8 weeks floods the library.
+    result = result.filter((p) => !p.series_id || p.series_week === 1);
+
     if (ageFilters.length > 0) {
       result = result.filter((p) => {
         const bands = getProgramAgeBands(p);

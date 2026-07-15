@@ -25,6 +25,23 @@ export interface BuildProgramPromptInput {
       skillFocus: string | null;
     }>;
   };
+  /**
+   * Multi-week series context. When present, the plan is week N of a
+   * progression: it should revisit then extend what earlier weeks
+   * taught, never repeat them wholesale.
+   */
+  progression?: {
+    week: number;
+    totalWeeks: number;
+    /** Overall theme, e.g. "Dribbling School". Optional for week 1. */
+    seriesTitle?: string;
+    previousWeeks: Array<{
+      week: number;
+      title: string;
+      objectives: string[];
+      skills: string[];
+    }>;
+  };
 }
 
 const PRESET_SPORTS_LOWER = new Set<string>(SPORTS.map((s) => s.toLowerCase()));
@@ -56,11 +73,31 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
         .join("\n")}`
     : "";
 
+  const p = input.progression;
+  const progressionSection = p
+    ? `\n\nThis session is WEEK ${p.week} OF ${p.totalWeeks} in a progressive coaching block${
+        p.seriesTitle ? ` called "${p.seriesTitle}"` : ""
+      }.${
+        p.previousWeeks.length > 0
+          ? `\nEarlier weeks covered:\n${p.previousWeeks
+              .map(
+                (w) =>
+                  `- Week ${w.week}: ${w.title} — objectives: ${w.objectives.join("; ")} — drills: ${w.skills.join(", ")}`
+              )
+              .join("\n")}\nOpen with a brief revisit of last week's key skill, then EXTEND it — introduce the next step in difficulty or a new complementary skill. Do not repeat earlier drills wholesale; progress them.`
+          : `\nThis is the opening week: establish the foundations the later weeks will build on, and keep the ceiling low enough that every child succeeds early.`
+      }${
+        p.week === p.totalWeeks
+          ? `\nThis is the FINAL week: build toward a celebratory session that combines the block's skills in game form, and make the reflection prompt a look back across the whole block.`
+          : ""
+      }\nTitle the session so the progression is visible (e.g. a consistent theme with this week's focus).`
+    : "";
+
   return `You are designing a ${input.durationMinutes}-minute coaching session for ${input.sport}.
 
 ${ageSection}
 
-Available equipment: ${input.availableEquipment.join(", ")}.${skillFocusSection}${unknownSportSection}${centreSection}
+Available equipment: ${input.availableEquipment.join(", ")}.${skillFocusSection}${unknownSportSection}${centreSection}${progressionSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }

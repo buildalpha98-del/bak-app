@@ -22,7 +22,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   BarChart3,
@@ -104,6 +104,8 @@ import {
   deleteProgram,
   generateProgramPdf,
   applyProgramToSessions,
+  applySeriesToSessions,
+  getSeriesWeeks,
 } from "@/lib/programs/actions";
 import type {
   LinkedCentreSummary,
@@ -243,6 +245,16 @@ export function ProgramDetailView({
     Array<{ id: string; name: string }>
   >([]);
 
+  // ---- Series (multi-week block) ----
+  const isSeries = !!program.series_id;
+  const [seriesWeeks, setSeriesWeeks] = useState<
+    Array<{ id: string; series_week: number; title: string }>
+  >([]);
+  useEffect(() => {
+    if (!program.series_id) return;
+    getSeriesWeeks(program.series_id).then(({ data }) => setSeriesWeeks(data));
+  }, [program.series_id]);
+
   async function openApplyDialog() {
     setApplyOpen(true);
     if (centreOptions.length === 0) {
@@ -253,6 +265,42 @@ export function ProgramDetailView({
 
   async function handleApply() {
     setApplyBusy(true);
+
+    if (isSeries && program.series_id) {
+      const { data, error } = await applySeriesToSessions({
+        seriesId: program.series_id,
+        startWeekOf: applyWeek,
+        centreId: applyCentre === "all" ? undefined : applyCentre,
+        overwrite: applyOverwrite,
+      });
+      setApplyBusy(false);
+      if (error || !data) {
+        toast.error(error ?? "Failed to apply the series.");
+        return;
+      }
+      if (data.totalUpdated === 0) {
+        toast.info(
+          `No sessions were updated across the ${data.weeks.length} weeks — check the roster has ${program.sport} sessions from that week, or tick overwrite.`
+        );
+        return;
+      }
+      const skippedWeeks = data.weeks.filter(
+        (w) => w.matched > 0 && w.updated === 0
+      ).length;
+      toast.success(
+        `Series applied — ${data.totalUpdated} session${
+          data.totalUpdated === 1 ? "" : "s"
+        } across ${data.weeks.length} weeks` +
+          (skippedWeeks > 0
+            ? ` (${skippedWeeks} week${skippedWeeks === 1 ? "" : "s"} already had programmes)`
+            : "") +
+          "."
+      );
+      setApplyOpen(false);
+      router.refresh();
+      return;
+    }
+
     const { data, error } = await applyProgramToSessions({
       programId: program.id,
       weekOf: applyWeek,
@@ -289,10 +337,13 @@ export function ProgramDetailView({
       <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Apply to roster</DialogTitle>
+            <DialogTitle>
+              {isSeries ? "Apply series to roster" : "Apply to roster"}
+            </DialogTitle>
             <DialogDescription>
-              Attaches this programme to every {program.sport} session in the
-              chosen week{applyCentre === "all" ? " across all centres" : ""}.
+              {isSeries
+                ? `Walks the ${program.series_length ?? seriesWeeks.length}-week block forward: week 1 lands on the chosen week's ${program.sport} sessions, week 2 the following week, and so on${applyCentre === "all" ? " across all centres" : ""}.`
+                : `Attaches this programme to every ${program.sport} session in the chosen week${applyCentre === "all" ? " across all centres" : ""}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-1">
@@ -386,6 +437,27 @@ export function ProgramDetailView({
                 initialTags={program.tags ?? []}
               />
             </div>
+            {isSeries && seriesWeeks.length > 0 && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {program.series_length ?? seriesWeeks.length}-week series
+                </span>
+                {seriesWeeks.map((w) => (
+                  <Link
+                    key={w.id}
+                    href={`${basePath}/${w.id}`}
+                    title={w.title}
+                    className={
+                      w.id === program.id
+                        ? "rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
+                        : "rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    }
+                  >
+                    Wk {w.series_week}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

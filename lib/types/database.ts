@@ -307,6 +307,10 @@ export interface Program {
   equipment_used: string[];
   /** Operator-curated labels ("wet weather", "small space"). Migration 066. */
   tags: string[];
+  /** Multi-week series linkage (migration 069). Null for standalone plans. */
+  series_id: string | null;
+  series_week: number | null;
+  series_length: number | null;
   parent_version_id: string | null;
   version_number: number;
   created_by: string;
