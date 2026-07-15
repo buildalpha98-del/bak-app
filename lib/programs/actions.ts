@@ -1262,6 +1262,128 @@ export async function getLinkedCentresForProgramme(
 }
 
 // ============================================================
+// updateProgramTags — operator-curated labels
+// ============================================================
+
+export async function updateProgramTags(
+  programId: string,
+  tags: string[]
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const clean = Array.from(
+      new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean))
+    ).slice(0, 12);
+
+    const { error } = await supabase
+      .from("programs")
+      .update({ tags: clean })
+      .eq("id", programId);
+    if (error) return { error: "Failed to save tags." };
+
+    revalidatePath("/admin/programs");
+    revalidatePath("/ops/programs");
+    return { error: null };
+  } catch (err) {
+    console.error("updateProgramTags error:", err);
+    return { error: "Failed to save tags." };
+  }
+}
+
+// ============================================================
+// getRecommendedPrograms — usage-ranked suggestions for a session
+// ============================================================
+
+export interface RecommendedProgram {
+  id: string;
+  title: string;
+  version_number: number;
+  tags: string[];
+  /** Times any version ran at this session's centre. */
+  usedAtCentre: number;
+  /** Times used across all centres. */
+  usedTotal: number;
+}
+
+export async function getRecommendedPrograms(
+  sessionId: string
+): Promise<{ data: RecommendedProgram[]; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("id, sport, centre_id")
+      .eq("id", sessionId)
+      .maybeSingle();
+    if (!session) return { data: [], error: "Session not found." };
+
+    const [{ data: programs }, { data: centreUsage }, { data: globalUsage }] =
+      await Promise.all([
+        supabase
+          .from("programs")
+          .select("id, sport, content_json, version_number, tags, created_at")
+          .eq("sport", session.sport),
+        supabase
+          .from("sessions")
+          .select("program_id")
+          .eq("centre_id", session.centre_id)
+          .not("program_id", "is", null),
+        supabase
+          .from("sessions")
+          .select("program_id")
+          .eq("sport", session.sport)
+          .not("program_id", "is", null),
+      ]);
+    if (!programs || programs.length === 0) return { data: [], error: null };
+
+    const centreCounts = new Map<string, number>();
+    for (const row of centreUsage ?? []) {
+      centreCounts.set(
+        row.program_id!,
+        (centreCounts.get(row.program_id!) ?? 0) + 1
+      );
+    }
+    const globalCounts = new Map<string, number>();
+    for (const row of globalUsage ?? []) {
+      globalCounts.set(
+        row.program_id!,
+        (globalCounts.get(row.program_id!) ?? 0) + 1
+      );
+    }
+
+    const ranked = programs
+      .map((p) => ({
+        id: p.id as string,
+        title:
+          ((p.content_json as Record<string, unknown>)?.title as string) ??
+          `${p.sport} programme`,
+        version_number: p.version_number as number,
+        tags: (p.tags as string[]) ?? [],
+        usedAtCentre: centreCounts.get(p.id as string) ?? 0,
+        usedTotal: globalCounts.get(p.id as string) ?? 0,
+        created_at: p.created_at as string,
+      }))
+      .sort(
+        (a, b) =>
+          b.usedAtCentre - a.usedAtCentre ||
+          b.usedTotal - a.usedTotal ||
+          b.created_at.localeCompare(a.created_at)
+      )
+      .slice(0, 3)
+      .map(({ created_at: _createdAt, ...rest }) => rest);
+
+    return { data: ranked, error: null };
+  } catch (err) {
+    console.error("getRecommendedPrograms error:", err);
+    return { data: [], error: "Failed to load suggestions." };
+  }
+}
+
+// ============================================================
 // generateProgramPdf — printable session plan
 // ============================================================
 

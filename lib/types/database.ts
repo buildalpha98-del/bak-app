@@ -305,6 +305,8 @@ export interface Program {
   skill_focus: string | null;
   content_json: Record<string, unknown>;
   equipment_used: string[];
+  /** Operator-curated labels ("wet weather", "small space"). Migration 066. */
+  tags: string[];
   parent_version_id: string | null;
   version_number: number;
   created_by: string;

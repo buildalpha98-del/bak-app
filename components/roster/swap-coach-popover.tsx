@@ -58,6 +58,23 @@ export function SwapCoachPopover({
     toast.success("Coach updated.");
     onSwapped();
     onOpenChange(false);
+    // Travel pre-flight — warn about tight drives, never block.
+    if (coachId) {
+      import("@/lib/roster/travel-check-actions").then(
+        ({ checkCoachTravelWarnings }) =>
+          checkCoachTravelWarnings([coachId], sessionId).then(({ data }) => {
+            for (const w of data) {
+              toast.warning(
+                w.gapMinutes < 0
+                  ? `${w.coachName} overlaps a session at ${w.otherCentre}.`
+                  : `${w.coachName} has ${w.gapMinutes} min to travel ${
+                      w.direction === "before" ? "from" : "to"
+                    } ${w.otherCentre} (~${w.requiredMinutes} min drive).`
+              );
+            }
+          })
+      );
+    }
   }
 
   return (

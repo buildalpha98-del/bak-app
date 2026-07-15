@@ -148,6 +148,9 @@ export function SessionDetailSheet({
   const [assigningProgram, setAssigningProgram] = useState(false);
   const [sportPrograms, setSportPrograms] = useState<ProgramListItem[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(false);
+  const [suggestedPrograms, setSuggestedPrograms] = useState<
+    Array<{ id: string; title: string; version_number: number; usedAtCentre: number }>
+  >([]);
 
   // Rerostering event (for needs_replacement sessions)
   const [rerosteringEvent, setRerosteringEvent] = useState<Record<string, unknown> | null>(null);
@@ -276,9 +279,10 @@ export function SessionDetailSheet({
   }
 
   async function handleAssignCoaches(next: ChipCoach[]) {
+    const sessionId = session!.id;
     setSaving(true);
     const { error } = await assignCoaches(
-      session!.id,
+      sessionId,
       next.map((c, i) => ({ userId: c.id, isPrimary: i === 0 }))
     );
     setSaving(false);
@@ -288,6 +292,24 @@ export function SessionDetailSheet({
     }
     toast.success("Coaches updated.");
     onUpdate();
+    // Travel pre-flight: warn (never block) when the new assignment
+    // leaves a coach a tight drive between different-centre sessions.
+    import("@/lib/roster/travel-check-actions").then(
+      ({ checkCoachTravelWarnings }) =>
+        checkCoachTravelWarnings(next.map((c) => c.id), sessionId).then(
+          ({ data }) => {
+            for (const w of data) {
+              toast.warning(
+                w.gapMinutes < 0
+                  ? `${w.coachName} overlaps a session at ${w.otherCentre}.`
+                  : `${w.coachName} has ${w.gapMinutes} min to travel ${
+                      w.direction === "before" ? "from" : "to"
+                    } ${w.otherCentre} (~${w.requiredMinutes} min drive).`
+              );
+            }
+          }
+        )
+    );
   }
 
   async function handleReplacementPick(coachId: string) {
@@ -326,8 +348,14 @@ export function SessionDetailSheet({
   async function handleStartProgramAssign() {
     setAssigningProgram(true);
     setLoadingPrograms(true);
-    const { data } = await getProgramsForSport(session!.sport);
+    const [{ data }, recommended] = await Promise.all([
+      getProgramsForSport(session!.sport),
+      import("@/lib/programs/actions").then(({ getRecommendedPrograms }) =>
+        getRecommendedPrograms(session!.id)
+      ),
+    ]);
     setSportPrograms(data ?? []);
+    setSuggestedPrograms(recommended.data ?? []);
     setLoadingPrograms(false);
   }
 
@@ -549,6 +577,32 @@ export function SessionDetailSheet({
                     No {session.sport} programmes available.
                   </p>
                 ) : (
+                  <>
+                    {!session.program_id && suggestedPrograms.length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Suggested
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {suggestedPrograms.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              disabled={saving}
+                              onClick={() => handleAssignProgram(p.id)}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                            >
+                              {p.title}
+                              {p.usedAtCentre > 0 && (
+                                <span className="text-primary/70">
+                                  · used here ×{p.usedAtCentre}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   <Select
                     value={session.program_id ?? "none"}
                     onValueChange={(v) => v && handleAssignProgram(v)}
@@ -570,6 +624,7 @@ export function SessionDetailSheet({
                       ))}
                     </SelectContent>
                   </Select>
+                  </>
                 )}
                 <Button
                   variant="outline"
