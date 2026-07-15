@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
+import { toLocalIso } from "@/lib/utils/roster";
 
 vi.mock("server-only", () => ({}));
 
@@ -34,10 +36,16 @@ interface PulseFixture {
   newFeedback?: number;
 }
 
+// "Today" must mean today in SYDNEY, because that is what the code
+// under test means by it. toISOString() reports the UTC date, which is
+// yesterday's from midnight to 10am Sydney — so this helper disagreed
+// with the code for ten hours out of every day and these tests failed
+// every Sydney morning. They only ever looked green because they were
+// run in the afternoon.
 function todayPlus(days: number): string {
-  const d = new Date();
+  const d = new Date(sydneyTodayIso() + "T00:00:00");
   d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  return toLocalIso(d);
 }
 
 function installFixture(opts: PulseFixture) {

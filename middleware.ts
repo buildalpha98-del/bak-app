@@ -1,5 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
+import {
+  isFinancialRoute,
+  parseRoleHint,
+  serializeRoleHint,
+  ROLE_HINT_COOKIE,
+  ROLE_HINT_MAX_AGE,
+  type RoleHint,
+} from "@/lib/auth/route-access";
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = [
@@ -17,6 +25,9 @@ const PUBLIC_ROUTES = [
 // The sign-in pages themselves. Redirecting one of these to /login is
 // always a loop, never a fix.
 const LOGIN_ROUTES = ["/login", "/client-login", "/parent-login"];
+
+// Financial route list + role-hint parsing live in lib/auth/route-access
+// (pure, testable, no next/* imports).
 
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
@@ -41,32 +52,27 @@ const ROLE_PORTAL: Record<string, string> = {
 // only — every page and server action still authenticates itself and
 // RLS enforces data access — so a stale hint can at worst route a
 // just-demoted user to a portal whose pages immediately reject them.
-const ROLE_HINT_COOKIE = "bak-role";
-const ROLE_HINT_MAX_AGE = 600;
-
-function readRoleHint(
-  request: NextRequest,
-  userId: string
-): { role: string; status: string } | null {
-  const raw = request.cookies.get(ROLE_HINT_COOKIE)?.value;
-  if (!raw) return null;
-  const [uid, role, status] = raw.split(":");
-  if (uid !== userId || !role || !status) return null;
-  return { role, status };
+function readRoleHint(request: NextRequest, userId: string): RoleHint | null {
+  return parseRoleHint(request.cookies.get(ROLE_HINT_COOKIE)?.value, userId);
 }
 
 function setRoleHint(
   response: NextResponse,
   userId: string,
   role: string,
-  status: string
+  status: string,
+  financialAccess: boolean
 ) {
-  response.cookies.set(ROLE_HINT_COOKIE, `${userId}:${role}:${status}`, {
-    maxAge: ROLE_HINT_MAX_AGE,
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-  });
+  response.cookies.set(
+    ROLE_HINT_COOKIE,
+    serializeRoleHint(userId, role, status, financialAccess),
+    {
+      maxAge: ROLE_HINT_MAX_AGE,
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+    }
+  );
 }
 
 export async function middleware(request: NextRequest) {
@@ -177,12 +183,18 @@ export async function middleware(request: NextRequest) {
         // Not a client user — check if they're staff
         const { data: profile } = await supabase
           .from("profiles")
-          .select("role, status")
+          .select("role, status, financial_access")
           .eq("id", user.id)
           .maybeSingle();
 
         if (profile) {
-          setRoleHint(response, user.id, profile.role, profile.status);
+          setRoleHint(
+            response,
+            user.id,
+            profile.role,
+            profile.status,
+            !!profile.financial_access
+          );
           const portalUrl = request.nextUrl.clone();
           portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
           return NextResponse.redirect(portalUrl);
@@ -194,7 +206,9 @@ export async function middleware(request: NextRequest) {
       }
 
       centreId = clientUser.centre_id;
-      setRoleHint(response, user.id, "client", centreId!);
+      // Client and parent hints reuse this cookie but never reach a
+      // financial route, so the flag is always false for them.
+      setRoleHint(response, user.id, "client", centreId!, false);
     }
 
     // Client users can only access their own centre's portal
@@ -233,7 +247,7 @@ export async function middleware(request: NextRequest) {
         .maybeSingle();
       registered = !!parentProfile;
       if (registered) {
-        setRoleHint(response, user.id, "parent", "registered");
+        setRoleHint(response, user.id, "parent", "registered", false);
       }
     }
 
@@ -355,7 +369,7 @@ export async function middleware(request: NextRequest) {
       if (!hint) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("role, status")
+          .select("role, status, financial_access")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -364,8 +378,18 @@ export async function middleware(request: NextRequest) {
           loginUrl.pathname = "/login";
           return NextResponse.redirect(loginUrl);
         }
-        hint = { role: profile.role, status: profile.status };
-        setRoleHint(response, user.id, profile.role, profile.status);
+        hint = {
+          role: profile.role,
+          status: profile.status,
+          financialAccess: !!profile.financial_access,
+        };
+        setRoleHint(
+          response,
+          user.id,
+          profile.role,
+          profile.status,
+          hint.financialAccess
+        );
       }
 
       if (hint.status === "onboarding") {
@@ -382,6 +406,17 @@ export async function middleware(request: NextRequest) {
       if (!hasAccess) {
         const portalUrl = request.nextUrl.clone();
         portalUrl.pathname = ROLE_PORTAL[hint.role] || "/login";
+        return NextResponse.redirect(portalUrl);
+      }
+
+      // Redirect from the edge rather than letting the section layout's
+      // requireFinancialAccess() throw a redirect mid-render: an RSC
+      // redirect trips React #310 inside Next's own AppRouter. The
+      // layout guard stays as the actual enforcement.
+      if (isFinancialRoute(pathname) && !hint.financialAccess) {
+        const portalUrl = request.nextUrl.clone();
+        portalUrl.pathname = ROLE_PORTAL[hint.role] || "/login";
+        portalUrl.searchParams.set("denied", "financial");
         return NextResponse.redirect(portalUrl);
       }
     }
