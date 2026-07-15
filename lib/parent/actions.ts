@@ -6,7 +6,11 @@ import { sendEmail } from "@/lib/launch/email";
 import { welcomeParent, parentBulkInvite } from "@/lib/launch/email-templates";
 import { createNotification } from "@/lib/launch/notifications";
 import { calculateAgeGroup } from "@/lib/utils/ageGroup";
-import { getAuthCallbackUrl, resolveAuthOrigin } from "@/lib/utils/base-url";
+import {
+  getAuthCallbackUrl,
+  getMarketingUrl,
+  resolveAuthOrigin,
+} from "@/lib/utils/base-url";
 import { buildParentMagicLinkRedirect } from "@/lib/parent/safe-next";
 import { headers } from "next/headers";
 import type { ParentProfile, ParentChild, Child } from "@/lib/types/database";
@@ -683,7 +687,13 @@ export async function importParents(
       }
     }
 
-    const redirectTo = getAuthCallbackUrl("/parent-login");
+    // Parents live on the marketing origin (see the plan's audience
+    // principle). Staff trigger this invite from the app domain, but the
+    // invitee is a PARENT — sending them to .app would put their session
+    // in a different cookie jar than the public site, so they'd have to
+    // log in a second time the first time they browse the site and book.
+    // Deterministic on purpose: NOT host-aware, unlike sendParentMagicLink.
+    const redirectTo = getAuthCallbackUrl("/parent-login", getMarketingUrl());
 
     // Process rows one at a time so a single failure doesn't poison
     // the whole batch.

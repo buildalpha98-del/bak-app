@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -333,6 +333,56 @@ describe("importParents — happy path", () => {
         user_id: "admin1",
       })
     );
+  });
+});
+
+describe("importParents — invite links target the marketing origin", () => {
+  // Audience principle: the invitee is a PARENT, so the link must go to
+  // buildalphakids.com.au even though STAFF trigger this from the app
+  // domain. Otherwise the parent's session lands in the .app cookie jar
+  // and they'd log in a second time when they first browse the site.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("emits a .com.au callback even though getBaseUrl() is the .app domain", async () => {
+    // Production shape: the app domain is what getBaseUrl() would give.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    vi.stubEnv("VERCEL_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    mockAuth();
+
+    await importParents([
+      { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
+    ]);
+
+    expect(generateLinkMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "magiclink",
+        email: "jane@example.com",
+        options: {
+          redirectTo:
+            "https://buildalphakids.com.au/auth/callback?next=%2Fparent-login",
+        },
+      })
+    );
+  });
+
+  it("is deterministic — honours NEXT_PUBLIC_MARKETING_URL, never the app domain", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://staging.example.com");
+    mockAuth();
+
+    await importParents([
+      { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
+    ]);
+
+    const redirectTo = generateLinkMock.mock.calls[0][0].options.redirectTo;
+    expect(redirectTo).toBe(
+      "https://staging.example.com/auth/callback?next=%2Fparent-login"
+    );
+    expect(redirectTo).not.toContain("buildalphakids.app");
   });
 });
 

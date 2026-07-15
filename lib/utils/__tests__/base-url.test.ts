@@ -203,4 +203,12 @@ describe("getAuthCallbackUrl", () => {
       getAuthCallbackUrl("/parent-login", "https://buildalphakids.com.au")
     ).toBe("https://buildalphakids.com.au/auth/callback?next=%2Fparent-login");
   });
+
+  it("accepts getMarketingUrl() as the origin (parent-facing invites)", () => {
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    expect(getAuthCallbackUrl("/parent-login", getMarketingUrl())).toBe(
+      "https://buildalphakids.com.au/auth/callback?next=%2Fparent-login"
+    );
+  });
 });
