@@ -19,6 +19,13 @@ export const PUBLIC_ROUTES = [
   "/feedback",
   "/refer",
   "/client/shared",
+  // Crawler endpoints. The middleware matcher only excludes _next,
+  // static assets and a file-extension list that these two do not
+  // match, so without an entry here an anonymous GET /sitemap.xml is
+  // redirected to /login — i.e. Google would never read the sitemap
+  // or the robots rules at all.
+  "/sitemap.xml",
+  "/robots.txt",
 ];
 
 export function isPublicRoute(pathname: string): boolean {

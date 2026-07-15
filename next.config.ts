@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+// Relative, not "@/lib/..." — next.config.ts is loaded before the
+// tsconfig path aliases are available to resolve.
+import { WP_REDIRECTS } from "./lib/marketing/wp-redirects";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const withPWA = require("next-pwa")({
@@ -47,6 +50,12 @@ const withPWA = require("next-pwa")({
 });
 
 const nextConfig: NextConfig = {
+  // Old WordPress URLs → their new home. Next evaluates redirects()
+  // BEFORE middleware, so these fire for signed-out crawlers without
+  // ever hitting the auth gate.
+  async redirects() {
+    return WP_REDIRECTS;
+  },
   experimental: {
     // Client router cache for dynamic pages. Next 15+ defaults this to
     // 0, so every sidebar click re-rendered the full page server-side

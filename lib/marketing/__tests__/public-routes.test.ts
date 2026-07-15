@@ -6,6 +6,8 @@ describe("isPublicRoute", () => {
     "/", "/programs", "/programs/childcare", "/holiday-clinics",
     "/about", "/blog", "/blog/some-post", "/enquire", "/contact",
     "/login", "/parent-login", "/refer/abc",
+    // Crawler endpoints: gating these hides the sitemap from Google.
+    "/sitemap.xml", "/robots.txt",
   ])("allows %s", (p) => expect(isPublicRoute(p)).toBe(true));
 
   it.each([
