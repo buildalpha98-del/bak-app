@@ -74,6 +74,7 @@ import type { FormsStatusPulse } from "@/lib/forms/status-pulse-actions";
 import { FormsStatusPulseStrip } from "./forms-status-pulse";
 import { useCountUp } from "@/components/launch/use-count-up";
 import { toast } from "sonner";
+import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
 
 const ARCHIVED_PREFIX = "[Archived] ";
 
@@ -91,11 +92,18 @@ function templateStatus(t: FormTemplateListItem): "draft" | "published" | "archi
   return "draft";
 }
 
+// These render timestamps (updated_at, submitted_at), and without an
+// explicit timeZone toLocale* uses whatever zone the RUNTIME is in:
+// UTC on the server, Sydney in the browser. For the ten hours a day
+// those disagree, the two produce different dates for the same instant
+// and hydration breaks (React #418) — which is exactly what /admin/forms
+// was doing. Name the zone; never inherit it.
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: SYDNEY_TZ,
   });
 }
 
@@ -105,6 +113,7 @@ function formatDateTime(dateStr: string): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: SYDNEY_TZ,
   });
 }
 
