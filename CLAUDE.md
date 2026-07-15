@@ -180,6 +180,26 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - React-PDF for PDFs. Resend for email. recharts for charts. Sentry for errors
 - Tests: vitest unit 80%+ on /lib/utils, integration on critical flows, Playwright E2E top 5 journeys
 
+### E2E smoke suite (`npm run e2e`)
+
+Seven Playwright specs in `e2e/smoke.spec.ts`, each pinning a bug that reached
+production while the unit suite stayed green — they live in the seam unit tests
+can't reach: auth → RLS → query → render. Add a spec here whenever a bug gets
+past `npm test`; that's the signal it belongs at this tier.
+
+- Runs on its own port (**3100**) against a fresh server, so it never adopts a
+  dev server already on :3000 — reusing one cost an afternoon of false failures.
+- `e2e/fixtures/auth.ts` mints a real session via `auth.admin.generateLink`
+  (which sends no email) and injects it exactly as `@supabase/ssr` writes it.
+  Users are looked up by role at runtime — no hardcoded emails or UUIDs.
+  Everything after sign-in is exercised for real; `/auth/callback` itself is not
+  (needs localhost on Supabase's redirect allowlist).
+- Read-only: it runs against the production database and asserts what a user
+  sees. The AI spec bills one real generation on purpose — the three-layer AI
+  outage survived a full suite of mocks.
+- Needs the Supabase + Anthropic keys; the config reads `.env.production.local`
+  and lets `.env.local` win where it defines a var.
+
 ## Sports List
 
 Soccer, Basketball, Athletics, Yoga, Pilates, Boot Camp, Swimming, Pickleball, Golf, Hockey, Lacrosse, Motor Skills, Multi-Sport, Cricket, Netball, Tennis, Volleyball, Dance, Gymnastics
