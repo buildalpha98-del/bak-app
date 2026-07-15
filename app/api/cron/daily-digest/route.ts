@@ -19,12 +19,16 @@ export async function GET(request: Request) {
     const admin = createSupabaseAdmin();
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    // Fetch unread notifications from last 24h (important + informational only)
+    // Fetch unread notifications from last 24h (important + informational
+    // only). Skip anything already delivered by immediate email or SMS —
+    // those users have the message; re-sending it is the duplicate the
+    // digest existed to avoid. Push-only rows stay in: push is ephemeral.
     const { data: notifications, error } = await admin
       .from("notifications")
       .select("user_id, title, body, created_at")
       .eq("read", false)
       .in("tier", ["important", "informational"])
+      .not("delivered_channels", "ov", "{email,sms}")
       .gte("created_at", since)
       .order("created_at", { ascending: false });
 

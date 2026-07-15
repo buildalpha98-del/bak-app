@@ -32,17 +32,21 @@ export async function triggerNotification(
   for (const recipient of recipients) {
     try {
       // 1. Always insert DB record (Realtime delivers to bell)
-      await admin.from("notifications").insert({
-        user_id: recipient.userId,
-        type: event.type,
-        title: event.title,
-        body: event.body,
-        tier,
-        entity_type: event.entityType,
-        entity_id: event.entityId,
-        data: event.data ?? {},
-        read: false,
-      });
+      const { data: inserted } = await admin
+        .from("notifications")
+        .insert({
+          user_id: recipient.userId,
+          type: event.type,
+          title: event.title,
+          body: event.body,
+          tier,
+          entity_type: event.entityType,
+          entity_id: event.entityId,
+          data: event.data ?? {},
+          read: false,
+        })
+        .select("id")
+        .single();
 
       // 2. Informational → DB only (Realtime handles in-app)
       if (tier === "informational") continue;
@@ -78,6 +82,7 @@ export async function triggerNotification(
       // Fails silently so a push outage can't block the in-app +
       // email path; the SMS fallback lives in
       // lib/sms/actions.ts::sendUrgentNotificationViaSms.
+      const delivered: string[] = [];
       if (shouldPush) {
         const url = getNotificationUrl(
           event.entityType,
@@ -90,6 +95,7 @@ export async function triggerNotification(
           url,
           tag: event.type,
         });
+        delivered.push("push");
       }
 
       // 6. Email notification
@@ -100,6 +106,19 @@ export async function triggerNotification(
           event.body
         );
         await sendEmail(recipient.email, subject, html);
+        delivered.push("email");
+      }
+
+      // 7. Record delivered channels — the daily digest uses this to
+      // skip notifications the user was already emailed about, so the
+      // same event never lands in their inbox twice. Push-only rows
+      // stay digest-eligible: push is ephemeral and catch-up is the
+      // digest's whole job.
+      if (delivered.length > 0 && inserted?.id) {
+        await admin
+          .from("notifications")
+          .update({ delivered_channels: delivered })
+          .eq("id", inserted.id);
       }
     } catch (err) {
       console.error(
