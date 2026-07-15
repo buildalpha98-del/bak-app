@@ -823,3 +823,94 @@ export const CONTACT_FORM = {
   contactNameRequired: "Please add your name so we know who we're replying to.",
   submitLabel: "Send message",
 } as const;
+
+// ------------------------------------------------------------
+// Blog
+// ------------------------------------------------------------
+//
+// Copy for /blog, /blog/[slug] and the homepage teaser section.
+// Unlike every other page here, the blog's headline content comes
+// from the database — so these constants are only the furniture
+// around it (headings, empty state, link labels). Post titles and
+// bodies are never hardcoded.
+
+/**
+ * The search-result cutoff for a <meta name="description">. Google
+ * truncates around 155-160 chars; the static pages are hand-written
+ * under it and guarded by a test in __tests__/content.test.ts.
+ *
+ * Blog descriptions can't be guarded that way — they're DB-driven, and
+ * the admin editor accepts a seo_description of up to 200 chars
+ * (MAX_SEO_DESCRIPTION in lib/blog/admin-shared.ts). That ceiling is
+ * deliberately generous for the editor, so the 160 rule has to be
+ * enforced at render instead: see truncateDescription below.
+ */
+export const META_DESCRIPTION_MAX = 160;
+
+/**
+ * Clamp a description to the search cutoff, breaking on a word and
+ * ending with an ellipsis rather than a severed word.
+ *
+ * Only truncates when it must — anything already inside the limit is
+ * returned untouched, so a hand-written seo_description reads exactly
+ * as the author typed it. The ellipsis is counted inside the budget,
+ * not appended past it, so the result is never over the limit.
+ */
+export function truncateDescription(
+  text: string,
+  max: number = META_DESCRIPTION_MAX
+): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+
+  // -1 leaves room for the ellipsis character itself.
+  const clipped = clean.slice(0, max - 1);
+  const lastSpace = clipped.lastIndexOf(" ");
+  // A single word longer than the budget has no space to break on —
+  // fall back to the hard clip rather than returning just "…".
+  const body = lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped;
+  return `${body.replace(/[.,;:!?—-]+$/, "")}…`;
+}
+
+/** Copy for the /blog index (also its meta description). */
+export const BLOG_INDEX = {
+  eyebrow: "From the sideline",
+  title: "News, tips and coaching notes",
+  intro:
+    "What we're learning on the grass and in the gym — how sport builds skills, confidence and character in kids.",
+  description:
+    "Coaching notes and news from Build Alpha Kids — how multi-sport programs build skills, confidence and character in kids across South-West Sydney.",
+  /** Shown when nothing is published yet — never a blank page. */
+  emptyTitle: "Nothing posted just yet",
+  emptyBody:
+    "We're busy on the court. Check back soon, or sign up to the newsletter and we'll let you know when there's news.",
+} as const;
+
+/** Copy for a single post page. */
+export const BLOG_POST = {
+  /** Back link out of a post, up to the index. */
+  backLabel: "All posts",
+} as const;
+
+/**
+ * The post card's own furniture. Separate from BLOG_INDEX and
+ * BLOG_TEASERS because BlogCard is shared by both surfaces — the label
+ * has to read the same on /blog as it does on the homepage, which only
+ * holds if there is one definition of it.
+ */
+export const BLOG_CARD = {
+  readMoreLabel: "Read post",
+} as const;
+
+/**
+ * The homepage's blog teaser section. `viewAllLabel` is the only way
+ * into /blog from the homepage body, so it has to read as a real
+ * destination rather than a footnote.
+ */
+export const BLOG_TEASERS = {
+  eyebrow: "From the sideline",
+  title: "Latest from the blog",
+  intro:
+    "Coaching notes, program news and what we're learning with kids every week.",
+  viewAllLabel: "Read all posts",
+} as const;

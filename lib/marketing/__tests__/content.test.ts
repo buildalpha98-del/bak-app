@@ -2,12 +2,15 @@ import { describe, it, expect } from "vitest";
 import {
   ABOUT_PAGE,
   adjacentPrograms,
+  BLOG_INDEX,
   CONTACT_PAGE,
   ENQUIRE_PAGE,
   getProgram,
   HOMEPAGE,
+  META_DESCRIPTION_MAX,
   PROGRAMS,
   PROGRAMS_INDEX,
+  truncateDescription,
 } from "../content";
 
 describe("PROGRAMS integrity", () => {
@@ -34,6 +37,7 @@ const META_DESCRIPTIONS: [name: string, text: string][] = [
   ["about", ABOUT_PAGE.description],
   ["contact", CONTACT_PAGE.description],
   ["enquire", ENQUIRE_PAGE.description],
+  ["blog index", BLOG_INDEX.description],
   ...PROGRAMS.map(
     (p): [string, string] => [`program: ${p.slug}`, p.metaDescription]
   ),
@@ -48,7 +52,59 @@ describe("meta descriptions", () => {
   );
 
   it("covers every marketing page (guard is useless if one slips through)", () => {
-    expect(META_DESCRIPTIONS).toHaveLength(5 + PROGRAMS.length);
+    expect(META_DESCRIPTIONS).toHaveLength(6 + PROGRAMS.length);
+  });
+});
+
+/**
+ * The blog's own descriptions can't join the list above — they come
+ * from the database, where the admin editor allows a seo_description of
+ * up to 200 chars and an excerpt of any length at all. This clamp is
+ * what keeps /blog/[slug] inside the cutoff, so it carries the same
+ * guarantee the static list gets from a test.
+ */
+describe("truncateDescription", () => {
+  it("leaves a description already inside the limit untouched", () => {
+    expect(truncateDescription("Short and sweet.")).toBe("Short and sweet.");
+  });
+
+  it("never returns more than the limit, ellipsis included", () => {
+    const long = "word ".repeat(80);
+    expect(truncateDescription(long).length).toBeLessThanOrEqual(
+      META_DESCRIPTION_MAX
+    );
+  });
+
+  it("clamps a 200-char seo_description — the editor's actual ceiling", () => {
+    const atEditorMax = "a".repeat(40) + " " + "b".repeat(159);
+    expect(atEditorMax).toHaveLength(200);
+    expect(truncateDescription(atEditorMax).length).toBeLessThanOrEqual(
+      META_DESCRIPTION_MAX
+    );
+  });
+
+  it("breaks on a word boundary rather than mid-word", () => {
+    const text = "Multi-sport coaching " + "x".repeat(200);
+    // The 200-x run can't fit, so the break lands after the last word
+    // that does — nothing is half-severed.
+    expect(truncateDescription(text)).toBe("Multi-sport coaching…");
+  });
+
+  it("falls back to a hard clip when one word exceeds the budget", () => {
+    const result = truncateDescription("y".repeat(300));
+    expect(result.length).toBeLessThanOrEqual(META_DESCRIPTION_MAX);
+    expect(result.endsWith("…")).toBe(true);
+    // Not just a lone ellipsis — the text still has to say something.
+    expect(result.length).toBeGreaterThan(100);
+  });
+
+  it("drops dangling punctuation before the ellipsis", () => {
+    const text = "Coaching notes, tips and news, " + "z".repeat(200);
+    expect(truncateDescription(text)).toBe("Coaching notes, tips and news…");
+  });
+
+  it("collapses whitespace so newlines can't reach a meta tag", () => {
+    expect(truncateDescription("one\n\ntwo   three")).toBe("one two three");
   });
 });
 

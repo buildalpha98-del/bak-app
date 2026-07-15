@@ -8,6 +8,7 @@ import { ImpactBand } from "@/components/marketing/impact-band";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { B2bBand } from "@/components/marketing/b2b-band";
 import { HolidayClinicsSection } from "@/components/marketing/holiday-clinics-section";
+import { BlogTeasers } from "@/components/marketing/blog-teasers";
 import { NewsletterForm } from "@/components/marketing/newsletter-form";
 import { TestimonialCard } from "@/components/marketing/testimonial-card";
 import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
  *  8. How it works
  *  9. Testimonials — live approved testimonials
  * 10. B2B band
- * 11. Blog teasers — Chunk 5
+ * 11. Blog teasers — 3 latest published posts
  * 12. Newsletter signup
  * 13. Footer       — (marketing)/layout.tsx
  */
@@ -90,7 +91,7 @@ export default function HomePage() {
 
       <B2bBand />
 
-      {/* INSERTION POINT — Chunk 5: latest blog teasers (<BlogTeasers />) */}
+      <BlogTeasers />
 
       <NewsletterSection />
     </>
