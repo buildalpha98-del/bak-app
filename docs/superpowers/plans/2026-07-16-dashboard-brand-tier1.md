@@ -6,7 +6,44 @@
 
 **Design thesis:** *The token is the brand; the sticker is the marketing device.* Dashboard surfaces inherit the brand **colour**, correctly contrasted, in both themes. Only the pre-login front door — the seam between the marketing site and the app — inherits the marketing **treatment** (thick ink outline, hard offset shadow).
 
-**The line this will NOT cross:** No sticker treatment on any authenticated working surface. Concretely: **the `default` Button variant is not restyled** (see recon §4 — that would change 298 buttons, 283 of them in dense data views, a 57:1 ratio against). Roster grids, tables, dense forms and data views are Tier 3 and are out of scope entirely. The marketing site has three seconds to convince a parent; the dashboard is worked in for hours. Hard shadows on a roster grid cost information density and fatigue people.
+**The line this will NOT cross:** No sticker treatment on any authenticated working surface. Concretely: **the `default` Button variant is not restyled** (see below — that would change 298 buttons, 283 of them in dense data views, a 57:1 ratio against). Roster grids, tables, dense forms and data views are Tier 3 and are out of scope entirely. The marketing site has three seconds to convince a parent; the dashboard is worked in for hours. Hard shadows on a roster grid cost information density and fatigue people.
+
+---
+
+## Read this first: tier by ROUTE, never by component type
+
+**This is the load-bearing principle of the plan. If you read nothing else, read this.**
+
+The original brief drew Tier 1 by naming **component types** — "primary buttons", "empty states", "page headers". That framing is broken, and it is broken in a way that looks completely reasonable until you measure it: **component types cut across surfaces.** A `Button` is not an identity thing or a working thing; it is *both*, and the split is not 50/50.
+
+Measured on this codebase:
+
+| | count | share |
+|---|---|---|
+| `Button` usages that are **dense working surfaces** | **283** | 93% |
+| `Button` usages that are **identity surfaces** (auth) | **5** | 2% |
+
+**The `default` Button variant is not the identity button — it is the table action button.** A 57:1 ratio. Restyling it to "brand the primary button" would have rebranded 283 roster/table/form actions and 5 login screens, which is the precise opposite of the intent.
+
+It gets worse. **291 of the 298 affected buttons are *implicit*** — no `variant` prop at all, inheriting `default` silently. `grep 'variant="default"'` returns **7**. The naive grep understates the blast radius by **40×**. A reviewer sanity-checking "how many buttons does this touch?" would get a reassuring, wrong answer.
+
+**The rule that follows, and that every task here obeys:**
+
+> **Draw the tier boundary around routes/screens, not component types. Shared primitives are extended _additively_ (opt-in variants, applied at call sites) and never restyled in place.**
+
+Applying that rule is what produced this plan's shape: Tier 1 shrank to *auth routes + crest + tokens + toasts*, and roughly half the original brief moved to "separate refactor, judged on its own merits" (see **Explicitly NOT doing**). The one item that escapes the tiering entirely is the **live AA failure** — that is not a branding question but a defect, and it ships regardless.
+
+---
+
+## Owner decisions (recorded 2026-07-16 — do not re-open without Jayden)
+
+**A. `client-login` KEEPS ITS TEAL.** Brand the centre login **structurally** — crest, sticker treatment, layout, light-scope — but **leave the teal/blue accent intact.** Centres keep a visually distinct front door.
+
+*Rationale, and the alternative that was explicitly rejected:* flattening `client-login` to orange was considered and **rejected by Jayden**. The teal is not a stray one-off — it is a documented whole-portal convention at `CLAUDE.md:61`: *"**Client portal:** teal/blue accent. Parent portal: warmer consumer design"*, and the code comment in `client-login-form.tsx` ("teal accent instead of orange") is downstream of it. Flattening only the *login* would produce **an orange door into a teal room** — worse than either consistent option. Making the whole client portal orange is a Tier-2-scale decision this plan is not scoped to make. So: teal stays.
+
+*Consequence for the work:* `AuthShell` currently hardcodes an orange gradient accent bar. It **needs an accent prop** (default orange, teal for `client-login`) rather than a hardcoded one. This is a real design change to a shared component, not a copy tweak — budget for it in Task 2.3.
+
+**B. All three "bad idea" calls stand** as explicit non-goals: no `Button.default` restyle, page-headers and empty-states out of Tier 1, no dark sticker. Reasoning preserved under **Explicitly NOT doing** — a plan that records what was deliberately *not* done is worth more than one that only lists tasks.
 
 ---
 
@@ -60,7 +97,7 @@ That pairing measures **3.44:1 — below the 4.5:1 AA threshold.** It affects ev
 
 ## Architecture
 
-Token-first. The brand colour is currently defined **twice, in two colour spaces, with no link between them**: `--primary: oklch(0.65 0.19 42)` (`#E95C12`) is what `Button`/`Badge` consume via `bg-primary`, while `--brand-orange: #E8712A` is a separate hex token. **They are not the same colour.** Recon §1 found 63 hardcoded `#E8712A` + 204 `orange-*` utilities against only 17 `var(--brand-*)` reads — the token layer exists and is ~94% bypassed. This plan reconciles the two definitions and does **not** attempt the 267-site hardcode migration (that is a separate cleanup, flagged below).
+Token-first. The brand colour is currently defined **twice, in two colour spaces, with no link between them**: `--primary: oklch(0.65 0.19 42)` (`#E95C12`) is what `Button`/`Badge` consume via `bg-primary`, while `--brand-orange: #E8712A` is a separate hex token. **They are not the same colour** — and that unlinked pair is the root cause of the hardcoding: measured, there are **63 hardcoded `#E8712A` + 204 `orange-*` utilities against only 17 `var(--brand-*)` reads** (and all 17 read the same single token, `--brand-orange-light`). The token layer exists and is **~94% bypassed** — because the token that *is* wired to `Button`/`Badge` is the wrong orange, so anyone wanting brand orange had to hardcode it. This plan reconciles the two definitions and does **not** attempt the 267-site hardcode migration (that is a separate cleanup, flagged below).
 
 **Tech Stack:** Next.js 16 App Router + React 19, Tailwind v4 (`@theme inline` in `app/globals.css`, **no config file**), shadcn-derived primitives built on `@base-ui/react`, `next-themes` 0.4.6 (`attribute="class"`, `defaultTheme="light"`, `enableSystem={false}`, mounted `app/layout.tsx:104`), Sonner, Vitest.
 
@@ -86,7 +123,15 @@ Token-first. The brand colour is currently defined **twice, in two colour spaces
 
 **What it costs to be wrong:** the dashboard is live with real users. Nothing here can corrupt data or break a flow. The realistic failure mode is *aesthetic regression the test suite cannot see* — see the verification warning below.
 
-> **Verification warning — read before starting.** Recon §5: **zero** tests assert on classes, colours, or snapshots; **zero** snapshot files; no visual-regression harness (no Percy/Chromatic/Argos). The 2 Playwright specs use role/text selectors and are immune to restyling. **Restyling this app breaks zero tests, which means CI gives no signal whatsoever.** 298 buttons could render wrong across 158 files and CI stays green. Every task below therefore carries a **mandatory manual visual check in both themes**. Do not substitute a green build for looking at the page.
+> ## Verification warning — CI CANNOT CATCH A RESTYLE REGRESSION
+>
+> Measured on this repo: **zero** tests assert on classes, colours, or variants (`toHaveClass`, `bg-primary`, `buttonVariants`, `#E8712A` across every test file: **0 matches**). **Zero** snapshot files. No visual-regression harness — no Percy, Chromatic or Argos; `playwright.config.ts:35`'s `screenshot: "only-on-failure"` is a debugging artifact, not an assertion. The 2 Playwright specs use role/text selectors and are immune to restyling.
+>
+> **Restyling this app breaks zero tests. 298 buttons could render wrong across 158 files and CI stays green.**
+>
+> Therefore: **"verified" NEVER means "it compiled".** Every task below carries a **mandatory visual check that names the exact routes to open and the exact themes to open them in.** A green `npm run build` proves the app builds; it proves nothing about whether this work is correct. Do not tick a task's verification box without having looked at every route listed in it.
+>
+> **The one-time setup, do this before Task 1.1:** `npm run dev`, and confirm you can toggle themes via the user menu (`components/shared/theme-toggle.tsx`, in `components/shared/navigation/user-menu.tsx:83`). Every visual check below assumes you can flip light/dark on demand.
 
 ---
 
@@ -176,8 +221,13 @@ Apply the same to `--sidebar-primary-foreground` (`app/globals.css:69`), which h
 **Verify:**
 - `npx vitest run lib/brand/__tests__/contrast.test.ts` — green.
 - `npm run build` — exits 0.
-- **Visual, both themes, mandatory:** `npm run dev`, then look at a page with a primary button and a primary badge (`/admin/bookings` is dense enough to judge). Confirm light-mode primary buttons now read as **near-black text on orange**, and that this looks deliberate rather than broken at `size="xs"` (h-6/24px — the smallest, most crowded case). Toggle to dark via the user menu; confirm **nothing changed** there.
-- **Judgement call to escalate:** ~298 buttons flip from white to black text. If that reads as wrong to Jayden at a glance, the answer is *not* to revert to a failing contrast — it is to darken `--primary` until white passes, which is a different (and larger) decision. Surface it; do not silently pick.
+- **Visual, MANDATORY, BOTH THEMES.** This is the widest-blast change in the plan (~298 buttons); the build proves nothing. Open **each** of these:
+  - `/admin/bookings` — dense: primary buttons + badges next to table actions. The main judgement call.
+  - `/admin/crm` — has `variant={active ? "default" : "outline"}` segmented toggles; confirm the active state still reads as "selected" with ink text.
+  - `/login` — a primary button on the cream auth ground (the Chunk 2 target, pre-sticker).
+  - Any page with a `size="xs"` button (h-6/24px, the smallest, most crowded case) — confirm ink-on-orange looks **deliberate, not broken**, at 24px.
+  - **Then toggle to dark on all of the above and confirm NOTHING changed.** Chunk 1 must not touch dark; if anything moved there, the `.dark` block was edited by mistake.
+- **Judgement call to escalate, do not silently pick:** ~298 buttons flip from white to black text — a real, visible, app-wide change. If that reads as wrong to Jayden at a glance, the answer is **not** to revert to a failing contrast. It is to darken `--primary` until white passes (~`oklch(0.55 …)`), which is a *different and larger* decision — it changes the brand colour rather than the ink. Surface both options with the measured ratios.
 
 **Commit:** `fix(a11y): ink on orange — primary button was 3.44:1, below AA`
 
@@ -218,17 +268,25 @@ Apply the same to `--sidebar-primary-foreground` (`app/globals.css:69`), which h
 
 **Verify:** `npm run build` exits 0. `npx vitest run` full suite green. **Visual:** every auth page, light and (toggled) dark — the sticker must render identically in both, proving the scope. Keyboard-tab to each submit and confirm the `focus-visible` ring survives (`stickerClasses()` ships its own; make sure `cn()` ordering has not dropped it).
 
-### Task 2.3: Bring the two orphan auth pages onto AuthShell
+### Task 2.3: Bring the two orphan auth pages onto AuthShell — teal preserved
 
 **Files:**
-- Modify: `app/(auth)/parent-login/page.tsx`, `app/(auth)/client-login/client-login-form.tsx`
+- Modify: `components/shared/auth-shell.tsx` (add accent prop), `app/(auth)/parent-login/page.tsx`, `app/(auth)/client-login/client-login-form.tsx`
 
-Recon §3: 4 of 6 auth pages use `AuthShell` (and therefore `.auth-field-bg`); these two are bespoke — `parent-login` hand-rolls `bg-orange-50/50` + orange orbs, `client-login` uses `bg-slate-50` with **cyan/teal** orbs. They also use a different logo asset (`/logo.png` via `AppLogo`) than `AuthShell` (`/logo-full.png` via raw `<img>`). Three different front doors is the single biggest identity inconsistency the recon found.
+4 of 6 auth pages use `AuthShell` (and therefore `.auth-field-bg`); these two are bespoke — `parent-login` hand-rolls `bg-orange-50/50` + orange orbs, `client-login` uses `bg-slate-50` with **cyan/teal** orbs. They also use a different logo asset (`/logo.png` via `AppLogo`) than `AuthShell` (`/logo-full.png` via raw `<img>`). Three different front doors is the single biggest identity inconsistency in the app.
 
-- [ ] **Step 1:** Port both onto `AuthShell`, preserving their distinct titles ("Parent Portal", "Centre Portal") and their magic-link flows.
-- [ ] **Step 2: Raise, do not decide —** `client-login`'s teal is *deliberate* (there is an explicit code comment: "teal accent instead of orange"). It may be intentional white-label differentiation for centres. **Ask Jayden before flattening it to orange.** If it stays teal, `AuthShell` needs an accent prop rather than a hardcoded orange bar — and note teal-vs-orange is exactly the Tier 2 parent/centre-portal question this plan is not scoped to answer.
+> **OWNER DECISION A applies here — read it above before starting.** The teal is **not** an inconsistency to fix. It implements `CLAUDE.md:61` (*"Client portal: teal/blue accent"*). Flattening it to orange was **considered and explicitly rejected**: it would make an orange door into a teal room. **Do not orange-ify `client-login`.** Unify *structure*; preserve *accent*.
 
-**Verify:** build + full suite. **Visual:** all 6 auth pages side by side — they must read as one front door. Magic-link flows still work end to end on both.
+- [ ] **Step 1: Give `AuthShell` an accent prop.** It currently hardcodes an orange gradient bar (`auth-shell.tsx:36`: `from-primary via-[#FFD600] to-[#4CAF50]`) plus four hardcoded orb colours. Parameterise: `accent?: "orange" | "teal"`, defaulting to `orange`. Both accents must satisfy the same AA rule as everything else — run the teal through the Chunk 1 `contrastRatio` helper against anything it sits behind; do not assume it passes because it is currently shipping.
+- [ ] **Step 2:** Port both pages onto `AuthShell`, preserving their distinct titles ("Parent Portal", "Centre Portal") and their magic-link flows. `parent-login` → `accent="orange"`; `client-login` → `accent="teal"`.
+- [ ] **Step 3:** The sticker CTA (Task 2.2) applies to **both**. The sticker's ink outline and hard shadow are accent-independent — they are `#111` on cream either way — so a teal-accented centre door still reads as the same brand. **This is the point of Decision A**: structure carries the brand, accent carries the portal.
+- [ ] **Step 4: Do NOT touch the client portal beyond its login page.** The teal convention runs through the whole client portal (`components/client/*`); this task ends at the front door. The portals themselves are Tier 2.
+
+**Verify:**
+- `npm run build` exits 0. `npx vitest run` full suite green.
+- **Visual, MANDATORY — open all six, light theme:** `/login`, `/reset-password`, `/set-password`, `/update-password`, `/parent-login`, `/client-login`. They must read as **one front door with two accents** — same layout, same crest, same sticker CTA, same field-marking ground; orange on five, **teal on `/client-login`**.
+- **Explicitly confirm `/client-login` is still teal.** If it came out orange, Decision A has been violated — revert and re-read it.
+- **Functional:** both magic-link flows still work end to end (request link → email → callback → lands in the right portal). This task touches auth; a broken magic link is the one failure here that is not merely cosmetic.
 
 **Commit:** `feat(auth): brand the front door — light-scoped sticker CTAs`
 
@@ -239,7 +297,7 @@ Recon §3: 4 of 6 auth pages use `AuthShell` (and therefore `.auth-field-bg`); t
 **Files:**
 - Modify: `components/shared/app-logo.tsx`, `components/shared/auth-shell.tsx:41`, `components/shared/navigation/sidebar.tsx:39`, `components/shared/navigation/top-bar.tsx:28`
 
-Recon §2: there are **two logo components, two assets, and three raw `<img>` tags** (each with an `eslint-disable @next/next/no-img-element`) bypassing both. The staff dashboard renders `/logo-full.png` via raw `<img>`; the parent/client portals render `/logo.png` via `<AppLogo>`. Nothing reconciles them. This is pure identity, zero Tier-3 overlap, and the cheapest real win in the plan.
+There are **two logo components, two assets, and three raw `<img>` tags** (each with an `eslint-disable @next/next/no-img-element`) bypassing both. The staff dashboard renders `/logo-full.png` via raw `<img>`; the parent/client portals render `/logo.png` via `<AppLogo>`. Nothing reconciles them. This is pure identity, zero Tier-3 overlap, and the cheapest real win in the plan.
 
 - [ ] **Step 1:** Decide the canonical asset. `logo.png` vs `logo-full.png` are different marks (the recon could not determine which is the crest vs. the lockup) — **look at both before choosing**, and expect the answer to be "both, at different sizes": a crest for the 32px sidebar rail, the full lockup for the 112px auth card.
 - [ ] **Step 2:** Extend `AppLogo` to cover every case (`sm`/`lg` exist; the sidebar needs `size-9`, top-bar `size-8`, auth `h-28`). Keep it `next/image`.
@@ -254,22 +312,41 @@ Recon §2: there are **two logo components, two assets, and three raw `<img>` ta
 
 ---
 
-## Chunk 4: Toasts — brand colour, no sticker
+## Chunk 4: Toasts — resolve `richColors`, then brand the colour
+
+Sonner, mounted **once** at `app/layout.tsx:106`, **767 call sites across 146 files** — but every call site imports `toast` from `"sonner"` directly and passes no styling. So the entire toast system restyles from **one file, zero call-site changes.** Best identity-value-to-blast-radius ratio in the plan.
+
+**This is where the thesis gets tested.** Toasts are an identity surface *and* they fire constantly on working surfaces (428 `toast.error` + 304 `toast.success` calls). A hard-shadowed sticker toast on every save is exactly the fatigue this plan exists to avoid. **Brand-align the colour; do not sticker the toast.**
+
+### Task 4.1: Resolve the `richColors` override — a live inconsistency, fix it first
+
+**Files:**
+- Modify: `app/layout.tsx:106` and/or `components/ui/sonner.tsx`
+
+**This is a real bug, not a footnote, and it must be settled before any theming lands on top of it** — otherwise Task 4.2 will style vars that most toasts ignore, and the work will silently no-op.
+
+`components/ui/sonner.tsx` carefully sets `--normal-bg: var(--popover)`, `--normal-text`, `--normal-border` and custom lucide icons. But `app/layout.tsx:106` mounts `<Toaster position="top-right" richColors closeButton />`, and **`richColors` overrides those vars for every *typed* toast.** Net effect today: the custom theming applies **only to bare `toast()` calls**, while `toast.success` / `.error` / `.warning` / `.info` — **767 of the call sites, i.e. essentially all of them** — ignore it and render Sonner's stock rich palette. Two toast designs ship side by side and nobody chose that.
+
+- [ ] **Step 1: Confirm the override before changing anything.** `npm run dev`, fire a bare `toast("hello")` and a `toast.success("hello")` from any page. They should look **different**. If they look the same, this analysis is wrong for this Sonner version — stop and re-derive rather than "fixing" a non-bug.
+- [ ] **Step 2: Pick one, deliberately.** Either **(a)** drop `richColors` and theme all four states explicitly in `sonner.tsx` — full control, brand-alignable, more code; or **(b)** keep `richColors` and delete the dead `--normal-*` vars — honest about what actually applies, but gives up brand control of ~all toasts. **Recommendation: (a).** Chunk 4 exists to brand toasts, and (b) forecloses that.
+- [ ] **Step 3: Comment the choice in the code**, naming `richColors` explicitly. The next person will otherwise re-add it.
+
+**Verify:** `npm run build`. **Visual, MANDATORY:** fire a bare `toast()` and a `toast.success()` — they must now be visually consistent with each other. Anywhere with a save action works; `/admin/bookings` is convenient.
+
+### Task 4.2: Brand-align the toast accents
 
 **Files:**
 - Modify: `components/ui/sonner.tsx`
 
-Recon §4: Sonner, mounted **once** at `app/layout.tsx:106`, **767 call sites across 146 files** — but every call site imports `toast` from `"sonner"` directly and passes no styling. So the entire toast system restyles from **one file, zero call-site changes.** Best identity-value-to-blast-radius ratio in the plan.
+- [ ] **Step 1:** Align the success/info accent to the brand orange token. **Keep error on `--destructive`** — brand orange and error red are close enough in hue that an orange *error* toast is a genuine legibility hazard.
+- [ ] **Step 2:** Run every toast state's text-on-ground pair through the Chunk 1 `contrastRatio` helper. Toast text on a brand-orange ground hits the exact same 3.08:1 white-on-orange trap as the primary button — **do not reintroduce the bug Chunk 1 just fixed.**
+- [ ] **Step 3:** Add the toast pairs to the Chunk 1 guard test if they resolve to static token values.
 
-**This is where the thesis gets tested.** Toasts are an identity surface *and* they fire constantly on working surfaces (428 `toast.error` + 304 `toast.success` calls). A hard-shadowed sticker toast on every save is exactly the fatigue this plan exists to avoid. **Brand-align the colour; do not sticker the toast.**
+**Verify:**
+- `npm run build`. `npx vitest run` green.
+- **Visual, MANDATORY, BOTH THEMES:** trigger **all four** — success, error, warning, info. `components/ui/sonner.tsx` is theme-aware via `next-themes`, so **dark mode is a live code path here, not hypothetical — this is the one chunk where dark is not optional to check.** All four must be legible on both grounds. Easiest triggers: any save (success), a deliberately failed save (error), and `/admin/bookings?denied=financial` exercises `components/shared/denied-toast.tsx`.
 
-- [ ] **Step 1:** Align the success/info accent to the brand orange token. Keep error on `--destructive` — brand orange and error red are close enough in hue that an orange *error* toast is a genuine legibility hazard.
-- [ ] **Step 2: Handle the `richColors` conflict.** `app/layout.tsx:106` sets `richColors`, which **overrides** the `--normal-bg`/`--normal-text` vars `sonner.tsx` sets — so today that custom theming only applies to bare `toast()` calls, and typed toasts (`toast.success` etc., the overwhelming majority) ignore it. Either drop `richColors` and theme all states explicitly, or keep it and accept that only bare toasts are branded. **Decide deliberately and comment the choice** — this is a live footgun that will confuse the next person.
-- [ ] **Step 3:** Verify contrast on every toast state via the Chunk 1 helper. Toast text on a brand-orange ground has the same 3.08:1 white-on-orange trap.
-
-**Verify:** `npm run build`. **Visual, both themes:** trigger one of each — success, error, warning, info. Sonner is theme-aware via `next-themes` (`components/ui/sonner.tsx`), so **dark mode is a real code path here, not a hypothetical.** Confirm all four are legible on both grounds.
-
-**Commit:** `feat(brand): brand-align toast accents`
+**Commit:** `feat(brand): resolve richColors override, brand-align toast accents`
 
 ---
 
@@ -288,16 +365,37 @@ These were in the Tier-1 brief. The recon says they are the wrong call, and here
 
 5. **The 267-site hardcode migration.** 63 raw `#E8712A` + 204 `orange-*` utilities vs 17 `var(--brand-*)` reads — ~94% of brand colour bypasses the token layer. Chunk 1 reconciles the *definitions*; migrating the call sites is a big, mechanical, separately-revertable cleanup. Note ~16 are **not fixable** — `components/client/report-pdf-template.tsx` and `components/crm/embed-form-view.tsx` legitimately need literal hex (PDF rendering, embeddable iframe) where CSS vars do not resolve. **Recommended follow-up:** a `no-hardcoded-brand-hex` source-scanning guard test, modelled on the existing `lib/__tests__/no-anchor-in-table-row.test.ts`, to stop 63 becoming 80. That is the highest-leverage thing here and it is cheap.
 
-6. **Tier 2 (parent portal).** Out of scope by instruction. Noted for whoever picks it up: it uses `AppLogo`+`/logo.png` (not the dashboard's `/logo-full.png`), `components/parent/parent-shell.tsx` is its own shell, and `client-login`'s deliberate **teal** accent (vs. parent's orange) suggests centre-vs-parent differentiation may already be an intentional design position worth preserving rather than flattening.
+6. **Tier 2 (the portals).** Out of scope by instruction. Noted for whoever picks it up: the parent portal uses `AppLogo`+`/logo.png` (not the dashboard's `/logo-full.png`) and `components/parent/parent-shell.tsx` is its own shell. **The centre-vs-parent split is already an intentional design position, not drift** — `CLAUDE.md:61` defines it (client portal teal/blue, parent portal warmer/consumer) and Owner Decision A above upholds it. Whoever does Tier 2 should start from that convention, not from a blank page.
+
+---
+
+## Naming hazard: `components/marketing/` will mean two different things
+
+Flagged because it bites Task 2.2 directly, and because it will mislead the next person.
+
+After PR #2 merges, `components/marketing/` holds **24 components with two incompatible contracts**:
+
+| | count | contract |
+|---|---|---|
+| **Public marketing site** (`hero.tsx`, `sticker-button.tsx`, `nav.tsx`, …) | 23 | **light-only**, hardcoded hex, **zero `dark:` utilities**, renders on cream |
+| **Admin dashboard** (`marketing-status-pulse.tsx`) | 1 | **theme-following**, reads `bg-background`/`text-foreground`, renders in the dashboard |
+
+`marketing-status-pulse.tsx` is already on `main` and its only consumer is `app/(dashboard)/admin/marketing/page.tsx` — **it is an admin dashboard component that happens to live in `components/marketing/` because it is about the marketing *feature*, not the marketing *site*.** It is **correct** for it to follow the theme; it is not a PR #2 bug. (An earlier read of this plan flagged it as one — that was wrong, and the correction is recorded here so it is not "fixed" by mistake.)
+
+**Why it matters for this plan:** Task 2.2 imports `stickerClasses()` from `components/marketing/sticker-button` into an `(auth)` page — a *dashboard* surface importing from a folder that now means both things. That import is fine (the sticker genuinely is a public-site token set, and Task 2.1's light scope is what makes it safe), but the folder no longer tells you which contract you are getting. **Read the component before assuming its theme behaviour.**
+
+**Suggested follow-up (not this plan):** split into `components/marketing-site/` (public, light-only) and leave feature-admin components under a dashboard-ish path. Cheap now, 23 files of churn later.
 
 ---
 
 ## Is the tiered approach itself right?
 
-**Yes — with one correction, and the correction matters more than the endorsement.**
+**Yes — with one correction, which was raised, accepted, and is now the plan's opening section.**
 
-The marketing/dashboard split is sound and the Stripe analogy holds: a 3-second persuasion surface and an 8-hour working surface have genuinely different jobs, and the measured Button data proves the instinct empirically rather than by taste — 93% of "primary buttons" are table actions.
+The marketing/dashboard split is sound and the Stripe analogy holds: a 3-second persuasion surface and an 8-hour working surface have genuinely different jobs. The measured Button data settles it empirically rather than by taste — **93% of "primary buttons" are table actions.**
 
-**The correction:** the Tier-1 list was drawn by *naming component types* ("primary buttons", "empty states", "page headers") rather than by *naming surfaces*. Component types cut across tiers — that is precisely why `Button` looked like Tier 1 and measured as Tier 3. **The tier boundary must be drawn around surfaces (routes/screens), and shared primitives must only ever be extended additively (opt-in variants), never restyled in place.** Applying that correction: Tier 1 shrinks to *auth pages + crest + tokens + toasts* — which is what this plan builds — and roughly half the original brief moves to "separate refactor, judged on its own merits".
+**The correction (accepted 2026-07-16):** the Tier-1 list was drawn by naming *component types* rather than *surfaces*. Types cut across tiers — precisely why `Button` looked like Tier 1 and measured as Tier 3, and why the naive grep understated it 40×. The boundary is now drawn by **route**, and shared primitives are extended **additively only**. See **"Read this first"** at the top; that section is the durable takeaway and the reason this plan has the shape it does.
 
-The one thing that genuinely does not fit the tiering: **the AA failure**. It is not a branding question, it is a live defect on a working surface, and it should ship regardless of what happens to the rest of this plan.
+Applying the correction shrank Tier 1 to *auth routes + crest + tokens + toasts* and moved roughly half the original brief to separate, independently-judged refactors.
+
+**The one thing that escapes the tiering entirely: the AA failure.** It is not a branding question — it is a live accessibility defect on a working surface, shipping today on `origin/main`, and Chunk 1 should land regardless of what happens to the rest of this plan.
