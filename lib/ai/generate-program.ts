@@ -98,9 +98,16 @@ Respond with ONLY a valid JSON object (no markdown, no explanation, no code fenc
       "duration": number — minutes,
       "description": "string — step-by-step instructions",
       "progressions": ["string array — 2-3 ways to make it harder/easier"],
-      "coachingTips": "string — what to look for, common mistakes"
+      "coachingTips": "string — what to look for, common mistakes",
+      "scaffolds": { "3-5": "string — 1-2 lines on adjusting this drill for this band", "5-8": "string", "8-12": "string" }
     }
   ],
+
+MANDATORY when the request names MORE THAN ONE age band: every entry in
+skillDevelopment MUST include "scaffolds", with exactly one key per requested
+band and no others. A mixed-age drill without scaffolds is unusable — the coach
+is running 3-year-olds and 12-year-olds in the same space. When the request
+names only ONE age band, omit "scaffolds" entirely.
   "modifiedGame": {
     "name": "string — game name",
     "duration": number — minutes,
