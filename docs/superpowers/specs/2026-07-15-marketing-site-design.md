@@ -28,8 +28,8 @@ them grow all term."*
   holiday clinics listing, about, blog (index + post), enquire, contact
 - Live data on public pages: clinic cards, stats bar, testimonials
 - New `blog_posts` table + admin editor; WordPress post migration
-- School/centre enquiry funnel → `leads` table + Resend emails
-- Newsletter capture → `leads`
+- School/centre enquiry funnel → existing `/api/crm/enquiry` → `leads` + Resend emails
+- Newsletter capture → new `newsletter_subscribers` table
 - SEO (metadata, JSON-LD, sitemap, WP 301 redirects), performance (static/ISR)
 - Launch cutover plan (DNS → Vercel)
 
@@ -52,7 +52,7 @@ moves to `app/(marketing)/page.tsx`.
 | `/` | Homepage |
 | `/programs` | Programs index |
 | `/programs/[slug]` | childcare, primary-school, high-school, after-school, holiday-programs |
-| `/holiday-clinics` | Live clinic listing with suburb/sport/week filters |
+| `/holiday-clinics` | Live listing of `holiday_clinic` sessions with suburb/sport/week filters |
 | `/about` | Story, vision, coach standards |
 | `/blog`, `/blog/[slug]` | Blog index + posts |
 | `/enquire` | B2B enquiry (schools/centres) |
@@ -64,7 +64,9 @@ Add marketing routes to `PUBLIC_ROUTES` in `middleware.ts` — exact match for `
 prefix match for `/programs`, `/holiday-clinics`, `/about`, `/blog`, `/enquire`,
 `/contact`. Authenticated users are NOT redirected off marketing pages; the nav
 shows "My account" (linking to their role's portal) instead of "Parent login" when
-a session exists.
+a session exists. **Nav auth state is resolved client-side** (browser Supabase
+client in the nav component) so marketing pages stay static/ISR — the server
+render always emits the logged-out nav and hydrates to "My account".
 
 ### Components
 
@@ -90,12 +92,15 @@ Reuse shadcn/ui primitives and the existing Tailwind config.
 
 All public data is read server-side using the established `createSupabaseAdmin()`
 pattern from `app/api/public/*`, selecting only public-safe columns. No anon RLS
-policy changes needed.
+policy changes needed. Schema changes are limited to two new tables:
+`blog_posts` and `newsletter_subscribers`.
 
 ### Clinic cards
-- Query: `bookable_sessions` where `status = 'open'` and `date >= today`,
-  ordered by date. Homepage shows next N `holiday_clinic` sessions; the
-  `/holiday-clinics` page shows all open types with filters (suburb, sport, week).
+- Query: `bookable_sessions` where `status = 'open'`, `session_type = 'holiday_clinic'`,
+  and `date >= today`, ordered by date. Homepage shows the next N; the
+  `/holiday-clinics` page shows all with filters (suburb, sport, week). Other
+  session types (`after_school`, `weekend`, `specialist`) remain bookable inside
+  the parent portal and are out of scope for public listing.
 - Card fields: title, sport, date, start/end time, location name + suburb,
   age range, price (from `price_cents`), spots left (`max_capacity − current_bookings`).
 - Badges: "Active Kids vouchers accepted" (site constant), "X spots left" when ≤ 5
@@ -120,24 +125,39 @@ policy changes needed.
 - Existing WordPress posts migrated as seed data with their original slugs.
 
 ### Enquiry funnel (B2B)
-- `/enquire` form: contact name, organisation, org type (school/childcare/other),
-  suburb, phone, email, programs of interest, message.
-- Server action: Zod validation → insert into `leads` (source `website`) →
-  Resend notification to Jayden → branded auto-acknowledgement to the enquirer.
-- Spam defence: honeypot field + per-IP rate limit. Failure shows a retry state
-  with the phone number as fallback.
+- **Reuses the existing `app/api/crm/enquiry/route.ts`** — it already implements
+  per-IP rate limiting, lead insert with `source: 'web_form'`, a `lead_activities`
+  entry, and staff notification (it was built for the WordPress site to call
+  cross-origin). The `/enquire` form POSTs to it same-origin. No duplicate
+  enquiry logic; extend the route only where fields are missing.
+- Field mapping: contact name/org/suburb/phone/email → existing `leads` columns;
+  org type `school`/`childcare_centre` → `type`, "other" → `type = NULL` with the
+  detail in `notes`; programs of interest → appended to `notes`; the originating
+  program page → `source_detail`.
+- Additions to the route: honeypot short-circuit, branded auto-acknowledgement
+  email to the enquirer (Resend), dedupe by email+day.
+- Failure shows a retry state with the phone number as fallback.
 - "Request a quote" CTAs repeat down each program page (Zing pattern), all → `/enquire`
   with the program pre-selected via query param.
+- **Post-cutover cleanup:** remove the route's WordPress CORS allowlist once the
+  WP site is decommissioned (all callers are then same-origin).
 
 ### Newsletter
-- Inline email capture → `leads` with a newsletter source tag, feeding
-  `email_sequences` nurture. Same spam defence as enquiry.
+- New migration: `newsletter_subscribers` (`id`, `email` unique, `status`
+  subscribed/unsubscribed, `source_page`, `created_at`). Newsletter emails do NOT
+  go into `leads` — `centre_name` is NOT NULL and `type` is a centre enum there,
+  and a lone email address doesn't belong in the sales kanban.
+- Inline capture form → server action → insert (upsert on email). Same honeypot +
+  rate-limit defence as enquiry.
+- Nurture: admin views/exports subscribers; automatic `email_sequences` enrolment
+  is out of scope (sequences are `trigger_stage`-based and centre-oriented).
 
 ### Book now
-- Clinic CTAs link to `/parent/book/[sessionId]`. `parent-login` gains a
-  `redirectTo` query param (validated: must be a same-origin `/parent/...` path)
-  carried through the magic-link callback so parents land on the exact clinic
-  they clicked.
+- Clinic CTAs link to `/parent/book/[sessionId]`. Builds on the **existing
+  validated `next` param in `app/auth/callback/route.ts`** (`safeNext()`):
+  `parent-login` accepts `next`, passes it through `signInWithOtp`'s
+  `emailRedirectTo`, and the callback already handles the rest. No parallel
+  redirect mechanism.
 
 ## Visual system — "bold and energetic" (approved direction)
 
@@ -184,19 +204,26 @@ policy changes needed.
 
 ## Testing
 
-Vitest (repo conventions):
-- Enquiry server action: validation (rejects bad payloads), happy path (lead
-  inserted, emails triggered), honeypot short-circuit, rate limit.
-- Clinic query helper: filters `open` + future only; spots-left arithmetic;
-  sold-out flag.
+Vitest (repo conventions — no E2E harness exists in this repo, so coverage is
+unit/integration plus a manual QA checklist):
+- Enquiry route: validation (rejects bad payloads), happy path (lead inserted,
+  emails triggered), honeypot short-circuit, rate limit, email+day dedupe,
+  field mapping (org type "other" → NULL + notes).
+- Newsletter action: validation, upsert-on-email, honeypot.
+- Clinic query helper: filters `open` + `holiday_clinic` + future only;
+  spots-left arithmetic; sold-out flag.
 - Blog: only `published` posts appear publicly; draft slugs 404.
 - Middleware matrix: marketing routes public (anon 200), portal routes still
   gated (anon → login), authed parent on `/` not redirected.
+- Parent-login: `next` param passed through to `emailRedirectTo` and rejected
+  when not a same-origin path (reuses `safeNext` semantics).
 
-Playwright smoke:
-- Home renders with live sections → click clinic "Book now" → parent-login shown
-  with `redirectTo` → (stub auth) lands on `/parent/book/[id]`.
-- Enquiry form submit → success state.
+Manual QA checklist (cutover gate, on the Vercel URL):
+- Home → clinic "Book now" → parent-login → magic link → lands on
+  `/parent/book/[id]` → Square sandbox payment completes.
+- Enquiry form submit → lead visible in admin CRM → both emails received.
+- Newsletter signup, blog post render, all WP 301 redirects, mobile pass,
+  Lighthouse ≥ 95.
 
 ## Rollout order (implementation phases)
 
