@@ -43,7 +43,15 @@ export function GenerateInvoicesDialog() {
     if (error) {
       toast.error(error);
     } else {
-      toast.success(`${data?.count ?? 0} invoices generated.`);
+      toast.success(
+        (data?.grantInvoicesCovered ?? 0) > 0
+          ? `${data?.count ?? 0} invoices generated — $${(
+              data?.grantTotalAllocated ?? 0
+            ).toFixed(2)} auto-allocated from grants across ${
+              data?.grantInvoicesCovered
+            } invoice${data?.grantInvoicesCovered === 1 ? "" : "s"}.`
+          : `${data?.count ?? 0} invoices generated.`
+      );
       setOpen(false);
       setPreviews([]);
     }

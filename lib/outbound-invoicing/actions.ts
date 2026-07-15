@@ -236,7 +236,14 @@ export async function generateOutboundInvoices(
   periodStart: string,
   periodEnd: string,
   previews: OutboundInvoicePreview[]
-): Promise<{ data: { count: number } | null; error: string | null }> {
+): Promise<{
+  data: {
+    count: number;
+    grantInvoicesCovered: number;
+    grantTotalAllocated: number;
+  } | null;
+  error: string | null;
+}> {
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -315,9 +322,10 @@ export async function generateOutboundInvoices(
       });
     }
 
-    const { error: insertError } = await admin
+    const { data: created, error: insertError } = await admin
       .from("outbound_invoices")
-      .insert(invoices);
+      .insert(invoices)
+      .select("id, centre_id, amount");
 
     if (insertError) return { data: null, error: insertError.message };
 
@@ -332,9 +340,37 @@ export async function generateOutboundInvoices(
       },
     });
 
+    // Grants auto-deduction: centres holding a funded/approved grant
+    // with balance remaining get it allocated against these invoices
+    // immediately — visible (and reversible) in Grants before anyone
+    // approves. Failures are swallowed inside; generation never fails
+    // because of a grants hiccup.
+    const { autoAllocateGrantsForInvoices } = await import(
+      "@/lib/grants/auto-allocate"
+    );
+    const grants = await autoAllocateGrantsForInvoices(
+      admin,
+      (created ?? []).map((c) => ({
+        id: c.id as string,
+        centre_id: c.centre_id as string,
+        amount: Number(c.amount),
+      })),
+      user.id
+    );
+    if (grants.invoicesCovered > 0) {
+      revalidatePath("/admin/grants");
+    }
+
     revalidatePath("/ops/invoicing/outbound");
     revalidatePath("/admin/invoicing/outbound");
-    return { data: { count: invoices.length }, error: null };
+    return {
+      data: {
+        count: invoices.length,
+        grantInvoicesCovered: grants.invoicesCovered,
+        grantTotalAllocated: grants.totalAllocated,
+      },
+      error: null,
+    };
   } catch (err) {
     console.error("generateOutboundInvoices:", err);
     return { data: null, error: "Failed to generate outbound invoices." };
