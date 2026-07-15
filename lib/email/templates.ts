@@ -6,6 +6,30 @@ const BRAND_ORANGE = "#E8712A";
 const BRAND_DARK = "#1A1A1A";
 const BRAND_GREY = "#666666";
 
+/**
+ * Escapes user-supplied text for interpolation into email HTML.
+ *
+ * Required by any template that can be reached by public, unauthenticated
+ * input. Today that means the enquiry acknowledgement (rendered straight
+ * from the enquiry form) plus the two notification templates: the public
+ * enquiry route calls triggerNotification with the enquirer's centre and
+ * contact name, which reaches staff inboxes immediately via
+ * genericNotificationEmail AND later via dailyDigestEmail, which re-renders
+ * the stored notification rows.
+ *
+ * Escaping lives in the templates rather than at the call sites because a
+ * template cannot know what its caller was fed — and the two notification
+ * templates have many callers, only some of which are public.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function layout(content: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -190,11 +214,13 @@ export function genericNotificationEmail(
   title: string,
   body: string
 ): { subject: string; html: string } {
+  // `subject` is a plain-text header, not HTML — escaping it would show
+  // literal entities in the inbox. Only the rendered body is escaped.
   return {
     subject: title,
     html: layout(`
-      <p>Hi ${userName},</p>
-      <p>${body}</p>
+      <p>Hi ${escapeHtml(userName)},</p>
+      <p>${escapeHtml(body)}</p>
       <a href="https://app.buildalphakids.com.au" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Open App</a>
     `),
   };
@@ -204,12 +230,14 @@ export function dailyDigestEmail(
   userName: string,
   notifications: { title: string; body: string; created_at: string }[]
 ): { subject: string; html: string } {
+  // Notification rows can originate from the public enquiry route, so they
+  // are escaped here as well as in genericNotificationEmail.
   const rows = notifications
     .map(
       (n) => `
       <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #F0F0F0;font-weight:600;font-size:13px;">${n.title}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #F0F0F0;color:${BRAND_GREY};font-size:13px;">${n.body}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #F0F0F0;font-weight:600;font-size:13px;">${escapeHtml(n.title)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #F0F0F0;color:${BRAND_GREY};font-size:13px;">${escapeHtml(n.body)}</td>
       </tr>`
     )
     .join("");
@@ -217,7 +245,7 @@ export function dailyDigestEmail(
   return {
     subject: `Daily Summary — ${notifications.length} notification${notifications.length !== 1 ? "s" : ""}`,
     html: layout(`
-      <p>Hi ${userName},</p>
+      <p>Hi ${escapeHtml(userName)},</p>
       <p>Here's your daily summary of ${notifications.length} unread notification${notifications.length !== 1 ? "s" : ""}:</p>
       <table role="presentation" style="width:100%;border:1px solid #E5E5E5;border-radius:6px;overflow:hidden;margin:16px 0;">
         <tr style="background:#F9F9F9;">
@@ -629,22 +657,6 @@ export function demoScheduledEmail(
       <p style="color:${BRAND_GREY};font-size:13px;">Questions? Reply to this email or contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
     `),
   };
-}
-
-/**
- * Escapes user-supplied text for interpolation into email HTML.
- *
- * Only the enquiry acknowledgement needs this: every other template in
- * this file is fed by staff-entered or system-generated values, whereas
- * the enquiry form is a public, unauthenticated ingress.
- */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 export function enquiryAcknowledgementEmail(

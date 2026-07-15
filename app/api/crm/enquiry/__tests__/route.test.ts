@@ -27,10 +27,10 @@ vi.mock("next/headers", () => ({
 // Types + helpers
 // ------------------------------------------------------------
 
-type LeadRow = { id: string; created_at: string };
+type LeadRow = { id: string; created_at: string; contact_email: string };
 
 interface TableState {
-  /** Rows the dedupe lookup returns for leads.select().eq().gte(). */
+  /** Rows the dedupe lookup returns for leads.select().ilike().eq().gte(). */
   existingLeads?: LeadRow[];
   /** When set, the lead insert fails with this error. */
   leadInsertError?: { message: string } | null;
@@ -42,6 +42,8 @@ interface TableCalls {
   leadInserts: Record<string, unknown>[];
   activityInserts: Record<string, unknown>[];
   dedupeFilters: { column: string; value: unknown }[];
+  /** The created_at lower bound the dedupe query scans from. */
+  dedupeBounds: string[];
 }
 
 /**
@@ -53,21 +55,30 @@ function setupTables(state: TableState = {}): TableCalls {
     leadInserts: [],
     activityInserts: [],
     dedupeFilters: [],
+    dedupeBounds: [],
   };
 
   supabaseMock.from.mockImplementation((table: string) => {
     if (table === "leads") {
       return {
-        // Dedupe path: .select("id, created_at").eq("contact_email", x).gte("created_at", y)
+        // Dedupe path:
+        //   .select(...).ilike("contact_email", x).eq("source", "web_form").gte("created_at", y)
         select: () => ({
-          eq: (column: string, value: unknown) => {
+          ilike: (column: string, value: unknown) => {
             calls.dedupeFilters.push({ column, value });
             return {
-              gte: () =>
-                Promise.resolve({
-                  data: state.existingLeads ?? [],
-                  error: null,
-                }),
+              eq: (eqColumn: string, eqValue: unknown) => {
+                calls.dedupeFilters.push({ column: eqColumn, value: eqValue });
+                return {
+                  gte: (_column: string, bound: string) => {
+                    calls.dedupeBounds.push(bound);
+                    return Promise.resolve({
+                      data: state.existingLeads ?? [],
+                      error: null,
+                    });
+                  },
+                };
+              },
             };
           },
         }),
@@ -324,7 +335,13 @@ describe('POST /api/crm/enquiry — type: "other"', () => {
 describe("POST /api/crm/enquiry — dedupe", () => {
   it("skips insert/notify/email when the same email already enquired today", async () => {
     const calls = setupTables({
-      existingLeads: [{ id: "existing-1", created_at: new Date().toISOString() }],
+      existingLeads: [
+        {
+          id: "existing-1",
+          created_at: new Date().toISOString(),
+          contact_email: "jane@sunshine.com.au",
+        },
+      ],
     });
     const { POST } = await loadRoute();
 
@@ -337,7 +354,6 @@ describe("POST /api/crm/enquiry — dedupe", () => {
     });
 
     expect(calls.leadInserts).toHaveLength(0);
-    expect(calls.activityInserts).toHaveLength(0);
     expect(triggerNotificationMock).not.toHaveBeenCalled();
     expect(sendEmailMock).not.toHaveBeenCalled();
 
@@ -348,10 +364,95 @@ describe("POST /api/crm/enquiry — dedupe", () => {
     });
   });
 
+  it("scopes dedupe to web_form leads only", async () => {
+    // Otherwise an unrelated lead with the same email — a staff-created manual
+    // one, say — silently swallows a genuine enquiry.
+    const calls = setupTables();
+    const { POST } = await loadRoute();
+
+    await POST(makeRequest(validBody) as never);
+
+    expect(calls.dedupeFilters).toContainEqual({
+      column: "source",
+      value: "web_form",
+    });
+  });
+
+  it("preserves the resubmitted message against the existing lead", async () => {
+    const calls = setupTables({
+      existingLeads: [
+        {
+          id: "existing-1",
+          created_at: new Date().toISOString(),
+          contact_email: "jane@sunshine.com.au",
+        },
+      ],
+    });
+    const { POST } = await loadRoute();
+
+    await POST(
+      makeRequest({ ...validBody, message: "Actually, make that 60 kids." }) as never
+    );
+
+    expect(calls.leadInserts).toHaveLength(0);
+    expect(calls.activityInserts).toHaveLength(1);
+    expect(calls.activityInserts[0]).toMatchObject({ lead_id: "existing-1" });
+    expect(String(calls.activityInserts[0].content)).toContain(
+      "Actually, make that 60 kids."
+    );
+  });
+
+  it("dedupes case-insensitively", async () => {
+    const calls = setupTables({
+      existingLeads: [
+        {
+          id: "existing-1",
+          created_at: new Date().toISOString(),
+          contact_email: "Jane@Sunshine.com.au",
+        },
+      ],
+    });
+    const { POST } = await loadRoute();
+
+    const res = await POST(
+      makeRequest({ ...validBody, contact_email: "jane@sunshine.com.au" }) as never
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({ deduped: true });
+    expect(calls.leadInserts).toHaveLength(0);
+  });
+
+  it("ignores an ilike wildcard over-match on a different address", async () => {
+    // `_` is a LIKE wildcard and common in real addresses, so the DB filter can
+    // return rows that are not actually the same person.
+    const calls = setupTables({
+      existingLeads: [
+        {
+          id: "other-person",
+          created_at: new Date().toISOString(),
+          contact_email: "janeXdoe@sunshine.com.au",
+        },
+      ],
+    });
+    const { POST } = await loadRoute();
+
+    const res = await POST(
+      makeRequest({ ...validBody, contact_email: "jane_doe@sunshine.com.au" }) as never
+    );
+
+    expect(res.status).toBe(200);
+    expect(calls.leadInserts).toHaveLength(1);
+  });
+
   it("does not dedupe against a lead from a previous Sydney day", async () => {
     const calls = setupTables({
       existingLeads: [
-        { id: "old-1", created_at: new Date(Date.now() - 5 * 86_400_000).toISOString() },
+        {
+          id: "old-1",
+          created_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+          contact_email: "jane@sunshine.com.au",
+        },
       ],
     });
     const { POST } = await loadRoute();
@@ -360,6 +461,66 @@ describe("POST /api/crm/enquiry — dedupe", () => {
 
     expect(res.status).toBe(200);
     expect(calls.leadInserts).toHaveLength(1);
+  });
+});
+
+// ------------------------------------------------------------
+// Dedupe — Sydney day boundary
+//
+// Pinned to an instant where the Sydney and UTC dates DISAGREE:
+// 2026-07-15T15:00:00Z is 16 Jul 01:00 in Sydney (AEST, UTC+10).
+// Without a fixed clock these assertions only bite between 00:00-10:00
+// Sydney, so they'd pass against UTC-based logic most of the day.
+// ------------------------------------------------------------
+
+describe("POST /api/crm/enquiry — Sydney day boundary", () => {
+  const NOW = new Date("2026-07-15T15:00:00Z"); // = 2026-07-16 01:00 Sydney
+
+  beforeEach(() => {
+    // Only Date is faked — faking timers wholesale would stall the route's
+    // own promises.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("dedupes a lead whose UTC date differs from its Sydney date", async () => {
+    // Sydney day 2026-07-16 (= today), but UTC day 2026-07-15. Naive
+    // created_at.slice(0, 10) would read this as yesterday and miss the dupe.
+    const calls = setupTables({
+      existingLeads: [
+        {
+          id: "existing-1",
+          created_at: "2026-07-15T15:00:00Z",
+          contact_email: "jane@sunshine.com.au",
+        },
+      ],
+    });
+    const { POST } = await loadRoute();
+
+    const res = await POST(makeRequest(validBody) as never);
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({ deduped: true });
+    expect(calls.leadInserts).toHaveLength(0);
+  });
+
+  it("scans from before the true Sydney midnight boundary", async () => {
+    const calls = setupTables();
+    const { POST } = await loadRoute();
+
+    await POST(makeRequest(validBody) as never);
+
+    expect(calls.dedupeBounds).toHaveLength(1);
+
+    // Sydney midnight opening 2026-07-16 is 2026-07-15T14:00:00Z (UTC+10).
+    // A window starting after that instant would miss leads lodged during
+    // the Sydney small hours — i.e. most of the current Sydney day.
+    const sydneyMidnight = Date.parse("2026-07-15T14:00:00Z");
+    expect(Date.parse(calls.dedupeBounds[0])).toBeLessThanOrEqual(sydneyMidnight);
   });
 });
 
@@ -400,8 +561,11 @@ describe("POST /api/crm/enquiry — CORS", () => {
   });
 
   it("allows the active Vercel deployment origin", async () => {
-    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
-    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    // NEXT_PUBLIC_SITE_URL must point at a DIFFERENT host: blanking it makes
+    // getBaseUrl() fall through to VERCEL_URL and allowlist the origin by
+    // itself, so the VERCEL_URL branch could be deleted and this would still
+    // pass — the same trap the self-origin test above avoids.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://canonical.example.com");
     vi.stubEnv("VERCEL_URL", "bak-app-abc123.vercel.app");
 
     setupTables();
@@ -412,6 +576,9 @@ describe("POST /api/crm/enquiry — CORS", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
+      "https://bak-app-abc123.vercel.app"
+    );
   });
 
   it("still allows the WordPress origins", async () => {

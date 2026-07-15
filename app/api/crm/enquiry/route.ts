@@ -60,17 +60,27 @@ function withCors(response: NextResponse, origin: string, allowed: string[]) {
 }
 
 /**
- * True when this email already lodged an enquiry on the current Sydney day.
+ * The web_form lead this email already lodged on the current Sydney day, if
+ * any — the double-submit this dedupe defends against.
  *
- * The Sydney day (UTC+10/+11) opens on the *previous* UTC date, so the query
- * window is widened by 24h and the exact day match is done in JS via
- * sydneyTodayIso — that keeps it correct across DST, which a fixed offset
- * would not.
+ * Scoped to `source: "web_form"` deliberately. Matching on email across every
+ * source would let an unrelated lead (a staff-created manual one, an import)
+ * swallow a genuine enquiry: no lead, no ack, no staff notification, and the
+ * enquirer still sees success.
+ *
+ * Both filters are narrowing only; the authoritative checks are done in JS:
+ *  - The Sydney day (UTC+10/+11) opens on the *previous* UTC date, so the
+ *    query window is widened by 24h and the day is matched via sydneyTodayIso.
+ *    A fixed offset would break across DST.
+ *  - ilike gives case-insensitive matching without changing what we store, but
+ *    treats `_` and `%` as wildcards — and `_` is common in email addresses.
+ *    The exact comparison below discards any such over-match, which would
+ *    otherwise reintroduce the swallowed-lead failure mode.
  */
-async function hasEnquiredToday(
+async function findTodaysWebEnquiry(
   supabase: ReturnType<typeof createSupabaseAdmin>,
   email: string
-): Promise<boolean> {
+): Promise<{ id: string } | null> {
   const today = sydneyTodayIso();
   const windowStart = new Date(
     Date.parse(`${today}T00:00:00Z`) - 24 * 60 * 60 * 1000
@@ -78,14 +88,18 @@ async function hasEnquiredToday(
 
   const { data } = await supabase
     .from("leads")
-    .select("id, created_at")
-    .eq("contact_email", email)
+    .select("id, created_at, contact_email")
+    .ilike("contact_email", email)
+    .eq("source", "web_form")
     .gte("created_at", windowStart);
 
-  return (data ?? []).some(
-    (row: { created_at: string }) =>
-      sydneyTodayIso(new Date(row.created_at)) === today
+  const match = (data ?? []).find(
+    (row: { created_at: string; contact_email: string | null }) =>
+      sydneyTodayIso(new Date(row.created_at)) === today &&
+      (row.contact_email ?? "").toLowerCase() === email.toLowerCase()
   );
+
+  return match ? { id: match.id } : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -148,9 +162,19 @@ export async function POST(request: NextRequest) {
     const email = contact_email.trim();
     const supabase = createSupabaseAdmin();
 
-    // Dedupe: a second enquiry from the same email on the same Sydney day is
-    // almost always a double-submit, not a second lead.
-    if (await hasEnquiredToday(supabase, email)) {
+    // Dedupe: a second web enquiry from the same email on the same Sydney day
+    // is almost always a double-submit, not a second lead.
+    const duplicate = await findTodaysWebEnquiry(supabase, email);
+    if (duplicate) {
+      // No second lead, but the payload still lands on the existing one — a
+      // resubmit often carries a longer or corrected message, and silently
+      // dropping it loses information the enquirer believed they had sent.
+      await supabase.from("lead_activities").insert({
+        lead_id: duplicate.id,
+        type: "system",
+        content: `Duplicate enquiry received via website form (same email, same day). Message: ${message?.trim() ?? "(no message)"}`,
+      });
+
       return withCors(
         NextResponse.json({
           success: true,
