@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 import { isPublicRoute } from "@/lib/marketing/public-routes";
 import { isRevokedSessionError } from "@/lib/auth/session-errors";
-import { parentSafeNext } from "@/lib/parent/safe-next";
+import { resolveParentLoginTarget } from "@/lib/parent/safe-next";
 
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
@@ -181,14 +181,16 @@ export async function middleware(request: NextRequest) {
 
   if (isParentRoute) {
     if (!user) {
-      // Carry the destination so the magic-link flow can return the
-      // parent here after login (e.g. /parent/book/<id> from the
-      // marketing site's Book now buttons). clone() preserves the
-      // ORIGINAL query string — clear it before setting `next`.
+      // Carry the destination — path AND query — so the magic-link
+      // flow can return the parent here after login (e.g.
+      // /parent/book/<id>?waitlist=<entry> from a waitlist email or a
+      // marketing-site Book now button). clone() preserves the
+      // ORIGINAL query string on the login URL itself — clear it,
+      // then pack the full destination into `next`.
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/parent-login";
       loginUrl.search = "";
-      loginUrl.searchParams.set("next", pathname);
+      loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -229,18 +231,19 @@ export async function middleware(request: NextRequest) {
 
     if (parentProfile) {
       // Honour a valid parent-scoped `next` (set by the anon redirect
-      // above) so /parent-login?next=/parent/book/x lands on the
-      // booking page, not the bare portal. parentSafeNext rejects
-      // everything outside /parent, and its /parent-login fallback
-      // (also returned for a missing param) means "no usable next".
-      const requestedNext = parentSafeNext(
+      // above) so /parent-login?next=/parent/book/x?waitlist=y lands
+      // on the booking page, not the bare portal. Invalid/missing
+      // next → /parent. The target may carry its own query string —
+      // assign pathname and search separately, or the `?` would be
+      // percent-encoded into the path.
+      const target = resolveParentLoginTarget(
         request.nextUrl.searchParams.get("next")
       );
-      const target =
-        requestedNext !== "/parent-login" ? requestedNext : "/parent";
+      const queryIndex = target.indexOf("?");
       const parentUrl = request.nextUrl.clone();
-      parentUrl.pathname = target;
-      parentUrl.search = "";
+      parentUrl.pathname =
+        queryIndex === -1 ? target : target.slice(0, queryIndex);
+      parentUrl.search = queryIndex === -1 ? "" : target.slice(queryIndex);
       return NextResponse.redirect(parentUrl);
     }
 
