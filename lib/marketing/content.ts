@@ -476,3 +476,141 @@ export const PROGRAMS_INDEX = {
   description:
     "Multi-sport programs from Build Alpha Kids — childcare, primary school, high school, after school clinics and school holiday programs across South-West Sydney.",
 } as const;
+
+// ------------------------------------------------------------
+// About
+// ------------------------------------------------------------
+//
+// Sourcing note (read before editing): every claim below is a
+// restatement of copy that already exists in this module or in
+// components/marketing/what-we-do.tsx — the sports roster, the three
+// delivery settings, the age span, capped numbers, coaches bringing
+// the gear, and the two credentials. Nothing here asserts a founding
+// year, a founder, a headcount, a client name, an award, or any
+// accreditation beyond the Working With Children Check and first
+// aid, because none of those are sourceable from the repo. Do not
+// add one without an owner-confirmed source recorded in this file.
+
+/** One coach-standards card on /about. */
+export interface CoachStandard {
+  title: string;
+  body: string;
+  /** Card accent from the canonical ball palette. */
+  ball: BallColor;
+}
+
+export const ABOUT_PAGE = {
+  eyebrow: "About us",
+  /** The brand's existing line, carried over from the old site. */
+  title: "Growing stronger, together",
+  intro:
+    "Build Alpha Kids is a multi-sport coaching crew for kids across South-West Sydney — in childcare centres, on school grounds and at holiday clinics. Same coaches, same energy, wherever kids already are.",
+  /** Meta description (≤160 chars). */
+  description:
+    "Build Alpha Kids brings multi-sport coaching to childcare centres, schools and holiday clinics across South-West Sydney. Meet the crew and our standards.",
+
+  storyEyebrow: "Our story",
+  storyTitle: "We go to where the kids are",
+  story: [
+    "Kids are wired to move. Build Alpha Kids exists to turn that energy into skills — and to make sure the kid who would never put their hand up for a rep team gets coached just as hard as the one who would.",
+    "So we go to where kids already are. Our coaches turn up at childcare centres with every bit of equipment and build sessions into the day. They run curriculum-friendly sessions on school grounds during sport time or straight after the bell. And in the school holidays they run full-throttle multi-sport days that parents book online in about 60 seconds.",
+    "Nothing we run is a one-code academy. Every program mixes soccer, basketball, cricket, tennis, volleyball and rugby, so kids find the sports they love instead of specialising before they can tie their laces. From two-year-olds learning to kick and catch through to Year 12 students working on conditioning and game sense, the thread never changes: real coaching, scaled so every kid is in the game.",
+  ],
+
+  beliefsTitle: "What we back",
+  beliefs: [
+    "Every kid gets coached, not supervised",
+    "Play first — kids learn most when they're laughing",
+    "Sport should meet kids where they already are",
+    "Six sports beats specialising early",
+    "Habits that outlast the school bell",
+  ],
+
+  standardsEyebrow: "Every coach, every session",
+  standardsTitle: "The standards behind every session",
+  standardsIntro:
+    "The bits parents, educators and sport coordinators ask about first — and the answers we hold every coach to.",
+
+  ctaEyebrow: "Schools & centres",
+  ctaTitle: "Want this running at your place?",
+  ctaBody:
+    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote.",
+  ctaLabel: "Request a quote",
+} as const;
+
+export const COACH_STANDARDS: CoachStandard[] = [
+  {
+    title: "Working With Children Check on every coach",
+    body: "Every coach who runs a Build Alpha Kids session holds a current Working With Children Check. We track it per coach, and centres and schools can see it.",
+    ball: BALL_COLORS.green,
+  },
+  {
+    title: "First-aid certified coaches at every session",
+    body: "First aid is a condition of coaching with us, not a nice-to-have. It is tracked the same way the Working With Children Check is, for every coach on every session.",
+    ball: BALL_COLORS.blue,
+  },
+  {
+    title: "Coaches bring the gear and the session plan",
+    body: "Our coaches arrive set up, with every bit of equipment and a plan for the hour. Childcare session plans are EYLF-aligned; school sessions are curriculum-friendly. Either way, your team lifts nothing.",
+    ball: BALL_COLORS.yellow,
+  },
+  {
+    title: "The same crew, term and holidays",
+    body: "The coaches running our holiday clinics are the same crew kids know from term-time sessions — so kids walk in already knowing who is coaching them.",
+    ball: BALL_COLORS.red,
+  },
+];
+
+// ------------------------------------------------------------
+// Contact
+// ------------------------------------------------------------
+
+/** One "which door do you need?" route card on /contact. */
+export interface ContactRoute {
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+  ball: BallColor;
+}
+
+export const CONTACT_PAGE = {
+  eyebrow: "Contact",
+  title: "Get in touch",
+  intro:
+    "Booking a clinic, chasing a quote for your centre or school, or just after a chat about what we run — here's how to reach us.",
+  /** Meta description (≤160 chars). */
+  description:
+    "Get in touch with Build Alpha Kids — phone, email and where we coach across South-West Sydney. Book a clinic or request a quote for your centre.",
+
+  detailsEyebrow: "The details",
+  detailsTitle: "How to reach us",
+  phoneLabel: "Call us",
+  emailLabel: "Email us",
+  areaLabel: "Where we coach",
+  /** Renders under SITE.serviceArea on the service-area card. */
+  areaNote:
+    "Childcare centres, schools and holiday clinic venues right across the region.",
+
+  routesEyebrow: "Fastest route",
+  routesTitle: "Which door do you need?",
+  routesIntro:
+    "Two paths, depending on why you're here — both land straight with the people who can help.",
+} as const;
+
+export const CONTACT_ROUTES: ContactRoute[] = [
+  {
+    title: "I'm a parent",
+    body: "Holiday clinic dates go up as soon as they're locked in. Pick a day, book and pay online in about 60 seconds — NSW Active Kids vouchers accepted, and numbers are capped.",
+    href: "/holiday-clinics",
+    cta: PROGRAM_PAGE.clinicsCta,
+    ball: BALL_COLORS.yellow,
+  },
+  {
+    title: "I'm a school or centre",
+    body: "Tell us your site, your ages and the timeslot you have in mind. We'll come back with a quote for multi-sport coaching run on your grounds by our coaches, with all equipment supplied.",
+    href: SITE.enquiryUrl,
+    cta: PROGRAM_PAGE.quoteCta,
+    ball: BALL_COLORS.blue,
+  },
+];
