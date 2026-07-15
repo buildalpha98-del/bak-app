@@ -143,6 +143,26 @@ describe("buildParentMagicLinkRedirect", () => {
     );
   });
 
+  it("builds against an explicit origin when the parent is on the site", () => {
+    expect(
+      buildParentMagicLinkRedirect(
+        "/parent/book/abc",
+        "https://buildalphakids.com.au"
+      )
+    ).toBe(
+      "https://buildalphakids.com.au/auth/callback?next=%2Fparent%2Fbook%2Fabc"
+    );
+  });
+
+  it("sanitises a hostile next even with an explicit origin", () => {
+    expect(
+      buildParentMagicLinkRedirect(
+        "https://evil.com",
+        "https://buildalphakids.com.au"
+      )
+    ).toBe("https://buildalphakids.com.au/auth/callback?next=%2Fparent-login");
+  });
+
   it("sanitises hostile next values to /parent-login", () => {
     expect(buildParentMagicLinkRedirect("https://evil.com")).toBe(
       "https://buildalphakids.app/auth/callback?next=%2Fparent-login"

@@ -54,7 +54,17 @@ export function resolveParentLoginTarget(raw: string | null): string {
  * code can be exchanged before the user lands on it. With no usable
  * `next` the link falls back to /parent-login, whose middleware then
  * routes registered parents onward.
+ *
+ * `origin` is the host the parent is actually on, already validated
+ * against the allowlist by resolveAuthOrigin() — the site and the app
+ * are different TLDs, so the link must come back to the domain the
+ * parent started on or their session cookie lands on the wrong one.
+ * Omitting it keeps the app domain (getBaseUrl()); this function never
+ * validates the origin itself, so callers must pass a resolved one.
  */
-export function buildParentMagicLinkRedirect(next?: string | null): string {
-  return getAuthCallbackUrl(parentSafeNext(next) ?? "/parent-login");
+export function buildParentMagicLinkRedirect(
+  next?: string | null,
+  origin?: string
+): string {
+  return getAuthCallbackUrl(parentSafeNext(next) ?? "/parent-login", origin);
 }

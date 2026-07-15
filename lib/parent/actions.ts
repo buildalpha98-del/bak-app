@@ -6,8 +6,9 @@ import { sendEmail } from "@/lib/launch/email";
 import { welcomeParent, parentBulkInvite } from "@/lib/launch/email-templates";
 import { createNotification } from "@/lib/launch/notifications";
 import { calculateAgeGroup } from "@/lib/utils/ageGroup";
-import { getAuthCallbackUrl } from "@/lib/utils/base-url";
+import { getAuthCallbackUrl, resolveAuthOrigin } from "@/lib/utils/base-url";
 import { buildParentMagicLinkRedirect } from "@/lib/parent/safe-next";
+import { headers } from "next/headers";
 import type { ParentProfile, ParentChild, Child } from "@/lib/types/database";
 import type { AgeGroup, Gender, ParentRelationship } from "@/lib/types/enums";
 
@@ -37,19 +38,37 @@ export interface RegistrationData {
 // Send magic link for parent login
 // ============================================================
 
+/**
+ * The origin this server action was invoked from, validated against the
+ * auth allowlist. Server actions have no request object, so the host
+ * comes from headers(): Vercel sets x-forwarded-host (the client-facing
+ * domain) and host; prefer the former. Anything unrecognised resolves to
+ * the app domain — see resolveAuthOrigin's security note.
+ */
+async function getRequestAuthOrigin(): Promise<string> {
+  const headersList = await headers();
+  return resolveAuthOrigin(
+    headersList.get("x-forwarded-host") ?? headersList.get("host")
+  );
+}
+
 export async function sendParentMagicLink(
   email: string,
   next?: string
 ): Promise<{ error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
+    // Parents reach this from either the public site (.com.au) or the
+    // app (.app). The two are different TLDs and cannot share a session
+    // cookie, so the link must return them to the host they started on.
+    const origin = await getRequestAuthOrigin();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         // `next` is sanitised to parent-scope paths only; anything
         // else falls back to /parent-login (see lib/parent/safe-next).
-        emailRedirectTo: buildParentMagicLinkRedirect(next),
+        emailRedirectTo: buildParentMagicLinkRedirect(next, origin),
       },
     });
 
