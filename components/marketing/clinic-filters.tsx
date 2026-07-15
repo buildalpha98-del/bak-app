@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import { ClinicCard } from "@/components/marketing/clinic-card";
 import {
-  clinicWeekLabel,
-  clinicWeekMondayIso,
+  groupClinicsByWeek,
   type PublicClinic,
 } from "@/lib/marketing/clinics-shared";
 
@@ -79,20 +78,7 @@ export function ClinicFilters({ clinics }: { clinics: PublicClinic[] }) {
       (sport === "all" || c.sport === sport)
   );
 
-  // Group by week — clinics arrive date-sorted, so one sequential
-  // pass keeps groups (and cards within them) in date order.
-  const weeks: { monday: string; label: string; items: PublicClinic[] }[] = [];
-  for (const clinic of filtered) {
-    const monday = clinicWeekMondayIso(clinic.date);
-    const current = weeks[weeks.length - 1];
-    if (current && current.monday === monday) current.items.push(clinic);
-    else
-      weeks.push({
-        monday,
-        label: clinicWeekLabel(clinic.date),
-        items: [clinic],
-      });
-  }
+  const weeks = groupClinicsByWeek(filtered);
 
   const isFiltered = suburb !== "all" || sport !== "all";
 
@@ -136,12 +122,12 @@ export function ClinicFilters({ clinics }: { clinics: PublicClinic[] }) {
         </div>
       ) : (
         weeks.map((week) => (
-          <section key={week.monday} className="mt-12" aria-label={week.label}>
+          <section key={week.mondayIso} className="mt-12" aria-label={week.label}>
             <h2 className="inline-block -rotate-1 rounded-full border-2 border-[#111] bg-[#FFF7F2] px-4 py-1.5 font-heading text-sm font-bold uppercase tracking-widest text-[#111] shadow-[2px_2px_0_#111]">
               {week.label}
             </h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {week.items.map((clinic) => (
+              {week.clinics.map((clinic) => (
                 <ClinicCard key={clinic.id} clinic={clinic} />
               ))}
             </div>

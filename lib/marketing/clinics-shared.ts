@@ -125,3 +125,37 @@ export function clinicWeekMondayIso(dateIso: string): string {
 export function clinicWeekLabel(dateIso: string): string {
   return `Week of ${formatClinicDate(clinicWeekMondayIso(dateIso))}`;
 }
+
+export interface ClinicWeekGroup {
+  /** ISO date of the group's Monday — stable key. */
+  mondayIso: string;
+  /** "Week of Mon 20 Jul". */
+  label: string;
+  clinics: PublicClinic[];
+}
+
+/**
+ * Bucket clinics into their Sydney calendar weeks (Monday-start),
+ * groups and the clinics inside them ordered by date + start time.
+ * Sorts internally, so it is safe on UNSORTED input — a future
+ * query-order change can't silently fragment weeks.
+ */
+export function groupClinicsByWeek(clinics: PublicClinic[]): ClinicWeekGroup[] {
+  const sorted = [...clinics].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) || a.start_time.localeCompare(b.start_time)
+  );
+  const groups: ClinicWeekGroup[] = [];
+  for (const clinic of sorted) {
+    const mondayIso = clinicWeekMondayIso(clinic.date);
+    const current = groups[groups.length - 1];
+    if (current && current.mondayIso === mondayIso) current.clinics.push(clinic);
+    else
+      groups.push({
+        mondayIso,
+        label: clinicWeekLabel(clinic.date),
+        clinics: [clinic],
+      });
+  }
+  return groups;
+}
