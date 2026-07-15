@@ -109,6 +109,38 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
 - **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
 
+## Rendering time (hydration)
+
+Three hydration bugs (React #418) shipped together on five admin pages,
+all from the same root: **letting the runtime decide the timezone or the
+clock**. Server components render in UTC on Vercel; the browser renders in
+Sydney. Anything that differs between those two breaks hydration, which
+throws away the server's HTML and re-renders the whole tree on the client
+— a correctness *and* speed cost that is invisible unless you watch the
+console of a real deployment.
+
+- **Never call `toLocale*` without `timeZone: SYDNEY_TZ`** (exported from
+  `lib/utils/sydney-time.ts`). Without it the server prints UTC's date and
+  the browser prints Sydney's — different text for the same instant, for
+  ten hours of every day.
+- **Never compute "today"/"now" with `getDate()`/`getHours()`** — those
+  read the runtime's zone. Use `sydneyTodayIso()` / `sydneyHour()`.
+- **Never compute relative time during render.** Use `<TimeAgo>`
+  (`components/ui/time-ago.tsx`): it renders a fixed absolute date on the
+  first pass (server and client cannot disagree) and swaps to "3h ago"
+  in an effect. `formatTimeAgo(iso, now)` takes `now` as a parameter so
+  it stays pure and testable at a fixed instant.
+
+These reproduce on Vercel and essentially never on localhost — SSR and
+hydration happen milliseconds apart locally, so the clock rarely ticks
+between them. Verify against production, not dev.
+
+Related: an `<a>` is invalid inside `<tr>`. The row-overlay link pattern
+(`<Link className="absolute inset-0">`) must live inside a *statically
+positioned* `<TableCell>`, never as a sibling of the cells — the parser
+hoists it out of the table otherwise. Guarded by
+`lib/__tests__/no-anchor-in-table-row.test.ts`.
+
 ## AI conventions
 
 - **Model id lives in one place**: `lib/ai/model.ts` (`AI_MODEL`). Never hardcode a model string — seven files each pinned a retired id and the whole platform's AI 404'd at once.
