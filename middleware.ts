@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 import { isPublicRoute } from "@/lib/marketing/public-routes";
 import { isRevokedSessionError } from "@/lib/auth/session-errors";
+import { parentSafeNext } from "@/lib/parent/safe-next";
 
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
@@ -180,8 +181,14 @@ export async function middleware(request: NextRequest) {
 
   if (isParentRoute) {
     if (!user) {
+      // Carry the destination so the magic-link flow can return the
+      // parent here after login (e.g. /parent/book/<id> from the
+      // marketing site's Book now buttons). clone() preserves the
+      // ORIGINAL query string — clear it before setting `next`.
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/parent-login";
+      loginUrl.search = "";
+      loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -221,8 +228,19 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (parentProfile) {
+      // Honour a valid parent-scoped `next` (set by the anon redirect
+      // above) so /parent-login?next=/parent/book/x lands on the
+      // booking page, not the bare portal. parentSafeNext rejects
+      // everything outside /parent, and its /parent-login fallback
+      // (also returned for a missing param) means "no usable next".
+      const requestedNext = parentSafeNext(
+        request.nextUrl.searchParams.get("next")
+      );
+      const target =
+        requestedNext !== "/parent-login" ? requestedNext : "/parent";
       const parentUrl = request.nextUrl.clone();
-      parentUrl.pathname = "/parent";
+      parentUrl.pathname = target;
+      parentUrl.search = "";
       return NextResponse.redirect(parentUrl);
     }
 

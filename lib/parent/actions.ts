@@ -7,6 +7,7 @@ import { welcomeParent, parentBulkInvite } from "@/lib/launch/email-templates";
 import { createNotification } from "@/lib/launch/notifications";
 import { calculateAgeGroup } from "@/lib/utils/ageGroup";
 import { getAuthCallbackUrl } from "@/lib/utils/base-url";
+import { buildParentMagicLinkRedirect } from "@/lib/parent/safe-next";
 import type { ParentProfile, ParentChild, Child } from "@/lib/types/database";
 import type { AgeGroup, Gender, ParentRelationship } from "@/lib/types/enums";
 
@@ -37,7 +38,8 @@ export interface RegistrationData {
 // ============================================================
 
 export async function sendParentMagicLink(
-  email: string
+  email: string,
+  next?: string
 ): Promise<{ error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
@@ -45,7 +47,9 @@ export async function sendParentMagicLink(
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: getAuthCallbackUrl("/parent-login"),
+        // `next` is sanitised to parent-scope paths only; anything
+        // else falls back to /parent-login (see lib/parent/safe-next).
+        emailRedirectTo: buildParentMagicLinkRedirect(next),
       },
     });
 

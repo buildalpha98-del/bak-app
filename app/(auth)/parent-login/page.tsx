@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { sendParentMagicLink } from "@/lib/parent/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { AppLogo } from "@/components/shared/app-logo";
 import { Loader2, Mail, CheckCircle } from "lucide-react";
 
-export default function ParentLoginPage() {
+function ParentLoginForm() {
+  const searchParams = useSearchParams();
+  // Post-login destination (e.g. /parent/book/<id> from the marketing
+  // site's Book now buttons). Sanitised server-side by parentSafeNext.
+  const next = searchParams.get("next") ?? undefined;
+
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +28,7 @@ export default function ParentLoginPage() {
     setError(null);
     setLoading(true);
 
-    const { error: sendError } = await sendParentMagicLink(email.trim());
+    const { error: sendError } = await sendParentMagicLink(email.trim(), next);
 
     setLoading(false);
 
@@ -129,5 +135,16 @@ export default function ParentLoginPage() {
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+// useSearchParams() requires a Suspense boundary when used in a page
+// (Next 16 CSR bailout rule) — wrap the form so the route still
+// prerenders. The fallback is momentary; null keeps it simple.
+export default function ParentLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <ParentLoginForm />
+    </Suspense>
   );
 }
