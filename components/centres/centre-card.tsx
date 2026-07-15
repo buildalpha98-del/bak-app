@@ -98,6 +98,21 @@ function healthDotClass(score: number): string {
   return "bg-red-500";
 }
 
+// Two glance channels so a wall of 40 cards stops looking uniform:
+// the icon tile is tinted by TYPE (orange childcare / indigo school)
+// and the card's left edge carries the HEALTH band colour. Churned
+// centres desaturate so live accounts pop first.
+function typeTileClass(type: string): string {
+  return type === "childcare_centre"
+    ? "bg-primary/12 text-primary"
+    : "bg-indigo-500/12 text-indigo-600 dark:text-indigo-400";
+}
+
+function healthEdgeClass(score: number | null): string {
+  if (score === null) return "bg-border";
+  return healthDotClass(score);
+}
+
 // ============================================================
 // CentreCard — full variant (admin/ops card grid)
 // ============================================================
@@ -168,11 +183,27 @@ export function CentreCard({
     ) : null;
 
   return (
-    <Card className="flex flex-col rounded-2xl transition hover:shadow-md hover:-translate-y-0.5">
+    <Card
+      className={
+        "relative flex flex-col overflow-hidden rounded-2xl transition hover:shadow-md hover:-translate-y-0.5" +
+        (centre.contract_status === "churned" ? " opacity-70 saturate-50" : "")
+      }
+    >
+      <span
+        aria-hidden
+        className={
+          "absolute inset-y-0 left-0 w-1 " + healthEdgeClass(centre.health_score)
+        }
+      />
       <CardHeader>
         <div className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
-            <TypeIcon className="size-4 text-muted-foreground" />
+          <div
+            className={
+              "flex size-8 items-center justify-center rounded-lg " +
+              typeTileClass(centre.type)
+            }
+          >
+            <TypeIcon className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
             <CardTitle className="truncate">{centre.name}</CardTitle>

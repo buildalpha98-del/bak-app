@@ -6,7 +6,49 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+// Walk the element tree (SelectContent → groups → items) and harvest
+// every SelectItem's value → label pair. base-ui's Select.Value renders
+// the RAW value string (a UUID, "all", "pending_approval"…) in the
+// closed trigger unless the Root receives an `items` map — the item
+// labels live in a portal that only mounts when the popup opens, so
+// the trigger can't discover them on its own. Deriving the map here
+// fixes every select in the app in one place.
+function collectItemLabels(
+  children: React.ReactNode,
+  acc: Record<string, React.ReactNode>
+) {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+    const props = child.props as {
+      value?: unknown
+      children?: React.ReactNode
+    }
+    if (child.type === SelectItem && props.value != null) {
+      acc[String(props.value)] = props.children
+    } else if (props.children) {
+      collectItemLabels(props.children, acc)
+    }
+  })
+}
+
+function Select<Value, Multiple extends boolean | undefined = false>({
+  children,
+  items,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  const derivedItems = React.useMemo(() => {
+    if (items) return items
+    const acc: Record<string, React.ReactNode> = {}
+    collectItemLabels(children, acc)
+    return Object.keys(acc).length > 0 ? acc : undefined
+  }, [children, items])
+
+  return (
+    <SelectPrimitive.Root<Value, Multiple> items={derivedItems} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (

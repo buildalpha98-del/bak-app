@@ -1260,3 +1260,177 @@ export async function getLinkedCentresForProgramme(
     return { data: [], error: "Failed to fetch linked centres." };
   }
 }
+
+// ============================================================
+// generateProgramPdf — printable session plan
+// ============================================================
+
+export async function generateProgramPdf(
+  programId: string
+): Promise<{ data: { base64: string; filename: string } | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    const { data: program } = await supabase
+      .from("programs")
+      .select("*")
+      .eq("id", programId)
+      .maybeSingle();
+    if (!program) return { data: null, error: "Programme not found." };
+
+    // Content may be stored camelCase (current generator) or snake_case
+    // (early rows) — normalise the section keys the same way the
+    // ProgramView component does.
+    const raw = program.content_json as Record<string, unknown>;
+    const content = {
+      ...(raw as unknown as ProgramContentJson),
+      warmUp: (raw.warmUp ?? raw.warm_up) as ProgramContentJson["warmUp"],
+      skillDevelopment: (raw.skillDevelopment ??
+        raw.skill_development ??
+        []) as ProgramContentJson["skillDevelopment"],
+      modifiedGame: (raw.modifiedGame ??
+        raw.modified_game) as ProgramContentJson["modifiedGame"],
+      coolDown: (raw.coolDown ?? raw.cool_down) as ProgramContentJson["coolDown"],
+      title: (raw.title as string) ?? `${program.sport} programme`,
+      sport: (raw.sport as string) ?? program.sport,
+      duration: (raw.duration as number) ?? program.duration_minutes,
+      objectives: (raw.objectives as string[]) ?? [],
+      equipmentNeeded:
+        (raw.equipmentNeeded as string[]) ??
+        (raw.equipment_needed as string[]) ??
+        program.equipment_used ??
+        [],
+    } as ProgramContentJson;
+
+    const generatedOn = new Intl.DateTimeFormat("en-AU", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "Australia/Sydney",
+    }).format(new Date());
+
+    const { renderToBuffer } = await import("@react-pdf/renderer");
+    const { ProgramPdf } = await import("./pdf-template");
+    const React = (await import("react")).default;
+    const element = React.createElement(ProgramPdf, {
+      content,
+      ageGroups: (program.age_groups as string[]) ?? [],
+      generatedOn,
+    }) as unknown as Parameters<typeof renderToBuffer>[0];
+    const buffer = await renderToBuffer(element);
+
+    const safeName = content.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60);
+    return {
+      data: {
+        base64: buffer.toString("base64"),
+        filename: `${safeName || "session-plan"}.pdf`,
+      },
+      error: null,
+    };
+  } catch (err) {
+    console.error("generateProgramPdf error:", err);
+    return { data: null, error: "Failed to generate the PDF." };
+  }
+}
+
+// ============================================================
+// applyProgramToSessions — attach a programme to roster shifts
+// ============================================================
+
+export interface ApplyProgramInput {
+  programId: string;
+  /** Any date in the target week ("YYYY-MM-DD"); snapped to Monday. */
+  weekOf: string;
+  centreId?: string;
+  /** When false (default) only sessions without a programme are touched. */
+  overwrite?: boolean;
+}
+
+export async function applyProgramToSessions(
+  input: ApplyProgramInput
+): Promise<{ data: { updated: number; matched: number } | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    const { data: program } = await supabase
+      .from("programs")
+      .select("id, sport")
+      .eq("id", input.programId)
+      .maybeSingle();
+    if (!program) return { data: null, error: "Programme not found." };
+
+    const { mondayOfIso } = await import("@/lib/utils/roster");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.weekOf)) {
+      return { data: null, error: "Invalid week date." };
+    }
+    const monday = mondayOfIso(input.weekOf);
+    const friday = new Date(
+      Date.UTC(
+        Number(monday.slice(0, 4)),
+        Number(monday.slice(5, 7)) - 1,
+        Number(monday.slice(8, 10)) + 4
+      )
+    )
+      .toISOString()
+      .split("T")[0];
+
+    let matchQuery = supabase
+      .from("sessions")
+      .select("id, program_id")
+      .eq("sport", program.sport)
+      .gte("date", monday)
+      .lte("date", friday)
+      .not("status", "in", "(cancelled,completed)");
+    if (input.centreId) matchQuery = matchQuery.eq("centre_id", input.centreId);
+
+    const { data: matches, error: matchErr } = await matchQuery;
+    if (matchErr) return { data: null, error: "Failed to look up sessions." };
+
+    const targets = (matches ?? []).filter(
+      (s) => input.overwrite || s.program_id === null
+    );
+    if (targets.length === 0) {
+      return {
+        data: { updated: 0, matched: matches?.length ?? 0 },
+        error: null,
+      };
+    }
+
+    const { error: updateErr } = await supabase
+      .from("sessions")
+      .update({ program_id: program.id })
+      .in("id", targets.map((s) => s.id));
+    if (updateErr) return { data: null, error: "Failed to apply the programme." };
+
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action: "program_applied_to_sessions",
+      entity_type: "program",
+      entity_id: program.id,
+      metadata: {
+        week_start: monday,
+        centre_id: input.centreId ?? null,
+        updated: targets.length,
+      },
+    });
+
+    revalidatePath("/admin/roster");
+    revalidatePath("/ops/roster");
+
+    return {
+      data: { updated: targets.length, matched: matches?.length ?? 0 },
+      error: null,
+    };
+  } catch (err) {
+    console.error("applyProgramToSessions error:", err);
+    return { data: null, error: "Failed to apply the programme." };
+  }
+}

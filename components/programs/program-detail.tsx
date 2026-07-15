@@ -44,6 +44,7 @@ import {
   Trash2,
   User,
 } from "lucide-react";
+import { Download, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { ProgramFeedbackSummary } from "@/lib/programs/feedback-actions";
 
@@ -73,12 +74,35 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getCentresForSelect } from "@/lib/terms/actions";
+import { mondayOfIso } from "@/lib/utils/roster";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 import { ProgramView } from "./program-view";
 import { ProgramEditor } from "./program-editor";
 import {
   createNewVersion,
   deleteProgram,
+  generateProgramPdf,
+  applyProgramToSessions,
 } from "@/lib/programs/actions";
 import type {
   LinkedCentreSummary,
@@ -172,12 +196,157 @@ export function ProgramDetailView({
     router.refresh();
   }
 
+  // ---- PDF download ----
+  const [pdfBusy, setPdfBusy] = useState(false);
+  async function handleDownloadPdf() {
+    setPdfBusy(true);
+    const { data, error } = await generateProgramPdf(program.id);
+    setPdfBusy(false);
+    if (error || !data) {
+      toast.error(error ?? "Failed to generate the PDF.");
+      return;
+    }
+    const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = data.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success("Session plan downloaded.");
+  }
+
+  // ---- Apply to roster ----
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [applyBusy, setApplyBusy] = useState(false);
+  const [applyWeek, setApplyWeek] = useState(() => {
+    // Default to next week's Monday (Sydney) — this week's earlier
+    // sessions have usually already run.
+    const m = mondayOfIso(sydneyTodayIso());
+    return new Date(
+      Date.UTC(
+        Number(m.slice(0, 4)),
+        Number(m.slice(5, 7)) - 1,
+        Number(m.slice(8, 10)) + 7
+      )
+    )
+      .toISOString()
+      .split("T")[0];
+  });
+  const [applyCentre, setApplyCentre] = useState<string>("all");
+  const [applyOverwrite, setApplyOverwrite] = useState(false);
+  const [centreOptions, setCentreOptions] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+
+  async function openApplyDialog() {
+    setApplyOpen(true);
+    if (centreOptions.length === 0) {
+      const { data } = await getCentresForSelect();
+      setCentreOptions(data ?? []);
+    }
+  }
+
+  async function handleApply() {
+    setApplyBusy(true);
+    const { data, error } = await applyProgramToSessions({
+      programId: program.id,
+      weekOf: applyWeek,
+      centreId: applyCentre === "all" ? undefined : applyCentre,
+      overwrite: applyOverwrite,
+    });
+    setApplyBusy(false);
+    if (error || !data) {
+      toast.error(error ?? "Failed to apply the programme.");
+      return;
+    }
+    if (data.updated === 0) {
+      toast.info(
+        data.matched === 0
+          ? `No ${program.sport} sessions found that week.`
+          : `All ${data.matched} matching sessions already have a programme — tick overwrite to replace.`
+      );
+      return;
+    }
+    toast.success(
+      `Applied to ${data.updated} session${data.updated === 1 ? "" : "s"}.`
+    );
+    setApplyOpen(false);
+    router.refresh();
+  }
+
   const sessionsCount = usage.sessionCount;
   const variantsCount = versions.length;
   const centresCount = linkedCentres.length;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 animate-fade-up">
+      {/* Apply-to-roster dialog */}
+      <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Apply to roster</DialogTitle>
+            <DialogDescription>
+              Attaches this programme to every {program.sport} session in the
+              chosen week{applyCentre === "all" ? " across all centres" : ""}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="apply-week">Week of</Label>
+              <Input
+                id="apply-week"
+                type="date"
+                value={applyWeek}
+                onChange={(e) => setApplyWeek(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Any day works — it snaps to that week&apos;s Monday.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Centre</Label>
+              <Select value={applyCentre} onValueChange={(v) => setApplyCentre(v ?? "all")}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All centres" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All centres</SelectItem>
+                  {centreOptions.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={applyOverwrite}
+                onCheckedChange={(v) => setApplyOverwrite(v === true)}
+              />
+              Replace sessions that already have a programme
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApplyOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApply}
+              disabled={applyBusy}
+              className="bg-primary text-white hover:bg-primary/90"
+            >
+              {applyBusy ? <Loader2 className="size-4 animate-spin" /> : null}
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
@@ -214,7 +383,29 @@ export function ProgramDetailView({
         </div>
 
         {!editing && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPdf}
+              disabled={pdfBusy}
+              className="min-h-[40px]"
+            >
+              {pdfBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Download className="size-4" />
+              )}
+              PDF
+            </Button>
+            <Button
+              size="sm"
+              onClick={openApplyDialog}
+              className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+            >
+              <CalendarPlus className="size-4" />
+              Apply to roster
+            </Button>
             <Button
               variant="outline"
               size="sm"

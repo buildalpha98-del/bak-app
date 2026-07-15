@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { FilterSelectChip } from "@/components/shared/filter-select-chip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -459,67 +460,50 @@ export function CentreListView({
           />
         </div>
 
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => setTypeFilter(v as CentreType | "all")}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="childcare_centre">Childcare Centre</SelectItem>
-            <SelectItem value="school">School</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={contractFilter}
-          onValueChange={(v) => setContractFilter(v as ContractStatus | "all")}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="trial">Trial</SelectItem>
-            <SelectItem value="paused">Paused</SelectItem>
-            <SelectItem value="churned">Churned</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={regionFilter}
-          onValueChange={(v) => setRegionFilter((v as string | null) ?? "all")}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Region" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Regions</SelectItem>
-            {regions.map((r) => (
-              <SelectItem key={r.id} value={r.id}>
-                {r.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={pricingFilter}
-          onValueChange={(v) => setPricingFilter(v as PricingModel | "all")}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Pricing" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Pricing</SelectItem>
-            <SelectItem value="centre_funded">Centre Funded</SelectItem>
-            <SelectItem value="parent_funded">Parent Funded</SelectItem>
-            <SelectItem value="per_head">Per Head</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterSelectChip
+            label="Type"
+            value={typeFilter}
+            onChange={(v) => setTypeFilter(v as CentreType | "all")}
+            options={[
+              { value: "all", label: "All types" },
+              { value: "childcare_centre", label: "Childcare" },
+              { value: "school", label: "School" },
+            ]}
+          />
+          <FilterSelectChip
+            label="Status"
+            value={contractFilter}
+            onChange={(v) => setContractFilter(v as ContractStatus | "all")}
+            options={[
+              { value: "all", label: "All statuses" },
+              { value: "active", label: "Active" },
+              { value: "trial", label: "Trial" },
+              { value: "paused", label: "Paused" },
+              { value: "churned", label: "Churned" },
+            ]}
+          />
+          <FilterSelectChip
+            label="Region"
+            value={regionFilter}
+            onChange={(v) => setRegionFilter(v || "all")}
+            options={[
+              { value: "all", label: "All regions" },
+              ...regions.map((r) => ({ value: r.id, label: r.name })),
+            ]}
+          />
+          <FilterSelectChip
+            label="Pricing"
+            value={pricingFilter}
+            onChange={(v) => setPricingFilter(v as PricingModel | "all")}
+            options={[
+              { value: "all", label: "All pricing" },
+              { value: "centre_funded", label: "Centre funded" },
+              { value: "parent_funded", label: "Parent funded" },
+              { value: "per_head", label: "Per head" },
+            ]}
+          />
+        </div>
 
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
           <SelectTrigger className="w-[150px]">

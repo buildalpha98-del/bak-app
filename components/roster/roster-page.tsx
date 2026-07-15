@@ -101,6 +101,7 @@ import { RosterStatusPulseStrip } from "./roster-status-pulse";
 import { MonthCalendarPopover } from "./month-calendar-popover";
 import { useSessionsRealtime } from "@/lib/hooks/useSessionsRealtime";
 import { getMonday, formatWeekLabel, toLocalIso } from "@/lib/utils/roster";
+import { FilterSelectChip } from "@/components/shared/filter-select-chip";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import {
   bulkUpdateSessionStatus,
@@ -1137,51 +1138,6 @@ export function RosterPage({
 // ============================================================
 // Sub-components: filter chips + AI-run pill
 // ============================================================
-
-function FilterSelectChip({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: Array<{ value: string; label: string }>;
-}) {
-  const active = value !== "all";
-  const selectedLabel =
-    options.find((o) => o.value === value)?.label ?? label;
-
-  return (
-    <Select
-      value={value}
-      onValueChange={(next) => onChange(next ?? "all")}
-    >
-      <SelectTrigger
-        className={[
-          "h-8 w-auto rounded-full border px-3 text-xs",
-          active
-            ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
-            : "border-border bg-background text-muted-foreground",
-        ].join(" ")}
-      >
-        <SelectValue placeholder={label}>
-          <span className="font-medium">
-            {active ? `${label}: ${selectedLabel}` : label}
-          </span>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
 
 function SportFilterChip({
   selected,
