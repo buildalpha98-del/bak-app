@@ -74,7 +74,7 @@ export function MarketingNav() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#FFF7F2] hover:text-[#E8712A]"
+              className="flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#FFF7F2] hover:text-[#993C1D]"
             >
               {link.label}
             </Link>
@@ -85,7 +85,7 @@ export function MarketingNav() {
         <div className="hidden items-center gap-2 md:flex">
           <Link
             href={accountHref}
-            className="flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#FFF7F2] hover:text-[#E8712A]"
+            className="flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#FFF7F2] hover:text-[#993C1D]"
           >
             {accountLabel}
           </Link>
@@ -93,7 +93,7 @@ export function MarketingNav() {
             href="/holiday-clinics"
             className={cn(
               buttonVariants({ variant: "default" }),
-              "h-11 rounded-full bg-[#E8712A] px-6 text-sm font-semibold text-white hover:bg-[#E8712A]/90"
+              "h-11 rounded-full bg-[#E8712A] px-6 text-sm font-semibold text-[#1A1A1A] hover:bg-[#E8712A]/90"
             )}
           >
             Book now
@@ -129,7 +129,7 @@ export function MarketingNav() {
                     render={
                       <Link
                         href={link.href}
-                        className="flex min-h-11 items-center rounded-lg px-3 text-base font-semibold text-[#1A1A1A] hover:bg-[#FFF7F2] hover:text-[#E8712A]"
+                        className="flex min-h-11 items-center rounded-lg px-3 text-base font-semibold text-[#1A1A1A] hover:bg-[#FFF7F2] hover:text-[#993C1D]"
                       />
                     }
                   >
@@ -152,7 +152,7 @@ export function MarketingNav() {
                   render={
                     <Link
                       href="/holiday-clinics"
-                      className="flex h-11 items-center justify-center rounded-full bg-[#E8712A] px-4 text-sm font-semibold text-white hover:bg-[#E8712A]/90"
+                      className="flex h-11 items-center justify-center rounded-full bg-[#E8712A] px-4 text-sm font-semibold text-[#1A1A1A] hover:bg-[#E8712A]/90"
                     />
                   }
                 >
