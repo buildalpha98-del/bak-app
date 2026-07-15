@@ -12,7 +12,28 @@ Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in
 - **P5** (`4207c68 … 0558b3f`) — multi-coach per shift: `session_coaches` join table (migration 048) with sync-trigger maintaining `sessions.coach_id` as a read-only cache; `setSessionCoaches` helper is the single write path; CI guard test (`lib/__tests__/no-direct-coach-id-writes.test.ts`) enforces it; cost projection per-rate-summed; conflict detection reads from `session_coaches`; UI roster grid renders "+N others" badge on primary and "↔ shared" on secondaries; detail sheet uses a drag-to-reorder `CoachChipMultiselect`.
 - **P4** (drag-and-drop scheduling + colour coding + mobile polish) — **deferred**, planned for post-beta.
 
-**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`). See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
+**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`).
+
+**Email (verified working 2026-07-15):** sending on `hello@buildalphakids.app`,
+both domains verified in Resend, test message delivered to inbox. Two failures
+had stacked here: a Resend 403 ("domain is not verified") that killed every
+send, and a *duplicate* `resend._domainkey` TXT record. The duplicate is the
+one to remember — nothing anywhere reported an error, because Resend finds a
+matching key and calls the domain verified while receivers pick between the two
+at random and fail DKIM on the stale one. Symptom is intermittent spam-foldering,
+not a hard failure. If mail starts landing in junk, check for more than one TXT
+at that name first:
+`dig +short TXT resend._domainkey.buildalphakids.app @ns1.vercel-dns.com` —
+expect exactly one.
+
+**Vercel CLI gotchas** (both cost real time):
+- `vercel dns …` needs `--scope buildalpha98-dels-projects`, or it fails with a
+  misleading "You don't have permission to list the domain record".
+- `vercel env pull` writes a trailing newline into some values (both Supabase
+  keys, the QuickBooks vars); any local script using them then 401s. Vercel's
+  stored values are clean, so production is unaffected — trim after pulling.
+  Never pull into `.env.local`: it replaces the file with the *development*
+  env and destroys the local Supabase/Anthropic keys. See `docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md` for the P-series spec.
 
 ## Tech Stack
 
@@ -77,6 +98,24 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **P3 — Shift notes** (047): `sessions.notes` text
 - **P5 — Multi-coach per shift** (048): `session_coaches` join table with sync trigger + `set_session_coaches` atomic RPC; `sessions.coach_id` becomes a trigger-maintained primary cache. The `setSessionCoaches` helper at `lib/sessions/session-coaches.ts` is the **only** write path; CI guard at `lib/__tests__/no-direct-coach-id-writes.test.ts` enforces this at build time.
 - **Performance enrichment**: `coach_badges` (029), `ai_assistant_usage` (032)
+
+### July 2026 — beta hardening
+- **Client portal RLS** (061): `auth_client_centre_ids()` SECURITY DEFINER + client SELECT policies on 13 tables. Before this the `client` role could read only 2 tables — every portal page was empty for real directors (admin preview masked it).
+- **Portal + staff misc** (062–063): `client_users.welcomed_at`, `profiles.credentials_purged_at`
+- **Centre inbox realtime** (064): `centre_messages` added to the `supabase_realtime` publication — subscriptions connected but received nothing without it.
+- **Manual rerostering** (065): `rerostering_events.original_coach_id` relaxed to nullable so ops can start rerostering on a shift that never had a coach.
+- **Programme tags** (066): `programs.tags` text[] (GIN), operator-curated labels.
+- **Digest dedup** (067): `notifications.delivered_channels` — the daily digest skips anything already emailed/SMS'd.
+- **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
+- **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
+
+## AI conventions
+
+- **Model id lives in one place**: `lib/ai/model.ts` (`AI_MODEL`). Never hardcode a model string — seven files each pinned a retired id and the whole platform's AI 404'd at once.
+- **No `temperature`** — the current model rejects it (400).
+- **`max_tokens` is a ceiling, not a target.** A full multi-age programme needs real headroom (8000); too low returns *truncated JSON* that surfaces as a bogus parse error. `generateProgram` checks `stop_reason === "max_tokens"` and says so.
+- **Construct the Anthropic client lazily.** The SDK reads `ANTHROPIC_API_KEY` at construction, and ES imports hoist above a script's `dotenv.config()` — a module-level client leaves CLI scripts permanently key-less.
+- **The output schema in the SYSTEM prompt is what the model actually follows.** Requirements stated only in the user prompt get obeyed intermittently (per-age `scaffolds` were dropped on ~50% of drills until the schema named them).
 
 ## Key Business Rules
 
@@ -161,6 +200,26 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - activity_log for significant actions. Supabase Realtime for live updates
 - React-PDF for PDFs. Resend for email. recharts for charts. Sentry for errors
 - Tests: vitest unit 80%+ on /lib/utils, integration on critical flows, Playwright E2E top 5 journeys
+
+### E2E smoke suite (`npm run e2e`)
+
+Seven Playwright specs in `e2e/smoke.spec.ts`, each pinning a bug that reached
+production while the unit suite stayed green — they live in the seam unit tests
+can't reach: auth → RLS → query → render. Add a spec here whenever a bug gets
+past `npm test`; that's the signal it belongs at this tier.
+
+- Runs on its own port (**3100**) against a fresh server, so it never adopts a
+  dev server already on :3000 — reusing one cost an afternoon of false failures.
+- `e2e/fixtures/auth.ts` mints a real session via `auth.admin.generateLink`
+  (which sends no email) and injects it exactly as `@supabase/ssr` writes it.
+  Users are looked up by role at runtime — no hardcoded emails or UUIDs.
+  Everything after sign-in is exercised for real; `/auth/callback` itself is not
+  (needs localhost on Supabase's redirect allowlist).
+- Read-only: it runs against the production database and asserts what a user
+  sees. The AI spec bills one real generation on purpose — the three-layer AI
+  outage survived a full suite of mocks.
+- Needs the Supabase + Anthropic keys; the config reads `.env.production.local`
+  and lets `.env.local` win where it defines a var.
 
 ## Sports List
 

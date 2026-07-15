@@ -104,6 +104,7 @@ import {
   formatProgramAgeBandsTooltip,
   getProgramAgeBands,
 } from "@/lib/utils/programs/age-bands";
+import { FilterSelectChip } from "@/components/shared/filter-select-chip";
 
 // ============================================================
 // Local types + constants
@@ -182,6 +183,9 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
   const [usageFilter, setUsageFilterState] = useState<UsageFilter>(
     (params.get("usage") as UsageFilter | null) ?? "all",
   );
+  const [tagFilter, setTagFilterState] = useState<string>(
+    params.get("tag") ?? "all",
+  );
   const [sortBy, setSortByState] = useState<SortOption>(
     (params.get("sort") as SortOption | null) ?? "newest",
   );
@@ -230,6 +234,10 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     setUsageFilterState(v);
     replaceParam("usage", v === "all" ? null : v);
   }
+  function setTagFilter(v: string) {
+    setTagFilterState(v);
+    replaceParam("tag", v === "all" ? null : v);
+  }
   function setSortBy(v: SortOption) {
     setSortByState(v);
     replaceParam("sort", v === "newest" ? null : v);
@@ -246,6 +254,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     setSportFilterState("all");
     setAgeFiltersState([]);
     setUsageFilterState("all");
+    setTagFilterState("all");
     setSortByState("newest");
     router.replace("?", { scroll: false });
   }
@@ -255,6 +264,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     sportFilter !== "all" ||
     ageFilters.length > 0 ||
     usageFilter !== "all" ||
+    tagFilter !== "all" ||
     skillsEmpty ||
     newThisWeek;
 
@@ -286,6 +296,11 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     return Array.from(sports).sort();
   }, [programs]);
 
+  const availableTags = useMemo(() => {
+    const tags = new Set(programs.flatMap((p) => p.tags ?? []));
+    return Array.from(tags).sort();
+  }, [programs]);
+
   const filtered = useMemo(() => {
     let result = [...programs];
     const monday = getMondayDate();
@@ -304,6 +319,15 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     if (sportFilter !== "all") {
       result = result.filter((p) => p.sport === sportFilter);
     }
+
+    if (tagFilter !== "all") {
+      result = result.filter((p) => (p.tags ?? []).includes(tagFilter));
+    }
+
+    // Series collapse: a multi-week series shows as ONE entry (its
+    // week 1) — the detail page's week switcher reaches the rest.
+    // Without this, seeding 19 sports × 8 weeks floods the library.
+    result = result.filter((p) => !p.series_id || p.series_week === 1);
 
     if (ageFilters.length > 0) {
       result = result.filter((p) => {
@@ -362,6 +386,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
     sportFilter,
     ageFilters,
     usageFilter,
+    tagFilter,
     skillsEmpty,
     newThisWeek,
     sortBy,
@@ -481,22 +506,15 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
           />
         </div>
 
-        <Select
+        <FilterSelectChip
+          label="Sport"
           value={sportFilter}
-          onValueChange={(v) => setSportFilter(v ?? "all")}
-        >
-          <SelectTrigger className="w-full sm:w-[160px]">
-            <SelectValue placeholder="All sports" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All sports</SelectItem>
-            {availableSports.map((sport) => (
-              <SelectItem key={sport} value={sport}>
-                {sport}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(v) => setSportFilter(v)}
+          options={[
+            { value: "all", label: "All sports" },
+            ...availableSports.map((sport) => ({ value: sport, label: sport })),
+          ]}
+        />
 
         {/* Age multi-select via Popover */}
         <Popover>
@@ -550,20 +568,28 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
           </PopoverContent>
         </Popover>
 
-        <Select
+        {availableTags.length > 0 && (
+          <FilterSelectChip
+            label="Tag"
+            value={tagFilter}
+            onChange={(v) => setTagFilter(v)}
+            options={[
+              { value: "all", label: "All tags" },
+              ...availableTags.map((t) => ({ value: t, label: t })),
+            ]}
+          />
+        )}
+        <FilterSelectChip
+          label="Usage"
           value={usageFilter}
-          onValueChange={(v) => setUsageFilter((v ?? "all") as UsageFilter)}
-        >
-          <SelectTrigger className="w-full sm:w-[140px]">
-            <SelectValue placeholder="Usage" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All usage</SelectItem>
-            <SelectItem value="used">Used</SelectItem>
-            <SelectItem value="unused">Unused</SelectItem>
-            <SelectItem value="stale">Stale</SelectItem>
-          </SelectContent>
-        </Select>
+          onChange={(v) => setUsageFilter(v as UsageFilter)}
+          options={[
+            { value: "all", label: "All usage" },
+            { value: "used", label: "Used" },
+            { value: "unused", label: "Unused" },
+            { value: "stale", label: "Stale" },
+          ]}
+        />
 
         <Select
           value={sortBy}
@@ -1050,18 +1076,21 @@ function TableView({
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(p.created_at)}
+                    {/* Inside the cell, not the row: an <a> is invalid as
+                        a child of <tr> and the parser moves it, breaking
+                        hydration (React #418). */}
+                    <Link
+                      href={`${basePath}/${p.id}`}
+                      className="absolute inset-0"
+                      aria-label={`View ${p.title}`}
+                      onClick={(e) => {
+                        if (selectionActive) {
+                          e.preventDefault();
+                          onToggleSelect(p.id);
+                        }
+                      }}
+                    />
                   </TableCell>
-                  <Link
-                    href={`${basePath}/${p.id}`}
-                    className="absolute inset-0"
-                    aria-label={`View ${p.title}`}
-                    onClick={(e) => {
-                      if (selectionActive) {
-                        e.preventDefault();
-                        onToggleSelect(p.id);
-                      }
-                    }}
-                  />
                 </TableRow>
               );
             })}

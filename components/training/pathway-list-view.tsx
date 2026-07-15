@@ -288,6 +288,17 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {formatDate(pathway.created_at)}
+                        {/* Inside a cell, not the row: an <a> is invalid as
+                            a child of <tr> and the parser moves it,
+                            breaking hydration (React #418). It goes in
+                            THIS cell rather than the delete cell below,
+                            which is `relative` and would shrink the
+                            overlay to that cell instead of the row. */}
+                        <Link
+                          href={`${basePath}/pathways/${pathway.id}`}
+                          className="absolute inset-0"
+                          aria-label={`View ${pathway.title}`}
+                        />
                       </TableCell>
                       <TableCell
                         className="relative z-10"
@@ -299,11 +310,6 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                           onCompleted={() => router.refresh()}
                         />
                       </TableCell>
-                      <Link
-                        href={`${basePath}/pathways/${pathway.id}`}
-                        className="absolute inset-0"
-                        aria-label={`View ${pathway.title}`}
-                      />
                     </TableRow>
                   );
                 })}

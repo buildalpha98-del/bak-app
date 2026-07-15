@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import type { Profile } from "@/lib/types/database";
 import { SidebarProvider } from "./navigation/sidebar-context";
 import { Sidebar } from "./navigation/sidebar";
@@ -12,6 +13,7 @@ import { SessionTimeoutWarning } from "./session-timeout-warning";
 import { useEphemeralSession } from "@/lib/hooks/useEphemeralSession";
 import { CommandPalette } from "./command-palette";
 import { QuickActions } from "./quick-actions";
+import { DeniedToast } from "./denied-toast";
 
 interface DashboardShellProps {
   profile: Profile;
@@ -38,6 +40,11 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
         <InstallPrompt />
         <IosInstallPrompt />
         <SessionTimeoutWarning />
+        {/* useSearchParams must sit behind a Suspense boundary or it
+            opts the whole tree out of static rendering. */}
+        <Suspense fallback={null}>
+          <DeniedToast />
+        </Suspense>
       </div>
     </SidebarProvider>
   );

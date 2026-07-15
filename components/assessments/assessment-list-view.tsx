@@ -695,18 +695,21 @@ export function AssessmentListView({
                           "en-AU",
                           { day: "numeric", month: "short", year: "numeric" },
                         )}
+                        {/* Inside the cell, not the row: an <a> is invalid
+                            as a child of <tr> and the parser moves it,
+                            breaking hydration (React #418). */}
+                        <Link
+                          href={`${basePath}/${template.id}`}
+                          className="absolute inset-0"
+                          aria-label={`View ${template.sport}`}
+                          onClick={(e) => {
+                            if (selectionActive) {
+                              e.preventDefault();
+                              toggleSelect(template.id);
+                            }
+                          }}
+                        />
                       </TableCell>
-                      <Link
-                        href={`${basePath}/${template.id}`}
-                        className="absolute inset-0"
-                        aria-label={`View ${template.sport}`}
-                        onClick={(e) => {
-                          if (selectionActive) {
-                            e.preventDefault();
-                            toggleSelect(template.id);
-                          }
-                        }}
-                      />
                     </TableRow>
                   );
                 })}

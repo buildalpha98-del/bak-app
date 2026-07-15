@@ -9,7 +9,17 @@ export type GenerateProgramInput = BuildProgramPromptInput;
 // Claude API Programme Generator (server-only)
 // ============================================================
 
-const anthropic = new Anthropic();
+// Lazily constructed. The SDK reads ANTHROPIC_API_KEY at CONSTRUCTION
+// time, so a module-level client captures the environment as it was at
+// import — and ES imports hoist above a script's dotenv.config(), so
+// any CLI script got a permanently key-less client ("Could not resolve
+// authentication method"). Building on first use is identical for the
+// app (Next loads env before modules) and correct everywhere else.
+let client: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!client) client = new Anthropic();
+  return client;
+}
 
 const SYSTEM_PROMPT = `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools in Sydney.
 
@@ -88,9 +98,16 @@ Respond with ONLY a valid JSON object (no markdown, no explanation, no code fenc
       "duration": number — minutes,
       "description": "string — step-by-step instructions",
       "progressions": ["string array — 2-3 ways to make it harder/easier"],
-      "coachingTips": "string — what to look for, common mistakes"
+      "coachingTips": "string — what to look for, common mistakes",
+      "scaffolds": { "3-5": "string — 1-2 lines on adjusting this drill for this band", "5-8": "string", "8-12": "string" }
     }
   ],
+
+MANDATORY when the request names MORE THAN ONE age band: every entry in
+skillDevelopment MUST include "scaffolds", with exactly one key per requested
+band and no others. A mixed-age drill without scaffolds is unusable — the coach
+is running 3-year-olds and 12-year-olds in the same space. When the request
+names only ONE age band, omit "scaffolds" entirely.
   "modifiedGame": {
     "name": "string — game name",
     "duration": number — minutes,
@@ -165,10 +182,9 @@ export async function generateProgram(
     );
   }
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: AI_MODEL,
-    max_tokens: 2000,
-    temperature: 0.7,
+    max_tokens: 8000,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -177,6 +193,15 @@ export async function generateProgram(
       },
     ],
   });
+
+  // A truncated response is the most likely failure for a big
+  // multi-age plan, and it surfaces as an inscrutable JSON parse
+  // error three frames later. Name it here instead.
+  if (message.stop_reason === "max_tokens") {
+    throw new Error(
+      "The programme was cut off before it finished generating (hit the output limit). Try fewer age bands or a shorter duration."
+    );
+  }
 
   const textBlock = message.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {

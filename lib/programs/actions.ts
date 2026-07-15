@@ -16,6 +16,10 @@ export interface SaveProgramInput {
   skillFocus?: string;
   contentJson: ProgramContentJson;
   equipmentUsed: string[];
+  /** Multi-week series linkage (migration 069). All three or none. */
+  seriesId?: string;
+  seriesWeek?: number;
+  seriesLength?: number;
 }
 
 export interface ProgramListItem {
@@ -31,6 +35,12 @@ export interface ProgramListItem {
   version_number: number;
   parent_version_id: string | null;
   equipment_used: string[];
+  /** Operator-curated labels (migration 066). */
+  tags: string[];
+  /** Multi-week series linkage (migration 069). */
+  series_id: string | null;
+  series_week: number | null;
+  series_length: number | null;
   /** Number of `sessions` rows with `program_id = id`. 0 means unused. */
   session_count: number;
   /** Most-recent `sessions.date` for this programme, or null if never used. */
@@ -85,6 +95,9 @@ export async function saveProgram(
         created_by: user.id,
         version_number: 1,
         parent_version_id: null,
+        series_id: input.seriesId ?? null,
+        series_week: input.seriesWeek ?? null,
+        series_length: input.seriesLength ?? null,
       })
       .select()
       .single();
@@ -212,6 +225,10 @@ export async function getPrograms(
           created_by_name: (profile?.name as string) ?? null,
           version_number: r.version_number as number,
           parent_version_id: r.parent_version_id as string | null,
+          tags: (r.tags as string[]) ?? [],
+          series_id: (r.series_id as string | null) ?? null,
+          series_week: (r.series_week as number | null) ?? null,
+          series_length: (r.series_length as number | null) ?? null,
           equipment_used: (r.equipment_used as string[]) ?? [],
           session_count: usage.count,
           last_used_at: usage.lastUsedAt,
@@ -412,6 +429,10 @@ export async function getProgramDetail(
       version_number: data.version_number,
       parent_version_id: data.parent_version_id,
       equipment_used: data.equipment_used ?? [],
+      tags: (data.tags as string[]) ?? [],
+      series_id: (data.series_id as string | null) ?? null,
+      series_week: (data.series_week as number | null) ?? null,
+      series_length: (data.series_length as number | null) ?? null,
       content_json: data.content_json as unknown as Record<string, unknown>,
       session_count: sessionCount,
       last_used_at: lastUsedAt,
@@ -696,6 +717,10 @@ export async function getProgramsForSport(
           created_by_name: (profile?.name as string) ?? null,
           version_number: r.version_number as number,
           parent_version_id: r.parent_version_id as string | null,
+          tags: (r.tags as string[]) ?? [],
+          series_id: (r.series_id as string | null) ?? null,
+          series_week: (r.series_week as number | null) ?? null,
+          series_length: (r.series_length as number | null) ?? null,
           equipment_used: (r.equipment_used as string[]) ?? [],
           // Session-assignment dropdown doesn't need usage stats —
           // keep them at zero/null. The library list is the only
@@ -1288,6 +1313,120 @@ export async function getLinkedCentresForProgramme(
   } catch (err) {
     console.error("getLinkedCentresForProgramme error:", err);
     return { data: [], error: "Failed to fetch linked centres." };
+  }
+}
+
+// ============================================================
+// getSeriesWeeks — sibling weeks of a multi-week series
+// ============================================================
+
+export async function getSeriesWeeks(seriesId: string): Promise<{
+  data: Array<{ id: string; series_week: number; title: string }>;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
+      .from("programs")
+      .select("id, series_week, content_json")
+      .eq("series_id", seriesId)
+      .order("series_week");
+    return {
+      data: (data ?? []).map((r) => ({
+        id: r.id as string,
+        series_week: r.series_week as number,
+        title:
+          ((r.content_json as Record<string, unknown>)?.title as string) ??
+          `Week ${r.series_week}`,
+      })),
+      error: null,
+    };
+  } catch (err) {
+    console.error("getSeriesWeeks error:", err);
+    return { data: [], error: "Failed to load series weeks." };
+  }
+}
+
+// ============================================================
+// applySeriesToSessions — walk a multi-week series across the roster
+// ============================================================
+
+export interface ApplySeriesResult {
+  weeks: Array<{
+    week: number;
+    weekOf: string;
+    updated: number;
+    matched: number;
+  }>;
+  totalUpdated: number;
+}
+
+/**
+ * Week 1 of the series lands on the week containing `startWeekOf`
+ * (snapped to Monday), week 2 the following week, and so on. Each
+ * week reuses applyProgramToSessions, so the same safety rules hold:
+ * sport must match, programme-less sessions only unless overwrite,
+ * cancelled/completed untouched.
+ */
+export async function applySeriesToSessions(input: {
+  seriesId: string;
+  startWeekOf: string;
+  centreId?: string;
+  overwrite?: boolean;
+}): Promise<{ data: ApplySeriesResult | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const { data: weeks } = await supabase
+      .from("programs")
+      .select("id, series_week")
+      .eq("series_id", input.seriesId)
+      .order("series_week");
+    if (!weeks || weeks.length === 0) {
+      return { data: null, error: "Series not found." };
+    }
+
+    const { mondayOfIso } = await import("@/lib/utils/roster");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.startWeekOf)) {
+      return { data: null, error: "Invalid start date." };
+    }
+    const startMonday = mondayOfIso(input.startWeekOf);
+
+    const result: ApplySeriesResult = { weeks: [], totalUpdated: 0 };
+    for (const w of weeks) {
+      const offsetDays = ((w.series_week as number) - 1) * 7;
+      const weekOf = new Date(
+        Date.UTC(
+          Number(startMonday.slice(0, 4)),
+          Number(startMonday.slice(5, 7)) - 1,
+          Number(startMonday.slice(8, 10)) + offsetDays
+        )
+      )
+        .toISOString()
+        .split("T")[0];
+
+      const { data: applied, error } = await applyProgramToSessions({
+        programId: w.id as string,
+        weekOf,
+        centreId: input.centreId,
+        overwrite: input.overwrite,
+      });
+      if (error) {
+        return { data: result, error: `Week ${w.series_week}: ${error}` };
+      }
+      result.weeks.push({
+        week: w.series_week as number,
+        weekOf,
+        updated: applied?.updated ?? 0,
+        matched: applied?.matched ?? 0,
+      });
+      result.totalUpdated += applied?.updated ?? 0;
+    }
+
+    return { data: result, error: null };
+  } catch (err) {
+    console.error("applySeriesToSessions error:", err);
+    return { data: null, error: "Failed to apply the series." };
   }
 }
 

@@ -602,18 +602,25 @@ function ModuleTable({
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(m.created_at)}
+                    {/* The row-overlay link lives INSIDE a cell: an <a> is
+                        not valid as a child of <tr>, so the parser hoists
+                        it out of the table and the hydrated DOM stops
+                        matching the server's HTML (React #418). This cell
+                        is statically positioned, so `inset-0` still
+                        resolves against the relative <tr> and the link
+                        covers the whole row. */}
+                    <Link
+                      href={`${basePath}/modules/${m.id}/edit`}
+                      className="absolute inset-0"
+                      aria-label={`Edit ${m.title}`}
+                      onClick={(e) => {
+                        if (selectionActive) {
+                          e.preventDefault();
+                          onToggleSelect(m.id);
+                        }
+                      }}
+                    />
                   </TableCell>
-                  <Link
-                    href={`${basePath}/modules/${m.id}/edit`}
-                    className="absolute inset-0"
-                    aria-label={`Edit ${m.title}`}
-                    onClick={(e) => {
-                      if (selectionActive) {
-                        e.preventDefault();
-                        onToggleSelect(m.id);
-                      }
-                    }}
-                  />
                 </TableRow>
               );
             })}

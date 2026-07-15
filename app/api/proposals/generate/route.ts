@@ -120,8 +120,7 @@ ${
 
     const message = await anthropic.messages.create({
       model: AI_MODEL,
-      max_tokens: 2000,
-      temperature: 0.6,
+      max_tokens: 8000,
       system:
         "You are a sales proposal writer for Build Alpha Kids, an Australian children's multi-sport program provider. Generate a professional, persuasive proposal for a prospective centre. Write in Australian English. Be warm but professional. Use data to demonstrate value. The proposal should feel personalised, not templated. Generate the following sections as JSON: { executive_summary, about_bak, service_offering, local_impact, trial_results (or null), pricing: { model, rate, details }, next_steps, testimonial_quotes: string[] }",
       messages: [

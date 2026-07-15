@@ -222,8 +222,7 @@ Sessions attended: ${attendances?.filter((a) => a.present).length ?? 0}`;
     const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
       model: AI_MODEL,
-      max_tokens: 1500,
-      temperature: 0.7,
+      max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: contextMessage }],
     });
