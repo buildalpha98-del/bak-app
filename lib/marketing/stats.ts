@@ -16,11 +16,17 @@ import type { ImpactStat } from "@/components/marketing/impact-band";
 
 /**
  * The four band stats, in display order. `plus` marks values that
- * read naturally as "and counting" ("1,200+ kids coached"); sports
- * are an exact roster, so no suffix there.
+ * read naturally as "and counting" ("1,200+ sessions delivered");
+ * sports are an exact roster, so no suffix there.
+ *
+ * `total_sessions_all_time` replaced `total_children` (owner decision,
+ * 2026-07-15): the roster table is empty by design — ops runs
+ * headcount-only — so a kids-coached count has no real source. There
+ * is deliberately NO proxy or estimated fallback: if the key is
+ * missing the band shows its em dash, which is honest.
  */
 const BAND_STATS = [
-  { key: "total_children", label: "Kids coached", plus: true },
+  { key: "total_sessions_all_time", label: "Sessions delivered", plus: true },
   { key: "centre_count", label: "Centres and schools", plus: true },
   { key: "sport_count", label: "Sports on offer", plus: false },
   { key: "sessions_this_term", label: "Sessions this term", plus: false },

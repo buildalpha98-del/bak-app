@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
 import { Hero } from "@/components/marketing/hero";
 import { SportsStrip } from "@/components/marketing/sports-strip";
 import { WhatWeDo } from "@/components/marketing/what-we-do";
@@ -8,18 +7,21 @@ import { ProgramCard } from "@/components/marketing/program-card";
 import { ImpactBand } from "@/components/marketing/impact-band";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { B2bBand } from "@/components/marketing/b2b-band";
-import { ClinicCard, ClinicsEmptyState } from "@/components/marketing/clinic-card";
+import { HolidayClinicsSection } from "@/components/marketing/holiday-clinics-section";
 import { TestimonialCard } from "@/components/marketing/testimonial-card";
-import { StickerButton } from "@/components/marketing/sticker-button";
-import { getOpenHolidayClinics } from "@/lib/marketing/clinics";
-import type { PublicClinic } from "@/lib/marketing/clinics-shared";
 import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
 import {
   getApprovedTestimonials,
   type PublicTestimonial,
 } from "@/lib/marketing/testimonials";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
-import { HOMEPAGE, PROGRAMS, SITE } from "@/lib/marketing/content";
+import {
+  HOMEPAGE,
+  HOMEPAGE_CLINICS,
+  PROGRAMS,
+  PROGRAMS_INDEX,
+  SITE,
+} from "@/lib/marketing/content";
 
 /** ISR — clinic dates/spot counts refresh within 5 minutes. */
 export const revalidate = 300;
@@ -59,8 +61,8 @@ export default function HomePage() {
 
       <Section aria-label="Our programs" className="bg-white">
         <SectionHeading
-          eyebrow="Programs"
-          title="A program for every age and stage"
+          eyebrow={PROGRAMS_INDEX.eyebrow}
+          title={PROGRAMS_INDEX.title}
           intro="From first steps on the grass to game-day tactics — five programs that grow with your kids."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -72,7 +74,13 @@ export default function HomePage() {
 
       <ImpactBandSection />
 
-      <HolidayClinicsSection />
+      <HolidayClinicsSection
+        limit={4}
+        columns={4}
+        eyebrow={HOMEPAGE_CLINICS.eyebrow}
+        title={HOMEPAGE_CLINICS.title}
+        intro={HOMEPAGE_CLINICS.intro}
+      />
 
       <HowItWorks />
 
@@ -134,44 +142,3 @@ async function TestimonialsSection() {
   );
 }
 
-/**
- * Live "next four clinics" section. The fetch failing (or returning
- * nothing) renders the friendly empty state — a DB hiccup must never
- * break the homepage, and the whole page stays ISR (revalidate 300)
- * so the hit is at most one query per 5 minutes anyway.
- */
-async function HolidayClinicsSection() {
-  const clinics = await safeFetch<PublicClinic[]>(
-    () => getOpenHolidayClinics(4),
-    []
-  );
-
-  return (
-    <Section aria-label="School holiday clinics" className="bg-white">
-      <SectionHeading
-        eyebrow="Book direct"
-        title="School holiday clinics"
-        intro="The next dates on the calendar — book and pay online in about 60 seconds. Spots are capped and the best days sell out fast."
-      />
-
-      {clinics.length === 0 ? (
-        <div className="mt-12">
-          <ClinicsEmptyState />
-        </div>
-      ) : (
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {clinics.map((clinic) => (
-            <ClinicCard key={clinic.id} clinic={clinic} />
-          ))}
-        </div>
-      )}
-
-      <div className="mt-12">
-        <StickerButton href="/holiday-clinics">
-          See all clinic dates
-          <ArrowRight className="size-5" aria-hidden="true" />
-        </StickerButton>
-      </div>
-    </Section>
-  );
-}

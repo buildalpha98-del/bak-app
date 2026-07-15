@@ -1,39 +1,25 @@
-import { ArrowRight } from "lucide-react";
-import { StickerButton } from "@/components/marketing/sticker-button";
+import { CtaBand } from "@/components/marketing/cta-band";
 import { SITE } from "@/lib/marketing/content";
 
 /**
- * B2B call-out band — near-black break in the page rhythm aimed at
- * centre directors and school sport coordinators, not parents.
- * Yellow sticker accents on dark (black-on-yellow 13.1:1; white
- * heading on #1A1A1A 17.4:1).
+ * The homepage / programs-index B2B call-out — the shared <CtaBand />
+ * carrying this page's copy. Labelled, because it renders once per
+ * page.
  */
 export function B2bBand() {
   return (
-    <section aria-label="For schools and childcare centres" className="bg-[#1A1A1A]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="max-w-2xl">
-          <p className="inline-block -rotate-1 rounded-full border-2 border-[#111] bg-[#FFD23F] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[2px_2px_0_#E8712A]">
-            Schools &amp; centres
-          </p>
-          <h2 className="mt-4 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Bring Build Alpha Kids to your school or centre
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-white/70 sm:text-lg">
-            Qualified coaches, curriculum-friendly sessions and zero extra
-            admin — trusted by schools and centres across{" "}
-            {SITE.serviceArea}.
-          </p>
-        </div>
-        <StickerButton
-          href={SITE.enquiryUrl}
-          shadow="orange"
-          className="shrink-0"
-        >
-          Enquire now
-          <ArrowRight className="size-5" aria-hidden="true" />
-        </StickerButton>
-      </div>
-    </section>
+    <CtaBand
+      label="For schools and childcare centres"
+      eyebrow="Schools & centres"
+      title="Bring Build Alpha Kids to your school or centre"
+      body={
+        <>
+          Qualified coaches, curriculum-friendly sessions and zero extra admin
+          — trusted by schools and centres across {SITE.serviceArea}.
+        </>
+      }
+      href={SITE.enquiryUrl}
+      cta="Enquire now"
+    />
   );
 }

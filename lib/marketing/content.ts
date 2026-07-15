@@ -65,7 +65,15 @@ export const SITE: SiteInfo = {
   serviceArea: "South-West Sydney",
 };
 
-/** Shown as a badge on holiday clinic cards and the booking CTA. */
+/**
+ * Shown as a badge on holiday clinic cards and the booking CTA, and
+ * as a trust point on the after-school and holiday program pages.
+ *
+ * Source: vouchers apply to BOTH after-school clinics and holiday
+ * clinics — owner-confirmed by Jayden 2026-07-15. (Only the holiday
+ * connection appears in the older site copy, so this is recorded here
+ * rather than re-litigated as an unsourced claim.)
+ */
 export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
 
 // ------------------------------------------------------------
@@ -135,6 +143,19 @@ export const HOMEPAGE = {
 // ------------------------------------------------------------
 // Programs
 // ------------------------------------------------------------
+//
+// Framework language — get this right, the two are not interchangeable:
+//
+//  - Childcare copy says EYLF (the Early Years Learning Framework,
+//    which is what Australian early-childhood settings actually run).
+//    NEVER "curriculum" on a childcare surface — that is school
+//    language. Build Alpha Kids' childcare session plans are
+//    EYLF-aligned: owner-confirmed by Jayden 2026-07-15.
+//  - School copy (primary and high) says "curriculum-aligned" /
+//    "curriculum-friendly". NEVER EYLF.
+//
+// Naming a specific framework version, syllabus code or outcome ID is
+// still off-limits in both cases.
 
 export interface Program {
   /** URL segment under /programs/[slug] (holiday-programs also links to /holiday-clinics). */
@@ -143,6 +164,12 @@ export interface Program {
   title: string;
   /** One-line hook under the title. */
   tagline: string;
+  /**
+   * Purpose-written meta description, ≤160 chars — search engines cut
+   * around 155, so this is NOT assembled from tagline + description
+   * (which overruns badly). Same no-invented-facts rules as body copy.
+   */
+  metaDescription: string;
   /** Small uppercase sticker label on the program page hero. */
   eyebrow: string;
   /** Body copy, one string per paragraph. */
@@ -179,6 +206,8 @@ export const PROGRAMS: Program[] = [
     slug: "childcare",
     title: "Childcare Programs",
     tagline: "Big energy for little athletes.",
+    metaDescription:
+      "Multi-sport coaching delivered in your childcare centre across South-West Sydney. Qualified coaches, all equipment supplied, no extra admin for educators.",
     eyebrow: "In your centre",
     accent: BALL_COLORS.green,
     description: [
@@ -207,7 +236,7 @@ export const PROGRAMS: Program[] = [
     trustPoints: [
       "Working With Children Check on every coach",
       "First-aid certified coaches at every session",
-      "Curriculum-friendly session plans that fit your centre's day",
+      "EYLF-aligned session plans that fit your centre's day",
       "All equipment supplied — no extra admin for your educators",
     ],
     heroImage: "/images/marketing/childcare-hero.jpg",
@@ -216,6 +245,8 @@ export const PROGRAMS: Program[] = [
     slug: "primary-school",
     title: "Primary School Programs",
     tagline: "Where lifelong athletes get their start.",
+    metaDescription:
+      "Multi-sport primary school programs across South-West Sydney. Curriculum-friendly sessions run on your grounds, scaled so every student gets involved.",
     eyebrow: "On your grounds",
     accent: BALL_COLORS.blue,
     description: [
@@ -253,6 +284,8 @@ export const PROGRAMS: Program[] = [
     slug: "high-school",
     title: "High School Programs",
     tagline: "Train harder. Play smarter. Level up.",
+    metaDescription:
+      "High school sport programs across South-West Sydney. Conditioning, tactics and game sense run on your grounds by qualified coaches, for Years 7 to 12.",
     eyebrow: "On your grounds",
     accent: BALL_COLORS.red,
     description: [
@@ -290,6 +323,8 @@ export const PROGRAMS: Program[] = [
     slug: "after-school",
     title: "After School Clinics",
     tagline: "The best hour of their school day — after it ends.",
+    metaDescription:
+      "After school multi-sport clinics across South-West Sydney. Capped numbers, qualified coaches and real skill progression. NSW Active Kids vouchers accepted.",
     eyebrow: "After the bell",
     accent: BALL_COLORS.yellow,
     description: [
@@ -327,6 +362,8 @@ export const PROGRAMS: Program[] = [
     slug: "holiday-programs",
     title: "Holiday Programs",
     tagline: "School's out. Game on.",
+    metaDescription:
+      "School holiday multi-sport clinics across South-West Sydney. Book and pay online in about 60 seconds. Capped numbers, NSW Active Kids vouchers accepted.",
     eyebrow: "School holidays",
     accent: BALL_COLORS.orange,
     description: [
@@ -390,13 +427,23 @@ export function adjacentPrograms(slug: string): Program[] {
 export const PROGRAM_PAGE = {
   /** The repeated primary CTA — top, middle and bottom of each page. */
   quoteCta: "Request a quote",
-  /** Parent-facing CTA — holiday programs only. */
-  clinicsCta: "See clinic dates",
+  /**
+   * The one parent-facing clinics CTA string. Used by the holiday
+   * program hero AND by the shared clinics section on both the
+   * homepage and the holiday program page — all three point at
+   * /holiday-clinics, so they say the same thing.
+   */
+  clinicsCta: "See all clinic dates",
+  /** Cross-link label for /holiday-clinics on every program page. */
+  clinicsLinkLabel: "School holiday clinics",
+  sessionShapeEyebrow: "On the ground",
   sessionShapeTitle: "What a session actually looks like",
+  outcomesEyebrow: "The payoff",
   outcomesTitle: "What kids walk away with",
   overviewTitle: "Inside the program",
   trustEyebrow: "Every coach, every session",
   trustTitle: "The bits parents and coordinators ask about first",
+  crossLinkEyebrow: "More",
   crossLinkTitle: "Keep exploring",
   quoteEyebrow: "Schools & centres",
   quoteTitle: "Want this running at your place?",
@@ -406,6 +453,18 @@ export const PROGRAM_PAGE = {
   clinicsSectionTitle: "The next clinic dates",
   clinicsSectionIntro:
     "Book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
+} as const;
+
+/**
+ * Copy for the homepage's live clinics section. Lives here beside the
+ * program page's equivalents because both feed the same shared
+ * <HolidayClinicsSection /> component.
+ */
+export const HOMEPAGE_CLINICS = {
+  eyebrow: "Book direct",
+  title: "School holiday clinics",
+  intro:
+    "The next dates on the calendar — book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
 } as const;
 
 /** Copy for the /programs index page (also its meta description). */

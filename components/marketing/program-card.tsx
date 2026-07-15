@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { type Program } from "@/lib/marketing/content";
+import type { Program } from "@/lib/marketing/content";
 
 /**
  * Sticker cards: white fill, thick black outline, hard shadow. Each

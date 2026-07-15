@@ -1,24 +1,19 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { StickerButton } from "@/components/marketing/sticker-button";
-import {
-  ClinicCard,
-  ClinicsEmptyState,
-} from "@/components/marketing/clinic-card";
-import { getOpenHolidayClinics } from "@/lib/marketing/clinics";
-import type { PublicClinic } from "@/lib/marketing/clinics-shared";
-import { safeFetch } from "@/lib/marketing/safe-fetch";
+import { HeroLite } from "@/components/marketing/hero-lite";
+import { CtaBand } from "@/components/marketing/cta-band";
+import { HolidayClinicsSection } from "@/components/marketing/holiday-clinics-section";
 import {
   adjacentPrograms,
-  BRAND,
+  BALL_COLORS,
   getProgram,
   PROGRAM_PAGE,
   PROGRAMS,
   SITE,
+  type BallColor,
   type Program,
 } from "@/lib/marketing/content";
 
@@ -48,7 +43,7 @@ export async function generateMetadata({
 
   return {
     title: `${program.title} — ${SITE.name}`,
-    description: `${program.tagline} ${program.description[0]}`,
+    description: program.metaDescription,
   };
 }
 
@@ -91,9 +86,9 @@ export default async function ProgramPage({
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {/* Description paragraphs */}
           <div className="space-y-5">
-            {program.description.map((paragraph) => (
+            {program.description.map((paragraph, i) => (
               <p
-                key={paragraph.slice(0, 40)}
+                key={i}
                 className="text-base leading-relaxed text-[#1A1A1A]/80 sm:text-lg"
               >
                 {paragraph}
@@ -134,14 +129,14 @@ export default async function ProgramPage({
       {/* What a session actually looks like */}
       <Section aria-label={PROGRAM_PAGE.sessionShapeTitle} className="bg-[#FFF7F2]">
         <SectionHeading
-          eyebrow="On the ground"
+          eyebrow={PROGRAM_PAGE.sessionShapeEyebrow}
           title={PROGRAM_PAGE.sessionShapeTitle}
         />
 
         <ol className="mt-12 grid gap-6 md:grid-cols-3">
           {program.sessionShape.map((sentence, i) => (
             <li
-              key={sentence.slice(0, 40)}
+              key={i}
               className={
                 "rounded-2xl border-2 border-[#111] bg-white p-7 shadow-[4px_4px_0_#111]" +
                 (i === 1 ? " md:rotate-1" : "")
@@ -169,11 +164,22 @@ export default async function ProgramPage({
       <QuoteBand program={program} />
 
       {/* Live clinic cards — holiday programs only */}
-      {isHolidayPrograms && <HolidayClinicsSection />}
+      {isHolidayPrograms && (
+        <HolidayClinicsSection
+          limit={6}
+          columns={3}
+          eyebrow={PROGRAM_PAGE.clinicsSectionEyebrow}
+          title={PROGRAM_PAGE.clinicsSectionTitle}
+          intro={PROGRAM_PAGE.clinicsSectionIntro}
+        />
+      )}
 
       {/* What kids walk away with */}
       <Section aria-label={PROGRAM_PAGE.outcomesTitle} className="bg-white">
-        <SectionHeading eyebrow="The payoff" title={PROGRAM_PAGE.outcomesTitle} />
+        <SectionHeading
+          eyebrow={PROGRAM_PAGE.outcomesEyebrow}
+          title={PROGRAM_PAGE.outcomesTitle}
+        />
 
         <ul className="mt-12 flex flex-wrap gap-x-5 gap-y-6">
           {program.outcomes.map((outcome) => (
@@ -207,11 +213,10 @@ function quoteHref(program: Program): string {
 }
 
 /**
- * Hero-lite: court orange, arcs, yellow sticker eyebrow, ball-row
- * breakout at the bottom edge. Deliberately no photography — the
- * program hero images are placeholders that do not exist yet, so the
- * decorative treatment carries the page (same call as /holiday-clinics).
- * Carries CTA #1.
+ * The program hero — the shared HeroLite band carrying the tagline,
+ * the ages chip in the program's accent, and CTA #1. Deliberately no
+ * photography: the program hero images are placeholders that do not
+ * exist yet, so the decorative treatment carries the page.
  */
 function ProgramHero({
   program,
@@ -221,78 +226,41 @@ function ProgramHero({
   parentFacing: boolean;
 }) {
   return (
-    <section aria-label={program.title} className="relative bg-[#E8712A]">
-      <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-        <div className="absolute -right-40 -top-56 size-[480px] rounded-full border-[3px] border-white/15" />
-        <div className="absolute -bottom-72 -left-32 size-[520px] rounded-full border-[3px] border-white/15" />
-      </div>
+    <HeroLite label={program.title} eyebrow={program.eyebrow} title={program.title}>
+      <p className="mt-5 max-w-2xl font-heading text-xl font-bold leading-snug text-[#1A1A1A] sm:text-2xl">
+        {program.tagline}
+      </p>
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pb-24 sm:pt-16 lg:px-8">
-        <p className="inline-block -rotate-2 rounded-full border-2 border-[#111] bg-[#FFD23F] px-4 py-1.5 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[3px_3px_0_#111]">
-          {program.eyebrow}
-        </p>
+      {/* Ages chip in the program's accent colour */}
+      <p
+        className="mt-6 inline-block rounded-full border-2 border-[#111] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0_#111]"
+        style={{
+          backgroundColor: program.accent.color,
+          color: program.accent.fg,
+        }}
+      >
+        {program.ages}
+      </p>
 
-        <h1 className="mt-6 font-heading text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-          {program.title}
-        </h1>
-
-        <p className="mt-5 max-w-2xl font-heading text-xl font-bold leading-snug text-[#1A1A1A] sm:text-2xl">
-          {program.tagline}
-        </p>
-
-        {/* Ages chip in the program's accent colour */}
-        <p
-          className="mt-6 inline-block rounded-full border-2 border-[#111] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0_#111]"
-          style={{
-            backgroundColor: program.accent.color,
-            color: program.accent.fg,
-          }}
-        >
-          {program.ages}
-        </p>
-
-        <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-          {parentFacing ? (
-            <>
-              <StickerButton href="/holiday-clinics">
-                {PROGRAM_PAGE.clinicsCta}
-                <ArrowRight className="size-5" aria-hidden="true" />
-              </StickerButton>
-              <StickerButton href={quoteHref(program)} fill="white">
-                {PROGRAM_PAGE.quoteCta}
-              </StickerButton>
-            </>
-          ) : (
-            <StickerButton href={quoteHref(program)}>
-              {PROGRAM_PAGE.quoteCta}
+      <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+        {parentFacing ? (
+          <>
+            <StickerButton href="/holiday-clinics">
+              {PROGRAM_PAGE.clinicsCta}
               <ArrowRight className="size-5" aria-hidden="true" />
             </StickerButton>
-          )}
-        </div>
+            <StickerButton href={quoteHref(program)} fill="white">
+              {PROGRAM_PAGE.quoteCta}
+            </StickerButton>
+          </>
+        ) : (
+          <StickerButton href={quoteHref(program)}>
+            {PROGRAM_PAGE.quoteCta}
+            <ArrowRight className="size-5" aria-hidden="true" />
+          </StickerButton>
+        )}
       </div>
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 justify-center gap-10 px-4"
-      >
-        <Image
-          src={BRAND.ballsRow}
-          alt=""
-          width={298}
-          height={96}
-          unoptimized
-          className="h-14 w-auto sm:h-16"
-        />
-        <Image
-          src={BRAND.ballsRowAlt}
-          alt=""
-          width={298}
-          height={96}
-          unoptimized
-          className="hidden h-16 w-auto md:block"
-        />
-      </div>
-    </section>
+    </HeroLite>
   );
 }
 
@@ -304,33 +272,20 @@ function ProgramHero({
  * programs page: parents get the clinics CTA in the hero and again
  * on the live clinic cards, so mixing a "See clinic dates" button
  * into a band headed "Schools & centres" would only muddle both.
+ *
+ * No aria-label: the band renders twice per page, so labelling it
+ * would put two identically-named landmarks in the a11y tree. Its
+ * <h2> already names it in the heading hierarchy.
  */
 function QuoteBand({ program }: { program: Program }) {
   return (
-    <section aria-label={PROGRAM_PAGE.quoteTitle} className="bg-[#1A1A1A]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="max-w-2xl">
-          <p className="inline-block -rotate-1 rounded-full border-2 border-[#111] bg-[#FFD23F] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[2px_2px_0_#E8712A]">
-            {PROGRAM_PAGE.quoteEyebrow}
-          </p>
-          <h2 className="mt-4 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            {PROGRAM_PAGE.quoteTitle}
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-white/70 sm:text-lg">
-            {PROGRAM_PAGE.quoteBody}
-          </p>
-        </div>
-
-        <StickerButton
-          href={quoteHref(program)}
-          shadow="orange"
-          className="shrink-0"
-        >
-          {PROGRAM_PAGE.quoteCta}
-          <ArrowRight className="size-5" aria-hidden="true" />
-        </StickerButton>
-      </div>
-    </section>
+    <CtaBand
+      eyebrow={PROGRAM_PAGE.quoteEyebrow}
+      title={PROGRAM_PAGE.quoteTitle}
+      body={PROGRAM_PAGE.quoteBody}
+      href={quoteHref(program)}
+      cta={PROGRAM_PAGE.quoteCta}
+    />
   );
 }
 
@@ -385,7 +340,10 @@ function CrossLinks({ program }: { program: Program }) {
 
   return (
     <Section aria-label={PROGRAM_PAGE.crossLinkTitle} className="bg-white">
-      <SectionHeading eyebrow="More" title={PROGRAM_PAGE.crossLinkTitle} />
+      <SectionHeading
+        eyebrow={PROGRAM_PAGE.crossLinkEyebrow}
+        title={PROGRAM_PAGE.crossLinkTitle}
+      />
 
       <ul className="mt-10 flex flex-wrap gap-x-5 gap-y-6">
         {neighbours.map((neighbour) => (
@@ -393,7 +351,7 @@ function CrossLinks({ program }: { program: Program }) {
             <CrossLink
               href={`/programs/${neighbour.slug}`}
               label={neighbour.title}
-              dot={neighbour.accent.color}
+              dot={neighbour.accent}
             />
           </li>
         ))}
@@ -401,8 +359,8 @@ function CrossLinks({ program }: { program: Program }) {
           <li>
             <CrossLink
               href="/holiday-clinics"
-              label="School holiday clinics"
-              dot="#FFD23F"
+              label={PROGRAM_PAGE.clinicsLinkLabel}
+              dot={BALL_COLORS.yellow}
             />
           </li>
         )}
@@ -411,6 +369,12 @@ function CrossLinks({ program }: { program: Program }) {
   );
 }
 
+/**
+ * A cross-link pill. Composes StickerButton rather than restyling it:
+ * the outline, hard shadow and press treatment must come from one
+ * place, so the only thing added here is the ball-colour dot, which
+ * rides along as a child.
+ */
 function CrossLink({
   href,
   label,
@@ -418,65 +382,21 @@ function CrossLink({
 }: {
   href: string;
   label: string;
-  dot: string;
+  dot: BallColor;
 }) {
   return (
-    <Link
-      href={href}
-      className="group inline-flex min-h-11 items-center gap-2.5 rounded-full border-2 border-[#111] bg-white px-5 py-2 font-heading text-sm font-bold text-[#111] shadow-[3px_3px_0_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_#111] sm:text-base"
-    >
+    <StickerButton href={href} size="sm" fill="white" className="group">
       <span
         aria-hidden="true"
         className="size-4 shrink-0 rounded-full border-2 border-[#111]"
-        style={{ backgroundColor: dot }}
+        style={{ backgroundColor: dot.color }}
       />
       {label}
       <ArrowRight
         className="size-4 transition-transform duration-200 group-hover:translate-x-1"
         aria-hidden="true"
       />
-    </Link>
+    </StickerButton>
   );
 }
 
-/**
- * Live clinic cards on the holiday programs page — the homepage
- * pattern verbatim, so a DB hiccup or an empty calendar renders the
- * friendly empty state instead of breaking the page. Refreshes with
- * the segment's ISR window (revalidate 300).
- */
-async function HolidayClinicsSection() {
-  const clinics = await safeFetch<PublicClinic[]>(
-    () => getOpenHolidayClinics(6),
-    []
-  );
-
-  return (
-    <Section aria-label={PROGRAM_PAGE.clinicsSectionTitle} className="bg-white">
-      <SectionHeading
-        eyebrow={PROGRAM_PAGE.clinicsSectionEyebrow}
-        title={PROGRAM_PAGE.clinicsSectionTitle}
-        intro={PROGRAM_PAGE.clinicsSectionIntro}
-      />
-
-      {clinics.length === 0 ? (
-        <div className="mt-12">
-          <ClinicsEmptyState />
-        </div>
-      ) : (
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {clinics.map((clinic) => (
-            <ClinicCard key={clinic.id} clinic={clinic} />
-          ))}
-        </div>
-      )}
-
-      <div className="mt-12">
-        <StickerButton href="/holiday-clinics">
-          See all clinic dates
-          <ArrowRight className="size-5" aria-hidden="true" />
-        </StickerButton>
-      </div>
-    </Section>
-  );
-}

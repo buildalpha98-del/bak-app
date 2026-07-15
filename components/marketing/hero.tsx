@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { StickerButton } from "@/components/marketing/sticker-button";
+import { BallRowBreakout } from "@/components/marketing/hero-lite";
 import { ACTIVE_KIDS_BLURB, BRAND, HOMEPAGE } from "@/lib/marketing/content";
 
 /**
@@ -8,6 +9,10 @@ import { ACTIVE_KIDS_BLURB, BRAND, HOMEPAGE } from "@/lib/marketing/content";
  * badge crest as the visual, sticker-style CTAs (thick black outline,
  * hard shadow) and the illustrated ball row breaking out of the
  * hero's bottom edge. Mobile-first: copy stacks above the crest.
+ *
+ * Deliberately NOT built on <HeroLite />: this is a two-column grid
+ * carrying the crest, a marker-underlined H1 and its own deeper
+ * padding, so it shares the BallRowBreakout and nothing else.
  *
  * Contrast rules (AA): the H1 is white (permitted — heading size is
  * far above 24px; white on #E8712A is 3.08:1, passing only at large
@@ -81,39 +86,10 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Illustrated ball row breaking out of the hero's bottom edge —
-          absolutely pinned to the edge and translated half-out, so the
-          balls straddle the orange/white boundary. The section below
-          clears the overhang with its own top padding. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 justify-center gap-10 px-4"
-      >
-        <Image
-          src={BRAND.ballsRow}
-          alt=""
-          width={298}
-          height={96}
-          unoptimized
-          className="h-16 w-auto sm:h-20 lg:h-24"
-        />
-        <Image
-          src={BRAND.ballsRowAlt}
-          alt=""
-          width={298}
-          height={96}
-          unoptimized
-          className="hidden h-20 w-auto md:block lg:h-24"
-        />
-        <Image
-          src={BRAND.ballsRow}
-          alt=""
-          width={298}
-          height={96}
-          unoptimized
-          className="hidden h-24 w-auto xl:block"
-        />
-      </div>
+      {/* Illustrated ball row breaking out of the hero's bottom edge.
+          The taller three-strip variant — this hero is the only band
+          with the height to carry it. */}
+      <BallRowBreakout size="lg" />
     </section>
   );
 }
