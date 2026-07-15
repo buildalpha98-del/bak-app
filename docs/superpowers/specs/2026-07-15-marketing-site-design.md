@@ -97,8 +97,9 @@ policy changes needed. Schema changes are limited to two new tables:
 
 ### Clinic cards
 - Query: `bookable_sessions` where `status = 'open'`, `session_type = 'holiday_clinic'`,
-  and `date >= today`, ordered by date. Homepage shows the next N; the
-  `/holiday-clinics` page shows all with filters (suburb, sport, week). Other
+  and `date >= today`, plus the booking window when set (`booking_opens_at` ≤ now,
+  `booking_closes_at` > now, both nullable), ordered by date. Homepage shows the
+  next N; the `/holiday-clinics` page shows all with filters (suburb, sport, week). Other
   session types (`after_school`, `weekend`, `specialist`) remain bookable inside
   the parent portal and are out of scope for public listing.
 - Card fields: title, sport, date, start/end time, location name + suburb,
@@ -135,7 +136,13 @@ policy changes needed. Schema changes are limited to two new tables:
   detail in `notes`; programs of interest → appended to `notes`; the originating
   program page → `source_detail`.
 - Additions to the route: honeypot short-circuit, branded auto-acknowledgement
-  email to the enquirer (Resend), dedupe by email+day.
+  email to the enquirer (Resend), dedupe by email+day, and **accept requests from
+  the app's own origin** (same-origin and the active deployment URL) alongside the
+  existing WP allowlist — without this, the form 403s during pre-cutover QA on
+  the vercel.app domain, since the route currently rejects any non-WP `Origin`.
+- One deliberate behaviour change: the route currently coerces every non-school
+  org type to `childcare_centre`; it changes to map "other" → `type = NULL` with
+  the detail in `notes` (covered by tests).
 - Failure shows a retry state with the phone number as fallback.
 - "Request a quote" CTAs repeat down each program page (Zing pattern), all → `/enquire`
   with the program pre-selected via query param.
@@ -154,10 +161,11 @@ policy changes needed. Schema changes are limited to two new tables:
 
 ### Book now
 - Clinic CTAs link to `/parent/book/[sessionId]`. Builds on the **existing
-  validated `next` param in `app/auth/callback/route.ts`** (`safeNext()`):
-  `parent-login` accepts `next`, passes it through `signInWithOtp`'s
-  `emailRedirectTo`, and the callback already handles the rest. No parallel
-  redirect mechanism.
+  validated `next` param in `app/auth/callback/route.ts`** (`safeNext()`), which
+  already handles the callback side. New work on the login side: `parent-login`
+  reads a `next` search param and `sendParentMagicLink` (currently hardcoding
+  `getAuthCallbackUrl("/parent-login")`) passes it through `signInWithOtp`'s
+  `emailRedirectTo`. No parallel redirect mechanism.
 
 ## Visual system — "bold and energetic" (approved direction)
 
