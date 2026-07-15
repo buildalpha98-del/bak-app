@@ -235,6 +235,32 @@ How-it-works (4 steps): Sign in with just your email (magic link — no password
 - [ ] Run full suite: middleware still green (`npx vitest run`).
 - [ ] Commit `feat(marketing): homepage shell replaces root login redirect`
 
+### Task 1.5: Brand revamp — "court orange, loud" (added 2026-07-15 after Jayden's review)
+
+**Jayden's feedback on the Chunk-1 site:** UI "boring / looks very AI based"; copy missing "the actual sports, what we do, our impact"; priority is "the layout and what's on the homepage" (deep copy pass deferred).
+
+**Approved direction:** Court orange (loud) — keep the orange hero but layer the REAL brand: badge crest logo, illustrated ball-row artwork, yellow accents, thick black outlines, hard "sticker" shadows.
+
+**Assets (already in repo at `public/images/brand/`):** `logo.svg` (278KB optimised crest; also `logo.png`), `balls-row.svg` + `balls-row-alt.svg` (the t-shirt ball illustrations, ~96KB each). Brand palette from the logo: orange `#E8712A`, yellow `#FFD23F` (banner outline), black `#111`, ball colours green `#7BC043`, red `#D8342C`, blue `#2D6FB5`. AA convention still applies (black text on orange/yellow fills; `#993C1D` for small orange-ish text on light).
+
+**Files:**
+- Modify: `components/marketing/{nav,footer,hero,program-card,how-it-works,b2b-band,section}.tsx`, `app/(marketing)/page.tsx`, `lib/marketing/content.ts`
+- Create: `components/marketing/sports-strip.tsx`, `components/marketing/what-we-do.tsx`
+
+**Changes:**
+1. **Nav + footer**: real `logo.png`/`logo.svg` replaces the text wordmark (height ~48px nav, ~72px footer; keep alt text "Build Alpha Kids"). "Book now" CTA becomes sticker-style: `bg-[#FFD23F] text-[#111] border-2 border-[#111]` with hard shadow (`shadow-[3px_3px_0_#111]`), hover translates 1px.
+2. **Hero (court orange, loud)**: keep orange full-bleed + approved H1/sub, but: yellow sticker eyebrow badge (rotated ~-2°), H1 stays white with black marker underline, CTAs become sticker-style (primary yellow, secondary white outline→white bg black border), and the decorative geometric panel is REPLACED by the badge crest logo large + the `balls-row.svg` strip breaking out of the hero's bottom edge. Subtle court-line white arcs in the background (CSS/SVG, low opacity).
+3. **NEW sports strip** (directly under hero): "One club. Six sports." — the six sports NAMED (Soccer, Basketball, Cricket, Tennis, Volleyball, Rugby) as sticker chips with ball-colour dots/segments of the balls-row art. Add `SPORTS` array to `lib/marketing/content.ts` (name + brand colour each).
+4. **NEW what-we-do section** (replaces the bare programs-grid heading): three concrete pillars — "In childcare centres" / "In schools" / "Holiday clinics" — each 2-3 sentences of concrete copy (what a session looks like, who runs it, how parents/coordinators engage), each linking to the relevant program page or /holiday-clinics. The 5-card programs grid stays below but restyled with black outlines + sticker shadows and the ball-colour palette instead of the orange-only ramp.
+5. **Impact placeholder**: dark band retitled "Our impact" with 3 static sticker-style stat placeholders labelled clearly (real numbers arrive with Task 2.3's live stats — keep the same component API so 2.3 swaps data in, not markup).
+6. **How-it-works + B2B band**: restyle to match (sticker numbers, yellow accents on dark).
+7. Fold in Task 1.4 review minors: delete `program-card.tsx` dead `deepCard` branch; soften `content.ts` header comment ("shared/reused copy and constants"); correct hero.tsx stale 5.8:1 comment to 5.66:1.
+8. Homepage order becomes: hero → sports strip → what we do → programs grid → [stats live] → [clinics live] → how-it-works → [testimonials live] → B2B → [blog] → [newsletter] → footer. Keep all Chunk 2/4/5 insertion comments intact.
+
+Verification: `npm run build` (/ static), `npx vitest run` (903), `npx tsc --noEmit`, dev-server screenshot check desktop + mobile, AA contrast check on all new pairings. Commit `feat(marketing): court-orange brand revamp — real logo, ball art, sports strip, what-we-do`.
+
+Later UI tasks (2.2 cards, 2.3 stats/testimonials, 3.x pages, 4.x forms) MUST follow this design language: sticker outlines/shadows, brand palette, ball-art accents.
+
 ## Chunk 2: Live data — clinics, stats, testimonials, book-now redirect
 
 ### Task 2.1: Clinic query helper (pure logic first)
@@ -306,7 +332,7 @@ const PUBLIC_COLUMNS =
 
 export async function getOpenHolidayClinics(limit?: number): Promise<PublicClinic[]> {
   const supabase = createSupabaseAdmin();
-  const today = new Date().toISOString().slice(0, 10); // Sydney nuance acceptable at ISR granularity
+  const today = sydneyTodayIso(); // from @/lib/utils/sydney-time — NEVER new Date().toISOString().slice(0,10): UTC is yesterday's Sydney date until ~10-11am AEST daily
   let query = supabase
     .from("bookable_sessions")
     .select(PUBLIC_COLUMNS)
@@ -506,7 +532,7 @@ CREATE TRIGGER blog_posts_updated_at
   BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ```
 
-`lib/marketing/blog.ts`: `getPublishedPosts(limit?)` (status published, `published_at <= now`, desc) and `getPostBySlug(slug)` (returns null unless published) via admin client. Tests mock the client; assert draft filtered, slug miss → null.
+`lib/marketing/blog.ts`: `getPublishedPosts(limit?)` (status published, `published_at <= now`, desc) and `getPostBySlug(slug)` (returns null unless published) via admin client. (`published_at` is a timestamptz compared against the current instant — plain `new Date().toISOString()` is CORRECT here; the Sydney-day rule only applies to DATE-column comparisons like clinics/leads.) Tests mock the client; assert draft filtered, slug miss → null.
 
 - [ ] TDD cycle; commit `feat(blog): blog_posts table and public query lib`.
 
