@@ -58,6 +58,26 @@ export async function findUserEmail(
   return (data?.email as string) ?? null;
 }
 
+/**
+ * First active staff member who is DENIED financial access — the shape
+ * of Abdul's account (role=admin, financial_access=false). Looked up at
+ * runtime rather than hardcoded, so the suite survives someone's flag
+ * being flipped or the account being renamed.
+ */
+export async function findUserWithoutFinancialAccess(): Promise<string | null> {
+  const { data } = await adminClient()
+    .from("profiles")
+    .select("email")
+    .in("role", ["admin", "ops"])
+    .eq("status", "active")
+    .eq("financial_access", false)
+    .not("email", "is", null)
+    .order("created_at")
+    .limit(1)
+    .maybeSingle();
+  return (data?.email as string) ?? null;
+}
+
 /** A client-portal director plus the centre they belong to. */
 export async function findClientUser(): Promise<{
   email: string;

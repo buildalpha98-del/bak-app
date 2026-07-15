@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { signInAs, findUserEmail, findClientUser } from "./fixtures/auth";
+import {
+  signInAs,
+  findUserEmail,
+  findClientUser,
+  findUserWithoutFinancialAccess,
+} from "./fixtures/auth";
 import { mondayOfIso, formatDayHeaderShort, getWeekDates } from "../lib/utils/roster";
 import { sydneyTodayIso } from "../lib/utils/sydney-time";
 
@@ -35,6 +40,41 @@ test.describe("auth", () => {
     await page.goto("/admin/roster");
     await expect(page).toHaveURL(/\/login/);
   });
+});
+
+test.describe("financial gate", () => {
+  // Regression: the gate worked — a denied user was correctly bounced to
+  // /admin — but the landing then threw React #310, every time, for the
+  // one person who hits it daily. The cause was an RSC redirect thrown
+  // from the section layout: Next's own AppRouter renders a different
+  // number of hooks when one lands mid-navigation. The gate now runs in
+  // middleware so the browser gets an ordinary 307 instead.
+  //
+  // Asserts BOTH halves, because either alone is misleading: no error
+  // but no redirect would mean payroll is readable; a redirect that
+  // crashes on arrival is what we just fixed.
+  for (const path of ["/admin/payroll", "/admin/invoicing", "/admin/analytics"]) {
+    test(`${path} denies without a client-side crash`, async ({ page, baseURL }) => {
+      test.slow();
+      const email = await findUserWithoutFinancialAccess();
+      test.skip(!email, "No active staff user with financial_access=false.");
+
+      await signInAs(page, email!, baseURL!);
+      const errors: string[] = [];
+      page.on("pageerror", (e) => errors.push(e.message.split(";")[0]));
+
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
+
+      expect(new URL(page.url()).pathname, "denied user must not stay on a financial page").toBe(
+        "/admin"
+      );
+      expect(
+        errors.filter((e) => e.includes("#310")),
+        "React #310 on the denied landing"
+      ).toEqual([]);
+    });
+  }
 });
 
 test.describe("admin", () => {
