@@ -1,43 +1,21 @@
+// ============================================================
+// Public clinic query layer — SERVER ONLY
+// ============================================================
+//
+// Uses the service-role Supabase client, so never import this from
+// a "use client" component. The pure helpers (availability, booking
+// window, display formatting) live in ./clinics-shared and are
+// re-exported here so server callers keep a single import.
+
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
+import { clinicIsListable, type PublicClinic } from "./clinics-shared";
 
-export type PublicClinic = {
-  id: string;
-  title: string;
-  sport: string | null;
-  date: string;
-  start_time: string;
-  end_time: string;
-  location_name: string | null;
-  suburb: string;
-  age_group_min: number | null;
-  age_group_max: number | null;
-  price_cents: number;
-  max_capacity: number;
-  current_bookings: number;
-  booking_opens_at: string | null;
-  booking_closes_at: string | null;
-};
-
-export function clinicAvailability(
-  c: Pick<PublicClinic, "max_capacity" | "current_bookings">
-) {
-  const spotsLeft = Math.max(0, c.max_capacity - c.current_bookings);
-  return {
-    spotsLeft,
-    soldOut: spotsLeft === 0,
-    lowSpots: spotsLeft > 0 && spotsLeft <= 5,
-  };
-}
-
-export function clinicIsListable(
-  c: Pick<PublicClinic, "booking_opens_at" | "booking_closes_at">,
-  now: Date
-): boolean {
-  if (c.booking_opens_at && new Date(c.booking_opens_at) > now) return false;
-  if (c.booking_closes_at && new Date(c.booking_closes_at) <= now) return false;
-  return true;
-}
+export {
+  clinicAvailability,
+  clinicIsListable,
+} from "./clinics-shared";
+export type { PublicClinic } from "./clinics-shared";
 
 const PUBLIC_COLUMNS =
   "id, title, sport, date, start_time, end_time, location_name, suburb, age_group_min, age_group_max, price_cents, max_capacity, current_bookings, booking_opens_at, booking_closes_at";
