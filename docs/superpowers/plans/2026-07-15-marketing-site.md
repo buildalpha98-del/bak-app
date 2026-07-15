@@ -596,6 +596,8 @@ Sitemap: static marketing routes + published blog slugs (via `getPublishedPosts`
 
 ### Task 6.4: Manual QA checklist (cutover gate — human involved)
 
+**Launch risk to verify FIRST (found 2026-07-15):** the `SUPABASE_SERVICE_ROLE_KEY` in the local `.env.production.local` is rejected by Supabase ("Invalid API key") — it appears rotated/stale. Every public live section (clinics, stats, testimonials) reads via `createSupabaseAdmin()` with that key and **degrades silently to an empty state** if it's invalid — the page still renders, so a casual look won't catch it. Before/at cutover, confirm the key in the **Vercel production env** is current by loading the preview URL and checking that clinic cards and stat numbers actually appear (not em-dashes/empty states). The local file being stale proves nothing about Vercel — but it's the same class of failure and must be positively verified, not assumed.
+
 Run on the Vercel preview URL with Jayden:
 
 - [ ] Home → clinic card "Book now" → parent-login (with `next`) → magic link email → lands on `/parent/book/[id]` → Square sandbox payment completes
