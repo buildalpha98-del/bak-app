@@ -25,6 +25,7 @@ import {
 export interface SessionWithRelations extends Session {
   centre_name: string;
   centre_type: CentreType;
+  centre_address: string | null;
   coach_name: string | null;
   coach_phone: string | null;
   term_name: string;
@@ -109,7 +110,7 @@ export async function getSessionsForWeek(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
+        "*, centres:centre_id(name, type, address), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -149,6 +150,9 @@ export async function getSessionsForWeek(
       centre_type:
         (s.centres as unknown as { type: CentreType } | null)?.type ??
         "childcare_centre",
+      centre_address:
+        (s.centres as unknown as { address: string | null } | null)?.address ??
+        null,
       coach_name:
         (s.profiles as unknown as { name: string } | null)?.name ?? null,
       coach_phone:
@@ -197,7 +201,7 @@ export async function getSessionDetail(
     const { data: s, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
+        "*, centres:centre_id(name, type, address), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .eq("id", id)
       .single();
@@ -235,6 +239,9 @@ export async function getSessionDetail(
       centre_type:
         (s.centres as unknown as { type: CentreType } | null)?.type ??
         "childcare_centre",
+      centre_address:
+        (s.centres as unknown as { address: string | null } | null)?.address ??
+        null,
       coach_name:
         (s.profiles as unknown as { name: string } | null)?.name ?? null,
       coach_phone:

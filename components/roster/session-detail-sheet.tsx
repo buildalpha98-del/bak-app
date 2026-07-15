@@ -375,12 +375,25 @@ export function SessionDetailSheet({
       <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <div className="flex items-start justify-between pr-8">
-            <div>
+            <div className="min-w-0">
               <SheetTitle>{session.centre_name}</SheetTitle>
               <SheetDescription>
                 {formatDateShort(session.date)} ·{" "}
                 {formatTime12(session.time.slice(0, 5))}
               </SheetDescription>
+              {session.centre_address && (
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(
+                    session.centre_address
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary hover:underline"
+                >
+                  <MapPin className="size-3.5 shrink-0" />
+                  <span className="truncate">{session.centre_address}</span>
+                </a>
+              )}
             </div>
             <SessionStatusBadge status={session.status} />
           </div>
