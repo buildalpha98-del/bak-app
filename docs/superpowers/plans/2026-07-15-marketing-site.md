@@ -597,6 +597,8 @@ Sitemap: static marketing routes + published blog slugs (via `getPublishedPosts`
 
 ### Task 6.4: Manual QA checklist (cutover gate — human involved)
 
+**BRANCH DEPENDENCY (found 2026-07-15): this branch now needs `fix/public-stats-cache-zeros` merged.** The impact band's "Sessions delivered" reads `total_sessions_all_time`. On `main`, the refresh-stats cron (`0 5 * * *`, daily 05:00 — `vercel.json`) still filters sessions on `status = 'completed'`, which matches zero rows because ops never sets that status, so it writes 0. The live cache currently holds 11 ONLY because the corrected refresh was run manually on 2026-07-15 — **the next unmerged cron run overwrites it back to 0** and the stat silently degrades to an em-dash. Merge `fix/public-stats-cache-zeros` (commit `68a235a`) before or with this branch. Same applies to `sessions_this_term`.
+
 **Launch risk to verify FIRST (found 2026-07-15):** the `SUPABASE_SERVICE_ROLE_KEY` in the local `.env.production.local` is rejected by Supabase ("Invalid API key") — it appears rotated/stale. Every public live section (clinics, stats, testimonials) reads via `createSupabaseAdmin()` with that key and **degrades silently to an empty state** if it's invalid — the page still renders, so a casual look won't catch it. Before/at cutover, confirm the key in the **Vercel production env** is current by loading the preview URL and checking that clinic cards and stat numbers actually appear (not em-dashes/empty states). The local file being stale proves nothing about Vercel — but it's the same class of failure and must be positively verified, not assumed.
 
 Run on the Vercel preview URL with Jayden:
