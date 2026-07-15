@@ -376,6 +376,7 @@ Stats: server fetch from `public_stats_cache` (same admin-client pattern). Actua
 
 **Owner-confirmed facts (2026-07-15)** — sourced by Jayden directly, not from repo copy; treat as authoritative:
 - NSW Active Kids vouchers apply to **both after-school clinics and holiday clinics** (so the Active Kids badge/mention is correct on both program pages, not just holiday).
+- **Childcare sessions are EYLF-aligned.** Australian childcare runs the Early Years Learning Framework, not a "curriculum" — childcare copy must say EYLF (not "curriculum-friendly", which is school-only language). Jayden confirmed the EYLF claim is accurate for Build Alpha Kids' childcare session plans; it was flagged to him as a strong claim that centre directors may ask him to substantiate, and he affirmed it. Schools copy keeps "curriculum-aligned"/"curriculum-friendly" — do NOT say EYLF for school programs, or curriculum for childcare.
 
 - [ ] Build + verify + full suite. Commit `feat(marketing): live stats bar and testimonials`.
 
