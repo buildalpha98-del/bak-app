@@ -14,13 +14,17 @@ const VISIBILITY_THRESHOLD = 0.4;
  * suffix ("+") attached throughout.
  *
  * Server markup (and therefore no-JS visitors and crawlers) carries
- * the final value; the count-up only rewinds to zero once the
- * IntersectionObserver actually reports the element off-screen — if
- * observer callbacks never arrive (hidden/background tab), the final
- * value simply stays put. `prefers-reduced-motion` and non-numeric
- * values ("—") render the final text immediately. The animated span
- * is aria-hidden with the real value alongside for screen readers,
- * so the rapid text churn is never announced.
+ * the final value, and it stays rendered until the moment the
+ * IntersectionObserver reports the element in view — no rewind to
+ * zero beforehand, so there is never a "0" flash for partially
+ * visible or restored-scroll elements, and if observer callbacks
+ * never arrive (hidden/background tab) the final value simply stays
+ * put. The animation's first frame starts at 0 anyway, and the
+ * observer disconnects on first trigger so scrolling away and back
+ * never restarts it. `prefers-reduced-motion` and non-numeric values
+ * ("—") render the final text immediately. The animated span is
+ * aria-hidden with the real value alongside for screen readers, so
+ * the rapid text churn is never announced.
  */
 export function CountUp({ value }: { value: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -54,11 +58,8 @@ export function CountUp({ value }: { value: string }) {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          observer.disconnect();
+          observer.disconnect(); // run once — never restarts on re-entry
           run();
-        } else {
-          // Off-screen and observed: safe to rewind, ready to count.
-          setText(format(0));
         }
       },
       { threshold: VISIBILITY_THRESHOLD }

@@ -18,7 +18,7 @@ import {
   getApprovedTestimonials,
   type PublicTestimonial,
 } from "@/lib/marketing/testimonials";
-import type { ImpactStat } from "@/components/marketing/impact-band";
+import { safeFetch } from "@/lib/marketing/safe-fetch";
 import { HOMEPAGE, PROGRAMS, SITE } from "@/lib/marketing/content";
 
 /** ISR — clinic dates/spot counts refresh within 5 minutes. */
@@ -94,12 +94,7 @@ export default function HomePage() {
  * renders. Refreshes with the page's ISR window (revalidate 300).
  */
 async function ImpactBandSection() {
-  let stats: ImpactStat[];
-  try {
-    stats = await getImpactStats();
-  } catch {
-    stats = IMPACT_FALLBACK;
-  }
+  const stats = await safeFetch(getImpactStats, IMPACT_FALLBACK);
 
   return <ImpactBand stats={stats} />;
 }
@@ -111,12 +106,10 @@ async function ImpactBandSection() {
  * band, exactly as it did before this section existed.
  */
 async function TestimonialsSection() {
-  let testimonials: PublicTestimonial[] = [];
-  try {
-    testimonials = await getApprovedTestimonials(4);
-  } catch {
-    testimonials = [];
-  }
+  const testimonials = await safeFetch<PublicTestimonial[]>(
+    () => getApprovedTestimonials(4),
+    []
+  );
 
   if (testimonials.length === 0) return null;
 
@@ -148,12 +141,10 @@ async function TestimonialsSection() {
  * so the hit is at most one query per 5 minutes anyway.
  */
 async function HolidayClinicsSection() {
-  let clinics: PublicClinic[] = [];
-  try {
-    clinics = await getOpenHolidayClinics(4);
-  } catch {
-    clinics = [];
-  }
+  const clinics = await safeFetch<PublicClinic[]>(
+    () => getOpenHolidayClinics(4),
+    []
+  );
 
   return (
     <Section aria-label="School holiday clinics" className="bg-white">

@@ -1,5 +1,5 @@
 // ============================================================
-// Public impact stats — SERVER ONLY (except formatStatValue)
+// Public impact stats — SERVER ONLY
 // ============================================================
 //
 // Reads the pre-calculated public_stats_cache rows (same source as
@@ -38,6 +38,9 @@ export const IMPACT_FALLBACK: ImpactStat[] = BAND_STATS.map(({ label }) => ({
  * tolerates numeric strings, and returns null for anything that
  * would look broken on the band (zero, negatives, junk) so callers
  * can fall back to the placeholder.
+ *
+ * Integer counts only (values are rounded) — do not reuse for
+ * average_rating without a decimal-aware variant.
  */
 export function formatStatValue(
   raw: unknown,

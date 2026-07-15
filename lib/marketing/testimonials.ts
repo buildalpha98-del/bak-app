@@ -2,11 +2,14 @@
 // Public testimonials — SERVER ONLY
 // ============================================================
 //
-// Mirrors app/api/public/testimonials/route.ts: approved rows only,
-// public-safe columns only, most recent first. Uses the
-// service-role client, so never import this from a "use client"
-// component. Throws on query failure — the homepage wraps the call
-// in try/catch and renders nothing rather than breaking.
+// Same source and public-safe columns as
+// app/api/public/testimonials/route.ts (approved rows only), but a
+// different shape: the route shuffles randomly and caps at 20; this
+// returns newest first (created_at desc) capped at `limit`
+// (default 4). Uses the service-role client, so never import this
+// from a "use client" component. Throws on query failure — the
+// homepage guards the call with safeFetch and renders nothing
+// rather than breaking.
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
