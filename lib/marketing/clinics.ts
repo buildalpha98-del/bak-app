@@ -1,4 +1,5 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 export type PublicClinic = {
   id: string;
@@ -43,7 +44,7 @@ const PUBLIC_COLUMNS =
 
 export async function getOpenHolidayClinics(limit?: number): Promise<PublicClinic[]> {
   const supabase = createSupabaseAdmin();
-  const today = new Date().toISOString().slice(0, 10); // Sydney nuance acceptable at ISR granularity
+  const today = sydneyTodayIso();
   let query = supabase
     .from("bookable_sessions")
     .select(PUBLIC_COLUMNS)

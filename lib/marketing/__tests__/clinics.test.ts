@@ -21,4 +21,8 @@ describe("clinicIsListable (booking window)", () => {
     expect(clinicIsListable({ booking_opens_at: "2026-08-01T00:00:00Z", booking_closes_at: null }, now)).toBe(false));
   it("excludes after closes_at", () =>
     expect(clinicIsListable({ booking_opens_at: null, booking_closes_at: "2026-07-01T00:00:00Z" }, now)).toBe(false));
+  it("listable exactly at opens_at", () =>
+    expect(clinicIsListable({ booking_opens_at: "2026-07-15T02:00:00Z", booking_closes_at: null }, now)).toBe(true));
+  it("not listable exactly at closes_at", () =>
+    expect(clinicIsListable({ booking_opens_at: null, booking_closes_at: "2026-07-15T02:00:00Z" }, now)).toBe(false));
 });
