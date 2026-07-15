@@ -177,7 +177,7 @@ export async function generateProgram(
 
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
-    max_tokens: 2000,
+    max_tokens: 8000,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -186,6 +186,15 @@ export async function generateProgram(
       },
     ],
   });
+
+  // A truncated response is the most likely failure for a big
+  // multi-age plan, and it surfaces as an inscrutable JSON parse
+  // error three frames later. Name it here instead.
+  if (message.stop_reason === "max_tokens") {
+    throw new Error(
+      "The programme was cut off before it finished generating (hit the output limit). Try fewer age bands or a shorter duration."
+    );
+  }
 
   const textBlock = message.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {

@@ -52,8 +52,30 @@ const WEEKS = 8;
 const AGE_GROUPS = ["3-5", "5-8", "8-12"];
 const DURATION_MINUTES = 45;
 const CONCURRENT_SPORTS = 3;
-// Jayden's admin profile — programmes need a real created_by.
-const CREATED_BY = process.env.SEED_CREATED_BY ?? "a2bfaba4-16c9-42bf-9e61-463e1ad1f05e";
+
+// Resolved at runtime — programs.created_by is a FK onto profiles(id),
+// which is NOT the same id as auth.users(id). Hardcoding a UUID from
+// the auth logs fails the constraint; look up a real admin instead.
+let CREATED_BY = "";
+
+async function resolveCreatedBy(): Promise<string> {
+  if (process.env.SEED_CREATED_BY) return process.env.SEED_CREATED_BY;
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, name")
+    .eq("role", "admin")
+    .eq("status", "active")
+    .order("created_at")
+    .limit(1)
+    .maybeSingle();
+  if (!data) {
+    throw new Error(
+      "No active admin profile found to own the seeded programmes. Set SEED_CREATED_BY to a profiles.id."
+    );
+  }
+  console.log(`Seeded programmes will be owned by: ${data.name}`);
+  return data.id as string;
+}
 
 function weekTitle(raw: string, week: number): string {
   return /week\s*\d/i.test(raw) ? raw : `${raw} — Week ${week} of ${WEEKS}`;
@@ -143,6 +165,7 @@ async function seedSport(sport: string): Promise<void> {
 }
 
 async function main() {
+  CREATED_BY = await resolveCreatedBy();
   console.log(`Seeding ${WEEKS}-week series for ${SPORTS.length} sports…`);
   const queue = [...SPORTS];
   const failures: string[] = [];

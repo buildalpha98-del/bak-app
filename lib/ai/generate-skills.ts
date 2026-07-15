@@ -84,7 +84,7 @@ export async function generateSkills(
 
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
-    max_tokens: 1500,
+    max_tokens: 4000,
     system: SYSTEM_PROMPT,
     messages: [
       {
