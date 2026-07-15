@@ -1,0 +1,575 @@
+# Public Marketing Site Implementation Plan
+
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the WordPress buildalphakids.com.au with a public marketing site served by bak-app itself, flowing parents into the existing booking funnel and schools into the existing CRM.
+
+**Architecture:** New `app/(marketing)/` route group (homepage + 10 public pages) with its own layout. Public data (clinics, stats, testimonials, blog) is read server-side via `createSupabaseAdmin()` selecting public-safe columns, rendered static/ISR. Two new tables (`blog_posts`, `newsletter_subscribers`); everything else reuses shipped infrastructure (enquiry route, auth callback `next` param, parent booking flow).
+
+**Tech Stack:** Next.js 14 App Router, Tailwind v4 (`--brand-orange: #E8712A`, orange `--primary` already tokenised), shadcn/ui, Supabase, Resend, Vitest.
+
+**Spec:** `docs/superpowers/specs/2026-07-15-marketing-site-design.md` — read it before starting. Design direction: **bold and energetic** (orange-dominant heroes, oversized Bricolage Grotesque headings, cream `#FFF7F2` tints, near-black `#1A1A1A` bands, subtle skews).
+
+**Conventions (from repo + user standards):**
+- Australian English in all copy. Brand name is always "Build Alpha Kids", never abbreviated.
+- Tests colocated in `__tests__/` dirs, Vitest, factory helpers in `tests/factories.ts`.
+- Never write `sessions.coach_id` directly (CI guard) — not relevant here but do not touch roster code.
+- Commit after every green test cycle. Run `npx vitest run <file>` for the file under test, full `npx vitest run` before each commit.
+
+---
+
+## File Structure (whole project)
+
+```
+app/(marketing)/
+  layout.tsx                     — marketing chrome (nav + footer), metadata defaults
+  page.tsx                       — homepage
+  programs/page.tsx              — programs index
+  programs/[slug]/page.tsx       — 5 program pages (static content map)
+  holiday-clinics/page.tsx       — live clinic listing + filters
+  about/page.tsx
+  blog/page.tsx                  — published posts index
+  blog/[slug]/page.tsx           — post page
+  enquire/page.tsx               — B2B enquiry form
+  contact/page.tsx
+components/marketing/
+  nav.tsx                        — client component (auth-aware CTA swap)
+  footer.tsx
+  hero.tsx                       — homepage hero
+  section.tsx                    — shared section primitives (Section, SectionHeading, SkewCard)
+  stats-bar.tsx                  — count-up stats (client)
+  program-card.tsx
+  clinic-card.tsx
+  testimonial-card.tsx
+  how-it-works.tsx
+  b2b-band.tsx
+  blog-teasers.tsx
+  newsletter-form.tsx            — client form → server action
+  enquiry-form.tsx               — client form → POST /api/crm/enquiry
+lib/marketing/
+  clinics.ts                     — getOpenHolidayClinics() + pure availability logic
+  content.ts                     — program page content map, site constants (phone, email, socials)
+  blog.ts                        — getPublishedPosts(), getPostBySlug()
+  newsletter.ts                  — subscribeToNewsletter server action
+  jsonld.ts                      — LocalBusiness / Event / Article builders
+  __tests__/clinics.test.ts
+  __tests__/newsletter.test.ts
+  __tests__/blog.test.ts
+app/api/crm/enquiry/route.ts     — MODIFY: self-origin CORS, honeypot, auto-ack, dedupe, "other" type
+app/api/crm/enquiry/__tests__/route.test.ts
+lib/parent/actions.ts            — MODIFY: sendParentMagicLink(email, next?)
+app/(auth)/parent-login/page.tsx — MODIFY: read ?next=, pass through
+app/(dashboard)/admin/marketing/blog/page.tsx        — blog admin list
+app/(dashboard)/admin/marketing/blog/[id]/page.tsx   — blog editor
+lib/blog/admin-actions.ts        — create/update/publish actions (admin)
+supabase/migrations/069_blog_posts.sql
+supabase/migrations/070_newsletter_subscribers.sql
+scripts/import-wp-posts.mjs      — one-off WP content import
+middleware.ts                    — MODIFY: PUBLIC_ROUTES additions
+app/page.tsx                     — DELETE (replaced by (marketing)/page.tsx)
+app/sitemap.ts, app/robots.ts    — SEO
+next.config.ts                   — MODIFY: WP 301 redirects
+middleware __tests__: lib/marketing/__tests__/public-routes.test.ts (pure matcher extraction)
+```
+
+---
+
+## Chunk 1: Foundation — route group, middleware, chrome, homepage shell
+
+### Task 1.1: Middleware public routes
+
+**Files:**
+- Modify: `middleware.ts:5-16` (PUBLIC_ROUTES)
+- Create: `lib/marketing/public-routes.ts` (extract list + matcher so it's unit-testable)
+- Test: `lib/marketing/__tests__/public-routes.test.ts`
+
+The middleware matches `pathname === route || pathname.startsWith(route + "/")`. Note `"/"` therefore matches ONLY the homepage exactly (`"/" + "/"` = `"//"` never matches) — this is the behaviour we want.
+
+- [ ] **Step 1: Write the failing test**
+
+```ts
+// lib/marketing/__tests__/public-routes.test.ts
+import { describe, it, expect } from "vitest";
+import { isPublicRoute } from "../public-routes";
+
+describe("isPublicRoute", () => {
+  it.each([
+    "/", "/programs", "/programs/childcare", "/holiday-clinics",
+    "/about", "/blog", "/blog/some-post", "/enquire", "/contact",
+    "/login", "/parent-login", "/refer/abc",
+  ])("allows %s", (p) => expect(isPublicRoute(p)).toBe(true));
+
+  it.each([
+    "/admin", "/parent", "/parent/book", "/ops", "/coach",
+    "/client/some-centre", "/programsfoo", // prefix must not bleed
+  ])("gates %s", (p) => expect(isPublicRoute(p)).toBe(false));
+});
+```
+
+- [ ] **Step 2: Run it — expect FAIL (module not found)**
+
+Run: `npx vitest run lib/marketing/__tests__/public-routes.test.ts`
+
+- [ ] **Step 3: Implement**
+
+```ts
+// lib/marketing/public-routes.ts
+// Single source of truth for unauthenticated-accessible paths.
+// Matching: exact, or prefix + "/" — so "/" matches only the homepage.
+export const PUBLIC_ROUTES = [
+  "/",
+  "/programs",
+  "/holiday-clinics",
+  "/about",
+  "/blog",
+  "/enquire",
+  "/contact",
+  "/login",
+  "/client-login",
+  "/parent-login",
+  "/reset-password",
+  "/update-password",
+  "/auth/callback",
+  "/feedback",
+  "/refer",
+  "/client/shared",
+];
+
+export function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
+```
+
+- [ ] **Step 4: Wire middleware to it** — in `middleware.ts` delete the inline `PUBLIC_ROUTES` array and the inline `isPublicRoute` computation (line ~125); `import { isPublicRoute } from "@/lib/marketing/public-routes"` and use `const publicRoute = isPublicRoute(pathname)` at the same spot (rename local usages). Keep everything else identical — do NOT touch the client/parent/staff gating blocks.
+
+- [ ] **Step 5: Run full suite + typecheck** — `npx vitest run && npx tsc --noEmit`. Expected: all pass.
+
+- [ ] **Step 6: Commit** — `feat(marketing): public route matcher + middleware wiring`
+
+### Task 1.2: Site constants and content module
+
+**Files:**
+- Create: `lib/marketing/content.ts`
+
+No test (static data). Contains: `SITE` (name, phone, email, ABN, socials, booking URL constants), `PROGRAMS` array — one entry per program page with `slug`, `title`, `tagline`, `description` paragraphs, `ages`, `highlights[]`, `heroImage`. Slugs: `childcare`, `primary-school`, `high-school`, `after-school`, `holiday-programs`. Copy: adapt from the current WordPress site's five service descriptions (in spec's Purpose section context); tone bold/energetic, Australian English. Include `ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted"`.
+
+- [ ] Write the module, `npx tsc --noEmit`, commit `feat(marketing): site constants and program content`.
+
+### Task 1.3: Marketing layout — nav + footer
+
+**Files:**
+- Create: `components/marketing/nav.tsx`, `components/marketing/footer.tsx`, `app/(marketing)/layout.tsx`
+
+Nav is a client component. **Auth state resolves client-side so pages stay static**: render logged-out nav on the server, hydrate to "My account" if a session exists.
+
+```tsx
+// components/marketing/nav.tsx (essentials)
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const LINKS = [
+  { href: "/programs", label: "Programs" },
+  { href: "/holiday-clinics", label: "Holiday clinics" },
+  { href: "/about", label: "About" },
+  { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
+];
+
+export function MarketingNav() {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    createSupabaseBrowserClient()
+      .auth.getSession()
+      .then(({ data }) => setSignedIn(!!data.session));
+  }, []);
+  // sticky header, logo left, links centre, right: (signedIn ? "My account" → /parent : "Parent login" → /parent-login)
+  // + solid orange "Book now" → /holiday-clinics. Mobile: sheet menu (reuse components/ui/sheet).
+}
+```
+
+(Verify the browser client helper name with `ls lib/supabase/` — use whatever exists, e.g. `client.ts` export.)
+
+Footer (server component): dark `#1A1A1A`, columns — programs links, contact (phone/email from `SITE`), socials, ABN, "Parent login", policy links. Layout:
+
+```tsx
+// app/(marketing)/layout.tsx
+import { MarketingNav } from "@/components/marketing/nav";
+import { MarketingFooter } from "@/components/marketing/footer";
+
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col bg-white text-[#1A1A1A]">
+      <MarketingNav />
+      <main className="flex-1">{children}</main>
+      <MarketingFooter />
+    </div>
+  );
+}
+```
+
+- [ ] Build nav, footer, layout. `npm run build` must pass. Commit `feat(marketing): layout, nav, footer`.
+
+### Task 1.4: Homepage shell with static sections
+
+**Files:**
+- Delete: `app/page.tsx` (the `redirect("/login")`)
+- Create: `app/(marketing)/page.tsx`, `components/marketing/hero.tsx`, `components/marketing/section.tsx`, `components/marketing/program-card.tsx`, `components/marketing/how-it-works.tsx`, `components/marketing/b2b-band.tsx`
+
+Homepage renders sections in the approved order (spec "Homepage structure"). This task ships sections 1, 2, 4, 6, 8, 11 with static content; live-data sections (3, 5, 7, 9) land in Chunk 2 as components with graceful empty states.
+
+Hero copy (approved direction):
+- H1: `Where kids build skills for life` (oversized, clamp 40→72px, Bricolage Grotesque)
+- Sub: `Multi-sport coaching across South-West Sydney childcare centres, schools and holiday clinics. Book online in 60 seconds — then watch them grow all term.`
+- CTAs: primary white-on-orange `Book a holiday clinic` → `/holiday-clinics`; secondary outline `Enquire for your school` → `/enquire`
+- Full-bleed orange `#E8712A` background, real action photo right (from `public/`, add `TODO-photo` placeholder path constants in `lib/marketing/content.ts` so swapping images is one-line)
+
+How-it-works (4 steps): Sign in with just your email (magic link — no passwords) → Book and pay online in 60 seconds (Square; Active Kids vouchers accepted) → They play, learn and grow with qualified coaches → Track skills and progress in your parent account all term.
+
+- [ ] Build all components + page. `npm run build` passes. Manually verify `/` renders and `/admin` still redirects to login: `npm run dev`, check both.
+- [ ] Run full suite: middleware still green (`npx vitest run`).
+- [ ] Commit `feat(marketing): homepage shell replaces root login redirect`
+
+## Chunk 2: Live data — clinics, stats, testimonials, book-now redirect
+
+### Task 2.1: Clinic query helper (pure logic first)
+
+**Files:**
+- Create: `lib/marketing/clinics.ts`
+- Test: `lib/marketing/__tests__/clinics.test.ts`
+
+- [ ] **Step 1: Failing tests for the pure parts**
+
+```ts
+import { describe, it, expect } from "vitest";
+import { clinicAvailability, clinicIsListable } from "../clinics";
+
+describe("clinicAvailability", () => {
+  it("computes spots left", () =>
+    expect(clinicAvailability({ max_capacity: 20, current_bookings: 17 }))
+      .toEqual({ spotsLeft: 3, soldOut: false, lowSpots: true }));
+  it("flags sold out at zero", () =>
+    expect(clinicAvailability({ max_capacity: 20, current_bookings: 20 }).soldOut).toBe(true));
+  it("never returns negative spots", () =>
+    expect(clinicAvailability({ max_capacity: 20, current_bookings: 25 }).spotsLeft).toBe(0));
+  it("lowSpots only at 5 or fewer", () =>
+    expect(clinicAvailability({ max_capacity: 20, current_bookings: 14 }).lowSpots).toBe(false));
+});
+
+describe("clinicIsListable (booking window)", () => {
+  const now = new Date("2026-07-15T02:00:00Z");
+  it("passes when both windows null", () =>
+    expect(clinicIsListable({ booking_opens_at: null, booking_closes_at: null }, now)).toBe(true));
+  it("excludes before opens_at", () =>
+    expect(clinicIsListable({ booking_opens_at: "2026-08-01T00:00:00Z", booking_closes_at: null }, now)).toBe(false));
+  it("excludes after closes_at", () =>
+    expect(clinicIsListable({ booking_opens_at: null, booking_closes_at: "2026-07-01T00:00:00Z" }, now)).toBe(false));
+});
+```
+
+- [ ] **Step 2: Run — FAIL.** `npx vitest run lib/marketing/__tests__/clinics.test.ts`
+
+- [ ] **Step 3: Implement**
+
+```ts
+// lib/marketing/clinics.ts
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
+
+export type PublicClinic = {
+  id: string; title: string; sport: string | null; date: string;
+  start_time: string; end_time: string; location_name: string | null;
+  suburb: string; age_group_min: number | null; age_group_max: number | null;
+  price_cents: number; max_capacity: number; current_bookings: number;
+  booking_opens_at: string | null; booking_closes_at: string | null;
+};
+
+export function clinicAvailability(c: Pick<PublicClinic, "max_capacity" | "current_bookings">) {
+  const spotsLeft = Math.max(0, c.max_capacity - c.current_bookings);
+  return { spotsLeft, soldOut: spotsLeft === 0, lowSpots: spotsLeft > 0 && spotsLeft <= 5 };
+}
+
+export function clinicIsListable(
+  c: Pick<PublicClinic, "booking_opens_at" | "booking_closes_at">, now: Date
+): boolean {
+  if (c.booking_opens_at && new Date(c.booking_opens_at) > now) return false;
+  if (c.booking_closes_at && new Date(c.booking_closes_at) <= now) return false;
+  return true;
+}
+
+const PUBLIC_COLUMNS =
+  "id, title, sport, date, start_time, end_time, location_name, suburb, age_group_min, age_group_max, price_cents, max_capacity, current_bookings, booking_opens_at, booking_closes_at";
+
+export async function getOpenHolidayClinics(limit?: number): Promise<PublicClinic[]> {
+  const supabase = createSupabaseAdmin();
+  const today = new Date().toISOString().slice(0, 10); // Sydney nuance acceptable at ISR granularity
+  let query = supabase
+    .from("bookable_sessions")
+    .select(PUBLIC_COLUMNS)
+    .eq("status", "open")
+    .eq("session_type", "holiday_clinic")
+    .gte("date", today)
+    .order("date", { ascending: true })
+    .order("start_time", { ascending: true });
+  if (limit) query = query.limit(limit * 2); // headroom: window filter may drop some
+  const { data, error } = await query;
+  if (error) throw error;
+  const now = new Date();
+  const listable = (data ?? []).filter((c) => clinicIsListable(c, now));
+  return limit ? listable.slice(0, limit) : listable;
+}
+```
+
+- [ ] **Step 4: Run — PASS.** Then full suite. Commit `feat(marketing): clinic query helper with availability + booking-window logic`.
+
+### Task 2.2: Clinic card + homepage section + /holiday-clinics page
+
+**Files:**
+- Create: `components/marketing/clinic-card.tsx`, `app/(marketing)/holiday-clinics/page.tsx`
+- Modify: `app/(marketing)/page.tsx` (insert live section 5)
+
+Card fields per spec: title, sport, formatted date ("Mon 21 Jul"), time range, location + suburb, ages ("Ages 5–12"), price (`(price_cents / 100).toLocaleString("en-AU", { style: "currency", currency: "AUD" })`), badges: `Active Kids vouchers accepted` always; `X spots left` amber when `lowSpots`; `Sold out` grey + CTA becomes outline `Join waitlist` → same booking URL. CTA: `Book now` → `/parent/book/${id}`.
+
+Pages: `export const revalidate = 300;` on both homepage and `/holiday-clinics`. Homepage shows `getOpenHolidayClinics(4)`; listing page all, with client-side filters (suburb select, sport select, week grouping — filter in-page over the server-fetched array, no extra queries). Empty state: "New clinic dates drop soon — call us on {SITE.phone} or check back shortly." Wrap the section's data fetch in try/catch → render empty state on error (never a broken hero, per spec).
+
+- [ ] Build; `npm run build`; dev-verify both pages with real data (if DB empty locally, temporarily verify empty state renders). Commit `feat(marketing): live holiday clinic cards + listing page`.
+
+### Task 2.3: Stats bar + testimonials
+
+**Files:**
+- Create: `components/marketing/stats-bar.tsx`, `components/marketing/testimonial-card.tsx`
+- Modify: `app/(marketing)/page.tsx`
+
+Stats: server fetch from `public_stats_cache` (same admin-client pattern; map `stat_key` → labels: schools partnered, students coached, sports offered, centres — use whatever keys exist in the table; check with `SELECT stat_key FROM public_stats_cache` via the existing `/api/public/stats` handler code for key names). Dark band, numbers count up on scroll — client component receiving final values as props, one `IntersectionObserver`, no libraries. Testimonials: fetch `approved_testimonials` (reuse column names from `app/api/public/testimonials/route.ts`), render 2–4 cards. Both sections: fetch failure or empty → section renders nothing (return null), homepage never breaks.
+
+- [ ] Build + verify + full suite. Commit `feat(marketing): live stats bar and testimonials`.
+
+### Task 2.4: Book-now redirect (parent-login `next` param)
+
+**Files:**
+- Modify: `lib/parent/actions.ts:39-58` (`sendParentMagicLink`), `app/(auth)/parent-login/page.tsx`
+- Test: `lib/parent/__tests__/magic-link-next.test.ts`
+
+`safeNext()` already guards the callback side. Login side changes:
+
+```ts
+// lib/parent/actions.ts — signature change
+export async function sendParentMagicLink(
+  email: string,
+  next?: string
+): Promise<{ error: string | null }> {
+  // Only same-origin /parent paths may override the default target.
+  const safe = next && next.startsWith("/parent") && !next.startsWith("//")
+    ? next
+    : "/parent-login";
+  // ...
+  emailRedirectTo: getAuthCallbackUrl(safe),
+```
+
+`parent-login/page.tsx`: read `searchParams.next`, thread into the form's action call (find the existing form component — it calls `sendParentMagicLink(email)`; pass the second arg). Also update the existing authed-user redirect in `middleware.ts:233-244`: when an authenticated parent hits `/parent-login?next=/parent/...`, redirect to the `next` value instead of bare `/parent` (apply the same `startsWith("/parent")` guard).
+
+- [ ] **Step 1: Failing test** — extract the safe-target logic into `lib/parent/safe-next.ts` (`parentSafeNext(raw?: string): string`) so it's testable pure; test: `/parent/book/abc` passes through; `undefined`, `https://evil.com`, `//evil`, `/admin` all → `/parent-login`.
+- [ ] **Step 2-4: Implement, PASS, wire both callers** (action + middleware).
+- [ ] **Step 5: Manual verify** — dev server: visit `/parent/book/x` logged out → redirected to `/parent-login`… note the CURRENT middleware redirect (line ~200) drops the original path; update it to append `?next=<pathname>` when the target is a parent route so the whole loop closes.
+- [ ] Full suite + commit `feat(parent): carry booking destination through magic-link login`.
+
+## Chunk 3: Program pages, about, contact
+
+### Task 3.1: Programs index + [slug] pages
+
+**Files:**
+- Create: `app/(marketing)/programs/page.tsx`, `app/(marketing)/programs/[slug]/page.tsx`
+
+`generateStaticParams` from `PROGRAMS` in `lib/marketing/content.ts`. Each program page: bold hero (title, tagline, photo), highlights grid, description, trust strip (WWCC, first-aid certified coaches, curriculum-aligned where relevant), **"Request a quote" CTA repeated top / middle / bottom** (Zing pattern) → `/enquire?program=<slug>`. `holiday-programs` page additionally embeds the live clinic cards (reuse Task 2.2 component, limit 6). Unknown slug → `notFound()`.
+
+- [ ] Build, verify all 5 slugs render + 404 case, commit `feat(marketing): program pages`.
+
+### Task 3.2: About + contact
+
+**Files:**
+- Create: `app/(marketing)/about/page.tsx`, `app/(marketing)/contact/page.tsx`
+
+About: story/mission (adapt current WP "Growing stronger, together" copy, bolder voice), coach standards section (WWCC, first aid, tenure), stats reuse. Contact: phone/email/service area cards from `SITE`, plus a slim general-contact form that posts to the enquiry route with `type: "other"` context — reuse `enquiry-form.tsx` (Chunk 4) in "contact" mode; if Chunk 4 not yet done, ship contact page with mailto/phone links only and add the form in Task 4.2.
+
+- [ ] Build, verify, commit `feat(marketing): about and contact pages`.
+
+## Chunk 4: Funnels — enquiry + newsletter
+
+### Task 4.1: Enquiry route hardening
+
+**Files:**
+- Modify: `app/api/crm/enquiry/route.ts`
+- Test: `app/api/crm/enquiry/__tests__/route.test.ts`
+
+Changes (each from the spec, all covered by tests):
+1. **Self-origin CORS**: build `allowedOrigins` as the existing WP list **plus** `getBaseUrl()` and (when set) `https://${process.env.VERCEL_URL}`. Same-origin browser POSTs then pass during vercel.app QA. Keep WP entries until decommission.
+2. **Honeypot**: accept optional `website` field (hidden input named `website`); if non-empty, return `{ success: true }` WITHOUT inserting (silent discard).
+3. **"other" org type**: `type === "school" ? "school" : type === "other" ? null : "childcare_centre"`; when null, prepend `Org type: other.` to `notes`.
+4. **New optional fields**: `suburb` → `leads.suburb`; `programs_of_interest` (string[]) → appended to `notes`; `source_page` → `leads.source_detail`.
+5. **Dedupe**: before insert, select `leads` where `contact_email` matches and `created_at >= today` (Sydney day is fine at this granularity — reuse `lib/utils/sydney-time` helpers if exported); on hit, skip insert/notify and return success with `deduped: true`.
+6. **Auto-acknowledgement**: after lead insert, send branded Resend email to `contact_email` (find the repo's Resend send helper — grep `from("Resend")|resend.emails.send`; follow the existing email template pattern in `lib/` — subject: `Thanks for your enquiry — Build Alpha Kids`). Failure to send must NOT fail the request (log + continue).
+
+Tests (mock `createSupabaseAdmin`, `triggerNotification`, and the Resend helper with `vi.mock`; use input-based `mockImplementation` routing, never `mockResolvedValueOnce` chains; clear the module-level rate-limit map between tests by `vi.resetModules()` + dynamic import):
+- 400 when email missing; 400 when centre_name missing
+- happy path: lead inserted with `source: 'web_form'`, activity written, staff notified, ack email sent, 200
+- honeypot filled → 200, zero inserts
+- `type: "other"` → insert has `type: null`, notes prefixed
+- dedupe: existing same-email lead today → 200 `deduped`, zero inserts
+- 403 for disallowed origin; 200 for `getBaseUrl()` origin; 429 after 11th request same IP
+
+- [ ] Write failing tests → run (FAIL) → implement → run (PASS) → full suite → commit `feat(crm): harden enquiry route for same-origin marketing form`.
+
+### Task 4.2: Enquiry page + form
+
+**Files:**
+- Create: `components/marketing/enquiry-form.tsx`, `app/(marketing)/enquire/page.tsx`
+- Modify: `app/(marketing)/contact/page.tsx` (embed form in contact mode)
+
+Client form: org name, contact name, email, phone, suburb, org type (school / childcare centre / other), programs of interest (checkboxes from `PROGRAMS`), message, hidden `website` honeypot, `source_page` auto-filled from `?program=` param. POST to `/api/crm/enquiry` with `fetch`; pending state; success panel ("We'll be in touch within one business day"); failure panel with retry + `SITE.phone` fallback. Pre-select program from `?program=` query.
+
+- [ ] Build + dev-verify a real submission end-to-end against local Supabase (lead appears in admin CRM). Commit `feat(marketing): enquiry funnel page`.
+
+### Task 4.3: Newsletter
+
+**Files:**
+- Create: `supabase/migrations/070_newsletter_subscribers.sql`, `lib/marketing/newsletter.ts`, `components/marketing/newsletter-form.tsx`
+- Test: `lib/marketing/__tests__/newsletter.test.ts`
+- Modify: `app/(marketing)/page.tsx` (section 10)
+
+```sql
+-- 070_newsletter_subscribers.sql
+CREATE TABLE newsletter_subscribers (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email       text NOT NULL UNIQUE,
+  status      text NOT NULL DEFAULT 'subscribed' CHECK (status IN ('subscribed', 'unsubscribed')),
+  source_page text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+-- No public policies: all access via service role (server actions / admin pages).
+CREATE TRIGGER newsletter_subscribers_updated_at
+  BEFORE UPDATE ON newsletter_subscribers
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+```
+
+`subscribeToNewsletter(formData)` server action: zod email validation, honeypot check, per-call rate limit reuse (same in-memory pattern), upsert on email (re-subscribe sets status back to subscribed). Tests: invalid email rejected, honeypot silently succeeds without insert, upsert called with normalised (lowercased/trimmed) email.
+
+- [ ] TDD cycle as above; apply migration to local/branch DB per repo workflow (check `supabase/` README or existing practice — likely `npx supabase db push` locally or migration applied on deploy); full suite; commit `feat(marketing): newsletter capture`.
+
+## Chunk 5: Blog
+
+### Task 5.1: blog_posts migration + query lib
+
+**Files:**
+- Create: `supabase/migrations/069_blog_posts.sql`, `lib/marketing/blog.ts`
+- Test: `lib/marketing/__tests__/blog.test.ts`
+
+```sql
+-- 069_blog_posts.sql
+CREATE TABLE blog_posts (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug            text NOT NULL UNIQUE,
+  title           text NOT NULL,
+  excerpt         text,
+  content         text NOT NULL DEFAULT '',
+  cover_image_url text,
+  status          text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  published_at    timestamptz,
+  author_name     text NOT NULL DEFAULT 'Build Alpha Kids',
+  tags            text[] NOT NULL DEFAULT '{}',
+  seo_title       text,
+  seo_description text,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY blog_admin_all ON blog_posts FOR ALL
+  USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE INDEX idx_blog_posts_status_published ON blog_posts(status, published_at DESC);
+CREATE TRIGGER blog_posts_updated_at
+  BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+```
+
+`lib/marketing/blog.ts`: `getPublishedPosts(limit?)` (status published, `published_at <= now`, desc) and `getPostBySlug(slug)` (returns null unless published) via admin client. Tests mock the client; assert draft filtered, slug miss → null.
+
+- [ ] TDD cycle; commit `feat(blog): blog_posts table and public query lib`.
+
+### Task 5.2: Admin blog editor
+
+**Files:**
+- Create: `lib/blog/admin-actions.ts`, `app/(dashboard)/admin/marketing/blog/page.tsx`, `app/(dashboard)/admin/marketing/blog/[id]/page.tsx`
+- Test: `lib/blog/__tests__/admin-actions.test.ts`
+
+Follow the existing `/admin/marketing/testimonials` page as the structural template (read it first). List page: table of posts (title, status, published_at), "New post" button. Editor: title, slug (auto from title, editable), excerpt, markdown `Textarea`, cover image URL, SEO fields, Save draft / Publish / Unpublish. Server actions with zod; slug uniqueness surfaced as a friendly error; publish sets `published_at` if null. Markdown rendering on public side: check `package.json` for an existing markdown lib; if none, add `marked` + `sanitize-html` (or render with a small trusted-content component — content is admin-authored) — pick ONE and note it in the commit.
+
+Tests: create/update happy paths, invalid payload rejected, publish stamps `published_at`, slug collision error.
+
+- [ ] TDD cycle; build; manual dev check of the editor; commit `feat(blog): admin editor`.
+
+### Task 5.3: Public blog pages + WP import
+
+**Files:**
+- Create: `app/(marketing)/blog/page.tsx`, `app/(marketing)/blog/[slug]/page.tsx`, `components/marketing/blog-teasers.tsx`, `scripts/import-wp-posts.mjs`
+- Modify: `app/(marketing)/page.tsx` (section 9: 3 latest teasers)
+
+Blog index: card grid of published posts. Post page: `generateStaticParams` from published slugs + `revalidate = 300`; draft/missing slug → `notFound()`. Import script: fetch the WP REST API (`https://buildalphakids.com.au/wp-json/wp/v2/posts?per_page=100`) — if the WP REST API is disabled, fall back to manual copy from the live pages (there are only ~3 posts) — convert HTML → markdown (`turndown` as a devDependency, or hand-convert given the tiny count), preserve original slugs, insert as `published` with original dates via service role. Run once against the branch DB; keep the script for the production cutover.
+
+- [ ] Build, run import, verify posts render at their original slugs; homepage teasers show. Commit `feat(blog): public pages + WordPress import`.
+
+## Chunk 6: SEO, redirects, performance, QA gate
+
+### Task 6.1: Metadata + JSON-LD
+
+**Files:**
+- Create: `lib/marketing/jsonld.ts`
+- Modify: every `app/(marketing)/*/page.tsx` (add `export const metadata` / `generateMetadata`), `app/(marketing)/layout.tsx` (metadata template `"%s | Build Alpha Kids"`, default OG image)
+
+`jsonld.ts`: `localBusinessJsonLd()` (name, url, phone, area served), `eventJsonLd(clinic)` (name, startDate combining date+start_time with `+10:00`, location, offers with AUD price + availability from spots), `articleJsonLd(post)`. Render via `<script type="application/ld+json">` — LocalBusiness in marketing layout, Event per clinic card page (`/holiday-clinics`), Article on blog posts. Unit-test `eventJsonLd` date/price shaping in `lib/marketing/__tests__/jsonld.test.ts`.
+
+- [ ] TDD for jsonld, metadata sweep, build. Commit `feat(marketing): metadata + structured data`.
+
+### Task 6.2: Sitemap, robots, WP redirects
+
+**Files:**
+- Create: `app/sitemap.ts`, `app/robots.ts`
+- Modify: `next.config.ts` (`redirects()`)
+
+Sitemap: static marketing routes + published blog slugs (via `getPublishedPosts`); exclude portals. Robots: allow all, disallow `/admin`, `/ops`, `/coach`, `/parent`, `/client`; point at sitemap. Redirects: **before writing, fetch the live WP sitemap** (`https://buildalphakids.com.au/sitemap.xml` or `/wp-sitemap.xml`) and map every indexed URL → new path (`/about-us` → `/about`, service pages → `/programs/<slug>`, blog posts → `/blog/<slug>`, everything unmatched → `/`), `permanent: true`.
+
+- [ ] Build, verify `curl localhost:3000/sitemap.xml` + a redirect. Commit `feat(marketing): sitemap, robots, WordPress 301 map`.
+
+### Task 6.3: Performance + full verification pass
+
+- [ ] `npm run build` — zero errors, marketing routes show as `○ (Static)` or ISR in the route summary; portals unchanged.
+- [ ] `npx vitest run` — entire suite green.
+- [ ] `npx tsc --noEmit` — clean.
+- [ ] Lighthouse against `npm run start` on `/`, `/holiday-clinics`, one program page, one blog post — Performance ≥ 95, SEO ≥ 95 each. Fix images (`next/image`, explicit sizes) if short.
+- [ ] Grep sweep per user standards: no `console.log` in new production code (`grep -rn "console\." app/\(marketing\) components/marketing lib/marketing lib/blog | grep -v test`).
+- [ ] Commit any fixes: `chore(marketing): performance + hygiene pass`.
+
+### Task 6.4: Manual QA checklist (cutover gate — human involved)
+
+Run on the Vercel preview URL with Jayden:
+
+- [ ] Home → clinic card "Book now" → parent-login (with `next`) → magic link email → lands on `/parent/book/[id]` → Square sandbox payment completes
+- [ ] Sold-out clinic shows waitlist CTA
+- [ ] Enquiry submit → lead visible in `/admin` CRM kanban → staff notification + auto-ack email both received
+- [ ] Newsletter signup → row in `newsletter_subscribers`
+- [ ] Blog post renders at original WP slug; old WP URLs 301
+- [ ] Mobile pass (nav sheet, cards, forms) on a real phone
+- [ ] Logged-in parent visits `/` → sees "My account", not redirected
+
+**DNS cutover (Jayden executes):** point buildalphakids.com.au at Vercel per spec §Launch cutover; keep WP hosting as archive; verify Search Console + submit sitemap after.
+
+**Post-cutover cleanup task (create a follow-up):** remove WP origins from the enquiry CORS allowlist; decommission WordPress.
+
+---
+
+## Execution notes
+
+- Tasks within a chunk are sequential; Chunks 3, 4, 5 are independent of each other after Chunk 2 lands (parallelisable across subagents if desired; Chunk 6 last).
+- Photo assets: layout must render acceptably with the placeholder paths; swapping in Jayden's real photos is a content task, not a blocker.
+- If local Supabase isn't running for manual checks, `npx supabase start` (see `supabase/` config) or verify against the branch DB per repo practice.
