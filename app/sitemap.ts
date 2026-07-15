@@ -1,14 +1,23 @@
 import type { MetadataRoute } from "next";
-import { getMarketingUrl } from "@/lib/utils/base-url";
+import { getCanonicalSiteUrl } from "@/lib/utils/base-url";
 import { getPublishedPosts } from "@/lib/marketing/blog";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
 import { buildSitemapEntries } from "@/lib/marketing/sitemap-routes";
 
-// Absolute URLs are built from getMarketingUrl() — the public
+// Absolute URLs are built from getCanonicalSiteUrl() — the public
 // .com.au origin — never getBaseUrl(), which is the app domain
 // (buildalphakids.app). Both hosts serve this file, so a sitemap
 // built from the request host would list the .app copy of every
 // marketing page and compete with our own canonical tags.
+//
+// Nor getMarketingUrl(), whose whole point is that it falls back to the
+// app domain before the DNS cutover so parent links stay clickable. That
+// is right for links a human follows and wrong here: a sitemap is what
+// we ASK Google to index, and one listing .app URLs — each of which
+// self-canonicalises — is an invitation to index the duplicate site.
+// This file is deliberately pinned to the canonical origin even while
+// that origin still serves WordPress; nothing is indexed yet, so naming
+// it early costs nothing.
 //
 // Revalidate hourly: the static routes never move, but a post
 // published from the admin editor should surface without a redeploy.
@@ -23,5 +32,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // (or a redeploy) picks them up.
   const posts = await safeFetch(() => getPublishedPosts(), []);
 
-  return buildSitemapEntries(getMarketingUrl(), posts, new Date());
+  return buildSitemapEntries(getCanonicalSiteUrl(), posts, new Date());
 }

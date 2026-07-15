@@ -6,11 +6,17 @@
 // into <script type="application/ld+json">. No server-only imports, so
 // these are safe to call from any marketing surface.
 //
-// ORIGIN: every absolute URL here comes from getMarketingUrl()
+// ORIGIN: every absolute URL here comes from getCanonicalSiteUrl()
 // (https://buildalphakids.com.au), NEVER getBaseUrl() — that is the
 // app domain (buildalphakids.app). Both hosts serve every marketing
 // route, so structured data naming the wrong origin would point search
 // engines at the duplicate rather than the canonical.
+//
+// Not getMarketingUrl() either: it falls back to the app domain until
+// the DNS cutover, which is correct for links a parent clicks and wrong
+// for an @id. These @id/url values are schema.org IDENTITY claims that
+// have to agree with the canonical tag on the same page — if they drift
+// apart, the structured data names one entity and the canonical another.
 //
 // PLACEHOLDERS: SITE carries TODO-CONFIRM values (phone, socials, ABN)
 // that are not sourceable yet. The rule, matching what the footer
@@ -18,7 +24,7 @@
 // if it were real. Socials are dropped from sameAs; the phone is
 // handled below.
 
-import { getMarketingUrl } from "@/lib/utils/base-url";
+import { getCanonicalSiteUrl } from "@/lib/utils/base-url";
 import { sydneyIsoDateTime } from "@/lib/utils/sydney-time";
 import { SITE } from "@/lib/marketing/content";
 import {
@@ -63,7 +69,7 @@ export function localBusinessJsonLd() {
     "@type": "LocalBusiness",
     name: SITE.name,
     description: SITE.tagline,
-    url: getMarketingUrl(),
+    url: getCanonicalSiteUrl(),
     email: SITE.email,
     ...(isPlaceholder(SITE.phone) ? {} : { telephone: SITE.phone }),
     areaServed: {
@@ -86,7 +92,7 @@ export function localBusinessJsonLd() {
  */
 export function eventJsonLd(clinic: PublicClinic) {
   const { soldOut } = clinicAvailability(clinic);
-  const origin = getMarketingUrl();
+  const origin = getCanonicalSiteUrl();
 
   return {
     "@context": SCHEMA_CONTEXT,
@@ -154,12 +160,12 @@ export function articleJsonLd(post: PublicBlogPost) {
     publisher: {
       "@type": "Organization",
       name: SITE.name,
-      url: getMarketingUrl(),
+      url: getCanonicalSiteUrl(),
     },
-    url: `${getMarketingUrl()}/blog/${post.slug}`,
+    url: `${getCanonicalSiteUrl()}/blog/${post.slug}`,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${getMarketingUrl()}/blog/${post.slug}`,
+      "@id": `${getCanonicalSiteUrl()}/blog/${post.slug}`,
     },
   };
 }

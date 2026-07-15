@@ -3,13 +3,13 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { localBusinessJsonLd } from "@/lib/marketing/jsonld";
-import { getMarketingUrl } from "@/lib/utils/base-url";
+import { getCanonicalSiteUrl } from "@/lib/utils/base-url";
 import { HOMEPAGE, OG_IMAGE, SITE } from "@/lib/marketing/content";
 
 /**
  * Metadata defaults for every marketing page.
  *
- * `metadataBase` is getMarketingUrl() — the PUBLIC origin
+ * `metadataBase` is getCanonicalSiteUrl() — the PUBLIC origin
  * (buildalphakids.com.au), never getBaseUrl() (the app domain,
  * buildalphakids.app). Both hosts serve every route in this group, so
  * this base is what resolves each page's relative `alternates.canonical`
@@ -17,13 +17,19 @@ import { HOMEPAGE, OG_IMAGE, SITE } from "@/lib/marketing/content";
  * question. Get this wrong and the canonicals point search engines at
  * the duplicate.
  *
+ * Specifically NOT getMarketingUrl(): that helper falls back to the app
+ * domain until the DNS cutover so parent invite links stay clickable in
+ * the deploy-before-cutover window. Using it here would make every .app
+ * page self-canonical during that window and the two domains would
+ * compete — the exact thing this base exists to prevent.
+ *
  * `title.template` appends the brand to each page's own title, so pages
  * below set a BARE title ("Contact", not "Contact — Build Alpha Kids")
  * or the brand lands twice. `default` covers the homepage, which wants
  * the brand first and so opts out via the template not applying.
  */
 export const metadata: Metadata = {
-  metadataBase: new URL(getMarketingUrl()),
+  metadataBase: new URL(getCanonicalSiteUrl()),
   title: {
     template: `%s | ${SITE.name}`,
     default: `${SITE.name} — ${SITE.tagline}`,

@@ -582,13 +582,15 @@ Rejected (for now): moving the dashboard to `app.buildalphakids.com.au`. It was 
 1. **`NEXT_PUBLIC_MARKETING_URL`** (new env, default `https://buildalphakids.com.au`) — the canonical public origin. Add `getMarketingUrl()`. Tasks 6.1 (metadata/OG/JSON-LD) and 6.2 (sitemap/robots) MUST build absolute URLs from this, never from `getBaseUrl()` (which is the app domain).
 2. **Parent magic links follow the host the parent is actually on.** Derive the callback origin from the request host, validated against a strict allowlist (`buildalphakids.com.au`, `www.buildalphakids.com.au`, `buildalphakids.app`, the `VERCEL_URL` preview, `localhost:3000`); fall back to `getBaseUrl()` if the host is unrecognised. Staff flows (login, password reset, crons, invoice PDFs) keep using `getBaseUrl()` — do NOT make those host-aware.
 3. **Both hosts must be in the Supabase auth redirect allowlist** — owner config step, document it.
-4. **Duplicate-content protection**: marketing pages are reachable on both hosts. Emit `<link rel="canonical">` pointing at the `getMarketingUrl()` origin on every marketing page (Task 6.1 does this — this task just supplies the helper), and Task 6.2's `robots.ts` should only advertise the sitemap on the canonical host.
+4. **Duplicate-content protection**: marketing pages are reachable on both hosts. Emit `<link rel="canonical">` pointing at the `getCanonicalSiteUrl()` origin on every marketing page (Task 6.1 does this — this task just supplies the helper), and Task 6.2's `robots.ts` should only advertise the sitemap on the canonical host.
+
+   **Two helpers, not one** (revised at final review): `getMarketingUrl()` falls back to `getBaseUrl()` when `NEXT_PUBLIC_MARKETING_URL` is unset; `getCanonicalSiteUrl()` falls back to the `.com.au` literal. Links a human clicks (parent invites, booking emails, referral/embed URLs) use the former, so they stay reachable in the window where this code is deployed but DNS has not moved. SEO surfaces (canonical, `metadataBase`, sitemap, robots, JSON-LD) use the latter, because a canonical is an identity claim that must not drift with deploy-time env — a `.app` fallback there would make every `.app` page self-canonical and advertise a crawlable duplicate sitemap. See the header comments in `lib/utils/base-url.ts`.
 5. **Book-now / parent links stay RELATIVE** (`/parent/book/[id]`) — that is what keeps a parent on whichever host they arrived on, so their session and the nav's "My account" swap work. Do not hardcode an absolute app-domain URL into marketing CTAs.
 6. Fix the one hardcoded domain: `app/api/cron/onboarding-emails/route.ts:270` hardcodes `https://app.buildalphakids.com.au` (a domain that isn't even attached to the project) — route it through `getBaseUrl()`.
 
 **Audience principle (decided 2026-07-15):** **parents live on `buildalphakids.com.au`; staff live on `buildalphakids.app`.** The parent portal is the consumer product and belongs on the consumer brand; the dashboard is the operational tool. Both hosts serve every route (one app), so nothing breaks either way — but every *parent-facing* outbound link should target the marketing origin so a parent has ONE cookie jar and the nav's "My account" swap works. This includes staff-initiated parent invites (`lib/parent/actions.ts` bulk invite), which currently emit `.app` links because staff trigger them from `.app`. Staff-facing links (login, password reset, coach/ops/admin, client portal, invoice PDFs, internal crons) keep `getBaseUrl()` → `.app`.
 
-**Owner config (not code — document in the QA checklist):** add `buildalphakids.com.au` + `www` to the Vercel project; set `NEXT_PUBLIC_MARKETING_URL`; add both origins to Supabase's redirect allowlist; keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app`.
+**Owner config (not code):** add `buildalphakids.com.au` + `www` to the Vercel project; set `NEXT_PUBLIC_MARKETING_URL`; add both origins to Supabase's redirect allowlist; keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app`. **These are ORDER-DEPENDENT and are sequenced in the Task 6.4 runbook (steps 4, 5, 7) — execute them from there, not from this list.** The allowlist must precede the env flip, and the env flip is a redeploy rather than a dashboard toggle.
 
 **Future move to `app.buildalphakids.com.au`** then becomes: attach the domain, redirect `buildalphakids.app` → it, change `NEXT_PUBLIC_SITE_URL`, add one Supabase allowlist entry. No code change. The nav's "My account" swap starts working on `.com.au` automatically once both are same-site.
 
@@ -625,25 +627,110 @@ Sitemap: static marketing routes + published blog slugs (via `getPublishedPosts`
 - [ ] Grep sweep per user standards: no `console.log` in new production code (`grep -rn "console\." app/\(marketing\) components/marketing lib/marketing lib/blog | grep -v test`).
 - [ ] Commit any fixes: `chore(marketing): performance + hygiene pass`.
 
-### Task 6.4: Manual QA checklist (cutover gate — human involved)
+### Task 6.4: Cutover runbook (ordered — human executes)
 
-**BRANCH DEPENDENCY (found 2026-07-15): this branch now needs `fix/public-stats-cache-zeros` merged.** The impact band's "Sessions delivered" reads `total_sessions_all_time`. On `main`, the refresh-stats cron (`0 5 * * *`, daily 05:00 — `vercel.json`) still filters sessions on `status = 'completed'`, which matches zero rows because ops never sets that status, so it writes 0. The live cache currently holds 11 ONLY because the corrected refresh was run manually on 2026-07-15 — **the next unmerged cron run overwrites it back to 0** and the stat silently degrades to an em-dash. Merge `fix/public-stats-cache-zeros` (commit `68a235a`) before or with this branch. Same applies to `sessions_this_term`.
+**This is a SEQUENCE, not a checklist. The order is the content.** These steps look independent and are not: several of them break a live flow or serve Googlebot a 500 if run out of order. Do them top to bottom. Do not batch. Do not reorder to "save a deploy."
 
-**Launch risk to verify FIRST (found 2026-07-15):** the `SUPABASE_SERVICE_ROLE_KEY` in the local `.env.production.local` is rejected by Supabase ("Invalid API key") — it appears rotated/stale. Every public live section (clinics, stats, testimonials) reads via `createSupabaseAdmin()` with that key and **degrades silently to an empty state** if it's invalid — the page still renders, so a casual look won't catch it. Before/at cutover, confirm the key in the **Vercel production env** is current by loading the preview URL and checking that clinic cards and stat numbers actually appear (not em-dashes/empty states). The local file being stale proves nothing about Vercel — but it's the same class of failure and must be positively verified, not assumed.
+The three ordering constraints that actually bite, stated up front so the reasoning survives edits to the steps:
 
-Run on the Vercel preview URL with Jayden:
+- **Content before traffic.** The WP redirect map funnels 11 previously-indexed post URLs into `/blog/*`. `/blog/[slug]` throws while `blog_posts` is absent (verified: `/blogs/<post>` → 308 → `/blog/<post>` → **500**). So migrations and the import must land before anything can follow a redirect there.
+- **Allowlist before origin.** Supabase silently substitutes its project Site URL for any `emailRedirectTo` not on the redirect allowlist. It does not error. So the allowlist entry must exist before the marketing origin is armed, or parent magic links break with no signal anywhere.
+- **Origin before DNS.** `NEXT_PUBLIC_MARKETING_URL` is inlined at BUILD time, so arming it is a redeploy, not a dashboard toggle.
 
+Reversibility is called out per step. Steps 1–7 are all reversible in minutes. **Step 8 (DNS) is the one-way door** — TTL propagation means a mistake past that point is not instantly undoable, so everything that can be verified must be verified before it.
+
+---
+
+#### Step 0 — Pre-flight (reversible; no production impact)
+
+- [ ] **Confirm the production `SUPABASE_SERVICE_ROLE_KEY` is current.** The key in the local `.env.production.local` is rejected by Supabase ("Invalid API key") — rotated/stale. Every public live section (clinics, stats, testimonials) reads via `createSupabaseAdmin()` and **degrades silently to an empty state** on an invalid key: the page still renders 200, so a casual look will not catch it. The local file being stale proves nothing about Vercel, but it is the same class of failure and must be **positively verified, not assumed** — checked properly in step 5b against the preview, and again in step 9.
+- [ ] **Resolve the `TODO-CONFIRM` placeholders in `lib/marketing/content.ts`**: `phone`, `abn`, and the Instagram/Facebook handles. Not launch-blocking by design — the footer drops placeholder socials and `jsonld.ts` omits a placeholder phone rather than emitting a fake one — but they are content, and content is cheapest to fix before the domain is public. Anything still unresolved here ships as *absent*, not as a placeholder.
+
+#### Step 1 — Merge `fix/public-stats-cache-zeros` (68a235a) (reversible: revert)
+
+- [ ] Merge it **before or with this branch**.
+
+The impact band's "Sessions delivered" reads `total_sessions_all_time`. On `main` the refresh-stats cron (`0 5 * * *`, daily 05:00 — `vercel.json`) still filters sessions on `status = 'completed'`, which matches zero rows because ops never sets that status, so it writes 0. The live cache holds 11 ONLY because the corrected refresh was run manually on 2026-07-15 — **the next unmerged cron run at 05:00 overwrites it back to 0** and the stat degrades to an em-dash. Same applies to `sessions_this_term`.
+
+This is first because it is on a **clock, not on our sequence**: every 05:00 that passes with this unmerged re-zeros the number. If the cutover slips overnight, this step has already protected you.
+
+#### Step 2 — Apply migrations (forward-only; treat as irreversible)
+
+- [ ] `supabase db push` — applies **069** (newsletter) and **070** (blog).
+
+Must precede step 3: the import writes into `blog_posts`. Both are additive table creations, so nothing existing is at risk, but rolling a migration back on production is not a thing you want to do live — verify on a branch DB first if unsure.
+
+#### Step 3 — Import the WordPress posts (reversible: truncate and re-run)
+
+- [ ] `node scripts/import-wp-posts.mjs`
+- [ ] Verify: `select count(*) from blog_posts where status = 'published'` returns the expected 11.
+
+**This must happen before any traffic can reach `/blog/*`** — see the content-before-traffic constraint above. The window is only dangerous once the redirects are reachable, but the import is cheap and idempotent-ish, so there is no reason to leave it later. The sitemap's hourly `revalidate` picks the posts up without a redeploy.
+
+#### Step 4 — Supabase redirect allowlist (reversible: remove the entries)
+
+- [ ] Add `https://buildalphakids.com.au/auth/callback`
+- [ ] Add `https://www.buildalphakids.com.au/auth/callback`
+- [ ] Keep the existing `https://buildalphakids.app/auth/callback` — staff flows and the pre-cutover fallback both still use it. **Do not swap; add.**
+
+Before step 7, always — see the allowlist-before-origin constraint. Adding these early is harmless: an allowlisted URL nobody sends yet does nothing.
+
+#### Step 5 — Attach the domains to Vercel (reversible: detach)
+
+- [ ] Attach `buildalphakids.com.au` + `www` to the Vercel `bak-app` project.
+- [ ] Keep `NEXT_PUBLIC_SITE_URL` = `https://buildalphakids.app` (staff origin — unchanged by this whole exercise).
+- [ ] Leave `NEXT_PUBLIC_MARKETING_URL` **unset** for now. That is step 7, deliberately.
+
+Attaching does not move traffic — DNS still points at WordPress. This only makes Vercel ready to answer for the name.
+
+#### Step 5b — Manual QA, on the Vercel preview, WITH Jayden (reversible; this is the gate)
+
+**Run this here, pre-DNS.** It is the last point where a failure costs nothing. Every item below is broken-in-production if it first runs after step 8.
+
+- [ ] **Live data actually renders** — clinic cards and stat numbers appear, NOT em-dashes/empty states. This is the step-0 service-role-key risk, positively verified. Do this one first; if it fails, stop and fix the key before anything else.
 - [ ] Home → clinic card "Book now" → parent-login (with `next`) → magic link email → lands on `/parent/book/[id]` → Square sandbox payment completes
 - [ ] Sold-out clinic shows waitlist CTA
 - [ ] Enquiry submit → lead visible in `/admin` CRM kanban → staff notification + auto-ack email both received
 - [ ] Newsletter signup → row in `newsletter_subscribers`
-- [ ] Blog post renders at original WP slug; old WP URLs 301
+- [ ] Blog post renders at original WP slug; old WP URLs 301 (steps 2–3 make this possible — it will 500 if they were skipped)
 - [ ] Mobile pass (nav sheet, cards, forms) on a real phone
 - [ ] Logged-in parent visits `/` → sees "My account", not redirected
+- [ ] Anonymous visitor on `/` gets **200, not a redirect to `/login`** (the middleware revoked-session guards — regression-tested in `__tests__/middleware-revoked-session.test.ts`, but worth one real-browser look in an incognito window)
 
-**DNS cutover (Jayden executes):** point buildalphakids.com.au at Vercel per spec §Launch cutover; keep WP hosting as archive; verify Search Console + submit sitemap after.
+#### Step 6 — Deploy (reversible: instant rollback to the previous deployment)
 
-**Post-cutover cleanup task (create a follow-up):** remove WP origins from the enquiry CORS allowlist; decommission WordPress.
+- [ ] Merge `feature/marketing-site` → `main`; let Vercel deploy.
+
+At this moment `.com.au` still serves WordPress and `NEXT_PUBLIC_MARKETING_URL` is still unset — so `getMarketingUrl()` resolves to `.app` and **every parent link behaves exactly as it does on main today**. That is the whole point of the fallback: this deploy is safe to sit in production indefinitely. If step 8 slips a week, nothing is broken in the meantime.
+
+#### Step 7 — Arm the marketing origin (reversible: unset + redeploy)
+
+- [ ] Set `NEXT_PUBLIC_MARKETING_URL=https://buildalphakids.com.au` in the Vercel production env.
+- [ ] **Redeploy.** `NEXT_PUBLIC_*` is inlined at build time — setting it in the dashboard alone changes nothing.
+
+Everything parent-facing (invites, booking emails, referral links, embed snippets) moves to `.com.au` in one flip. Requires step 4 done, or the magic links silently break. SEO surfaces are unaffected either way — they never used the fallback.
+
+Note the ordering here is a genuine trade: for the short gap between step 7 and step 8, parent links name a host that is still WordPress. Keep the gap to minutes by having the DNS change staged and ready before you flip. If the gap must be long, do step 8 first and step 7 immediately after instead — the reverse order costs you `.app` links for the gap, which merely works rather than being wrong.
+
+#### Step 8 — DNS cutover (**ONE-WAY DOOR** — propagation is not instant)
+
+- [ ] Point `buildalphakids.com.au` at Vercel per spec §Launch cutover.
+- [ ] Keep WP hosting up as an archive — do not decommission yet.
+
+Do not start this until 5b is green.
+
+#### Step 9 — Post-cutover verification (do immediately, not tomorrow)
+
+- [ ] **Live data renders on the real domain** — clinic cards and stat numbers, not empty states. The production env is a different env from the preview; re-verify the service-role key here rather than assuming step 5b covered it. This is the silent one.
+- [ ] Verify Search Console ownership; **submit the sitemap**. Only now — before this, `.com.au` was WordPress.
+- [ ] Spot-check the 22 redirects, and specifically the 11 blog post URLs (these are the previously-indexed ones — a 500 here is a 500 to Googlebot on a URL that already has rank).
+- [ ] Re-run Lighthouse **on production**. Preview numbers do not transfer.
+- [ ] Confirm canonical tags name `.com.au` (view-source on any marketing page).
+
+#### Step 10 — Follow-ups (create as separate tasks; do NOT do these during cutover)
+
+- [ ] Remove WP origins from the enquiry CORS allowlist.
+- [ ] Decommission WordPress — only after a few days of clean traffic on the new stack.
 
 ---
 

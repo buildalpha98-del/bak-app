@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import {
   getBaseUrl,
   getMarketingUrl,
+  getCanonicalSiteUrl,
   getAuthCallbackUrl,
   resolveAuthOrigin,
 } from "@/lib/utils/base-url";
@@ -28,27 +29,92 @@ function stubProdEnv() {
 // ------------------------------------------------------------
 
 describe("getMarketingUrl", () => {
-  it("uses NEXT_PUBLIC_MARKETING_URL when set", () => {
-    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://staging.example.com");
-    expect(getMarketingUrl()).toBe("https://staging.example.com");
+  it("uses NEXT_PUBLIC_MARKETING_URL when set — the cutover arms it", () => {
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au");
+    expect(getMarketingUrl()).toBe("https://buildalphakids.com.au");
   });
 
-  it("defaults to the public .com.au domain", () => {
+  it("an explicit env value wins over the getBaseUrl() fallback", () => {
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://staging.example.com");
+    expect(getMarketingUrl()).toBe("https://staging.example.com");
+    expect(getMarketingUrl()).not.toBe(getBaseUrl());
+  });
+
+  it("falls back to getBaseUrl() when unset — NOT the .com.au literal", () => {
+    // The deploy-before-cutover window: this code is live but .com.au is
+    // still WordPress. A parent invite naming it goes nowhere, and
+    // Supabase swaps a non-allowlisted emailRedirectTo for its own Site
+    // URL without erroring, so the failure would be silent.
+    stubProdEnv();
     vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
-    expect(getMarketingUrl()).toBe("https://buildalphakids.com.au");
+    expect(getMarketingUrl()).toBe(APP_ORIGIN);
+    expect(getMarketingUrl()).toBe(getBaseUrl());
+    expect(getMarketingUrl()).not.toBe("https://buildalphakids.com.au");
+  });
+
+  it("tracks getBaseUrl() through every one of its own fallbacks", () => {
+    // The fallback delegates rather than duplicating — a preview deploy
+    // resolves to itself, and local dev to localhost, with no extra env.
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+
+    vi.stubEnv("VERCEL_URL", "bak-app-abc123.vercel.app");
+    expect(getMarketingUrl()).toBe("https://bak-app-abc123.vercel.app");
+
+    vi.stubEnv("VERCEL_URL", "");
+    expect(getMarketingUrl()).toBe("http://localhost:3000");
   });
 
   it("strips trailing slashes so callers can concatenate paths", () => {
     vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au///");
     expect(getMarketingUrl()).toBe("https://buildalphakids.com.au");
   });
+});
 
-  it("is the public site, NOT the app domain getBaseUrl() returns", () => {
+// ------------------------------------------------------------
+// getCanonicalSiteUrl
+// ------------------------------------------------------------
+
+describe("getCanonicalSiteUrl", () => {
+  it("defaults to the public .com.au domain even before the cutover", () => {
+    // Diverges from getMarketingUrl() on purpose. A canonical is an
+    // identity claim, not a route: it must name the one public origin
+    // regardless of which host served the page or whether DNS has moved.
     stubProdEnv();
     vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
-    expect(getMarketingUrl()).toBe("https://buildalphakids.com.au");
-    expect(getBaseUrl()).toBe(APP_ORIGIN);
-    expect(getMarketingUrl()).not.toBe(getBaseUrl());
+    expect(getCanonicalSiteUrl()).toBe("https://buildalphakids.com.au");
+  });
+
+  it("does NOT fall back to the app domain the way getMarketingUrl() does", () => {
+    // The regression this guards: a .app fallback here would make every
+    // .app page self-canonical and the sitemap advertise .app URLs, so
+    // the two domains would compete as duplicate content.
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    expect(getCanonicalSiteUrl()).not.toBe(APP_ORIGIN);
+    expect(getCanonicalSiteUrl()).not.toBe(getBaseUrl());
+    expect(getCanonicalSiteUrl()).not.toBe(getMarketingUrl());
+  });
+
+  it("uses NEXT_PUBLIC_MARKETING_URL when set, so previews self-canonicalise", () => {
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://staging.example.com");
+    expect(getCanonicalSiteUrl()).toBe("https://staging.example.com");
+  });
+
+  it("agrees with getMarketingUrl() once the cutover env is set", () => {
+    // Post-cutover the two helpers converge — the split only exists to
+    // cover the window before NEXT_PUBLIC_MARKETING_URL is set.
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au");
+    expect(getCanonicalSiteUrl()).toBe(getMarketingUrl());
+  });
+
+  it("strips trailing slashes so callers can concatenate paths", () => {
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au///");
+    expect(getCanonicalSiteUrl()).toBe("https://buildalphakids.com.au");
   });
 });
 
@@ -204,9 +270,27 @@ describe("getAuthCallbackUrl", () => {
     ).toBe("https://buildalphakids.com.au/auth/callback?next=%2Fparent-login");
   });
 
-  it("accepts getMarketingUrl() as the origin (parent-facing invites)", () => {
+  // The two tests below pin the exact call importParents() makes
+  // (lib/parent/actions.ts) and that invitation-actions.ts mirrors: the
+  // emailRedirectTo of a real parent magic link. They are the reason
+  // getMarketingUrl() falls back rather than hard-defaulting.
+
+  it("accepts getMarketingUrl() as the origin, resolving to the app domain pre-cutover", () => {
+    // Env unset = merged and deployed, DNS not yet moved. The link must
+    // name a host that serves this app TODAY, which is .app — .com.au is
+    // still WordPress, and Supabase would silently swap a
+    // non-allowlisted redirect for its own Site URL rather than error.
     stubProdEnv();
     vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    expect(getAuthCallbackUrl("/parent-login", getMarketingUrl())).toBe(
+      `${APP_ORIGIN}/auth/callback?next=%2Fparent-login`
+    );
+  });
+
+  it("follows getMarketingUrl() onto the public site once the cutover env is set", () => {
+    // Step 7 of the runbook. One env flip moves every parent link.
+    stubProdEnv();
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au");
     expect(getAuthCallbackUrl("/parent-login", getMarketingUrl())).toBe(
       "https://buildalphakids.com.au/auth/callback?next=%2Fparent-login"
     );

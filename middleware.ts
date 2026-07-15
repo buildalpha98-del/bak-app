@@ -4,6 +4,15 @@ import { isPublicRoute } from "@/lib/marketing/public-routes";
 import { isRevokedSessionError } from "@/lib/auth/session-errors";
 import { resolveParentLoginTarget } from "@/lib/parent/safe-next";
 
+// The sign-in pages themselves. Redirecting one of these to /login is
+// always a loop, never a fix.
+//
+// Kept separate from PUBLIC_ROUTES in lib/marketing/public-routes: that
+// list answers "may an anonymous visitor see this?", which is true of
+// every marketing page too. This one answers "is /login already the
+// destination?", and only these three qualify.
+const LOGIN_ROUTES = ["/login", "/client-login", "/parent-login"];
+
 // Role → allowed route prefixes (staff roles only — parent handled separately)
 const ROLE_ROUTES: Record<string, string[]> = {
   admin: ["/admin", "/ops", "/coach"], // admin can access all portals
@@ -95,15 +104,50 @@ export async function middleware(request: NextRequest) {
     error: authError,
   } = await supabase.auth.getUser();
 
-  if (authError && isRevokedSessionError(authError)) {
-    const login = NextResponse.redirect(new URL("/login", request.url));
-    for (const cookie of request.cookies.getAll()) {
-      if (cookie.name.startsWith("sb-")) {
-        login.cookies.delete(cookie.name);
-      }
+  // Two independent guards, belt AND braces. Each has already broken
+  // production on its own, and they fail in different ways:
+  //
+  // 1. STRUCTURAL — does the browser actually carry sb-* cookies? Only a
+  //    request carrying some can be carrying STALE ones, so this is what
+  //    makes a wipe meaningful at all. Acting on authError alone took
+  //    down login (fixed in bd1f871): with no session, getUser() fails
+  //    with AuthSessionMissingError, whose status IS 400, so every
+  //    signed-out visitor to /login was redirected to /login forever.
+  //
+  // 2. NOMINAL — isRevokedSessionError() names AuthSessionMissingError
+  //    and returns false for it.
+  //
+  // Guard 2 alone is NARROWER than it looks: it still treats ANY
+  // status-400 auth error as revoked, and only that one error NAME
+  // escapes. A malformed anon key, a gateway 400, or any future
+  // 400-shaped error carrying a different name would bounce an
+  // ANONYMOUS visitor off the public homepage to /login — reintroducing
+  // bd1f871's bug through a side door, and now on the marketing site
+  // where the visitor has never heard of our login page. Guard 1 is the
+  // one that holds in those cases, because an anonymous visitor has no
+  // sb-* cookies no matter what the auth server said.
+  const staleAuthCookies = request.cookies
+    .getAll()
+    .filter((cookie) => cookie.name.startsWith("sb-"));
+
+  if (
+    authError &&
+    staleAuthCookies.length > 0 &&
+    isRevokedSessionError(authError)
+  ) {
+    // Already on a login page: clear the cookies and let it render. A
+    // redirect here would just point the page at itself. Self-terminating
+    // either way (the wipe means the retry has no cookies and misses this
+    // block), but "harmless extra hop" is not a property worth relying on
+    // — it holds only while the delete-then-redirect order is preserved.
+    const revoked = LOGIN_ROUTES.includes(pathname)
+      ? NextResponse.next({ request })
+      : NextResponse.redirect(new URL("/login", request.url));
+    for (const cookie of staleAuthCookies) {
+      revoked.cookies.delete(cookie.name);
     }
-    login.cookies.delete(ROLE_HINT_COOKIE);
-    return login;
+    revoked.cookies.delete(ROLE_HINT_COOKIE);
+    return revoked;
   }
 
   // Check if current route is public

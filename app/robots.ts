@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getMarketingUrl } from "@/lib/utils/base-url";
+import { getCanonicalSiteUrl } from "@/lib/utils/base-url";
 
 // ============================================================
 // robots.txt
@@ -25,8 +25,12 @@ import { getMarketingUrl } from "@/lib/utils/base-url";
 // crawl and leave the canonical unread, which is strictly worse.
 //
 // The `sitemap` line always names the .com.au origin via
-// getMarketingUrl(), so even the .app copy of this file points crawlers
-// back at the canonical host.
+// getCanonicalSiteUrl(), so even the .app copy of this file points
+// crawlers back at the canonical host. It must be getCanonicalSiteUrl()
+// and not getMarketingUrl(): the latter falls back to the .app domain
+// before the DNS cutover, which would advertise a crawlable, entirely
+// self-canonical .app sitemap — the duplicate this file is deliberately
+// not trying to solve with a Disallow.
 //
 // If the .app duplicates ever do show up in the index, the correct fix
 // is an `X-Robots-Tag: noindex` response header emitted from middleware
@@ -51,6 +55,6 @@ export default function robots(): MetadataRoute.Robots {
         "/api/",
       ],
     },
-    sitemap: `${getMarketingUrl()}/sitemap.xml`,
+    sitemap: `${getCanonicalSiteUrl()}/sitemap.xml`,
   };
 }

@@ -28,27 +28,96 @@ export function getBaseUrl(): string {
 }
 
 // ============================================================
-// getMarketingUrl — canonical origin of the PUBLIC site
+// The public site has TWO origin helpers. Pick deliberately.
 // ============================================================
 //
-// Why this exists separately from getBaseUrl(): the dashboard and the
-// public marketing site are the same Next app on the same Vercel
-// project, but they answer on two different domains —
+// The dashboard and the public marketing site are the same Next app on
+// the same Vercel project, answering on two different domains:
 //
-//   getBaseUrl()      → https://buildalphakids.app     (the APP)
-//   getMarketingUrl() → https://buildalphakids.com.au  (the SITE)
+//   https://buildalphakids.app     (the APP — live today)
+//   https://buildalphakids.com.au  (the SITE — still WordPress until
+//                                   the DNS cutover)
 //
-// getBaseUrl() is what staff emails link back to (magic links, password
-// resets, crons, invoice PDFs) and must stay pinned to the app domain.
-// getMarketingUrl() is the SEO canonical: because every marketing page
-// is reachable on both hosts, canonical tags / OG URLs / sitemap entries
-// must all name the one public origin or the two domains compete as
-// duplicate content. Never build those from getBaseUrl().
+// That "until" is the whole reason there are two helpers rather than
+// one. Until DNS moves, `.com.au` does not serve this app at all, so a
+// URL naming it is a URL nobody can follow. After DNS moves, both hosts
+// serve every marketing route, so anything Google reads must name
+// exactly one of them or they compete as duplicate content.
 //
-// Overridable via NEXT_PUBLIC_MARKETING_URL so previews and local dev
-// can point elsewhere; the default is the production public domain.
+// Those two facts pull in OPPOSITE directions, so they get one helper
+// each. Both read NEXT_PUBLIC_MARKETING_URL first — they differ ONLY in
+// what they fall back to when it is unset:
+//
+//   getMarketingUrl()     → falls back to getBaseUrl()
+//                           "where can a human reach us RIGHT NOW"
+//   getCanonicalSiteUrl() → falls back to the .com.au literal
+//                           "what is the one true public origin, FOREVER"
+//
+// ============================================================
+// getMarketingUrl — reachable origin for links humans follow
+// ============================================================
+//
+// Parent magic links, invite links, booking emails, referral share
+// links and embed snippets. Every one of these is a URL somebody clicks,
+// so it must point at a host that serves this app AT THE MOMENT IT IS
+// SENT — not at the host we intend to use later.
+//
+// This is why the fallback is getBaseUrl() and not a `.com.au` literal.
+// There is a window — merge and deploy are steps 6 of the cutover
+// runbook, DNS is step 8 — where this code is live in production but
+// `.com.au` is still WordPress. A hard default would send parent invites
+// to WordPress during that window, and would do it SILENTLY: Supabase
+// substitutes its project Site URL for any `emailRedirectTo` that is not
+// on the redirect allowlist, so the link would quietly land somewhere
+// else instead of erroring. With the getBaseUrl() fallback the
+// pre-cutover behaviour is identical to main's today (`.app`, which
+// works), and setting NEXT_PUBLIC_MARKETING_URL at cutover moves every
+// caller at once — a config change, not a rewrite.
 
 export function getMarketingUrl(): string {
+  const marketing = process.env.NEXT_PUBLIC_MARKETING_URL;
+  if (marketing) return marketing.replace(/\/+$/, "");
+  return getBaseUrl();
+}
+
+// ============================================================
+// getCanonicalSiteUrl — the one origin Google is told about
+// ============================================================
+//
+// Canonical tags, metadataBase, sitemap entries, robots' Sitemap line,
+// JSON-LD @id/url. NOT interchangeable with getMarketingUrl(), even
+// though they return the same string once NEXT_PUBLIC_MARKETING_URL is
+// set. The difference is what happens when it is UNSET.
+//
+// A canonical URL is an ASSERTION ABOUT IDENTITY, not a route: it says
+// "of the several hosts serving this byte-identical page, THIS is the
+// real one." That answer must be the same on every host and must not
+// drift with deploy-time env — which is exactly what a getBaseUrl()
+// fallback would do. Falling back to `.app` here would make each `.app`
+// copy self-canonicalising, so the two domains would compete as
+// duplicates: precisely the failure the split into two helpers exists to
+// prevent, and the failure robots.ts explicitly delegates to canonical
+// tags (it allows the `.app` crawl on purpose, because a canonical only
+// works if the duplicate is crawlable).
+//
+// The sitemap makes the asymmetry concrete. With a getBaseUrl()
+// fallback, an un-flipped deploy would serve a robots.txt advertising
+// `https://buildalphakids.app/sitemap.xml`, listing `.app` URLs, all
+// crawlable and all self-canonical — an indexable duplicate of the whole
+// site, offered to Googlebot at the worst possible moment. `.app` is not
+// obscure enough to rely on: it is HSTS-preloaded and its certificates
+// are in the public CT logs, so it gets discovered without anyone
+// submitting anything. Nothing is indexed yet, so the literal costs us
+// nothing pre-cutover and prevents a mess post-cutover.
+//
+// It also fails safe: if step 7 of the runbook (the env flip) is missed,
+// links degrade to `.app` — which still works, since both hosts serve
+// every route — instead of the index quietly splitting in two.
+//
+// The env override is honoured so preview deploys and local dev can
+// point canonicals at themselves rather than at production.
+
+export function getCanonicalSiteUrl(): string {
   const marketing = process.env.NEXT_PUBLIC_MARKETING_URL;
   if (marketing) return marketing.replace(/\/+$/, "");
   return "https://buildalphakids.com.au";
