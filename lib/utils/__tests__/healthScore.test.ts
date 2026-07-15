@@ -98,6 +98,93 @@ function setupChainedMock(returnValue: unknown) {
   return chain;
 }
 
+// ============================================================
+// Input-routed mock — resolves by table + recorded filters
+// ============================================================
+//
+// calculateHealthScore runs its five signal calcs in Promise.all, so
+// from() call ORDER interleaves and is not a stable routing key (the
+// old order-based switch fed headcount rows into the cancellation
+// maths and the score came out NaN). These chains record what was
+// asked (select arg, count option, eq filters, lt presence) and pick
+// the payload at await-time — immune to reordering.
+
+type MockPayload = {
+  data?: unknown;
+  count?: number | null;
+  error: null;
+};
+
+interface RecordedQuery {
+  selectArg: string;
+  countExact: boolean;
+  eqs: Record<string, unknown>;
+  hasLt: boolean;
+}
+
+function routedChain(resolve: (q: RecordedQuery) => MockPayload) {
+  const q: RecordedQuery = {
+    selectArg: "",
+    countExact: false,
+    eqs: {},
+    hasLt: false,
+  };
+  const chain: Record<string, unknown> = {};
+  for (const m of ["neq", "gt", "gte", "lte", "not", "order", "limit", "single", "is", "filter", "range", "head"]) {
+    chain[m] = vi.fn().mockReturnValue(chain);
+  }
+  chain.select = vi.fn((arg?: string, opts?: { count?: string }) => {
+    q.selectArg = arg ?? "";
+    q.countExact = opts?.count === "exact";
+    return chain;
+  });
+  chain.eq = vi.fn((col: string, val: unknown) => {
+    q.eqs[col] = val;
+    return chain;
+  });
+  chain.lt = vi.fn(() => {
+    q.hasLt = true;
+    return chain;
+  });
+  chain.then = vi.fn((res: (v: unknown) => void) => res(resolve(q)));
+  return chain;
+}
+
+function routeHealthQueries(payloads: {
+  ratings: MockPayload;
+  invoices: MockPayload;
+  totalCount: MockPayload;
+  cancelledCount: MockPayload;
+  communication: MockPayload;
+  recentSessions: MockPayload;
+  prevSessions: MockPayload;
+}) {
+  adminClient.from.mockImplementation(((table: string) => {
+    if (table === "feedback_ratings") {
+      return routedChain((q) =>
+        q.selectArg.includes("submitted_at")
+          ? payloads.communication
+          : payloads.ratings
+      ) as never;
+    }
+    if (table === "outbound_invoices") {
+      return routedChain(() => payloads.invoices) as never;
+    }
+    if (table === "sessions") {
+      return routedChain((q) => {
+        if (q.countExact) {
+          return q.eqs.status === "cancelled"
+            ? payloads.cancelledCount
+            : payloads.totalCount;
+        }
+        // Attendance: the previous-period query is the one with .lt(date)
+        return q.hasLt ? payloads.prevSessions : payloads.recentSessions;
+      }) as never;
+    }
+    return setupChainedMock({ data: null, error: null }) as never;
+  }) as never);
+}
+
 describe("calculateHealthScore", () => {
   const centreId = "centre-test-1";
 
@@ -119,71 +206,52 @@ describe("calculateHealthScore", () => {
   });
 
   it("returns green status when score >= 75", async () => {
-    // Mock high feedback ratings (avg 4.5)
-    const feedbackChain = setupChainedMock({
-      data: [{ rating: 5 }, { rating: 4 }, { rating: 5 }, { rating: 4 }],
-      error: null,
-    });
-
-    // Mock fast invoice payment (5 days average)
-    const invoiceChain = setupChainedMock({
-      data: [
-        { sent_at: "2026-02-01", updated_at: "2026-02-06", status: "paid" },
-        { sent_at: "2026-01-01", updated_at: "2026-01-04", status: "paid" },
-      ],
-      error: null,
-    });
-
-    // Mock low cancellation (0 cancelled out of 20)
-    const sessionCountChain = setupChainedMock({ count: 20, error: null });
-    const cancelledCountChain = setupChainedMock({ count: 0, error: null });
-
-    // Mock fast communication (responded in 12 hours)
-    const commChain = setupChainedMock({
-      data: [
-        {
-          created_at: "2026-03-01T08:00:00Z",
-          submitted_at: "2026-03-01T20:00:00Z",
-        },
-      ],
-      error: null,
-    });
-
-    // Mock growing attendance
-    const recentSessionsChain = setupChainedMock({
-      data: [
-        { headcount: 20 },
-        { headcount: 22 },
-        { headcount: 21 },
-        { headcount: 23 },
-      ],
-      error: null,
-    });
-    const prevSessionsChain = setupChainedMock({
-      data: [
-        { headcount: 15 },
-        { headcount: 16 },
-        { headcount: 14 },
-        { headcount: 15 },
-      ],
-      error: null,
-    });
-
-    let callCount = 0;
-    adminClient.from.mockImplementation(() => {
-      callCount++;
-      // The function calls from() multiple times for different tables/queries
-      // We return chains that resolve to good data
-      switch (callCount) {
-        case 1: return feedbackChain as never;     // feedback_ratings
-        case 2: return invoiceChain as never;      // outbound_invoices
-        case 3: return sessionCountChain as never; // sessions (total)
-        case 4: return cancelledCountChain as never; // sessions (cancelled)
-        case 5: return commChain as never;         // feedback_ratings (communication)
-        case 6: return recentSessionsChain as never; // sessions (recent attendance)
-        case 7: return prevSessionsChain as never;   // sessions (prev attendance)
-        default: return setupChainedMock({ data: null, error: null }) as never;
-      }
+    routeHealthQueries({
+      // High feedback (avg 4.5)
+      ratings: {
+        data: [{ rating: 5 }, { rating: 4 }, { rating: 5 }, { rating: 4 }],
+        error: null,
+      },
+      // Fast invoice payment (3-5 days)
+      invoices: {
+        data: [
+          { sent_at: "2026-02-01", updated_at: "2026-02-06", status: "paid" },
+          { sent_at: "2026-01-01", updated_at: "2026-01-04", status: "paid" },
+        ],
+        error: null,
+      },
+      // Low cancellation (0 of 20)
+      totalCount: { count: 20, error: null },
+      cancelledCount: { count: 0, error: null },
+      // Fast communication (12 hours)
+      communication: {
+        data: [
+          {
+            created_at: "2026-03-01T08:00:00Z",
+            submitted_at: "2026-03-01T20:00:00Z",
+          },
+        ],
+        error: null,
+      },
+      // Growing attendance
+      recentSessions: {
+        data: [
+          { headcount: 20 },
+          { headcount: 22 },
+          { headcount: 21 },
+          { headcount: 23 },
+        ],
+        error: null,
+      },
+      prevSessions: {
+        data: [
+          { headcount: 15 },
+          { headcount: 16 },
+          { headcount: 14 },
+          { headcount: 15 },
+        ],
+        error: null,
+      },
     });
 
     const config = makeConfig();
@@ -194,59 +262,34 @@ describe("calculateHealthScore", () => {
   });
 
   it("returns red status when score < 50", async () => {
-    // Mock terrible feedback (avg 1.5)
-    const feedbackChain = setupChainedMock({
-      data: [{ rating: 1 }, { rating: 2 }, { rating: 1 }, { rating: 2 }],
-      error: null,
-    });
-
-    // Mock very late invoices (60+ days to pay)
-    const invoiceChain = setupChainedMock({
-      data: [
-        { sent_at: "2025-12-01", updated_at: "2026-02-15", status: "paid" },
-        { sent_at: "2025-11-01", updated_at: "2026-01-15", status: "paid" },
-      ],
-      error: null,
-    });
-
-    // Mock high cancellation (15 out of 20)
-    const sessionCountChain = setupChainedMock({ count: 20, error: null });
-    const cancelledCountChain = setupChainedMock({ count: 15, error: null });
-
-    // Mock poor communication (no responses)
-    const commChain = setupChainedMock({ data: [], error: null });
-
-    // Mock declining attendance
-    const recentSessionsChain = setupChainedMock({
-      data: [
-        { headcount: 5 },
-        { headcount: 4 },
-        { headcount: 3 },
-      ],
-      error: null,
-    });
-    const prevSessionsChain = setupChainedMock({
-      data: [
-        { headcount: 20 },
-        { headcount: 18 },
-        { headcount: 19 },
-      ],
-      error: null,
-    });
-
-    let callCount = 0;
-    adminClient.from.mockImplementation(() => {
-      callCount++;
-      switch (callCount) {
-        case 1: return feedbackChain as never;
-        case 2: return invoiceChain as never;
-        case 3: return sessionCountChain as never;
-        case 4: return cancelledCountChain as never;
-        case 5: return commChain as never;
-        case 6: return recentSessionsChain as never;
-        case 7: return prevSessionsChain as never;
-        default: return setupChainedMock({ data: null, error: null }) as never;
-      }
+    routeHealthQueries({
+      // Terrible feedback (avg 1.5)
+      ratings: {
+        data: [{ rating: 1 }, { rating: 2 }, { rating: 1 }, { rating: 2 }],
+        error: null,
+      },
+      // Very late invoices (60+ days to pay)
+      invoices: {
+        data: [
+          { sent_at: "2025-12-01", updated_at: "2026-02-15", status: "paid" },
+          { sent_at: "2025-11-01", updated_at: "2026-01-15", status: "paid" },
+        ],
+        error: null,
+      },
+      // High cancellation (15 of 20)
+      totalCount: { count: 20, error: null },
+      cancelledCount: { count: 15, error: null },
+      // Poor communication (no responses → neutral 70)
+      communication: { data: [], error: null },
+      // Collapsing attendance
+      recentSessions: {
+        data: [{ headcount: 5 }, { headcount: 4 }, { headcount: 3 }],
+        error: null,
+      },
+      prevSessions: {
+        data: [{ headcount: 20 }, { headcount: 18 }, { headcount: 19 }],
+        error: null,
+      },
     });
 
     const config = makeConfig();

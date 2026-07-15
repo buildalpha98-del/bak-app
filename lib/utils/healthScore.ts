@@ -308,15 +308,22 @@ export async function calculateHealthScore(
     const greenThreshold = cfg?.green_threshold ?? 75;
     const amberThreshold = cfg?.amber_threshold ?? 50;
 
-    weightedSum += result.signal_score * weight;
+    // NaN belt: Math.min/max pass NaN straight through, so a single
+    // component fed malformed rows would poison the weighted sum and
+    // the cron would persist a NaN score. Fall back to neutral 70.
+    const signalScore = Number.isFinite(result.signal_score)
+      ? result.signal_score
+      : 70;
+
+    weightedSum += signalScore * weight;
     totalWeight += weight;
 
     breakdown.push({
       signal_name: name,
       weight,
       raw_value: result.raw_value,
-      signal_score: result.signal_score,
-      status: determineStatus(result.signal_score, greenThreshold, amberThreshold),
+      signal_score: signalScore,
+      status: determineStatus(signalScore, greenThreshold, amberThreshold),
     });
   }
 
