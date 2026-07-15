@@ -631,6 +631,39 @@ export function demoScheduledEmail(
   };
 }
 
+/**
+ * Escapes user-supplied text for interpolation into email HTML.
+ *
+ * Only the enquiry acknowledgement needs this: every other template in
+ * this file is fed by staff-entered or system-generated values, whereas
+ * the enquiry form is a public, unauthenticated ingress.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export function enquiryAcknowledgementEmail(
+  contactName: string | null,
+  centreName: string
+): { subject: string; html: string } {
+  const greeting = contactName?.trim() ? escapeHtml(contactName.trim()) : "there";
+
+  return {
+    subject: "Thanks for your enquiry — Build Alpha Kids",
+    html: layout(`
+      <p>Hi ${greeting},</p>
+      <p>Thanks for getting in touch about <strong>${escapeHtml(centreName)}</strong>. We've received your enquiry and someone from our team will be in touch soon.</p>
+      <p>If you'd like to add anything in the meantime, just reply to this email.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">You can also reach us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+    `),
+  };
+}
+
 export function feedbackRequestEmail(
   centreName: string,
   coachName: string,
