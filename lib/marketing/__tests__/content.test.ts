@@ -6,6 +6,7 @@ import {
   CONTACT_PAGE,
   ENQUIRE_PAGE,
   getProgram,
+  HOLIDAY_CLINICS_PAGE,
   HOMEPAGE,
   META_DESCRIPTION_MAX,
   PROGRAMS,
@@ -38,6 +39,7 @@ const META_DESCRIPTIONS: [name: string, text: string][] = [
   ["contact", CONTACT_PAGE.description],
   ["enquire", ENQUIRE_PAGE.description],
   ["blog index", BLOG_INDEX.description],
+  ["holiday clinics", HOLIDAY_CLINICS_PAGE.description],
   ...PROGRAMS.map(
     (p): [string, string] => [`program: ${p.slug}`, p.metaDescription]
   ),
@@ -52,7 +54,7 @@ describe("meta descriptions", () => {
   );
 
   it("covers every marketing page (guard is useless if one slips through)", () => {
-    expect(META_DESCRIPTIONS).toHaveLength(6 + PROGRAMS.length);
+    expect(META_DESCRIPTIONS).toHaveLength(7 + PROGRAMS.length);
   });
 });
 

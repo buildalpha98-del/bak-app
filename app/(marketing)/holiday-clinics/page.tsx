@@ -3,20 +3,23 @@ import { Section } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { ClinicsEmptyState } from "@/components/marketing/clinic-card";
 import { ClinicFilters } from "@/components/marketing/clinic-filters";
+import { JsonLd } from "@/components/marketing/json-ld";
+import { eventJsonLd } from "@/lib/marketing/jsonld";
 import { getOpenHolidayClinics } from "@/lib/marketing/clinics";
 import type { PublicClinic } from "@/lib/marketing/clinics-shared";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
-import { ACTIVE_KIDS_BLURB, SITE } from "@/lib/marketing/content";
+import {
+  ACTIVE_KIDS_BLURB,
+  HOLIDAY_CLINICS_PAGE,
+} from "@/lib/marketing/content";
 
 /** ISR — fresh clinic dates/spots within 5 minutes, no per-request DB hit. */
 export const revalidate = 300;
 
-const DESCRIPTION =
-  "Multi-sport school holiday clinics across South-West Sydney. Pick a date and book online in about 60 seconds — NSW Active Kids vouchers accepted.";
-
 export const metadata: Metadata = {
-  title: `School Holiday Clinics — ${SITE.name}`,
-  description: DESCRIPTION,
+  title: "School Holiday Clinics",
+  description: HOLIDAY_CLINICS_PAGE.description,
+  alternates: { canonical: "/holiday-clinics" },
 };
 
 /**
@@ -30,6 +33,16 @@ export default async function HolidayClinicsPage() {
 
   return (
     <>
+      {/*
+        One Event record per listed clinic. getOpenHolidayClinics()
+        already filters to clinics that are open for booking, so every
+        clinic rendered on the page gets a record and nothing unlisted
+        leaks into structured data — the two stay in step because they
+        read the same array.
+      */}
+      {clinics.map((clinic) => (
+        <JsonLd key={clinic.id} data={eventJsonLd(clinic)} />
+      ))}
       <HeroLite
         label="School holiday clinics"
         eyebrow="Book direct"

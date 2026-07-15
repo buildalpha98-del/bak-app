@@ -42,8 +42,9 @@ export async function generateMetadata({
   if (!program) return {};
 
   return {
-    title: `${program.title} — ${SITE.name}`,
+    title: program.title,
     description: program.metaDescription,
+    alternates: { canonical: `/programs/${program.slug}` },
   };
 }
 

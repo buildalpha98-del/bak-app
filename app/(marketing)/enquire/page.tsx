@@ -8,12 +8,12 @@ import {
   ENQUIRE_PAGE,
   ENQUIRE_STEPS,
   ENQUIRE_TRUST_POINTS,
-  SITE,
 } from "@/lib/marketing/content";
 
 export const metadata: Metadata = {
-  title: `${ENQUIRE_PAGE.title} — ${SITE.name}`,
+  title: ENQUIRE_PAGE.title,
   description: ENQUIRE_PAGE.description,
+  alternates: { canonical: "/enquire" },
 };
 
 /**

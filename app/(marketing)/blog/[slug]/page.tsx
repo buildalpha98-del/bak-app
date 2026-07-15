@@ -5,6 +5,8 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import { ArrowLeft } from "lucide-react";
 import { Section } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
+import { JsonLd } from "@/components/marketing/json-ld";
+import { articleJsonLd } from "@/lib/marketing/jsonld";
 import {
   getPostBySlug,
   getPublishedPosts,
@@ -15,7 +17,6 @@ import { formatPostDate } from "@/lib/marketing/blog-shared";
 import {
   BALL_COLORS,
   BLOG_POST,
-  SITE,
   truncateDescription,
 } from "@/lib/marketing/content";
 
@@ -57,13 +58,23 @@ export async function generateMetadata({
     null
   );
 
-  if (!post) return { title: `Blog — ${SITE.name}` };
+  if (!post) return { title: "Blog" };
 
   const description = post.seo_description ?? post.excerpt;
 
   return {
-    title: post.seo_title ?? `${post.title} — ${SITE.name}`,
+    title: post.seo_title ?? post.title,
     description: description ? truncateDescription(description) : undefined,
+    alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      type: "article",
+      ...(post.published_at ? { publishedTime: post.published_at } : {}),
+      authors: [post.author_name],
+      // A post's own cover wins when it has one; otherwise the layout's
+      // default share image is inherited. Every imported post currently
+      // has a null cover, so the default is the live path today.
+      ...(post.cover_image_url ? { images: [post.cover_image_url] } : {}),
+    },
   };
 }
 
@@ -163,6 +174,7 @@ export default async function BlogPostPage({ params }: PostPageProps) {
 
   return (
     <>
+      <JsonLd data={articleJsonLd(post)} />
       <HeroLite
         label={post.title}
         eyebrow={post.published_at ? formatPostDate(post.published_at) : "Blog"}

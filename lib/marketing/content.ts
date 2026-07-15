@@ -113,6 +113,33 @@ export const BRAND = {
 } as const;
 
 /**
+ * Default social share image (Open Graph + Twitter), used site-wide
+ * from the marketing layout.
+ *
+ * LAUNCH GAP — this is the crest logo, not a designed share card. No
+ * OG asset exists in the repo, and inventing one is not this task's
+ * job. The crest is a deliberate stand-in rather than a solution:
+ *
+ *  - It is landscape (1604×1060, ~1.51:1) and comfortably above
+ *    Facebook/LinkedIn's 600×315 minimum, so it renders as a large
+ *    summary card rather than a thumbnail.
+ *  - It is NOT the 1.91:1 that OG wants, so previews will letterbox
+ *    it with small side bars. Acceptable: a slightly padded logo reads
+ *    as the brand, which beats the alternative of no og:image at all
+ *    (link previews then fall back to whatever image a crawler scrapes
+ *    off the page, or to none).
+ *
+ * REPLACE BEFORE LAUNCH with a purpose-designed 1200×630 card. When
+ * that lands, only this constant changes — every page inherits it.
+ */
+export const OG_IMAGE = {
+  url: BRAND.logo,
+  width: 1604,
+  height: 1060,
+  alt: `${SITE.name} — ${SITE.tagline}`,
+} as const;
+
+/**
  * Canonical ball palette from the brand artwork — the ONLY place
  * these hexes are declared. `fg` is the AA-verified text colour
  * when the ball colour is used as a chip/badge FILL: black passes
@@ -483,6 +510,20 @@ export const HOMEPAGE_CLINICS = {
   title: "School holiday clinics",
   intro:
     "The next dates on the calendar — book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
+} as const;
+
+/**
+ * The /holiday-clinics page's meta description.
+ *
+ * Pulled up from the page (where it sat as a local const) so it joins
+ * the META_DESCRIPTIONS guard in content.test.ts — that test asserts it
+ * covers every marketing page, and this was the one page it missed.
+ * A description the guard can't see is a description that can drift
+ * past the search cutoff unnoticed.
+ */
+export const HOLIDAY_CLINICS_PAGE = {
+  description:
+    "Multi-sport school holiday clinics across South-West Sydney. Pick a date and book online in about 60 seconds — NSW Active Kids vouchers accepted.",
 } as const;
 
 /** Copy for the /programs index page (also its meta description). */

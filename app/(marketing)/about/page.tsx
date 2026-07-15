@@ -23,8 +23,9 @@ import {
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: `About — ${SITE.name}`,
+  title: "About",
   description: ABOUT_PAGE.description,
+  alternates: { canonical: "/about" },
 };
 
 /**

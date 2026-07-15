@@ -30,8 +30,11 @@ import {
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — ${SITE.tagline}`,
+  // `absolute` opts out of the layout's "%s | Build Alpha Kids"
+  // template — the brand already leads this title.
+  title: { absolute: `${SITE.name} — ${SITE.tagline}` },
   description: HOMEPAGE.heroSub,
+  alternates: { canonical: "/" },
 };
 
 /**

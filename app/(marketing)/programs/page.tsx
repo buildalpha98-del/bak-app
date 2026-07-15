@@ -4,11 +4,12 @@ import { Section } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { ProgramCard } from "@/components/marketing/program-card";
 import { B2bBand } from "@/components/marketing/b2b-band";
-import { BRAND, PROGRAMS, PROGRAMS_INDEX, SITE } from "@/lib/marketing/content";
+import { BRAND, PROGRAMS, PROGRAMS_INDEX } from "@/lib/marketing/content";
 
 export const metadata: Metadata = {
-  title: `Programs — ${SITE.name}`,
+  title: "Programs",
   description: PROGRAMS_INDEX.description,
+  alternates: { canonical: "/programs" },
 };
 
 /**

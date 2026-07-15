@@ -14,8 +14,9 @@ import {
 } from "@/lib/marketing/content";
 
 export const metadata: Metadata = {
-  title: `Contact — ${SITE.name}`,
+  title: "Contact",
   description: CONTACT_PAGE.description,
+  alternates: { canonical: "/contact" },
 };
 
 /**

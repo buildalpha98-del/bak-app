@@ -4,14 +4,15 @@ import { HeroLite } from "@/components/marketing/hero-lite";
 import { BlogCard, BlogEmptyState } from "@/components/marketing/blog-card";
 import { getPublishedPosts, type PublicBlogPost } from "@/lib/marketing/blog";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
-import { BLOG_INDEX, SITE } from "@/lib/marketing/content";
+import { BLOG_INDEX } from "@/lib/marketing/content";
 
 /** ISR — a newly published post appears within 5 minutes. */
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: `Blog — ${SITE.name}`,
+  title: "Blog",
   description: BLOG_INDEX.description,
+  alternates: { canonical: "/blog" },
 };
 
 /**
