@@ -81,6 +81,11 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
   // Generation state
   const [status, setStatus] = useState<FormStatus>("idle");
+  // Multi-week series: 1 = single plan (existing flow). >1 generates
+  // sequentially with progression context and saves as a linked block.
+  const [weeks, setWeeks] = useState(1);
+  const [genProgress, setGenProgress] = useState<string | null>(null);
+  const [generatedSeries, setGeneratedSeries] = useState<ProgramContentJson[]>([]);
   const [generatedContent, setGeneratedContent] =
     useState<ProgramContentJson | null>(null);
   const [editedContent, setEditedContent] =
@@ -170,31 +175,83 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
           }
         : undefined;
 
-      const res = await fetch("/api/ai/generate-program", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sport,
-          ageGroups,
-          durationMinutes,
-          skillFocus: skillFocus.trim() || undefined,
-          availableEquipment: selectedEquipment,
-          centreContext: centreData,
-        }),
-      });
+      const baseBody = {
+        sport,
+        ageGroups,
+        durationMinutes,
+        skillFocus: skillFocus.trim() || undefined,
+        availableEquipment: selectedEquipment,
+        centreContext: centreData,
+      };
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to generate programme.");
+      async function generateOne(
+        body: Record<string, unknown>
+      ): Promise<ProgramContentJson> {
+        const res = await fetch("/api/ai/generate-program", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          // One patient retry on the cooldown — sequential weeks can
+          // land inside the per-user rate window.
+          const wait = /wait (\d+) seconds/i.exec(json.error ?? "")?.[1];
+          if (res.status === 429 && wait) {
+            await new Promise((r) => setTimeout(r, (Number(wait) + 1) * 1000));
+            return generateOne(body);
+          }
+          throw new Error(json.error || "Failed to generate programme.");
+        }
+        return json.data as ProgramContentJson;
       }
 
-      setGeneratedContent(json.data as ProgramContentJson);
-      setEditedContent(null);
-      setStatus("preview");
+      if (weeks <= 1) {
+        const plan = await generateOne(baseBody);
+        setGeneratedContent(plan);
+        setGeneratedSeries([]);
+        setEditedContent(null);
+        setStatus("preview");
+      } else {
+        const plans: ProgramContentJson[] = [];
+        const previousWeeks: Array<{
+          week: number;
+          title: string;
+          objectives: string[];
+          skills: string[];
+        }> = [];
+        for (let w = 1; w <= weeks; w++) {
+          setGenProgress(`Generating week ${w} of ${weeks}…`);
+          const plan = await generateOne({
+            ...baseBody,
+            progression: {
+              week: w,
+              totalWeeks: weeks,
+              seriesTitle: previousWeeks[0]?.title,
+              previousWeeks,
+            },
+          });
+          if (!/week\s*\d/i.test(plan.title)) {
+            plan.title = `${plan.title} — Week ${w} of ${weeks}`;
+          }
+          plans.push(plan);
+          previousWeeks.push({
+            week: w,
+            title: plan.title,
+            objectives: plan.objectives ?? [],
+            skills: (plan.skillDevelopment ?? []).map((d) => d.name),
+          });
+        }
+        setGenProgress(null);
+        setGeneratedSeries(plans);
+        setGeneratedContent(plans[0]);
+        setEditedContent(null);
+        setStatus("preview");
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "An unexpected error occurred.";
+      setGenProgress(null);
       setError(message);
       setStatus("idle");
     }
@@ -209,6 +266,39 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
     setError(null);
 
     try {
+      if (generatedSeries.length > 1) {
+        // Multi-week block: every week saves under one series id; any
+        // edits made in preview apply to week 1.
+        const seriesId = crypto.randomUUID();
+        const plans = [editedContent ?? generatedSeries[0], ...generatedSeries.slice(1)];
+        let firstId: string | null = null;
+        for (let i = 0; i < plans.length; i++) {
+          const plan = plans[i];
+          const { data: saved, error: saveError } = await saveProgram({
+            sport: sport as string,
+            ageGroups,
+            durationMinutes: durationMinutes as number,
+            skillFocus: skillFocus.trim() || undefined,
+            contentJson: plan,
+            equipmentUsed: plan.equipmentNeeded ?? selectedEquipment,
+            seriesId,
+            seriesWeek: i + 1,
+            seriesLength: plans.length,
+          });
+          if (saveError || !saved) {
+            throw new Error(
+              `Week ${i + 1} failed to save${i > 0 ? ` (weeks 1–${i} were saved)` : ""}: ${saveError ?? "unknown error"}`
+            );
+          }
+          if (!firstId) firstId = saved.id;
+        }
+        toast.success(
+          `${plans.length}-week series saved — apply it to the roster from here.`
+        );
+        router.push(`${basePath}/${firstId}`);
+        return;
+      }
+
       const { data: saved, error: saveError } = await saveProgram({
         sport: sport as string,
         ageGroups,
@@ -325,6 +415,33 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Weeks — multi-week progression block */}
+              <div>
+                <Label htmlFor="weeks">Programme length</Label>
+                <Select
+                  value={String(weeks)}
+                  onValueChange={(v) => setWeeks(parseInt(v ?? "1", 10))}
+                >
+                  <SelectTrigger id="weeks">
+                    <SelectValue placeholder="Single session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Single session</SelectItem>
+                    <SelectItem value="2">2-week block</SelectItem>
+                    <SelectItem value="4">4-week block</SelectItem>
+                    <SelectItem value="6">6-week block</SelectItem>
+                    <SelectItem value="8">8-week block</SelectItem>
+                  </SelectContent>
+                </Select>
+                {weeks > 1 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Each week builds on the last — expect ~
+                    {Math.round(weeks * 0.4)} min of generation. Saved as one
+                    series you can apply to the roster in sequence.
+                  </p>
+                )}
               </div>
 
               {/* Skill Focus */}
@@ -455,7 +572,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
             {status === "generating" ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating programme…
+                {genProgress ?? "Generating programme…"}
               </>
             ) : (
               <>
@@ -481,13 +598,25 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
             </CardContent>
           </Card>
 
+          {generatedSeries.length > 1 && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm text-foreground">
+              Previewing <span className="font-semibold">week 1</span> of the{" "}
+              {generatedSeries.length}-week block — all{" "}
+              {generatedSeries.length} weeks were generated and will save
+              together as one series. Individual weeks stay editable after
+              saving.
+            </div>
+          )}
+
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               onClick={handleSave}
               className="flex-1 bg-primary hover:bg-primary/90 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
-              Save to Library
+              {generatedSeries.length > 1
+                ? `Save ${generatedSeries.length}-Week Series`
+                : "Save to Library"}
             </Button>
             <Button variant="outline" onClick={handleStartEdit} className="flex-1">
               <Pencil className="mr-2 h-4 w-4" />

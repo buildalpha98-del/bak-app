@@ -125,6 +125,70 @@ export async function POST(request: Request) {
       };
     }
 
+    // Progression (optional): week N of a multi-week series, with
+    // summaries of earlier weeks so the plan genuinely progresses.
+    let progression:
+      | {
+          week: number;
+          totalWeeks: number;
+          seriesTitle?: string;
+          previousWeeks: Array<{
+            week: number;
+            title: string;
+            objectives: string[];
+            skills: string[];
+          }>;
+        }
+      | undefined;
+    if (body.progression != null) {
+      const pr = body.progression as Record<string, unknown>;
+      const week = Number(pr.week);
+      const totalWeeks = Number(pr.totalWeeks);
+      if (
+        !Number.isInteger(week) ||
+        !Number.isInteger(totalWeeks) ||
+        week < 1 ||
+        totalWeeks < 2 ||
+        totalWeeks > 12 ||
+        week > totalWeeks
+      ) {
+        return NextResponse.json(
+          { error: "Invalid progression." },
+          { status: 400 }
+        );
+      }
+      const strArr = (v: unknown, cap: number) =>
+        Array.isArray(v)
+          ? v
+              .filter((s): s is string => typeof s === "string")
+              .slice(0, cap)
+              .map((s) => s.slice(0, 200))
+          : [];
+      progression = {
+        week,
+        totalWeeks,
+        seriesTitle:
+          typeof pr.seriesTitle === "string"
+            ? pr.seriesTitle.slice(0, 120)
+            : undefined,
+        previousWeeks: (Array.isArray(pr.previousWeeks)
+          ? (pr.previousWeeks as unknown[])
+          : []
+        )
+          .slice(0, 12)
+          .filter(
+            (w): w is Record<string, unknown> =>
+              typeof w === "object" && w !== null
+          )
+          .map((w) => ({
+            week: Number(w.week) || 0,
+            title: typeof w.title === "string" ? w.title.slice(0, 200) : "",
+            objectives: strArr(w.objectives, 6),
+            skills: strArr(w.skills, 8),
+          })),
+      };
+    }
+
     // 5. Result cache — same (sport, ageGroups, duration, skillFocus,
     // equipment) returns the previous Claude output for 24h.
     // centreContext is intentionally excluded from the key — recent
@@ -136,6 +200,13 @@ export async function POST(request: Request) {
       durationMinutes: body.durationMinutes,
       skillFocus: typeof body.skillFocus === "string" ? body.skillFocus : null,
       availableEquipment: [...availableEquipment].sort(),
+      // Week N must never return week M's cached plan — key on the
+      // series position and what came before it.
+      progressionKey: progression
+        ? `${progression.week}/${progression.totalWeeks}:${progression.previousWeeks
+            .map((w) => w.title)
+            .join("|")}`
+        : null,
     };
     const cacheKey = hashRequestKey("program", cacheParams);
     const cached = getCached<unknown>(cacheKey);
@@ -165,6 +236,7 @@ export async function POST(request: Request) {
       skillFocus: typeof body.skillFocus === "string" ? body.skillFocus : undefined,
       availableEquipment,
       centreContext,
+      progression,
     });
     setCached(cacheKey, programContent);
 
