@@ -61,9 +61,21 @@ export interface EnquiryPayload {
   website: string;
 }
 
-export type EnquiryField = "orgName" | "email" | "orgType";
+export type EnquiryField = "orgName" | "contactName" | "email" | "orgType";
 export type EnquiryErrorCode = "required" | "invalid";
 export type EnquiryErrors = Partial<Record<EnquiryField, EnquiryErrorCode>>;
+
+/**
+ * Focus order for the first-invalid-field jump after a failed submit —
+ * source order, so the enquirer lands on the topmost problem rather
+ * than whichever key the object happened to iterate first.
+ */
+export const ENQUIRY_FIELD_ORDER: EnquiryField[] = [
+  "orgName",
+  "contactName",
+  "email",
+  "orgType",
+];
 
 /**
  * Deliberately loose: something@something.something. The point is to
@@ -78,6 +90,11 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * (and its 400s are surfaced too) — this only exists to spare the
  * enquirer a round trip.
  *
+ * The required set differs by mode because the two forms ask different
+ * questions: /enquire asks about an organisation, /contact asks about a
+ * person (see buildEnquiryPayload for why that still satisfies the
+ * route's required centre_name).
+ *
  * Org type is required on /enquire because the route's fallback for an
  * unrecognised `type` is "childcare_centre": leaving it blank would
  * quietly file every school as a centre.
@@ -88,13 +105,16 @@ export function validateEnquiryForm(
 ): EnquiryErrors {
   const errors: EnquiryErrors = {};
 
-  if (!form.orgName.trim()) errors.orgName = "required";
+  if (mode === "contact") {
+    if (!form.contactName.trim()) errors.contactName = "required";
+  } else {
+    if (!form.orgName.trim()) errors.orgName = "required";
+    if (!form.orgType) errors.orgType = "required";
+  }
 
   const email = form.email.trim();
   if (!email) errors.email = "required";
   else if (!EMAIL_PATTERN.test(email)) errors.email = "invalid";
-
-  if (mode === "enquire" && !form.orgType) errors.orgType = "required";
 
   return errors;
 }
@@ -143,12 +163,23 @@ function optional<K extends string>(
 
 export function buildEnquiryPayload(
   form: EnquiryFormState,
-  sourcePage: string
+  sourcePage: string,
+  mode: EnquiryMode = "enquire"
 ): EnquiryPayload {
   const programs = programTitlesFor(form.programs);
 
+  // The route requires centre_name, but /contact never asks for an
+  // organisation — it is the third door, for the people the two route
+  // cards don't fit, and a parent has no org to name. So their own name
+  // fills both: the CRM row reads as a person rather than a phantom
+  // organisation, and nobody gets asked an org-shaped question they
+  // can't answer. Directors wanting a quote go to /enquire, which does
+  // ask. This is the whole reason buildEnquiryPayload takes `mode`.
+  const centreName =
+    mode === "contact" ? form.contactName.trim() : form.orgName.trim();
+
   return {
-    centre_name: form.orgName.trim(),
+    centre_name: centreName,
     contact_email: form.email.trim(),
     ...optional("contact_name", form.contactName),
     ...optional("contact_phone", form.phone),

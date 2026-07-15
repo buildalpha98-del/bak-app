@@ -801,18 +801,25 @@ export const NEWSLETTER = {
 } as const;
 
 /**
- * The /contact variant's overrides. Same form, fewer fields: the org
- * type is fixed to "other" there, so the name field has to work for a
- * parent as well as a centre director.
+ * The /contact variant's overrides. Same form, fewer fields, and one
+ * deliberate difference: it asks for a PERSON, not an organisation.
+ *
+ * /contact is the third door — for whoever the two route cards above
+ * don't fit, which very often means a parent with no org to name. So
+ * there is no org field here at all: the enquirer's own name fills the
+ * route's required centre_name as well as contact_name (see
+ * buildEnquiryPayload), and the org type is pinned to "other". Anyone
+ * after a quote for their school or centre goes to /enquire, which asks
+ * the org-shaped questions properly.
+ *
+ * The name label itself is ENQUIRE_FORM.contactNameLabel — same
+ * question, same words, one definition.
  */
 export const CONTACT_FORM = {
   eyebrow: "Send a message",
   title: "Or just send us a message",
   intro:
     "Not sure which door you need? Send it through here and we'll point you the right way.",
-  orgNameLabel: "Who are you with?",
-  orgNameHint:
-    "Your school, centre or club — or just your family name if you're a parent.",
-  orgNameRequired: "Please pop a name in so we know who we're replying to.",
+  contactNameRequired: "Please add your name so we know who we're replying to.",
   submitLabel: "Send message",
 } as const;

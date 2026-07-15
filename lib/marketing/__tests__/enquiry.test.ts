@@ -3,6 +3,7 @@ import {
   buildEnquiryPayload,
   buildSourcePage,
   EMPTY_ENQUIRY_FORM,
+  ENQUIRY_FIELD_ORDER,
   programTitlesFor,
   resolveProgramParam,
   validateEnquiryForm,
@@ -37,6 +38,22 @@ describe("validateEnquiryForm", () => {
     });
   });
 
+  it("does not ask contact mode for an org name — that form has no org field", () => {
+    expect(
+      validateEnquiryForm(form({ contactName: "Jo", email: "jo@example.com" }), "contact")
+    ).toEqual({});
+  });
+
+  it("requires a contact name in contact mode — it becomes the lead", () => {
+    expect(
+      validateEnquiryForm(form({ contactName: "  ", email: "jo@example.com" }), "contact")
+    ).toEqual({ contactName: "required" });
+  });
+
+  it("does not require a contact name on /enquire", () => {
+    expect(validateEnquiryForm(form({ ...VALID, contactName: "" }))).toEqual({});
+  });
+
   it("requires an email", () => {
     expect(validateEnquiryForm(form({ ...VALID, email: "" }))).toEqual({
       email: "required",
@@ -66,7 +83,12 @@ describe("validateEnquiryForm", () => {
   });
 
   it("does not require an org type in contact mode (the form pins it to other)", () => {
-    expect(validateEnquiryForm(form({ ...VALID, orgType: "" }), "contact")).toEqual({});
+    expect(
+      validateEnquiryForm(
+        form({ ...VALID, contactName: "Jo", orgType: "" }),
+        "contact"
+      )
+    ).toEqual({});
   });
 
   it("reports every problem at once rather than one at a time", () => {
@@ -75,6 +97,22 @@ describe("validateEnquiryForm", () => {
       email: "invalid",
       orgType: "required",
     });
+  });
+});
+
+describe("ENQUIRY_FIELD_ORDER", () => {
+  it("covers every field validate can flag, so focus never has nowhere to go", () => {
+    const flagged = Object.keys(
+      validateEnquiryForm(form({ email: "bogus" }), "enquire")
+    ).concat(Object.keys(validateEnquiryForm(form(), "contact")));
+
+    for (const field of flagged) {
+      expect(ENQUIRY_FIELD_ORDER).toContain(field);
+    }
+  });
+
+  it("is in source order — focus lands on the topmost problem", () => {
+    expect(ENQUIRY_FIELD_ORDER).toEqual(["orgName", "contactName", "email", "orgType"]);
   });
 });
 
@@ -172,6 +210,39 @@ describe("buildEnquiryPayload", () => {
   it("omits an unset org type rather than sending an empty string", () => {
     const payload = buildEnquiryPayload(form({ ...VALID, orgType: "" }), "/contact");
     expect(payload).not.toHaveProperty("type");
+  });
+
+  it("fills the route's required centre_name from the person's name in contact mode", () => {
+    const payload = buildEnquiryPayload(
+      form({ contactName: "  Jo Bloggs  ", email: "jo@example.com", orgType: "other" }),
+      "/contact",
+      "contact"
+    );
+
+    // /contact has no org field, so the lead is the person. Both keys
+    // carry their name — centre_name because the route requires it.
+    expect(payload.centre_name).toBe("Jo Bloggs");
+    expect(payload.contact_name).toBe("Jo Bloggs");
+    expect(payload.type).toBe("other");
+  });
+
+  it("ignores any stale orgName in contact mode rather than preferring it", () => {
+    const payload = buildEnquiryPayload(
+      form({ orgName: "Should Be Ignored", contactName: "Jo", email: "jo@example.com" }),
+      "/contact",
+      "contact"
+    );
+    expect(payload.centre_name).toBe("Jo");
+  });
+
+  it("still uses the org name for centre_name on /enquire", () => {
+    const payload = buildEnquiryPayload(
+      form({ orgName: "Sunny Centre", contactName: "Jo", email: "jo@example.com" }),
+      "/enquire",
+      "enquire"
+    );
+    expect(payload.centre_name).toBe("Sunny Centre");
+    expect(payload.contact_name).toBe("Jo");
   });
 
   it("passes a filled honeypot straight through — the route needs it to discard the bot", () => {

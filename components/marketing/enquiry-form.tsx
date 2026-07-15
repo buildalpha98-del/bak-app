@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
@@ -15,12 +16,14 @@ import {
   buildEnquiryPayload,
   buildSourcePage,
   EMPTY_ENQUIRY_FORM,
+  ENQUIRY_FIELD_ORDER,
   resolveProgramParam,
   validateEnquiryForm,
   type EnquiryErrors,
   type EnquiryFormState,
   type EnquiryMode,
 } from "@/lib/marketing/enquiry";
+import { stickerClasses } from "@/components/marketing/sticker-button";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,8 +48,12 @@ import { cn } from "@/lib/utils";
 // shadow, 48px tall (clears the 44px target with room). Focus thickens
 // the border into a ring and kicks the shadow orange — a colour change
 // alone would not be enough on its own.
+//
+// No placeholder styling here on purpose: no field sets a placeholder
+// (every one is labelled), and a grey-on-white placeholder is the
+// classic way an AA failure sneaks into a form.
 const FIELD_BASE =
-  "h-12 w-full rounded-xl border-2 border-[#111] bg-white px-4 font-medium text-[#111] shadow-[3px_3px_0_#111] outline-none transition-all placeholder:text-[#1A1A1A]/40 focus:shadow-[5px_5px_0_#E8712A] focus:ring-4 focus:ring-[#111] disabled:cursor-not-allowed disabled:bg-[#1A1A1A]/5 disabled:opacity-70";
+  "h-12 w-full rounded-xl border-2 border-[#111] bg-white px-4 font-medium text-[#111] shadow-[3px_3px_0_#111] outline-none transition-all focus:shadow-[5px_5px_0_#E8712A] focus:ring-4 focus:ring-[#111] disabled:cursor-not-allowed disabled:bg-[#1A1A1A]/5 disabled:opacity-70";
 
 // aria-invalid drives the red treatment, so the visual and the a11y
 // tree can never disagree.
@@ -58,17 +65,21 @@ const FIELD = cn(FIELD_BASE, FIELD_INVALID);
 const LABEL =
   "block font-heading text-sm font-bold uppercase tracking-wider text-[#1A1A1A]";
 
-/** #993C1D is the AA-safe orange for small text on white (~6.9:1). */
 const HINT = "mt-1.5 text-sm leading-relaxed text-[#1A1A1A]/70";
 
 /**
- * Mirrors StickerButton's treatment for a native <button>. StickerButton
- * itself is a next/link and cannot submit a form — same look, kept in
- * sync by eye. The disabled state freezes the press animation rather
- * than just dimming, so a disabled button never looks pressable.
+ * The sticker CTA treatment for the submit button. StickerButton is a
+ * next/link and cannot submit a form, so this borrows its classes
+ * rather than restating them — see stickerClasses().
+ *
+ * The only additions are states a link never has: the disabled one
+ * freezes the press animation rather than just dimming, so a disabled
+ * button never looks pressable.
  */
-const SUBMIT =
-  "inline-flex h-13 min-h-12 items-center justify-center gap-2 rounded-full border-2 border-[#111] bg-[#FFD23F] px-8 font-heading text-base font-bold text-[#111] shadow-[4px_4px_0_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#111] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_#111]";
+const SUBMIT = cn(
+  stickerClasses({ fill: "yellow", size: "lg", shadow: "black" }),
+  "min-h-12 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_#111]"
+);
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -121,15 +132,50 @@ export function EnquiryForm({
   const [status, setStatus] = useState<Status>("idle");
   /** Synchronous double-submit guard — see handleSubmit. */
   const inFlight = useRef(false);
+  /** Focus target when the form is replaced by a panel — see below. */
+  const panelHeading = useRef<HTMLHeadingElement>(null);
 
   const isContact = mode === "contact";
   const submitting = status === "submitting";
+
+  // The form unmounts when a panel takes over, so the submit button
+  // that had focus disappears and focus falls back to <body> — a
+  // keyboard or screen reader user gets silently dumped at the top of
+  // the page with no idea whether anything happened. Moving focus to
+  // the panel's heading fixes that, and doubles as the announcement:
+  // a live region that is inserted together with its content often
+  // isn't announced at all, since it generally has to pre-exist the
+  // change to be watched.
+  useEffect(() => {
+    if (status === "success" || status === "error") panelHeading.current?.focus();
+  }, [status]);
 
   function set<K extends keyof EnquiryFormState>(key: K, value: EnquiryFormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
     // Clear the field's error the moment they start fixing it — leaving
     // it up while they type reads as the fix not working.
     if (key in errors) setErrors(({ [key as never]: _, ...rest }) => rest);
+    // Same for the server's complaint: it described the payload they
+    // just changed, so it is now stale. Field errors already clear on
+    // input; leaving this one pinned until the next submit was the odd
+    // one out.
+    if (serverError) setServerError(null);
+  }
+
+  /**
+   * Send focus to the topmost field that failed. Without this, a failed
+   * submit leaves focus on the button while the errors render above it,
+   * where a keyboard or screen reader user has no reason to look.
+   *
+   * Call this only after the errors are committed to the DOM — focusing
+   * a field whose error text and aria-invalid do not exist yet
+   * announces it as valid. handleSubmit uses flushSync for exactly
+   * that.
+   */
+  function focusFirstInvalid(found: EnquiryErrors) {
+    const first = ENQUIRY_FIELD_ORDER.find((field) => found[field]);
+    if (!first) return;
+    document.getElementById(id(first))?.focus();
   }
 
   function toggleProgram(slug: string) {
@@ -144,24 +190,43 @@ export function EnquiryForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // THE double-submit guard, and it has to be a ref. The route dedupes
-    // by SELECT-then-INSERT with no unique constraint behind it, so two
-    // POSTs racing each other both miss the check and both insert a
-    // lead — there is no server-side backstop to fall back on.
+    // Double-submit guard. A ref rather than `status` because both
+    // `status` and the disabled attribute only exist after React
+    // re-renders: anything dispatching clicks inside a single task
+    // reads a stale "idle" and fires again. Real user clicks are
+    // separate tasks with a flush in between, so `disabled` already
+    // holds for them — this covers the rest, costs nothing, and stops
+    // the guard depending on render timing.
     //
-    // The disabled attribute alone does not close this. Both it and
-    // `status` only exist after React re-renders, so a burst of clicks
-    // dispatched within one task all read the stale "idle" and all fire
-    // (measured: five clicks, five POSTs). A ref flips synchronously on
-    // the first click, before the second one can be handled.
-    //
-    // Keep both: the ref is the guard, `disabled` is the affordance.
+    // Scope, honestly: this only covers one client. Two tabs, a retry,
+    // or a non-browser POST still race the route's SELECT-then-INSERT
+    // dedupe, which has no unique constraint behind it.
+    // findTodaysWebEnquiry catches the sequential duplicates; the
+    // durable fix for concurrent ones is a partial unique index on
+    // leads(lower(contact_email)) where source = 'web_form', which is
+    // not this component's to add.
     if (inFlight.current) return;
 
     const found = validateEnquiryForm(form, mode);
-    setErrors(found);
-    setServerError(null);
-    if (Object.keys(found).length > 0) return;
+
+    // flushSync so the error text and aria-invalid are in the DOM before
+    // focusFirstInvalid moves focus — focus a field whose error hasn't
+    // rendered and a screen reader announces it as valid.
+    //
+    // This is the case flushSync exists for. The obvious alternative,
+    // waiting a frame with requestAnimationFrame, silently does nothing
+    // in a backgrounded tab: rAF is not throttled there, it simply
+    // never fires (measured — a hidden tab reports rafFires: false).
+    // Focus is not something to leave dependent on a paint happening.
+    flushSync(() => {
+      setErrors(found);
+      setServerError(null);
+    });
+
+    if (Object.keys(found).length > 0) {
+      focusFirstInvalid(found);
+      return;
+    }
 
     inFlight.current = true;
     setStatus("submitting");
@@ -170,7 +235,7 @@ export function EnquiryForm({
       const res = await fetch("/api/crm/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildEnquiryPayload(form, sourcePage)),
+        body: JSON.stringify(buildEnquiryPayload(form, sourcePage, mode)),
       });
       const json = await res.json().catch(() => null);
 
@@ -213,7 +278,14 @@ export function EnquiryForm({
         className="rounded-2xl border-2 border-[#111] bg-[#FFD23F] p-8 shadow-[6px_6px_0_#111] sm:p-10"
       >
         <CheckCircle2 className="size-10 text-[#111]" strokeWidth={2.5} aria-hidden="true" />
-        <h3 className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-[#111] sm:text-3xl">
+        {/* tabIndex -1: not a tab stop, but focusable programmatically
+            by the effect above, which is what carries the keyboard user
+            here and gets the panel read out. */}
+        <h3
+          ref={panelHeading}
+          tabIndex={-1}
+          className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-[#111] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#111] sm:text-3xl"
+        >
           {ENQUIRE_FORM.successTitle}
         </h3>
         <p className="mt-3 text-lg font-medium leading-relaxed text-[#111]">
@@ -237,7 +309,11 @@ export function EnquiryForm({
         className="rounded-2xl border-2 border-[#111] bg-white p-8 shadow-[6px_6px_0_#D8342C] sm:p-10"
       >
         <AlertTriangle className="size-10 text-[#D8342C]" strokeWidth={2.5} aria-hidden="true" />
-        <h3 className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-[#1A1A1A] sm:text-3xl">
+        <h3
+          ref={panelHeading}
+          tabIndex={-1}
+          className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-[#1A1A1A] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1A1A1A] sm:text-3xl"
+        >
           {ENQUIRE_FORM.failureTitle}
         </h3>
         <p className="mt-3 text-base leading-relaxed text-[#1A1A1A]/80">
@@ -251,6 +327,10 @@ export function EnquiryForm({
           </button>
           <p className="text-sm font-medium text-[#1A1A1A]/80">
             {ENQUIRE_FORM.failurePhonePrefix}{" "}
+            {/* Hover is #993C1D, the AA-safe orange for small text on
+                white (~6.9:1) — brand orange #E8712A would be ~2.7:1
+                here. SITE.phone renders as its TODO-CONFIRM placeholder
+                on purpose; that is what flags it for replacement. */}
             <a
               href={`tel:${SITE.phone}`}
               className="font-heading font-bold text-[#111] underline decoration-[#E8712A] decoration-2 underline-offset-4 transition-colors hover:text-[#993C1D]"
@@ -299,31 +379,39 @@ export function EnquiryForm({
       )}
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <Field
-          id={id("orgName")}
-          label={isContact ? CONTACT_FORM.orgNameLabel : ENQUIRE_FORM.orgNameLabel}
-          hint={isContact ? CONTACT_FORM.orgNameHint : undefined}
-          required
-          error={
-            errors.orgName &&
-            (isContact ? CONTACT_FORM.orgNameRequired : ENQUIRE_FORM.errors.orgNameRequired)
-          }
-          className="sm:col-span-2"
-        >
-          {(props) => (
-            <input
-              {...props}
-              type="text"
-              autoComplete="organization"
-              value={form.orgName}
-              onChange={(e) => set("orgName", e.target.value)}
-              disabled={submitting}
-              className={FIELD}
-            />
-          )}
-        </Field>
+        {/* /enquire asks about the organisation first; /contact has no
+            org field at all and leads with the person. */}
+        {!isContact && (
+          <Field
+            id={id("orgName")}
+            label={ENQUIRE_FORM.orgNameLabel}
+            required
+            error={errors.orgName && ENQUIRE_FORM.errors.orgNameRequired}
+            className="sm:col-span-2"
+          >
+            {(props) => (
+              <input
+                {...props}
+                type="text"
+                autoComplete="organization"
+                value={form.orgName}
+                onChange={(e) => set("orgName", e.target.value)}
+                disabled={submitting}
+                className={FIELD}
+              />
+            )}
+          </Field>
+        )}
 
-        <Field id={id("contactName")} label={ENQUIRE_FORM.contactNameLabel}>
+        <Field
+          id={id("contactName")}
+          label={ENQUIRE_FORM.contactNameLabel}
+          // On /contact this name is the lead: it fills the route's
+          // required centre_name as well as contact_name.
+          required={isContact}
+          error={errors.contactName && CONTACT_FORM.contactNameRequired}
+          className={isContact ? "sm:col-span-2" : undefined}
+        >
           {(props) => (
             <input
               {...props}
@@ -397,21 +485,32 @@ export function EnquiryForm({
       {!isContact && (
         <>
           {/* Radios, not a select: three options, and the chips read as
-              part of the sticker system where a native select would not. */}
+              part of the sticker system where a native select would not.
+
+              role="radiogroup" is doing real work. A bare <fieldset>
+              maps to role="group", which supports NEITHER aria-invalid
+              nor the error wiring — both are simply dropped, and a
+              screen reader user gets no signal the field failed at all.
+              radiogroup supports them, so the group carries the error
+              the way an <input> would. */}
           <fieldset
+            role="radiogroup"
             className="mt-8"
             aria-invalid={errors.orgType ? true : undefined}
-            aria-errormessage={errors.orgType ? id("orgType-error") : undefined}
+            aria-describedby={errors.orgType ? id("orgType-error") : undefined}
           >
             <legend className={LABEL}>
               {ENQUIRE_FORM.orgTypeLabel} <RequiredMark />
             </legend>
             <div className="mt-3 flex flex-wrap gap-3">
-              {ORG_TYPES.map((option) => (
+              {ORG_TYPES.map((option, i) => (
                 <Chip
                   key={option.value}
+                  // The first radio carries the group's id so the
+                  // focus-first-invalid jump has something to land on.
+                  id={i === 0 ? id("orgType") : undefined}
                   type="radio"
-                  name={id("orgType")}
+                  name={id("orgType-group")}
                   label={option.label}
                   checked={form.orgType === option.value}
                   disabled={submitting}
@@ -505,8 +604,16 @@ function FieldError({ id, children }: { id: string; children: React.ReactNode })
 /**
  * Label + control + hint + error, wired together. The control comes in
  * as a render prop so each field keeps its own type/autocomplete while
- * the id, aria-invalid and aria-describedby/errormessage links are
- * built in one place and cannot drift.
+ * the id, aria-invalid and aria-describedby links are built in one
+ * place and cannot drift.
+ *
+ * The error is announced via aria-describedby, NOT aria-errormessage.
+ * errormessage is the semantically nicer ARIA 1.2 answer, but VoiceOver
+ * support is incomplete: on Safari and iOS the user hears "invalid
+ * data" from aria-invalid and never hears WHAT is wrong. This is the
+ * B2B lead form and mobile Safari is a real share of it, so the error
+ * text rides along with the hint on describedby, which everything
+ * supports.
  */
 function Field({
   id,
@@ -528,12 +635,16 @@ function Field({
     id: string;
     "aria-invalid"?: boolean;
     "aria-describedby"?: string;
-    "aria-errormessage"?: string;
     required?: boolean;
   }) => React.ReactNode;
 }) {
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
+  // Error last: describedby is read in order, and the fix matters more
+  // than the hint once the field is wrong.
+  const describedBy =
+    [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") ||
+    undefined;
 
   return (
     <div className={className}>
@@ -550,8 +661,7 @@ function Field({
           id,
           required,
           "aria-invalid": error ? true : undefined,
-          "aria-describedby": hint ? hintId : undefined,
-          "aria-errormessage": error ? errorId : undefined,
+          "aria-describedby": describedBy,
         })}
       </div>
       {error && <FieldError id={errorId}>{error}</FieldError>}
@@ -567,6 +677,7 @@ function Field({
  * chip so the indicator is the whole target, not a 20px box.
  */
 function Chip({
+  id,
   type,
   name,
   label,
@@ -574,6 +685,7 @@ function Chip({
   disabled,
   onChange,
 }: {
+  id?: string;
   type: "radio" | "checkbox";
   name: string;
   label: string;
@@ -592,6 +704,7 @@ function Chip({
       )}
     >
       <input
+        id={id}
         type={type}
         name={name}
         checked={checked}
