@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 import { isPublicRoute } from "@/lib/marketing/public-routes";
 import { isRevokedSessionError } from "@/lib/auth/session-errors";
@@ -11,6 +12,25 @@ import {
   ROLE_HINT_MAX_AGE,
   type RoleHint,
 } from "@/lib/auth/route-access";
+
+// Hard-down tripwire. A redirect whose destination is the path we are
+// already on is an infinite loop — which is exactly how production login
+// went down (a signed-out visitor to /login redirected to /login). It
+// returns 307s, never an exception, so nothing else would ever page on
+// it. If we are ever about to do it again, tell Sentry at fatal level
+// and break the loop by rendering the page instead of bouncing.
+//
+// Inert without a DSN, like the rest of Sentry here.
+function safeRedirect(request: NextRequest, url: URL): NextResponse {
+  if (url.pathname === request.nextUrl.pathname) {
+    Sentry.captureMessage(
+      `Middleware redirect loop averted at ${url.pathname}`,
+      { level: "fatal", tags: { tripwire: "redirect-loop" } }
+    );
+    return NextResponse.next({ request });
+  }
+  return NextResponse.redirect(url);
+}
 
 // The sign-in pages themselves. Redirecting one of these to /login is
 // always a loop, never a fix.
@@ -144,11 +164,12 @@ export async function middleware(request: NextRequest) {
     // Already on a login page: clear the cookies and let it render. A
     // redirect here would just point the page at itself. Self-terminating
     // either way (the wipe means the retry has no cookies and misses this
-    // block), but "harmless extra hop" is not a property worth relying on
-    // — it holds only while the delete-then-redirect order is preserved.
+    // block), and safeRedirect is the belt to LOGIN_ROUTES' braces — if
+    // this ever tries to bounce /login to /login again, it trips Sentry
+    // at fatal level instead of looping.
     const revoked = LOGIN_ROUTES.includes(pathname)
       ? NextResponse.next({ request })
-      : NextResponse.redirect(new URL("/login", request.url));
+      : safeRedirect(request, new URL("/login", request.url));
     for (const cookie of staleAuthCookies) {
       revoked.cookies.delete(cookie.name);
     }
@@ -174,7 +195,7 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/client-login";
-      return NextResponse.redirect(loginUrl);
+      return safeRedirect(request, loginUrl);
     }
 
     // Check if user is a client user and extract their centre ID.
@@ -213,7 +234,7 @@ export async function middleware(request: NextRequest) {
 
         const loginUrl = request.nextUrl.clone();
         loginUrl.pathname = "/client-login";
-        return NextResponse.redirect(loginUrl);
+        return safeRedirect(request, loginUrl);
       }
 
       centreId = clientUser.centre_id;
@@ -249,7 +270,7 @@ export async function middleware(request: NextRequest) {
       loginUrl.pathname = "/parent-login";
       loginUrl.search = "";
       loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
-      return NextResponse.redirect(loginUrl);
+      return safeRedirect(request, loginUrl);
     }
 
     // Check if parent has completed registration (hint-cached — a
@@ -325,7 +346,7 @@ export async function middleware(request: NextRequest) {
   if (!user && !publicRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    return NextResponse.redirect(loginUrl);
+    return safeRedirect(request, loginUrl);
   }
 
   // Authenticated user on login page → redirect to their portal
@@ -407,7 +428,7 @@ export async function middleware(request: NextRequest) {
         if (!profile) {
           const loginUrl = request.nextUrl.clone();
           loginUrl.pathname = "/login";
-          return NextResponse.redirect(loginUrl);
+          return safeRedirect(request, loginUrl);
         }
         hint = {
           role: profile.role,

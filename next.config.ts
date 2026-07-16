@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 // Relative, not "@/lib/..." — next.config.ts is loaded before the
 // tsconfig path aliases are available to resolve.
 import { WP_REDIRECTS } from "./lib/marketing/wp-redirects";
@@ -69,4 +70,20 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+// withSentryConfig wraps the build for source-map upload and the
+// client-error tunnel. Its build-time steps only run when the Sentry
+// env vars (SENTRY_ORG / SENTRY_PROJECT / SENTRY_AUTH_TOKEN) are set, so
+// with no DSN configured this is a pass-through and the build is
+// unchanged. See docs/sentry-setup.md.
+export default withSentryConfig(withPWA(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Quieter builds; only upload source maps when a token is present.
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Route the browser SDK's requests through our own domain so
+  // ad-blockers don't eat client-side error reports.
+  tunnelRoute: "/monitoring",
+  // Tree-shake the SDK's debug logging out of the production bundle.
+  webpack: { treeshake: { removeDebugLogging: true } },
+});
