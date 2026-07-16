@@ -1,11 +1,11 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
 import { Breadcrumbs } from "./breadcrumbs";
 import { Search } from "lucide-react";
 import type { Profile } from "@/lib/types/database";
+import { AppLogo } from "@/components/shared/app-logo";
 
 interface TopBarProps {
   profile: Profile;
@@ -24,11 +24,7 @@ export function TopBar({ profile }: TopBarProps) {
       {/* Left: logo on mobile, breadcrumbs on desktop */}
       <div className="flex items-center gap-3">
         <div className="flex md:hidden items-center gap-2.5 shrink-0">
-          <img
-            src="/logo-full.png"
-            alt="Build Alpha Kids"
-            className="h-8 w-8 object-contain"
-          />
+          <AppLogo size="xs" />
           <span className="font-display text-sm font-bold text-foreground tracking-tight">
             BAK
           </span>
