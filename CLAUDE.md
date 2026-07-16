@@ -109,6 +109,36 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
 - **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
 
+## Page speed
+
+The dashboard was 6.7s median (worst 15s). It is now ~2.3s. Almost none
+of that was the database.
+
+- **Links do not prefetch on viewport.** Next prefetches every visible
+  `<Link>`, and a prefetch of an App Router route is a full server render
+  of it, queries included: /admin/staff fired **42** — one per coach row.
+  `components/ui/app-link.tsx` wraps next/link with `prefetch={false}`;
+  **import Link from `@/components/ui/app-link`, not `next/link`**. Hover
+  still prefetches, so navigation stays snappy. Pass `prefetch` to
+  override where a link genuinely is always-next.
+- **One auth round-trip per request.** `supabase.auth.getUser()` is an
+  HTTP call to the auth server, not a local verify, and ~350 call sites
+  each made their own. `createSupabaseServerClient` is wrapped in React
+  `cache()` and memoises getUser per request. The memo clears on session
+  change — without that, signIn()'s `signInWithPassword()` then
+  `getUser()` would replay the pre-login answer and break login.
+
+**Measuring it from here is the hard part** (`e2e/perf-ab.spec.ts`):
+- Total load time from Sydney to a Mumbai deployment is mostly the
+  Pacific; its variance exceeds the effect. Every old deployment stays
+  live at its own URL — measure before/after builds interleaved, same
+  machine, same minutes.
+- **Not TTFB.** The app streams, so Next flushes the loading.tsx shell
+  before fetching anything and responseStart lands at ~12ms. Use
+  `responseEnd` — the server's work ends at the last byte.
+- A timed-out audit run records 0ms per page, which arithmetic reads as
+  infinitely fast. Check for failed loads before believing a win.
+
 ## Rendering time (hydration)
 
 Three hydration bugs (React #418) shipped together on five admin pages,
