@@ -109,6 +109,7 @@ export function createMockCentre(overrides: Partial<Centre> = {}): Centre {
     session_preferences: {},
     contract_status: "active",
     status_changed_at: null,
+    colour: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     send_feedback_emails: true,

@@ -5,6 +5,7 @@ import { ShieldAlert, ShieldOff, StickyNote } from "lucide-react";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { Profile } from "@/lib/types/database";
 import { sportColour } from "@/lib/utils/sport-colours";
+import { centreColour } from "@/lib/utils/centre-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
 import { VarianceBadge } from "./variance-badge";
 import { SessionCardMenu } from "./session-card-menu";
@@ -32,6 +33,14 @@ interface SessionCardProps {
   otherCount?: number;
   /** When true, render this as the secondary view (↔ shared, thinner left border). */
   asSecondary?: boolean;
+  /**
+   * Which dimension the left-border accent encodes. "sport" (default)
+   * keeps the long-standing behaviour; "centre" colours by location so
+   * a week can be scanned by centre. Chosen via the roster toolbar
+   * toggle. The centre name / sport text on the card make the colour a
+   * redundant cue, never the only one.
+   */
+  colourBy?: "sport" | "centre";
 }
 
 export function SessionCard({
@@ -43,8 +52,12 @@ export function SessionCard({
   onChange,
   otherCount,
   asSecondary,
+  colourBy = "sport",
 }: SessionCardProps) {
-  const colour = sportColour(session.sport);
+  const colour =
+    colourBy === "centre"
+      ? centreColour({ id: session.centre_id, colour: session.centre_colour })
+      : sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
 
   return (

@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
+import { CENTRE_COLOURS } from "@/lib/utils/centre-colours";
 import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 import type {
   CentreType,
@@ -117,6 +118,8 @@ export interface CreateCentreData {
   agreed_rate?: number;
   session_preferences?: Record<string, unknown>;
   contract_status?: ContractStatus;
+  /** P4 roster colour (#RRGGBB). Omitted → auto-assigned on insert. */
+  colour?: string;
   initial_note?: {
     category: CentreNoteCategory;
     content: string;
@@ -137,6 +140,8 @@ export interface UpdateCentreData {
   agreed_rate?: number | null;
   session_preferences?: Record<string, unknown>;
   contract_status?: ContractStatus;
+  /** P4 roster colour (#RRGGBB). */
+  colour?: string;
 }
 
 export interface AddNoteData {
@@ -466,6 +471,12 @@ export async function createCentre(
         agreed_rate: centreFields.agreed_rate ?? null,
         session_preferences: centreFields.session_preferences ?? {},
         contract_status: centreFields.contract_status ?? "trial",
+        // Auto-assign a roster colour so a new centre is immediately
+        // distinguishable without setup. From the same palette the app
+        // uses; a random pick keeps adjacent creations from clashing.
+        colour:
+          centreFields.colour ??
+          CENTRE_COLOURS[Math.floor(Math.random() * CENTRE_COLOURS.length)],
       })
       .select()
       .single();

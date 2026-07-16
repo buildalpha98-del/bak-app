@@ -164,6 +164,8 @@ export interface Centre {
   session_preferences: Record<string, unknown>;
   contract_status: ContractStatus;
   status_changed_at: string | null;
+  /** P4 roster colour (#RRGGBB). Null → app derives a default from id. */
+  colour: string | null;
   created_at: string;
   updated_at: string;
   send_feedback_emails: boolean;

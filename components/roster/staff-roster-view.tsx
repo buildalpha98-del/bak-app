@@ -39,6 +39,7 @@ import {
   formatTime12,
 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
+import { centreColour } from "@/lib/utils/centre-colours";
 import { STATUS_DOT_COLOURS } from "./session-status-badge";
 import { SessionCardMenu } from "./session-card-menu";
 import { dragMoveSession } from "@/lib/sessions/dnd-actions";
@@ -62,6 +63,8 @@ interface StaffRosterViewProps {
    * different day change the date. See `dragMoveSession`.
    */
   dndEnabled?: boolean;
+  /** P4: dimension the card colour encodes (sport | centre). */
+  colourBy?: "sport" | "centre";
   /**
    * Optional projected wage cost for the visible week, shown in the
    * weekly summary footer's "Labor" metric. When omitted, Labor shows
@@ -257,6 +260,7 @@ function StaffSessionCard({
   isConflicted,
   isActive,
   draggableProps,
+  colourBy = "sport",
 }: {
   session: SessionWithRelations;
   onClick: () => void;
@@ -264,6 +268,8 @@ function StaffSessionCard({
   certWarning?: SessionCertWarning;
   coaches: Pick<Profile, "id" | "name">[];
   onSessionChange: () => void;
+  /** P4: dimension the border/label colour encodes (sport | centre). */
+  colourBy?: "sport" | "centre";
   /** When > 0, render an orange "+N others" badge on the primary card. */
   otherCount?: number;
   /** When true, render this as the secondary view (↔ shared, thinner left border). */
@@ -279,7 +285,10 @@ function StaffSessionCard({
     listeners: Record<string, unknown> | undefined;
   };
 }) {
-  const colour = sportColour(session.sport);
+  const colour =
+    colourBy === "centre"
+      ? centreColour({ id: session.centre_id, colour: session.centre_colour })
+      : sportColour(session.sport);
   const dotColour = STATUS_DOT_COLOURS[session.status];
   const timeStr = formatTime12(session.time.slice(0, 5));
   const endTime = (() => {
@@ -417,6 +426,7 @@ function DraggableStaffCard(props: {
   conflictedIds: Set<string>;
   activeKey: string | null;
   dndEnabled: boolean;
+  colourBy?: "sport" | "centre";
 }) {
   const {
     entry,
@@ -428,6 +438,7 @@ function DraggableStaffCard(props: {
     conflictedIds,
     activeKey,
     dndEnabled,
+    colourBy = "sport",
   } = props;
 
   // Drag id encodes BOTH session_id and source coach_id so the drop
@@ -442,6 +453,7 @@ function DraggableStaffCard(props: {
   return (
     <StaffSessionCard
       session={entry.session}
+      colourBy={colourBy}
       onClick={() => onSessionClick(entry.session)}
       confidenceBadge={confidenceBadge}
       certWarning={certWarning}
@@ -511,6 +523,7 @@ export function StaffRosterView({
   sessionCertWarnings,
   renderConfidenceBadge,
   dndEnabled = false,
+  colourBy = "sport",
   laborCost,
   laborHours,
 }: StaffRosterViewProps) {
@@ -760,6 +773,7 @@ export function StaffRosterView({
               dndEnabled={dndEnabled}
               conflictedIds={conflictedIds}
               activeKey={activeKey}
+              colourBy={colourBy}
             />
           )}
 
@@ -781,6 +795,7 @@ export function StaffRosterView({
               dndEnabled={dndEnabled}
               conflictedIds={conflictedIds}
               activeKey={activeKey}
+              colourBy={colourBy}
             />
           ))}
 
@@ -865,6 +880,7 @@ export function StaffRosterView({
           <div className="w-[160px] opacity-90">
             <StaffSessionCard
               session={activeSession}
+              colourBy={colourBy}
               onClick={() => {}}
               certWarning={sessionCertWarnings?.[activeSession.id]}
               coaches={coaches}
@@ -897,6 +913,7 @@ function StaffRow({
   dndEnabled,
   conflictedIds,
   activeKey,
+  colourBy = "sport",
 }: {
   coachId: string;
   coachName: string;
@@ -913,6 +930,7 @@ function StaffRow({
   dndEnabled: boolean;
   conflictedIds: Set<string>;
   activeKey: string | null;
+  colourBy?: "sport" | "centre";
 }) {
   // Weekly totals for this row (excludes cancelled). Falls back to 0.
   const rowMinutes = weekStats?.minutes ?? 0;
@@ -987,6 +1005,7 @@ function StaffRow({
                     conflictedIds={conflictedIds}
                     activeKey={activeKey}
                     dndEnabled={dndEnabled}
+                    colourBy={colourBy}
                   />
                 ))}
                 {/* Add button below existing sessions */}

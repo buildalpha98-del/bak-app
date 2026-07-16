@@ -54,6 +54,8 @@ interface SessionCalendarViewProps {
    * client) keep a read-only render.
    */
   dndEnabled?: boolean;
+  /** P4: dimension the card border colour encodes (sport | centre). */
+  colourBy?: "sport" | "centre";
 }
 
 // ============================================================
@@ -67,6 +69,7 @@ export function SessionCalendarView({
   onEmptySlotClick,
   sessionCertWarnings,
   renderConfidenceBadge,
+  colourBy = "sport",
   coaches,
   onSessionChange,
   dndEnabled = false,
@@ -288,6 +291,7 @@ export function SessionCalendarView({
               >
                 <SessionCard
                   session={s}
+                  colourBy={colourBy}
                   onClick={() => onSessionClick(s)}
                   certWarning={sessionCertWarnings?.[s.id]}
                   confidenceBadge={renderConfidenceBadge?.(s.id)}
@@ -332,6 +336,7 @@ export function SessionCalendarView({
           <div className="w-[180px] opacity-90">
             <SessionCard
               session={activeSession}
+              colourBy={colourBy}
               onClick={() => {}}
               certWarning={sessionCertWarnings?.[activeSession.id]}
               confidenceBadge={renderConfidenceBadge?.(activeSession.id)}

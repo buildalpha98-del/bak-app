@@ -54,6 +54,8 @@ import {
   CheckCircle2,
   Clock,
   Send,
+  Dumbbell,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -240,6 +242,13 @@ export function RosterPage({
     })(),
   );
 
+  // Which dimension the session-card border encodes: sport (default) or
+  // centre. URL-persisted so a colour-by-centre view is shareable and
+  // survives refresh, same as the other roster filters.
+  const [colourBy, setColourByState] = useState<"sport" | "centre">(
+    params.get("colour") === "centre" ? "centre" : "sport",
+  );
+
   const initialStatus = (params.get("status") as StatusFilter | null) ?? "all";
   const [statusFilter, setStatusFilterState] = useState<StatusFilter>(
     STATUS_OPTIONS.some((s) => s.value === initialStatus) ? initialStatus : "all",
@@ -283,6 +292,10 @@ export function RosterPage({
   function setView(v: "staff" | "calendar" | "list") {
     setViewState(v);
     replaceParam("view", v === "staff" ? null : v);
+  }
+  function setColourBy(v: "sport" | "centre") {
+    setColourByState(v);
+    replaceParam("colour", v === "sport" ? null : v);
   }
   function setStatusFilter(v: StatusFilter) {
     setStatusFilterState(v);
@@ -746,6 +759,36 @@ export function RosterPage({
           </Button>
         </div>
 
+        {/* Colour-by toggle — only meaningful where cards are drawn.
+            Colour is a redundant cue (cards show centre + sport as text),
+            so this just changes which axis the border encodes. */}
+        {view !== "list" && (
+          <div className="flex rounded-2xl border" role="group" aria-label="Colour sessions by">
+            <Button
+              variant={colourBy === "sport" ? "default" : "ghost"}
+              size="sm"
+              className="min-h-[44px] gap-1.5 rounded-2xl"
+              onClick={() => setColourBy("sport")}
+              title="Colour by sport"
+              aria-pressed={colourBy === "sport"}
+            >
+              <Dumbbell className="size-4" />
+              <span className="hidden sm:inline">Sport</span>
+            </Button>
+            <Button
+              variant={colourBy === "centre" ? "default" : "ghost"}
+              size="sm"
+              className="min-h-[44px] gap-1.5 rounded-2xl"
+              onClick={() => setColourBy("centre")}
+              title="Colour by centre"
+              aria-pressed={colourBy === "centre"}
+            >
+              <MapPin className="size-4" />
+              <span className="hidden sm:inline">Centre</span>
+            </Button>
+          </div>
+        )}
+
         {/* Desktop-only tertiary actions */}
         <div className="hidden items-center gap-2 md:flex">
           <Button
@@ -942,6 +985,7 @@ export function RosterPage({
           onSessionChange={handleRefresh}
           sessionCertWarnings={sessionCertWarnings}
           dndEnabled={dndEnabled}
+          colourBy={colourBy}
           renderConfidenceBadge={
             reviewRunId
               ? (sessionId) => {
@@ -965,6 +1009,7 @@ export function RosterPage({
           onEmptySlotClick={handleEmptySlotClick}
           sessionCertWarnings={sessionCertWarnings}
           dndEnabled={dndEnabled}
+          colourBy={colourBy}
           renderConfidenceBadge={
             reviewRunId
               ? (sessionId) => {

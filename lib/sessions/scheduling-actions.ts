@@ -183,7 +183,7 @@ export async function checkWeekClashes(
     const { data: raw, error: sessError } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type, address), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
+        "*, centres:centre_id(name, type, address, colour), profiles:coach_id(name, phone), terms:term_id(name), programs:program_id(sport, skill_focus), session_coaches(user_id, is_primary, profiles:user_id(name))"
       )
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
@@ -226,6 +226,9 @@ export async function checkWeekClashes(
         "childcare_centre",
       centre_address:
         (s.centres as unknown as { address: string | null } | null)?.address ??
+        null,
+      centre_colour:
+        (s.centres as unknown as { colour: string | null } | null)?.colour ??
         null,
       coach_name:
         (s.profiles as unknown as { name: string } | null)?.name ?? null,

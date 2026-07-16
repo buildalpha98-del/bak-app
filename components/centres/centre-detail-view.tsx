@@ -75,6 +75,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { updateCentre, addCentreNote, archiveCentre } from "@/lib/centres/actions";
+import { centreColour } from "@/lib/utils/centre-colours";
+import { CentreColourPicker } from "./centre-colour-picker";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
 import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
@@ -790,6 +792,9 @@ function EditCentreDialog({
   const [agreedRate, setAgreedRate] = useState(centre.agreed_rate?.toString() ?? "");
   const [contractStatus, setContractStatus] = useState<ContractStatus>(centre.contract_status);
   const [groupSize, setGroupSize] = useState(centre.group_size?.toString() ?? "");
+  const [colour, setColour] = useState(
+    centreColour({ id: centre.id, colour: centre.colour }),
+  );
 
   async function handleSave() {
     if (!name.trim()) {
@@ -811,6 +816,7 @@ function EditCentreDialog({
       agreed_rate: agreedRate ? parseFloat(agreedRate) : null,
       contract_status: contractStatus,
       group_size: groupSize ? parseInt(groupSize, 10) : null,
+      colour,
     };
 
     const { error: updateError } = await updateCentre(centre.id, payload);
@@ -859,6 +865,13 @@ function EditCentreDialog({
           <div className="space-y-2">
             <Label>Address</Label>
             <Input value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Roster colour</Label>
+            <CentreColourPicker value={colour} onChange={setColour} />
+            <p className="text-xs text-muted-foreground">
+              Shown as the card accent when the roster is coloured by centre.
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
