@@ -8,7 +8,7 @@
 // submission (planning), expiring within 30d with unused funds,
 // stuck in planning (14+ days), approved this week.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   ClipboardList,
   Calendar,

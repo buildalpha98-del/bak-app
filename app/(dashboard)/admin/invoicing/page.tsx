@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { FileSpreadsheet } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAllCoachInvoices } from "@/lib/invoicing/actions";

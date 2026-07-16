@@ -4,7 +4,7 @@
 // Intelligence — inline status pulse strip
 // ============================================================
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Building2,
   AlertTriangle,

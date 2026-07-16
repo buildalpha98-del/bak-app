@@ -109,6 +109,68 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
 - **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
 
+## Page speed
+
+The dashboard was 6.7s median (worst 15s). It is now ~2.3s. Almost none
+of that was the database.
+
+- **Links do not prefetch on viewport.** Next prefetches every visible
+  `<Link>`, and a prefetch of an App Router route is a full server render
+  of it, queries included: /admin/staff fired **42** — one per coach row.
+  `components/ui/app-link.tsx` wraps next/link with `prefetch={false}`;
+  **import Link from `@/components/ui/app-link`, not `next/link`**. Hover
+  still prefetches, so navigation stays snappy. Pass `prefetch` to
+  override where a link genuinely is always-next.
+- **One auth round-trip per request.** `supabase.auth.getUser()` is an
+  HTTP call to the auth server, not a local verify, and ~350 call sites
+  each made their own. `createSupabaseServerClient` is wrapped in React
+  `cache()` and memoises getUser per request. The memo clears on session
+  change — without that, signIn()'s `signInWithPassword()` then
+  `getUser()` would replay the pre-login answer and break login.
+
+**Measuring it from here is the hard part** (`e2e/perf-ab.spec.ts`):
+- Total load time from Sydney to a Mumbai deployment is mostly the
+  Pacific; its variance exceeds the effect. Every old deployment stays
+  live at its own URL — measure before/after builds interleaved, same
+  machine, same minutes.
+- **Not TTFB.** The app streams, so Next flushes the loading.tsx shell
+  before fetching anything and responseStart lands at ~12ms. Use
+  `responseEnd` — the server's work ends at the last byte.
+- A timed-out audit run records 0ms per page, which arithmetic reads as
+  infinitely fast. Check for failed loads before believing a win.
+
+## Rendering time (hydration)
+
+Three hydration bugs (React #418) shipped together on five admin pages,
+all from the same root: **letting the runtime decide the timezone or the
+clock**. Server components render in UTC on Vercel; the browser renders in
+Sydney. Anything that differs between those two breaks hydration, which
+throws away the server's HTML and re-renders the whole tree on the client
+— a correctness *and* speed cost that is invisible unless you watch the
+console of a real deployment.
+
+- **Never call `toLocale*` without `timeZone: SYDNEY_TZ`** (exported from
+  `lib/utils/sydney-time.ts`). Without it the server prints UTC's date and
+  the browser prints Sydney's — different text for the same instant, for
+  ten hours of every day.
+- **Never compute "today"/"now" with `getDate()`/`getHours()`** — those
+  read the runtime's zone. Use `sydneyTodayIso()` / `sydneyHour()`.
+- **Never compute relative time during render.** Use `<TimeAgo>`
+  (`components/ui/time-ago.tsx`): it renders a fixed absolute date on the
+  first pass (server and client cannot disagree) and swaps to "3h ago"
+  in an effect. `formatTimeAgo(iso, now)` takes `now` as a parameter so
+  it stays pure and testable at a fixed instant.
+
+These reproduce on Vercel and essentially never on localhost — SSR and
+hydration happen milliseconds apart locally, so the clock rarely ticks
+between them. Verify against production, not dev.
+
+Related: an `<a>` is invalid inside `<tr>`. The row-overlay link pattern
+(`<Link className="absolute inset-0">`) must live inside a *statically
+positioned* `<TableCell>`, never as a sibling of the cells — the parser
+hoists it out of the table otherwise. Guarded by
+`lib/__tests__/no-anchor-in-table-row.test.ts`.
+
 ## AI conventions
 
 - **Model id lives in one place**: `lib/ai/model.ts` (`AI_MODEL`). Never hardcode a model string — seven files each pinned a retired id and the whole platform's AI 404'd at once.

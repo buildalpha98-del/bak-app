@@ -19,7 +19,7 @@
 //     strip, so the visual rhythm is consistent across the portal.
 
 import { Fragment } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CalendarClock,
   FileText,

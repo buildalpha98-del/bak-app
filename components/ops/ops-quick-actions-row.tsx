@@ -12,7 +12,7 @@
 // Visual style mirrors `QuickActionsRow` on /admin — ghost-style
 // buttons, restrained orange icon tile, brand-orange ring on hover.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CalendarCheck2,
   CalendarPlus,

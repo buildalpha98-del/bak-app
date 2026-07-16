@@ -24,6 +24,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityItem } from "@/lib/launch/dashboard-actions";
+import { TimeAgo } from "@/components/ui/time-ago";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 type ActivityCategory =
   | "all"
@@ -76,27 +78,14 @@ function getStyle(type: ActivityItem["type"]): { icon: LucideIcon; iconBg: strin
   }
 }
 
-function timeAgo(ts: string): string {
-  const diff = Date.now() - new Date(ts).getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return "just now";
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(ts).toLocaleDateString("en-AU");
-}
-
+// "Today" means today in Sydney, stated explicitly. getDate() and
+// friends read the RUNTIME's timezone, so the server answered in UTC
+// while the browser answered in Sydney — for ten hours a day they
+// disagreed, the dot rendered a different colour on each side, and
+// hydration broke (React #418). Comparing Sydney date strings gives
+// both sides the same answer.
 function isToday(ts: string): boolean {
-  const then = new Date(ts);
-  const now = new Date();
-  return (
-    then.getFullYear() === now.getFullYear() &&
-    then.getMonth() === now.getMonth() &&
-    then.getDate() === now.getDate()
-  );
+  return sydneyTodayIso(new Date(ts)) === sydneyTodayIso();
 }
 
 export interface ActivityTimelineProps {
@@ -181,7 +170,10 @@ export function ActivityTimeline({
                 </span>
                 <div className="min-w-0 flex-1 pt-0.5">
                   <p className="text-sm leading-snug">{item.description}</p>
-                  <p className="text-xs text-muted-foreground">{timeAgo(item.timestamp)}</p>
+                  <TimeAgo
+                    timestamp={item.timestamp}
+                    className="text-xs text-muted-foreground"
+                  />
                 </div>
               </li>
             );

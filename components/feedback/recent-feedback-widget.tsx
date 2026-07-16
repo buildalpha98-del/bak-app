@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { getRecentFeedback } from "@/lib/feedback/actions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Star, MessageSquare } from "lucide-react";

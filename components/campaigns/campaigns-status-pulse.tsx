@@ -4,7 +4,7 @@
 // Campaigns — inline status pulse strip
 // ============================================================
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Megaphone, Mail, Clock, Ticket } from "lucide-react";
 import type { CampaignsStatusPulse } from "@/lib/reengagement/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

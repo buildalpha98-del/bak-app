@@ -14,7 +14,7 @@
 // orange icons, no shouty hover. The dashboard cards underneath are
 // the page's main story; these are a fast jump menu.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Building2,
   UserPlus,

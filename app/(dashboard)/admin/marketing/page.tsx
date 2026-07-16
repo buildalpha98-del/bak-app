@@ -12,7 +12,7 @@
 //   - rounded-2xl shells + restrained brand orange
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {

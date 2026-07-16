@@ -1,5 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppLogo } from "@/components/shared/app-logo";
 
 interface AuthShellProps {
   title: string;
@@ -37,11 +37,7 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
           {/* Logo — larger, with subtle glow */}
           <div className="mx-auto relative">
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150" />
-            <img
-              src="/logo-full.png"
-              alt="Build Alpha Kids"
-              className="relative h-28 w-auto drop-shadow-lg"
-            />
+            <AppLogo size="xl" className="relative drop-shadow-lg" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-foreground font-heading tracking-tight">

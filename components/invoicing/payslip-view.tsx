@@ -10,7 +10,7 @@
 // print dialog — #payslip-print scoping in globals.css hides the app
 // shell so the printout is just the payslip.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

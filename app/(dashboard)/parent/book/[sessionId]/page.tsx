@@ -33,7 +33,7 @@ import {
   Gift,
   Tag,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 function generateICS(
   session: BookableSession,

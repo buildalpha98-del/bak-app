@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

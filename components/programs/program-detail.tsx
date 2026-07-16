@@ -20,7 +20,7 @@
 //   - Linked centres   — distinct centres that have scheduled this
 //                        programme, with usage counts.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {

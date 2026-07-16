@@ -29,7 +29,7 @@ import { SPORTS } from "@/lib/types/enums";
 import type { BookableSession, Child } from "@/lib/types/database";
 import type { ParentBookingPulse } from "@/lib/parent/status-pulse-actions";
 import { Loader2, Calendar, Clock, MapPin, Users, Search } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 interface ParentBookClientProps {
   pulse: ParentBookingPulse;

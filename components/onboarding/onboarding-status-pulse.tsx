@@ -10,7 +10,7 @@
 // pages. Brand orange when a count is > 0, muted when zero — calm
 // surface when there's no action to take.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CircleDashed,
   AlertTriangle,

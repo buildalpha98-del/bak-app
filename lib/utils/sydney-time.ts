@@ -9,7 +9,7 @@
 // hours in either direction. Every day-boundary calculation must go
 // through these helpers instead.
 
-const SYDNEY_TZ = "Australia/Sydney";
+export const SYDNEY_TZ = "Australia/Sydney";
 
 /** Today's date in Sydney as "YYYY-MM-DD". */
 export function sydneyTodayIso(now: Date = new Date()): string {

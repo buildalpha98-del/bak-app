@@ -11,7 +11,7 @@
 // query param the task list view picks up to apply the matching
 // jump filter.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { AlertCircle, Calendar, User, UserX } from "lucide-react";
 import type { TasksStatusPulse } from "@/lib/tasks/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

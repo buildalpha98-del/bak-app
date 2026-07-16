@@ -9,7 +9,7 @@
 // orange is reserved for the "needs my attention" card (overdue
 // forms); everything else stays muted to keep colour meaningful.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CalendarDays,
   CalendarCheck2,

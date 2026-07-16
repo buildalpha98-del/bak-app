@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Star } from "lucide-react";
 import { WidgetWrapper } from "@/components/ops/widget-wrapper";
 import type { RecentRating } from "@/lib/ops/actions";

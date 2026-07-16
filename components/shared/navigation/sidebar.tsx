@@ -1,7 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,7 @@ import { NAV_CONFIG, filterNavByAccess, isNavItemActive } from "./nav-config";
 import { useSidebar } from "./sidebar-context";
 import type { UserRole } from "@/lib/types/enums";
 import { InboxBadge } from "@/components/inbox/inbox-badge";
+import { AppLogo } from "@/components/shared/app-logo";
 
 interface SidebarProps {
   role: UserRole;
@@ -17,6 +17,13 @@ interface SidebarProps {
   financialAccess?: boolean;
 }
 
+// Nav links do NOT prefetch on viewport. Next's default eagerly
+// prefetches every visible <Link>, and each prefetch is a full server
+// render of that route — including its queries. Opening /admin fired
+// renders of ~13 other pages at once (visible in the runtime logs as a
+// burst of GETs for routes nobody navigated to), so the dashboard spent
+// its time competing with itself. prefetch={false} still prefetches on
+// hover, which is where the perceived speed comes from anyway.
 export function Sidebar({ role, financialAccess = true }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar();
   const pathname = usePathname();
@@ -35,11 +42,7 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
       {/* Logo area — brand-forward */}
       <div className="relative flex h-16 items-center gap-3 border-b border-sidebar-border px-3">
         <div className="relative shrink-0">
-          <img
-            src="/logo-full.png"
-            alt="Build Alpha Kids"
-            className="h-9 w-9 object-contain drop-shadow-md"
-          />
+          <AppLogo size="rail" className="drop-shadow-md" />
         </div>
         {!isCollapsed && (
           <div className="flex flex-col min-w-0">
@@ -86,7 +89,7 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
                 {sectionHeader}
                 <Tooltip>
                   <TooltipTrigger
-                    render={<Link href={item.href} />}
+                    render={<Link href={item.href} prefetch={false} />}
                     className={cn(
                       "flex items-center justify-center h-10 rounded-lg px-0 text-sm transition-all duration-200 relative",
                       active
@@ -116,7 +119,7 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
           return (
             <div key={item.href}>
               {sectionHeader}
-              <Link href={item.href} className={linkClasses}>
+              <Link href={item.href} prefetch={false} className={linkClasses}>
                 {/* Active left stripe */}
                 {active && (
                   <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />

@@ -61,7 +61,11 @@ const JOURNEY = [
 ];
 
 test("audit: Abdul's weekly workflow", async ({ page, baseURL }) => {
-  test.slow();
+  // One test walks ~24 pages. test.slow() (3x) was not enough: the run
+  // blew its budget mid-sweep, the browser closed, and every remaining
+  // page recorded 0ms — which reads as "infinitely fast" rather than
+  // "not measured". Give it room to finish.
+  test.setTimeout(600_000);
   const email = (await findUserEmail("admin")) ? ABDUL : null;
   test.skip(!email, "No admin profile to sign in as.");
   await signInAs(page, email!, baseURL!);

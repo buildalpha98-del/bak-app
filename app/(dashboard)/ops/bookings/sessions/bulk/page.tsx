@@ -7,7 +7,7 @@ import { bulkCreateBookableSessions, getCoachesForDropdown } from "@/lib/booking
 import { BulkCreateForm } from "@/components/bookings/bulk-create-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 export default function OpsBulkCreatePage() {
   const router = useRouter();

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Wrench, CheckCircle2 } from "lucide-react";
 import { WidgetWrapper } from "@/components/ops/widget-wrapper";
 import type { EquipmentIssue } from "@/lib/ops/actions";

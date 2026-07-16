@@ -13,7 +13,7 @@
 // Brand orange when count > 0, muted otherwise. Mirrors the
 // AssessmentsStatusPulseStrip pattern.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { CalendarClock, ClipboardCheck, AlertTriangle } from "lucide-react";
 import { useCountUp } from "@/components/launch/use-count-up";
 

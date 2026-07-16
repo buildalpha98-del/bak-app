@@ -21,7 +21,7 @@
 //     filter chips, "Open" CTA hover.
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,

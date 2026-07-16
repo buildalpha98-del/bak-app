@@ -103,7 +103,16 @@ export default function RootLayout({
         <PWAProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
             <TooltipProvider delay={300}>{children}</TooltipProvider>
-            <Toaster position="top-right" richColors closeButton />
+            {/* Do NOT add `richColors` back. It looks harmless and it is not:
+                it swaps the themed --normal-* vars that components/ui/sonner.tsx
+                sets for Sonner's own stock palette on every TYPED toast
+                (toast.success/.error/.warning/.info — effectively all 767 call
+                sites), leaving the app's theming to apply only to bare toast().
+                That stock palette also fails WCAG AA in the light theme on all
+                four states (worst: warning at 3.08:1). See the header comment in
+                components/ui/sonner.tsx. Guarded by
+                lib/brand/__tests__/contrast.test.ts. */}
+            <Toaster position="top-right" closeButton />
           </ThemeProvider>
         </PWAProvider>
       </body>

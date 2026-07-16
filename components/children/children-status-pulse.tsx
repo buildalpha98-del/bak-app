@@ -11,7 +11,7 @@
 // a clean board reads calm rather than alarming. Numbers tick up via
 // `useCountUp` to match the home dashboard's first-paint warmth.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Sparkles, Building2, ClipboardCheck, CalendarOff } from "lucide-react";
 import type { ChildrenStatusPulse } from "@/lib/children/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

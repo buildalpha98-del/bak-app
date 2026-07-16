@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { calculateAge } from "@/lib/utils/ageGroup";
 import type { Child } from "@/lib/types/database";
 import { ChevronRight, AlertCircle } from "lucide-react";

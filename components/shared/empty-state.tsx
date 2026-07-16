@@ -11,7 +11,7 @@ import {
   Search,
   Inbox,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 export const EMPTY_STATES = {
   sessions: {

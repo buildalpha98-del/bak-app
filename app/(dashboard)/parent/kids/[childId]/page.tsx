@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import type { Child } from "@/lib/types/database";
 import { Loader2, ChevronLeft, Save, Trash2, AlertCircle, Sparkles, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 export default function ChildDetailPage() {
   const params = useParams();

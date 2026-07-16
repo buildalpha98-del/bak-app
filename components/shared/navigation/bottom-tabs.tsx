@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getMobileItems, isNavItemActive } from "./nav-config";
@@ -25,6 +25,7 @@ export function BottomTabs({ role, financialAccess = true }: BottomTabsProps) {
 
           return (
             <Link
+              prefetch={false}
               key={item.href}
               href={item.href}
               className={cn(
