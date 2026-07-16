@@ -161,3 +161,54 @@ describe("globals.css brand token pairs clear WCAG AA", () => {
     }
   });
 });
+
+// ------------------------------------------------------------
+// Toasts: every state renders on --popover. Guard that ground.
+// ------------------------------------------------------------
+//
+// components/ui/sonner.tsx themes ALL toast states — bare, success, error,
+// warning, info — onto --popover / --popover-foreground. It can do that only
+// because `richColors` is off; see the last test in this file.
+//
+// This replaced Sonner's stock rich palette, which failed AA on all four
+// states in the light theme (worst: warning text #DC7609 on #FFFCF0, 3.08:1 —
+// the same ratio as the white-on-orange button bug above).
+
+describe("toast state tokens clear WCAG on the --popover ground", () => {
+  const themes = [
+    [":root", root],
+    [".dark", dark],
+  ] as const;
+
+  // The text pair. Identical for every toast state by construction — the
+  // point of dropping richColors is that state no longer changes the ground,
+  // so there is exactly one pair to keep legible instead of four.
+  it("--popover-foreground on --popover clears AA in both themes", () => {
+    for (const [name, body] of themes) {
+      const ratio = contrastRatio(
+        tokenHex(body, "popover-foreground"),
+        tokenHex(body, "popover")
+      );
+      expect(ratio, `${name} toast text`).toBeGreaterThanOrEqual(AA_THRESHOLD);
+    }
+  });
+
+  // THE TRIPWIRE for the toast work — the counterpart to the sidebar one above.
+  //
+  // `richColors` reads like a nice-to-have and is the single line that undoes
+  // this entire chunk. It stamps data-rich-colors="true", whose selectors
+  // (0,3,0) outrank the base rule (0,2,0) that the --normal-* vars in
+  // components/ui/sonner.tsx theme through. Every typed toast then silently
+  // reverts to Sonner's stock palette — including the light-theme AA failures.
+  //
+  // Nothing else in this repo can see that regression: it changes no markup,
+  // no roles and no text, so the Playwright specs and every unit test stay
+  // green while all 767 toast call sites render the wrong design.
+  it("app/layout.tsx does not mount the Toaster with richColors", () => {
+    const layout = readFileSync(join(process.cwd(), "app/layout.tsx"), "utf8");
+    const toaster = layout.match(/<Toaster[^>]*\/>/);
+    expect(toaster, "could not find the <Toaster /> mount in app/layout.tsx")
+      .not.toBeNull();
+    expect(toaster![0]).not.toMatch(/richColors/);
+  });
+});
