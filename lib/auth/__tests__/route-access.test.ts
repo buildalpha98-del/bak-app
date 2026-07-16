@@ -4,6 +4,7 @@ import {
   parseRoleHint,
   serializeRoleHint,
   FINANCIAL_ROUTES,
+  isStaffDomainRoot,
 } from "../route-access";
 
 const USER = "eae3d541-def2-493f-8fce-a144dce74dd1";
@@ -85,5 +86,39 @@ describe("parseRoleHint", () => {
   it("rejects a non-boolean financial flag instead of coercing it", () => {
     expect(parseRoleHint(`${USER}:admin:active:true`, USER)).toBeNull();
     expect(parseRoleHint(`${USER}:admin:active:2`, USER)).toBeNull();
+  });
+});
+
+describe("isStaffDomainRoot", () => {
+  it("redirects the app host at root", () => {
+    expect(isStaffDomainRoot("buildalphakids.app", "/")).toBe(true);
+    expect(isStaffDomainRoot("www.buildalphakids.app", "/")).toBe(true);
+  });
+  it("is case-insensitive and ignores a port", () => {
+    expect(isStaffDomainRoot("BuildAlphaKids.App", "/")).toBe(true);
+    expect(isStaffDomainRoot("buildalphakids.app:3000", "/")).toBe(true);
+  });
+  it("does NOT touch the marketing host — parents keep the homepage", () => {
+    expect(isStaffDomainRoot("buildalphakids.com.au", "/")).toBe(false);
+    expect(isStaffDomainRoot("www.buildalphakids.com.au", "/")).toBe(false);
+  });
+  it("does NOT touch preview URLs or localhost — QA stays on marketing", () => {
+    expect(isStaffDomainRoot("bak-app.vercel.app", "/")).toBe(false);
+    expect(isStaffDomainRoot("bak-bvioqyiue-buildalpha98-dels-projects.vercel.app", "/")).toBe(false);
+    expect(isStaffDomainRoot("localhost:3000", "/")).toBe(false);
+  });
+  it("only rewrites the exact root — deeper app paths pass through", () => {
+    expect(isStaffDomainRoot("buildalphakids.app", "/login")).toBe(false);
+    expect(isStaffDomainRoot("buildalphakids.app", "/admin")).toBe(false);
+    expect(isStaffDomainRoot("buildalphakids.app", "/blog")).toBe(false);
+  });
+  it("rejects a look-alike host (no subdomain-suffix bleed)", () => {
+    expect(isStaffDomainRoot("buildalphakids.app.evil.com", "/")).toBe(false);
+    expect(isStaffDomainRoot("notbuildalphakids.app", "/")).toBe(false);
+  });
+  it("handles missing host", () => {
+    expect(isStaffDomainRoot(null, "/")).toBe(false);
+    expect(isStaffDomainRoot(undefined, "/")).toBe(false);
+    expect(isStaffDomainRoot("", "/")).toBe(false);
   });
 });

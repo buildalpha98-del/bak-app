@@ -6,6 +6,7 @@ import { isRevokedSessionError } from "@/lib/auth/session-errors";
 import { resolveParentLoginTarget } from "@/lib/parent/safe-next";
 import {
   isFinancialRoute,
+  isStaffDomainRoot,
   parseRoleHint,
   serializeRoleHint,
   ROLE_HINT_COOKIE,
@@ -119,6 +120,25 @@ export async function middleware(request: NextRequest) {
 
   const { response, supabase } = createSupabaseMiddlewareClient(request);
   const { pathname } = request.nextUrl;
+
+  // Staff-domain root → dashboard. buildalphakids.app is the staff front
+  // door; parents live on buildalphakids.com.au (the audience split). Its
+  // root must open the dashboard, not the public marketing homepage —
+  // otherwise a bare visit AND the installed PWA (manifest start_url "/")
+  // both land on marketing, which is what staff hit after the site launched.
+  //
+  // Only the exact app host is rewritten. buildalphakids.com.au, preview
+  // *.vercel.app URLs and localhost keep serving marketing at / — so the
+  // public site, and QA on a deploy URL, are untouched. Done before the auth
+  // round-trip: the redirect needs no user, and /login re-enters middleware
+  // where an already-signed-in staff member is bounced on to their portal.
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (isStaffDomainRoot(host, pathname)) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    return safeRedirect(request, loginUrl);
+  }
 
   // Refresh the auth session. On auth errors (banned user, refresh
   // token revoked/rotated away) the stale sb-* cookies MUST be
