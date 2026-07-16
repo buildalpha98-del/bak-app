@@ -10,7 +10,7 @@
 //   - Mobile-responsive cards under md
 
 import { useTransition, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

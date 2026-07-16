@@ -10,7 +10,7 @@
 // muted when zero. Numbers tick up via `useCountUp` to match the
 // rest of the dashboard refresh.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { MessageSquareQuote, Check, RefreshCw, Globe } from "lucide-react";
 import type { MarketingStatusPulse } from "@/lib/marketing/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

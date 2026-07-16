@@ -17,7 +17,7 @@
 // - This is a client component so the links honour Next routing
 //   intercepts (useRouter prefetch) without a full page reload.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { AlertTriangle, FileWarning, Compass } from "lucide-react";
 import type { CentresStatusPulse } from "@/lib/centres/actions";
 import { computeDelta } from "@/lib/comparison/delta";

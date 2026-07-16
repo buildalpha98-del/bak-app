@@ -9,7 +9,7 @@
 // child's detail page. Keeps the dashboard warm and personal —
 // "these are my kids, not a row in a table".
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import type { Child } from "@/lib/types/database";
 import { calculateAge } from "@/lib/utils/ageGroup";
 

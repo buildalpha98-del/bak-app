@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { ArrowLeft, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
 

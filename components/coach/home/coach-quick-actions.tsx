@@ -9,7 +9,7 @@
 // tall, with a subtle hover-lift and a single brand-orange icon
 // chip — restrained orange per the design refresh pattern.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Calendar,
   ClipboardList,

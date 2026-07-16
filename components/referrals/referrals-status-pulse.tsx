@@ -9,7 +9,7 @@
 // config drift. Brand orange when a count is > 0 (config drift is
 // red because it's a real problem), muted when zero.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Link2, TrendingUp, Gift, AlertTriangle } from "lucide-react";
 import type { ReferralsStatusPulse } from "@/lib/referrals/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

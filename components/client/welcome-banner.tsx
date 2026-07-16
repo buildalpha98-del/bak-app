@@ -8,7 +8,7 @@
 // so it never reappears on another device. Three steps, one tap out.
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Calendar, FileText, MessageSquare, X } from "lucide-react";
 import { markClientWelcomed } from "@/lib/client/actions";
 

@@ -14,7 +14,7 @@
 //     the centre's onboarding wizard
 //   - rounded-2xl + subtle hover-lift, matching the /admin home cards
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Building2,
   GraduationCap,

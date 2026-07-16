@@ -13,7 +13,7 @@ import type { BookableSession } from "@/lib/types/database";
 import { BookableSessionForm } from "@/components/bookings/session-form";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 export default function OpsEditSessionPage() {
   const params = useParams<{ id: string }>();

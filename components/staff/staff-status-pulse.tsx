@@ -14,7 +14,7 @@
 // values tick up via `useCountUp` for the same first-paint warmth as
 // the home dashboard cards.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { AlertTriangle, FileWarning, CalendarOff, UserCog } from "lucide-react";
 import type { StaffStatusPulse } from "@/lib/staff/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

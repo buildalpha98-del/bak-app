@@ -14,7 +14,7 @@
 // secondary filter param so a click drops the operator straight
 // into the work.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Calendar, Clock, Package, TrendingUp } from "lucide-react";
 import type { BookingsStatusPulse } from "@/lib/bookings/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

@@ -4,7 +4,7 @@
 // Churn — inline status pulse strip
 // ============================================================
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { ShieldAlert, AlertTriangle, TrendingDown, Minus } from "lucide-react";
 import type { ChurnStatusPulse } from "@/lib/churn/status-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";

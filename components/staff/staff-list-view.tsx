@@ -19,7 +19,7 @@
 // between sections, gap-4 within.
 
 import { useState, useMemo, useCallback, useEffect, type MouseEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,

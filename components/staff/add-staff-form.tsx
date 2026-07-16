@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Banknote, CheckCircle, Copy, KeyRound, Mail, MailWarning } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

@@ -9,7 +9,7 @@ import { BookableSessionForm } from "@/components/bookings/session-form";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 
 export default function AdminNewSessionPage() {
   const router = useRouter();

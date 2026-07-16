@@ -12,7 +12,7 @@
 // Numbers tick up via `useCountUp` to match the rest of the
 // dashboard refresh.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   MessageSquare,
   AlertTriangle,

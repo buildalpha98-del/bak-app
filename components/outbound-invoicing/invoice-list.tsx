@@ -10,7 +10,7 @@
 // Approve, approved → Send.
 
 import { useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, Send } from "lucide-react";

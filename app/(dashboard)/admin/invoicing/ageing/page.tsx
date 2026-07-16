@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAgeingReport } from "@/lib/outbound-invoicing/actions";
 import { Card, CardContent } from "@/components/ui/card";

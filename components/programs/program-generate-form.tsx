@@ -34,7 +34,7 @@ import {
 } from "@/lib/programs/actions";
 import type { ProgrammeDuplicateMatch } from "@/lib/programs/actions";
 import type { ProgramContentJson, SessionDuration } from "@/lib/ai/types";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { AlertTriangle } from "lucide-react";
 
 // ============================================================
