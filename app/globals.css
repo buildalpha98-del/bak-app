@@ -34,7 +34,16 @@
 
     /* Primary: Brand orange — punchy and confident */
     --primary: oklch(0.65 0.19 42);
-    --primary-foreground: oklch(0.995 0.002 75);
+    /* Ink, not white. Was oklch(0.995 0.002 75) = #FEFDFC, which measured
+       3.44:1 on --primary — below the 4.5:1 WCAG AA floor, on every
+       `default` Button and Badge in the light theme. This is
+       --brand-charcoal #1C1917: 5.00:1 on the orange above, and 5.69:1 on
+       --brand-orange #E8712A, the value the palette reconcile moves to.
+       It passes on BOTH oranges, so this a11y fix and that palette change
+       revert independently of each other.
+       Guarded by lib/brand/__tests__/contrast.test.ts — the only test in
+       this repo that asserts a colour. Do not raise this back to white. */
+    --primary-foreground: oklch(0.216 0.006 56);
 
     /* Secondary: Warm stone */
     --secondary: oklch(0.955 0.006 75);
@@ -65,6 +74,15 @@
     --sidebar: oklch(0.14 0.012 45);
     --sidebar-foreground: oklch(0.92 0.005 75);
     --sidebar-primary: oklch(0.65 0.19 42);
+    /* STAYS NEAR-WHITE — do not flip this to ink to match
+       --primary-foreground above. The names imply these two pair up; they
+       do not. Nothing renders text on `bg-sidebar-primary` (it only draws
+       the 3px active stripe and the status dots), and the sole consumer of
+       --sidebar-primary-foreground is navigation/sidebar.tsx:79, which
+       renders it as the ACTIVE NAV LABEL on `bg-sidebar-accent` — a
+       near-black charcoal. Ink here measures 1.04:1 against that: an
+       invisible label on the primary nav. Guarded by
+       lib/brand/__tests__/contrast.test.ts. */
     --sidebar-primary-foreground: oklch(0.995 0 0);
     --sidebar-accent: oklch(0.20 0.014 45);
     --sidebar-accent-foreground: oklch(0.92 0.005 75);
