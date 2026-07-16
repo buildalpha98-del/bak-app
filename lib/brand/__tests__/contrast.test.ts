@@ -193,6 +193,26 @@ describe("toast state tokens clear WCAG on the --popover ground", () => {
     }
   });
 
+  // The accent pairs: toast icons and the state border. These are non-text
+  // UI components, so the floor is WCAG 2.1 SC 1.4.11's 3:1, not 4.5:1.
+  //
+  // --success/--warning/--info are declared in BOTH blocks and lightened for
+  // dark. If you add a state accent, add it here: the :root values go muddy
+  // on the dark popover (--info measures 3.80:1 there at its light value).
+  const NON_TEXT_THRESHOLD = 3;
+
+  it.each(["success", "warning", "info", "destructive"])(
+    "--%s is visible on --popover in both themes",
+    (token) => {
+      for (const [name, body] of themes) {
+        const ratio = contrastRatio(tokenHex(body, token), tokenHex(body, "popover"));
+        expect(ratio, `${name} --${token} toast accent`).toBeGreaterThanOrEqual(
+          NON_TEXT_THRESHOLD
+        );
+      }
+    }
+  );
+
   // THE TRIPWIRE for the toast work — the counterpart to the sidebar one above.
   //
   // `richColors` reads like a nice-to-have and is the single line that undoes

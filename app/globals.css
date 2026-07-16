@@ -107,8 +107,24 @@
     --sport-red: #D32F2F;
     --sport-red-light: #FFEBEE;
 
-    /* Success / info semantic tokens */
+    /* Semantic state tokens — the accent hues for success/warning/info.
+       Error has no token here: it reuses --destructive.
+
+       These are NOT brand orange, deliberately. They are state signals, and
+       state is not a branding surface: the toast plan's own rule for keeping
+       error red ("brand orange and error red are close enough in hue that an
+       orange error toast is a legibility hazard") applies with more force to
+       warning, whose conventional amber IS orange. Painting success/info
+       orange as well would collapse three of the four states onto one hue and
+       leave the icon glyph as the only thing distinguishing them.
+
+       Each value is tuned to clear WCAG 1.4.11's 3:1 non-text floor against
+       its OWN theme's --popover, which is the ground toasts render on. Guarded
+       by lib/brand/__tests__/contrast.test.ts. Measured on --popover:
+         light  --success #31983D 3.63:1  --warning #A96B00 4.32:1  --info #1F74BF 4.80:1
+         dark   --success #54B85B 7.39:1  --warning #E1A035 8.18:1  --info #4393E1 5.73:1 */
     --success: oklch(0.60 0.16 145);
+    --warning: oklch(0.58 0.14 75);
     --info: oklch(0.55 0.14 250);
 
     /* iOS safe-area inset tokens. With black-translucent status bar and
@@ -153,6 +169,16 @@
     --sidebar-accent-foreground: oklch(0.92 0.005 75);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.70 0.19 42);
+
+    /* Semantic state accents, lightened for the dark ground — the same move
+       --primary makes (0.65 → 0.70) for the same reason. The :root values are
+       tuned against cream and go muddy on the dark --popover; --info in
+       particular drops to 3.80:1 there. Hue and chroma are held constant so
+       the states stay recognisably the same colours across themes.
+       Guarded in both themes by lib/brand/__tests__/contrast.test.ts. */
+    --success: oklch(0.70 0.16 145);
+    --warning: oklch(0.75 0.14 75);
+    --info: oklch(0.65 0.14 250);
 }
 
 @theme inline {
@@ -176,6 +202,9 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);

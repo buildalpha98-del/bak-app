@@ -40,8 +40,13 @@ import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon
 // own --popover ground with --popover-foreground text. That is 18.98:1 in
 // light and 16.98:1 in dark — AA by construction, and it cannot silently
 // regress, because the text pair no longer depends on the state at all.
-// State is carried by the icon glyph (check / octagon / triangle / i), which
-// is a channel that does not depend on colour at all.
+//
+// State is then carried REDUNDANTLY, which is what WCAG 1.4.1 wants anyway:
+// a distinct icon GLYPH (check / octagon / triangle / i) plus a semantic icon
+// and border COLOUR. Colour is never the only channel.
+//
+// Why the accents are not brand orange: state is not a branding surface.
+// See the --success/--warning/--info comment in app/globals.css.
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -52,19 +57,19 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="size-4 text-success" />
         ),
         info: (
-          <InfoIcon className="size-4" />
+          <InfoIcon className="size-4 text-info" />
         ),
         warning: (
-          <TriangleAlertIcon className="size-4" />
+          <TriangleAlertIcon className="size-4 text-warning" />
         ),
         error: (
-          <OctagonXIcon className="size-4" />
+          <OctagonXIcon className="size-4 text-destructive" />
         ),
         loading: (
-          <Loader2Icon className="size-4 animate-spin" />
+          <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
         ),
       }}
       style={
@@ -78,6 +83,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "cn-toast",
+          // Redefining --normal-border ON THE TOAST beats the value inherited
+          // from the toaster's inline style above, so the base rule picks up
+          // the state colour without needing to out-specify Sonner's own
+          // `border: 1px solid var(--normal-border)` shorthand.
+          success: "[--normal-border:var(--success)]",
+          info: "[--normal-border:var(--info)]",
+          warning: "[--normal-border:var(--warning)]",
+          error: "[--normal-border:var(--destructive)]",
         },
       }}
       {...props}
