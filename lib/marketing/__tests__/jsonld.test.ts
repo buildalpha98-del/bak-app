@@ -224,22 +224,25 @@ describe("localBusinessJsonLd", () => {
     });
   });
 
-  it("excludes TODO-CONFIRM socials rather than publishing placeholders", () => {
+  it("publishes real socials and still excludes any placeholder", () => {
     stubOrigin();
-    // Guard the premise: if the real handles land, this test must be
-    // revisited rather than quietly passing for the wrong reason.
-    expect(SITE.socials.instagram.startsWith("TODO-CONFIRM")).toBe(true);
-    const result = localBusinessJsonLd();
-    expect(result).not.toHaveProperty("sameAs");
+    // The real Instagram handle landed 2026-07-16; Facebook has not.
+    // This asserts the filter discriminates rather than being all-or-nothing.
+    expect(SITE.socials.instagram.startsWith("TODO-CONFIRM")).toBe(false);
+    expect(SITE.socials.facebook.startsWith("TODO-CONFIRM")).toBe(true);
+    const result = localBusinessJsonLd() as { sameAs?: string[] };
+    expect(result.sameAs).toEqual(["https://instagram.com/buildalphakids"]);
+    expect(JSON.stringify(result)).not.toContain("facebook");
   });
 
-  it("omits telephone while SITE.phone is a placeholder", () => {
+  it("publishes the real telephone now that SITE.phone is confirmed", () => {
     stubOrigin();
-    expect(SITE.phone.startsWith("TODO-CONFIRM")).toBe(true);
-    const result = localBusinessJsonLd();
-    // A placeholder number in structured data is machine-read as fact.
-    // Absent beats wrong — telephone is optional.
-    expect(result).not.toHaveProperty("telephone");
+    // Was omitted while a placeholder: a fake number in structured data
+    // is machine-read as fact, and can surface as a Google call button.
+    // The real number landed 2026-07-16, so it must now be present.
+    expect(SITE.phone.startsWith("TODO-CONFIRM")).toBe(false);
+    const result = localBusinessJsonLd() as { telephone?: string };
+    expect(result.telephone).toBe(SITE.phone);
     expect(JSON.stringify(result)).not.toContain("TODO-CONFIRM");
   });
 

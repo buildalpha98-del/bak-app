@@ -10,7 +10,7 @@ import {
   ENQUIRE_FORM,
   ORG_TYPES,
   PROGRAMS,
-  SITE,
+  SITE, phoneHref,
 } from "@/lib/marketing/content";
 import {
   buildEnquiryPayload,
@@ -329,10 +329,10 @@ export function EnquiryForm({
             {ENQUIRE_FORM.failurePhonePrefix}{" "}
             {/* Hover is #993C1D, the AA-safe orange for small text on
                 white (~6.9:1) — brand orange #E8712A would be ~2.7:1
-                here. SITE.phone renders as its TODO-CONFIRM placeholder
-                on purpose; that is what flags it for replacement. */}
+                here. The number is shown spaced for reading; phoneHref()
+                derives the E.164 tel: target from the same constant. */}
             <a
-              href={`tel:${SITE.phone}`}
+              href={phoneHref()}
               className="font-heading font-bold text-[#111] underline decoration-[#E8712A] decoration-2 underline-offset-4 transition-colors hover:text-[#993C1D]"
             >
               {SITE.phone}

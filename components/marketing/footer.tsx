@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Mail, Phone } from "lucide-react";
-import { BRAND, PROGRAMS, SITE } from "@/lib/marketing/content";
+import { BRAND, PROGRAMS, SITE, phoneHref } from "@/lib/marketing/content";
 
 const SOCIAL_ICONS = {
   instagram: Instagram,
@@ -91,7 +91,7 @@ export function MarketingFooter() {
             <ul className="mt-4 space-y-3 text-sm text-white/60">
               <li>
                 <a
-                  href={`tel:${SITE.phone}`}
+                  href={phoneHref()}
                   className="inline-flex items-center gap-2 transition-colors hover:text-[#E8712A]"
                 >
                   <Phone className="size-4 shrink-0" />

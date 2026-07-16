@@ -23,20 +23,29 @@ export interface SiteInfo {
   /** Canonical production origin (no trailing slash). */
   url: string;
   /**
-   * Public phone number.
-   * TODO-CONFIRM: not present anywhere in the repo (invoices read
-   * business_phone from DB settings). Replace before launch.
+   * Public phone number, stored spaced for display. Use `phoneHref()`
+   * for a `tel:` target — do not interpolate this directly into one.
+   *
+   * Not derivable from the repo (invoices read `business_phone` from DB
+   * settings), so it is owner-supplied: confirmed by Jayden 2026-07-16.
    */
   phone: string;
   /** Public contact email (matches email templates + invoicing fallback). */
   email: string;
   /**
-   * ABN. TODO-CONFIRM: only available at runtime via the BAK_ABN
-   * env var (lib/launch/invoice-actions.ts) — the value itself is
-   * not in the repo. Replace before launch.
+   * ABN, stored spaced for display.
+   *
+   * Not derivable from the repo — at runtime invoicing reads the `BAK_ABN`
+   * env var (lib/launch/invoice-actions.ts), and the value itself is not
+   * committed. Owner-supplied: confirmed by Jayden 2026-07-16.
    */
   abn: string;
-  /** Social profile URLs. TODO-CONFIRM handles before launch. */
+  /**
+   * Social profile URLs. Any entry still prefixed `TODO-CONFIRM` is
+   * filtered out at render (footer) and omitted from `sameAs` in the
+   * LocalBusiness JSON-LD — an unconfirmed profile links nowhere rather
+   * than guessing a handle.
+   */
   socials: {
     instagram: string;
     facebook: string;
@@ -53,11 +62,16 @@ export const SITE: SiteInfo = {
   name: "Build Alpha Kids",
   tagline: "Multi-sport coaching for kids across South-West Sydney",
   url: "https://buildalphakids.com.au",
-  phone: "TODO-CONFIRM 0400 000 000",
+  phone: "0426 722 003",
   email: "info@buildalphakids.com.au",
-  abn: "TODO-CONFIRM XX XXX XXX XXX",
+  abn: "47 262 120 626",
   socials: {
-    instagram: "TODO-CONFIRM https://instagram.com/buildalphakids",
+    instagram: "https://instagram.com/buildalphakids",
+    /**
+     * No Facebook page confirmed. The footer filters any entry still
+     * marked TODO-CONFIRM, so this renders nothing rather than linking
+     * somewhere that may not exist. Replace with the real URL to enable it.
+     */
     facebook: "TODO-CONFIRM https://facebook.com/buildalphakids",
   },
   bookingUrl: "/parent/book",
@@ -75,6 +89,30 @@ export const SITE: SiteInfo = {
  * rather than re-litigated as an unsourced claim.)
  */
 export const ACTIVE_KIDS_BLURB = "NSW Active Kids vouchers accepted";
+
+/**
+ * `tel:` href for SITE.phone, in E.164.
+ *
+ * SITE.phone is stored spaced for reading ("0426 722 003"). A `tel:`
+ * href wants no spaces, and an international prefix so the link works
+ * for someone dialling from outside Australia — a school calling from
+ * a VoIP handset, say. Australian mobiles drop the leading 0 after +61.
+ *
+ * Kept as a derived helper rather than a second stored constant, so a
+ * corrected number can never be updated in one place and missed in the
+ * other.
+ */
+export const phoneHref = (phone: string = SITE.phone): string => {
+  const digits = phone.replace(/\D/g, "");
+  // Already international (written with a +, or starting with the AU
+  // country code): keep it, just normalise the punctuation away.
+  if (phone.trim().startsWith("+") || digits.startsWith("61")) {
+    return `tel:+${digits}`;
+  }
+  // Domestic AU: swap the trunk 0 for +61.
+  if (digits.startsWith("0")) return `tel:+61${digits.slice(1)}`;
+  return `tel:${digits}`;
+};
 
 /**
  * Trust claims made on more than one surface — the program pages'
