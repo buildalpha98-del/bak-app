@@ -33,6 +33,30 @@ export function isFinancialRoute(pathname: string): boolean {
   );
 }
 
+/**
+ * The staff/dashboard front door. Parents live on buildalphakids.com.au;
+ * staff live on buildalphakids.app (the audience split). Only these exact
+ * hosts get their root redirected to the dashboard — .com.au, preview
+ * *.vercel.app URLs and localhost keep serving the marketing homepage at /.
+ */
+const STAFF_HOSTS = new Set(["buildalphakids.app", "www.buildalphakids.app"]);
+
+/**
+ * True when a request should have its root ("/") sent to the dashboard
+ * instead of the public marketing homepage: the exact staff host, at the
+ * root path. Case-insensitive on host; ignores any port. Anything else —
+ * a marketing host, a preview URL, a deeper path — is false, so the
+ * public site and QA-on-a-deploy-URL are untouched.
+ */
+export function isStaffDomainRoot(
+  host: string | null | undefined,
+  pathname: string
+): boolean {
+  if (pathname !== "/") return false;
+  const bare = (host ?? "").toLowerCase().split(":")[0];
+  return STAFF_HOSTS.has(bare);
+}
+
 export type RoleHint = {
   role: string;
   status: string;
