@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { TodaySession, TodaySessionStats } from "@/lib/ops/actions";
 import type { SessionStatus } from "@/lib/types/enums";

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Calendar,
   Clock,

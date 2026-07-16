@@ -20,7 +20,7 @@
 //     hidden and the grid stays intact via fallback cards/columns.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import dynamic from "next/dynamic";
 import {
   Building2,

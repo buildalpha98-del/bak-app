@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { usePathname } from "next/navigation";
 import { NAV_CONFIG, isNavItemActive, getMobileItems } from "@/components/shared/navigation/nav-config";
 import { AppLogo } from "@/components/shared/app-logo";

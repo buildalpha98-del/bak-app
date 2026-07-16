@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { CheckSquare } from "lucide-react";
 import { toast } from "sonner";
 import { WidgetWrapper } from "@/components/ops/widget-wrapper";

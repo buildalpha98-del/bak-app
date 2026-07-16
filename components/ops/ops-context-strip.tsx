@@ -12,7 +12,7 @@
 // Mirrors `AdminContextStrip` so the two home pages feel like one
 // system seen from two angles.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import type { OpsCommandPulse } from "@/lib/ops/command-pulse-actions";
 import { useCountUp } from "@/components/launch/use-count-up";
 

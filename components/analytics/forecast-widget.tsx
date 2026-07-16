@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 
 import { getForecastDashboardWidget } from "@/lib/forecasting/actions";

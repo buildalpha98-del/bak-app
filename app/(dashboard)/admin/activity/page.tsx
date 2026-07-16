@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { ArrowLeft } from "lucide-react";
 import { getRecentActivity } from "@/lib/launch/dashboard-actions";
 import { ActivityTimeline } from "@/components/admin/activity-timeline";

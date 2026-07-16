@@ -16,7 +16,7 @@
 //   - mobile 1-column card list under md
 
 import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CheckCircle, GitMerge, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";

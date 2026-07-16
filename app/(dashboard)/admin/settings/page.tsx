@@ -12,7 +12,7 @@
 // integrations / invoicing / reminders / scheduling / programs)
 // keep their own per-page treatments.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   Heart,
   LineChart,

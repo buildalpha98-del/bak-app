@@ -10,7 +10,7 @@
 // parent_children join.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { toast } from "sonner";
 import {
   getParentChildren,

@@ -12,7 +12,7 @@
 // the dashboard; that's intentional because the pulse counts are the
 // reason most admins open this page in the morning.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import type { AdminStatusPulse } from "@/lib/launch/dashboard-actions";
 import { useCountUp } from "@/components/launch/use-count-up";
 

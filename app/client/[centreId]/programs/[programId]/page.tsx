@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientProgramDetail } from "@/lib/client/portal-actions";
 import { ProgramView } from "@/components/programs/program-view";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { ArrowLeft } from "lucide-react";
 
 export default async function ClientProgramDetailPage({

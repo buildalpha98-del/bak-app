@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { AlertTriangle, ClipboardList } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {

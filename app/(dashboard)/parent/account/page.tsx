@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { toast } from "sonner";
 import { getParentProfile, updateParentProfile, getParentChildren } from "@/lib/parent/actions";
 import { getParentPackageBalances } from "@/lib/bookings/booking-actions";

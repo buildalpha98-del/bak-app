@@ -14,7 +14,7 @@
 // simple. Each pulse stat is a single link with a single ?filter= param
 // that the destination view already understands.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CalendarClock,
   ClipboardCheck,

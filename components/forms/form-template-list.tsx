@@ -15,7 +15,7 @@
 // publish/archive helpers that maintain that convention.
 
 import { useState, useEffect, useMemo, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

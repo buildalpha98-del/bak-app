@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Loader2, CheckCircle2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

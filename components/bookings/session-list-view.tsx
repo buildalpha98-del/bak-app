@@ -12,7 +12,7 @@
 //   - restrained orange — chips & primary bulk action only
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,

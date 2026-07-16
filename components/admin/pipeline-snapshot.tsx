@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Calendar, AlertTriangle } from "lucide-react";
 import { getPipelineSnapshot } from "@/lib/crm/metrics-actions";

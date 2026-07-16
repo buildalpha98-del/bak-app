@@ -23,7 +23,7 @@
 //     chips, "Required" badge, "Overdue" pulse, bulk-action bar.
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,

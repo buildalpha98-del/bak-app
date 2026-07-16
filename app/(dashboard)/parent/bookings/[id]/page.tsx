@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import { toast } from "sonner";
 import { getBookingById, cancelBooking } from "@/lib/bookings/booking-actions";
 import { Button } from "@/components/ui/button";

@@ -19,7 +19,7 @@
 // (e.g. "overdue", "urgent"). Optional `href` makes the item a tap
 // target — passing nothing leaves it as plain text.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   AlertTriangle,
   Bell,

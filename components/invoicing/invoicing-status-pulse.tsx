@@ -9,7 +9,7 @@
 // (coach) invoices, sent this week. Brand orange when > 0, muted when
 // zero. Numbers tick up via `useCountUp`.
 
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   AlertTriangle,
   Clock,

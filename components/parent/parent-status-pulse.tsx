@@ -21,7 +21,7 @@
 // solicits an action on its own.
 
 import { Fragment } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   CalendarClock,
   CreditCard,

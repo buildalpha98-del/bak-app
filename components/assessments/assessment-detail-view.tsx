@@ -17,7 +17,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/app-link";
 import {
   ArrowLeft,
   Trash2,
