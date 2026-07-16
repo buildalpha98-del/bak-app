@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import Link from "@/components/ui/app-link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -10,6 +9,7 @@ import { NAV_CONFIG, filterNavByAccess, isNavItemActive } from "./nav-config";
 import { useSidebar } from "./sidebar-context";
 import type { UserRole } from "@/lib/types/enums";
 import { InboxBadge } from "@/components/inbox/inbox-badge";
+import { AppLogo } from "@/components/shared/app-logo";
 
 interface SidebarProps {
   role: UserRole;
@@ -42,11 +42,7 @@ export function Sidebar({ role, financialAccess = true }: SidebarProps) {
       {/* Logo area — brand-forward */}
       <div className="relative flex h-16 items-center gap-3 border-b border-sidebar-border px-3">
         <div className="relative shrink-0">
-          <img
-            src="/logo-full.png"
-            alt="Build Alpha Kids"
-            className="h-9 w-9 object-contain drop-shadow-md"
-          />
+          <AppLogo size="rail" className="drop-shadow-md" />
         </div>
         {!isCollapsed && (
           <div className="flex flex-col min-w-0">
