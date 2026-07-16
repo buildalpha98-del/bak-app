@@ -25,6 +25,7 @@ export function BottomTabs({ role, financialAccess = true }: BottomTabsProps) {
 
           return (
             <Link
+              prefetch={false}
               key={item.href}
               href={item.href}
               className={cn(
