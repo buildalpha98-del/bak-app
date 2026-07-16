@@ -4,8 +4,31 @@ import { useState } from "react";
 import { Check, Copy, Code2, BarChart3, Grid3X3, MessageSquareQuote, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://app.buildalphakids.com.au";
+// These snippets are for Build Alpha Kids' OWN marketing site — the page
+// copy below says "paste into your marketing website", addressed to the
+// admin reading it. They were built so the WordPress site could pull live
+// data from the app, which is why /api/public/* pins
+// Access-Control-Allow-Origin to exactly https://buildalphakids.com.au in
+// production. Nothing here targets centre-owned sites; that would require
+// CORS to allow arbitrary centre origins.
+//
+// The origin must therefore be the stable public one. This was
+// `window.location.origin` with a dead-domain SSR fallback, which baked
+// whatever host the ADMIN happened to be on into the snippet — an admin on
+// localhost or a preview URL generated a snippet pointing there.
+//
+// POST-CUTOVER CLEANUP CANDIDATE (owner's call — do not delete unasked):
+// once buildalphakids.com.au IS this app, the marketing pages render stats,
+// sports and testimonials natively as server components (lib/marketing/
+// stats.ts getImpactStats(), lib/marketing/testimonials.ts
+// getApprovedTestimonials(); see Task 2.3) — same-origin, no fetch, no
+// CORS. These widgets and the /api/public/{stats,sports,testimonials}
+// routes they call become dead weight at that point.
+// NOTE: /api/public/refresh-stats is NOT in that set — it is a live cron
+// (vercel.json) and must stay regardless.
+const APP_URL = getMarketingUrl();
 
 interface Widget {
   name: string;

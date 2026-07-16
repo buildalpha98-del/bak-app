@@ -2,6 +2,12 @@
 // Booking email templates — inline-styled HTML with BAK branding
 // Parent-facing emails for bookings, reminders, cancellations, packages
 // ============================================================
+//
+// Every link here goes to a PARENT, so it targets the marketing origin
+// (buildalphakids.com.au) — parents live on the consumer brand and get
+// one cookie jar. See the audience principle in the marketing-site plan.
+
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
 const BRAND_ORANGE = "#E8712A";
 const BRAND_WARM_BG = "#FFF7ED";
@@ -27,7 +33,7 @@ function parentLayout(content: string): string {
         <!-- Footer -->
         <tr><td style="padding:16px 24px;border-top:1px solid #E5E5E5;color:${BRAND_GREY};font-size:12px;text-align:center;">
           Build Alpha Kids &bull; Multi-Sport Coaching for Kids<br>
-          <a href="https://app.buildalphakids.com.au/parent" style="color:${BRAND_ORANGE};text-decoration:none;">Open Parent Portal</a>
+          <a href="${getMarketingUrl()}/parent" style="color:${BRAND_ORANGE};text-decoration:none;">Open Parent Portal</a>
         </td></tr>
       </table>
     </td></tr>
@@ -110,7 +116,7 @@ export function bookingConfirmationEmail(
       </p>
 
       <div style="text-align:center;margin-top:24px;">
-        <a href="https://app.buildalphakids.com.au/parent/bookings" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View My Bookings</a>
+        <a href="${getMarketingUrl()}/parent/bookings" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View My Bookings</a>
       </div>
     `),
   };
@@ -155,7 +161,7 @@ export function bookingReminderEmail(
       <p>Remember to bring comfortable clothes, a water bottle, and sun protection. See you there!</p>
 
       <div style="text-align:center;margin-top:24px;">
-        <a href="https://app.buildalphakids.com.au/parent/bookings" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View My Bookings</a>
+        <a href="${getMarketingUrl()}/parent/bookings" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">View My Bookings</a>
       </div>
     `),
   };
@@ -201,7 +207,7 @@ export function bookingCancellationEmail(
       <p>If you'd like to book another session, you can browse available sessions in your parent portal.</p>
 
       <div style="text-align:center;margin-top:24px;">
-        <a href="https://app.buildalphakids.com.au/parent/book" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Browse Sessions</a>
+        <a href="${getMarketingUrl()}/parent/book" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Browse Sessions</a>
       </div>
     `),
   };
@@ -231,7 +237,7 @@ export function packagePurchaseEmail(
       <p>You can use your pack sessions when booking any eligible session. Just select "Use Session Pack" at checkout.</p>
 
       <div style="text-align:center;margin-top:24px;">
-        <a href="https://app.buildalphakids.com.au/parent/book" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Browse Sessions</a>
+        <a href="${getMarketingUrl()}/parent/book" style="display:inline-block;padding:12px 24px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:600;">Browse Sessions</a>
       </div>
     `),
   };

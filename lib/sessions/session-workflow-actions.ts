@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { updateSessionStatus } from "./actions";
 import { revalidatePath } from "next/cache";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
+import { getBaseUrl } from "@/lib/utils/base-url";
 
 // ============================================================
 // Types
@@ -391,7 +392,8 @@ export async function completeSession(
         );
 
         if (token) {
-          const feedbackUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buildalphakids.com.au"}/feedback/${token}`;
+          // Sent to centre.primary_contact_email -> staff-facing.
+          const feedbackUrl = `${getBaseUrl()}/feedback/${token}`;
 
           // Get coach name for email
           const { data: coachProfile } = await supabase

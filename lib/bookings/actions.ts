@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { BookableSession, WaitlistEntry } from "@/lib/types/database";
 import type { BookableSessionType, BookableSessionStatus } from "@/lib/types/enums";
 import { sendEmail } from "@/lib/launch/email";
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
 // ============================================================
 // Types
@@ -506,7 +507,9 @@ export async function processWaitlistForSession(
 
       // Send waitlist offer email (fire-and-forget)
       if (parent.email) {
-        const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
+        // Parent-facing (see the plan's audience principle): the waitlist
+        // offer goes to a parent, so it links to the marketing origin.
+        const APP_URL = getMarketingUrl();
         void sendEmail({
           to: parent.email,
           subject: `A spot has opened — ${session.title}`,

@@ -16,6 +16,7 @@ import { createNotification } from "@/lib/launch/notifications";
 import { invoiceReady } from "@/lib/launch/email-templates";
 import { revalidatePath } from "next/cache";
 import type { Invoice, InvoiceLineItem } from "@/lib/launch/types";
+import { getBaseUrl } from "@/lib/utils/base-url";
 
 // ========================
 // Types
@@ -441,7 +442,8 @@ async function generateAndUploadPdf(
 
 async function notifyCentreDirector(invoiceId: string) {
   const adminClient = createSupabaseAdmin();
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
+  // Centre director invoice notification: staff-facing.
+  const APP_URL = getBaseUrl();
 
   const { data: invoice } = await adminClient
     .from("invoices")

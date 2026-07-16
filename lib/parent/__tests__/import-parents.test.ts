@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -333,6 +333,89 @@ describe("importParents — happy path", () => {
         user_id: "admin1",
       })
     );
+  });
+});
+
+describe("importParents — invite links target the marketing origin", () => {
+  // Audience principle: the invitee is a PARENT, so once the public site
+  // is live the link must go to buildalphakids.com.au even though STAFF
+  // trigger this from the app domain — otherwise the parent's session
+  // lands in the .app cookie jar and they'd log in a second time when
+  // they first browse the site.
+  //
+  // But "once the public site is live" is doing real work in that
+  // sentence. This is a magic link that a parent CLICKS, so it is gated
+  // on NEXT_PUBLIC_MARKETING_URL rather than hardcoding the destination:
+  // .com.au serves WordPress until the DNS cutover, and Supabase
+  // silently swaps a non-allowlisted emailRedirectTo for its own Site
+  // URL instead of erroring — so getting this wrong fails invisibly, in
+  // a flow whose failure nobody sees until a parent complains.
+  //
+  // The two tests below pin BOTH sides of that flip.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("targets the app domain pre-cutover, when NEXT_PUBLIC_MARKETING_URL is unset", async () => {
+    // Merged and deployed, DNS not yet moved (after runbook step 6,
+    // before step 7). The link must name a host that serves this app
+    // TODAY. This is exactly main's behaviour, preserved.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    vi.stubEnv("VERCEL_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "");
+    mockAuth();
+
+    await importParents([
+      { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
+    ]);
+
+    expect(generateLinkMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "magiclink",
+        email: "jane@example.com",
+        options: {
+          redirectTo:
+            "https://buildalphakids.app/auth/callback?next=%2Fparent-login",
+        },
+      })
+    );
+  });
+
+  it("moves to the .com.au callback once the cutover env is set", async () => {
+    // Runbook step 8 — the post-DNS flip that realises the audience
+    // principle.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    vi.stubEnv("VERCEL_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://buildalphakids.com.au");
+    mockAuth();
+
+    await importParents([
+      { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
+    ]);
+
+    const redirectTo = generateLinkMock.mock.calls[0][0].options.redirectTo;
+    expect(redirectTo).toBe(
+      "https://buildalphakids.com.au/auth/callback?next=%2Fparent-login"
+    );
+    expect(redirectTo).not.toContain("buildalphakids.app");
+  });
+
+  it("is deterministic — honours NEXT_PUBLIC_MARKETING_URL, never the app domain", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://buildalphakids.app");
+    vi.stubEnv("NEXT_PUBLIC_MARKETING_URL", "https://staging.example.com");
+    mockAuth();
+
+    await importParents([
+      { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
+    ]);
+
+    const redirectTo = generateLinkMock.mock.calls[0][0].options.redirectTo;
+    expect(redirectTo).toBe(
+      "https://staging.example.com/auth/callback?next=%2Fparent-login"
+    );
+    expect(redirectTo).not.toContain("buildalphakids.app");
   });
 });
 

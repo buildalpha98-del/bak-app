@@ -4,6 +4,8 @@ import {
   sydneyWeekday,
   daysFromSydneyToday,
   minutesUntilSydney,
+  sydneyUtcOffset,
+  sydneyIsoDateTime,
 } from "../sydney-time";
 
 // The whole point of these helpers: the same instant is a DIFFERENT
@@ -79,5 +81,75 @@ describe("minutesUntilSydney", () => {
     // 2026-01-15T22:00:00Z = Sydney 16 Jan 09:00 AEDT → 09:30 is 30 min out
     const instant = new Date("2026-01-15T22:00:00Z");
     expect(minutesUntilSydney("2026-01-16", "09:30", instant)).toBe(30);
+  });
+});
+
+// ------------------------------------------------------------
+// sydneyUtcOffset / sydneyIsoDateTime
+// ------------------------------------------------------------
+//
+// NSW runs daylight saving from the first Sunday in October to the
+// first Sunday in April. A hardcoded "+10:00" is correct for winter and
+// wrong for the October and December–January school-holiday seasons —
+// i.e. wrong for most of the clinic calendar. These cases are what stop
+// that regression.
+
+describe("sydneyUtcOffset", () => {
+  it("returns AEST +10:00 in winter", () => {
+    expect(sydneyUtcOffset("2026-07-21")).toBe("+10:00");
+  });
+
+  it("returns AEDT +11:00 in January", () => {
+    expect(sydneyUtcOffset("2026-01-15")).toBe("+11:00");
+  });
+
+  it("returns AEDT +11:00 in October, once DST has begun", () => {
+    expect(sydneyUtcOffset("2026-10-06")).toBe("+11:00");
+  });
+
+  it("flips to +11:00 on the first Sunday in October (DST start)", () => {
+    // 2026-10-04 is the first Sunday; DST begins at 02:00 local.
+    expect(sydneyUtcOffset("2026-10-03")).toBe("+10:00");
+    expect(sydneyUtcOffset("2026-10-04")).toBe("+11:00");
+  });
+
+  it("flips to +10:00 on the first Sunday in April (DST end)", () => {
+    // 2026-04-05 is the first Sunday; DST ends at 03:00 local.
+    expect(sydneyUtcOffset("2026-04-04")).toBe("+11:00");
+    expect(sydneyUtcOffset("2026-04-05")).toBe("+10:00");
+  });
+
+  it("tracks the transition dates moving year to year", () => {
+    // 2027's first Sunday in October is the 3rd, not the 4th — a rule
+    // encoded by hand as a fixed date would drift here.
+    expect(sydneyUtcOffset("2027-10-02")).toBe("+10:00");
+    expect(sydneyUtcOffset("2027-10-03")).toBe("+11:00");
+  });
+});
+
+describe("sydneyIsoDateTime", () => {
+  it("combines a Sydney date and wall-clock time into an ISO instant", () => {
+    expect(sydneyIsoDateTime("2026-07-21", "09:00:00")).toBe(
+      "2026-07-21T09:00:00+10:00"
+    );
+  });
+
+  it("carries the AEDT offset for a summer date", () => {
+    expect(sydneyIsoDateTime("2026-01-15", "09:00:00")).toBe(
+      "2026-01-15T09:00:00+11:00"
+    );
+  });
+
+  it("accepts HH:MM as well as HH:MM:SS", () => {
+    expect(sydneyIsoDateTime("2026-07-21", "15:30")).toBe(
+      "2026-07-21T15:30:00+10:00"
+    );
+  });
+
+  it("round-trips through Date to the correct UTC instant", () => {
+    // 09:00 AEDT is 22:00 UTC the day before.
+    expect(new Date(sydneyIsoDateTime("2026-01-15", "09:00")).toISOString()).toBe(
+      "2026-01-14T22:00:00.000Z"
+    );
   });
 });

@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getMarketingUrl } from "@/lib/utils/base-url";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getParentReferralData } from "@/lib/referrals/actions";
@@ -118,9 +119,10 @@ export default function ParentReferralsPage() {
     load();
   }, []);
 
-  const shareLink = code
-    ? `https://app.buildalphakids.com.au/refer/${code.code}`
-    : "";
+  // A parent sends this to a prospective parent, who should land on the
+  // consumer brand — the most parent-facing link in the app. See the
+  // audience principle in the marketing-site plan.
+  const shareLink = code ? `${getMarketingUrl()}/refer/${code.code}` : "";
 
   async function handleCopy() {
     try {

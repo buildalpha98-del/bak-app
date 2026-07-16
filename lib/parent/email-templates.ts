@@ -1,6 +1,11 @@
 // ============================================================
 // Parent portal email templates
 // ============================================================
+//
+// Parent-facing: links target the marketing origin so a parent has one
+// cookie jar on buildalphakids.com.au. See the plan's audience principle.
+
+import { getMarketingUrl } from "@/lib/utils/base-url";
 
 const BRAND_ORANGE = "#E8712A";
 const BRAND_WARM_BG = "#FFF7ED";
@@ -63,7 +68,7 @@ export function parentWelcomeEmail(
         <li>View your kids' progress and skills</li>
       </ul>
       <div style="text-align:center;margin:24px 0;">
-        <a href="https://app.buildalphakids.com.au/parent-login" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;">Go to Your Portal</a>
+        <a href="${getMarketingUrl()}/parent-login" style="display:inline-block;padding:14px 32px;background:${BRAND_ORANGE};color:#FFFFFF;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;">Go to Your Portal</a>
       </div>
       <p>We can't wait to see your kids in action!</p>
       <p style="color:${BRAND_GREY};font-size:13px;">— The Build Alpha Kids Team</p>

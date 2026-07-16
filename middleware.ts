@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
+import { isPublicRoute } from "@/lib/marketing/public-routes";
+import { isRevokedSessionError } from "@/lib/auth/session-errors";
+import { resolveParentLoginTarget } from "@/lib/parent/safe-next";
 import {
   isFinancialRoute,
   parseRoleHint,
@@ -9,21 +12,13 @@ import {
   type RoleHint,
 } from "@/lib/auth/route-access";
 
-// Routes that don't require authentication
-const PUBLIC_ROUTES = [
-  "/login",
-  "/client-login",
-  "/parent-login",
-  "/reset-password",
-  "/update-password",
-  "/auth/callback", // Supabase code-exchange — sets the session; must never be gated
-  "/feedback",
-  "/refer", // public referral landing pages
-  "/client/shared", // shared read-only links (token-based, no auth)
-];
-
 // The sign-in pages themselves. Redirecting one of these to /login is
 // always a loop, never a fix.
+//
+// Kept separate from PUBLIC_ROUTES in lib/marketing/public-routes: that
+// list answers "may an anonymous visitor see this?", which is true of
+// every marketing page too. This one answers "is /login already the
+// destination?", and only these three qualify.
 const LOGIN_ROUTES = ["/login", "/client-login", "/parent-login"];
 
 // Financial route list + role-hint parsing live in lib/auth/route-access
@@ -115,11 +110,28 @@ export async function middleware(request: NextRequest) {
     error: authError,
   } = await supabase.auth.getUser();
 
-  // Only STALE cookies need clearing — and only a request that actually
-  // carries some can be carrying stale ones. Acting on authError alone
-  // took down production login: with no session at all, getUser() fails
-  // with AuthSessionMissingError, whose status IS 400, so every signed-out
-  // visitor to /login was redirected to /login, forever.
+  // Two independent guards, belt AND braces. Each has already broken
+  // production on its own, and they fail in different ways:
+  //
+  // 1. STRUCTURAL — does the browser actually carry sb-* cookies? Only a
+  //    request carrying some can be carrying STALE ones, so this is what
+  //    makes a wipe meaningful at all. Acting on authError alone took
+  //    down login (fixed in bd1f871): with no session, getUser() fails
+  //    with AuthSessionMissingError, whose status IS 400, so every
+  //    signed-out visitor to /login was redirected to /login forever.
+  //
+  // 2. NOMINAL — isRevokedSessionError() names AuthSessionMissingError
+  //    and returns false for it.
+  //
+  // Guard 2 alone is NARROWER than it looks: it still treats ANY
+  // status-400 auth error as revoked, and only that one error NAME
+  // escapes. A malformed anon key, a gateway 400, or any future
+  // 400-shaped error carrying a different name would bounce an
+  // ANONYMOUS visitor off the public homepage to /login — reintroducing
+  // bd1f871's bug through a side door, and now on the marketing site
+  // where the visitor has never heard of our login page. Guard 1 is the
+  // one that holds in those cases, because an anonymous visitor has no
+  // sb-* cookies no matter what the auth server said.
   const staleAuthCookies = request.cookies
     .getAll()
     .filter((cookie) => cookie.name.startsWith("sb-"));
@@ -127,26 +139,25 @@ export async function middleware(request: NextRequest) {
   if (
     authError &&
     staleAuthCookies.length > 0 &&
-    (authError.code === "user_banned" ||
-      authError.code === "refresh_token_not_found" ||
-      authError.status === 400)
+    isRevokedSessionError(authError)
   ) {
     // Already on a login page: clear the cookies and let it render. A
-    // redirect here would just point the page at itself.
-    const response = LOGIN_ROUTES.includes(pathname)
+    // redirect here would just point the page at itself. Self-terminating
+    // either way (the wipe means the retry has no cookies and misses this
+    // block), but "harmless extra hop" is not a property worth relying on
+    // — it holds only while the delete-then-redirect order is preserved.
+    const revoked = LOGIN_ROUTES.includes(pathname)
       ? NextResponse.next({ request })
       : NextResponse.redirect(new URL("/login", request.url));
     for (const cookie of staleAuthCookies) {
-      response.cookies.delete(cookie.name);
+      revoked.cookies.delete(cookie.name);
     }
-    response.cookies.delete(ROLE_HINT_COOKIE);
-    return response;
+    revoked.cookies.delete(ROLE_HINT_COOKIE);
+    return revoked;
   }
 
   // Check if current route is public
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
+  const publicRoute = isPublicRoute(pathname);
 
   // ---- Client portal route handling ----
   const isClientRoute =
@@ -159,7 +170,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Client portal routes require auth but use client_users table
-  if (isClientRoute && !isPublicRoute) {
+  if (isClientRoute && !publicRoute) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/client-login";
@@ -228,8 +239,16 @@ export async function middleware(request: NextRequest) {
 
   if (isParentRoute) {
     if (!user) {
+      // Carry the destination — path AND query — so the magic-link
+      // flow can return the parent here after login (e.g.
+      // /parent/book/<id>?waitlist=<entry> from a waitlist email or a
+      // marketing-site Book now button). clone() preserves the
+      // ORIGINAL query string on the login URL itself — clear it,
+      // then pack the full destination into `next`.
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/parent-login";
+      loginUrl.search = "";
+      loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -269,8 +288,20 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (parentProfile) {
+      // Honour a valid parent-scoped `next` (set by the anon redirect
+      // above) so /parent-login?next=/parent/book/x?waitlist=y lands
+      // on the booking page, not the bare portal. Invalid/missing
+      // next → /parent. The target may carry its own query string —
+      // assign pathname and search separately, or the `?` would be
+      // percent-encoded into the path.
+      const target = resolveParentLoginTarget(
+        request.nextUrl.searchParams.get("next")
+      );
+      const queryIndex = target.indexOf("?");
       const parentUrl = request.nextUrl.clone();
-      parentUrl.pathname = "/parent";
+      parentUrl.pathname =
+        queryIndex === -1 ? target : target.slice(0, queryIndex);
+      parentUrl.search = queryIndex === -1 ? "" : target.slice(queryIndex);
       return NextResponse.redirect(parentUrl);
     }
 
@@ -291,7 +322,7 @@ export async function middleware(request: NextRequest) {
   // ---- Standard staff auth flow ----
 
   // Unauthenticated user on protected route → redirect to login
-  if (!user && !isPublicRoute) {
+  if (!user && !publicRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     return NextResponse.redirect(loginUrl);
@@ -359,7 +390,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Role-based route protection for dashboard routes
-  if (user && !isPublicRoute && pathname !== "/set-password") {
+  if (user && !publicRoute && pathname !== "/set-password") {
     const isDashboardRoute = ["/admin", "/ops", "/coach"].some(
       (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
     );

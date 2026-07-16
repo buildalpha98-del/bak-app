@@ -11,6 +11,7 @@ import { sendEmail } from "@/lib/launch/email";
 import { feedbackRequest } from "@/lib/launch/email-templates";
 import { revalidatePath } from "next/cache";
 import { minutesUntilSydney } from "@/lib/utils/sydney-time";
+import { getBaseUrl } from "@/lib/utils/base-url";
 
 // ========================
 // Types
@@ -682,7 +683,10 @@ async function sendCentreFeedbackRequest(
     .eq("id", coachId)
     .single();
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.buildalphakids.com.au";
+  // Centre director (feedbackRequest -> centre.primary_contact_email):
+  // staff-facing, so the app domain. Via the helper so the trailing slash
+  // on NEXT_PUBLIC_APP_URL is stripped.
+  const APP_URL = getBaseUrl();
 
   const email = feedbackRequest({
     directorName: centre.primary_contact_name || "Director",

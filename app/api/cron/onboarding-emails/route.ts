@@ -14,6 +14,7 @@ import {
   ONBOARDING_EMAIL_KEYS as LIFECYCLE_EMAIL_KEYS,
   type OnboardingEmailKey as LifecycleKey,
 } from "@/lib/onboarding/constants";
+import { getBaseUrl } from "@/lib/utils/base-url";
 
 export const dynamic = "force-dynamic";
 
@@ -267,7 +268,7 @@ async function processStep(
     }
 
     case 10: {
-      const feedbackUrl = `https://app.buildalphakids.com.au/feedback/centre/${centreId}`;
+      const feedbackUrl = `${getBaseUrl()}/feedback/centre/${centreId}`;
       emailData = onboardingFollowUpEmail(
         centre.name || "Your Centre",
         contactName,
