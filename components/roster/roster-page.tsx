@@ -631,7 +631,10 @@ export function RosterPage({
   const draftsCount = rosterPulse?.draftsCount ?? 0;
 
   return (
-    <div className="space-y-6">
+    // Extra bottom space on mobile so the last grid row / card clears the
+    // floating quick-action button (fixed bottom-24) and the bottom nav
+    // when scrolled to the end. No effect at md+ where neither exists.
+    <div className="space-y-6 pb-28 md:pb-0">
       {/* Unconfirmed shifts banner */}
       {unconfirmedShifts && unconfirmedShifts.length > 0 && (
         <UnconfirmedShiftsBanner shifts={unconfirmedShifts} />
