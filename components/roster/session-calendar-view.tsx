@@ -434,7 +434,9 @@ function DraggableCard({
       {...(dndEnabled ? listeners : {})}
       className={`relative h-full ${
         isConflicted ? "rounded-2xl ring-2 ring-red-500" : ""
-      } ${isActive ? "opacity-40" : ""} ${dndEnabled ? "touch-none" : ""}`}
+      } ${isActive ? "opacity-40" : ""} ${
+        dndEnabled ? "touch-none cursor-grab active:cursor-grabbing" : ""
+      }`}
     >
       {children}
     </div>

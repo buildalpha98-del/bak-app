@@ -306,9 +306,11 @@ function StaffSessionCard({
       ref={draggableProps?.setNodeRef}
       {...(draggableProps?.attributes ?? {})}
       {...(draggableProps?.listeners ?? {})}
-      className={`relative w-full group ${draggableProps ? "touch-none" : ""} ${
-        isActive ? "opacity-40" : ""
-      } ${isConflicted ? "rounded-2xl ring-2 ring-red-500" : ""}`}
+      className={`relative w-full group ${
+        draggableProps ? "touch-none cursor-grab active:cursor-grabbing" : ""
+      } ${isActive ? "opacity-40" : ""} ${
+        isConflicted ? "rounded-2xl ring-2 ring-red-500" : ""
+      }`}
     >
       <button
         type="button"

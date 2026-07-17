@@ -56,6 +56,7 @@ import {
   Send,
   Dumbbell,
   MapPin,
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -958,6 +959,15 @@ export function RosterPage({
           onFilterNeedsAttention={setFilterNeedsAttention}
           filterActive={filterNeedsAttention}
         />
+      )}
+
+      {/* Drag-to-reschedule discoverability — the mechanic is invisible
+          otherwise. Shown only where it applies (admin/ops, card views). */}
+      {dndEnabled && view !== "list" && filteredSessions.length > 0 && (
+        <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
+          <GripVertical className="size-3.5" aria-hidden />
+          Drag a shift to move it to another {view === "staff" ? "day or coach" : "day or time"}.
+        </p>
       )}
 
       {/* Content */}
