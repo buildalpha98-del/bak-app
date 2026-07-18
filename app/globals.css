@@ -595,3 +595,48 @@
     width: 100%;
   }
 }
+
+/* ------------------------------------------------------------
+   Partner marquee (components/marketing/partner-strip.tsx)
+   The track holds the pill list twice; sliding the track by -50%
+   moves exactly one list-width, so the loop is seamless. Under
+   prefers-reduced-motion the duplicate is hidden and the single
+   list wraps statically — the content works without any motion.
+   ------------------------------------------------------------ */
+.marquee {
+  overflow: hidden;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    width: auto;
+    justify-content: center;
+  }
+
+  .marquee-track .marquee-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .marquee-track .marquee-group[aria-hidden] {
+    display: none;
+  }
+}

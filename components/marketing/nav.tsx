@@ -19,8 +19,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+/**
+ * Schools and childcare lead (owner-directed 2026-07-18) — they are
+ * the primary audiences, so each gets a direct top-level link and the
+ * parent-facing clinics ride third. /programs stays reachable from
+ * both destination pages and the footer.
+ */
 const LINKS = [
-  { href: "/programs", label: "Programs" },
+  { href: "/schools", label: "Schools" },
+  { href: "/programs/childcare", label: "Childcare" },
   { href: "/holiday-clinics", label: "Holiday clinics" },
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },

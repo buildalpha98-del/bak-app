@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { StickerButton } from "@/components/marketing/sticker-button";
 import { BallRowBreakout } from "@/components/marketing/hero-lite";
-import { ACTIVE_KIDS_BLURB, BRAND, HOMEPAGE } from "@/lib/marketing/content";
+import { BRAND, HOMEPAGE } from "@/lib/marketing/content";
 
 /**
  * Homepage hero — court orange, loud. Full-bleed orange with the real
@@ -40,7 +40,7 @@ export function Hero() {
         <div>
           {/* Yellow sticker eyebrow — one of the hero's two rotated elements. */}
           <p className="inline-block -rotate-2 rounded-full border-2 border-[#111] bg-[#FFD23F] px-4 py-1.5 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[3px_3px_0_#111]">
-            {ACTIVE_KIDS_BLURB}
+            {HOMEPAGE.heroEyebrow}
           </p>
 
           <h1 className="mt-7 font-heading text-[clamp(2.5rem,7vw,4.5rem)] font-extrabold leading-[1.02] tracking-tight text-white">
@@ -58,13 +58,16 @@ export function Hero() {
             {HOMEPAGE.heroSub}
           </p>
 
+          {/* B2B first (owner-directed 2026-07-18): schools and childcare
+              are the primary audience, so the quote CTA leads and the
+              parent path rides second. */}
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <StickerButton href="/holiday-clinics">
-              Book a holiday clinic
+            <StickerButton href="/enquire">
+              Get a quote for your school or centre
               <ArrowRight className="size-5" aria-hidden="true" />
             </StickerButton>
-            <StickerButton href="/enquire" fill="white">
-              Enquire for your school
+            <StickerButton href="/holiday-clinics" fill="white">
+              Parents: holiday clinics
             </StickerButton>
           </div>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Section, SectionHeading } from "@/components/marketing/section";
+import { FaqList } from "@/components/marketing/faq-list";
 import { StickerButton } from "@/components/marketing/sticker-button";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { CtaBand } from "@/components/marketing/cta-band";
@@ -200,11 +201,26 @@ export default async function ProgramPage({
 
       <TrustStrip program={program} />
 
+      <ProgramFaqs program={program} />
+
       <CrossLinks program={program} />
 
       {/* CTA #3 — bottom of the page */}
       <QuoteBand program={program} />
     </>
+  );
+}
+
+/** Page FAQs — only for programs that define them (Program.faqs). */
+function ProgramFaqs({ program }: { program: Program }) {
+  if (!program.faqs?.length) return null;
+
+  return (
+    <FaqList
+      eyebrow="Good to know"
+      title="Questions we get asked"
+      faqs={program.faqs}
+    />
   );
 }
 

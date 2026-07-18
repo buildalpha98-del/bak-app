@@ -10,8 +10,8 @@ import { B2bBand } from "@/components/marketing/b2b-band";
 import { HolidayClinicsSection } from "@/components/marketing/holiday-clinics-section";
 import { BlogTeasers } from "@/components/marketing/blog-teasers";
 import { NewsletterForm } from "@/components/marketing/newsletter-form";
+import { PartnerStrip } from "@/components/marketing/partner-strip";
 import { TestimonialCard } from "@/components/marketing/testimonial-card";
-import { getImpactStats, IMPACT_FALLBACK } from "@/lib/marketing/stats";
 import {
   getApprovedTestimonials,
   type PublicTestimonial,
@@ -20,6 +20,7 @@ import { safeFetch } from "@/lib/marketing/safe-fetch";
 import {
   HOMEPAGE,
   HOMEPAGE_CLINICS,
+  IMPACT_STATS,
   NEWSLETTER,
   PROGRAMS,
   PROGRAMS_INDEX,
@@ -47,14 +48,15 @@ export const metadata: Metadata = {
  *  3. Sports strip
  *  4. What we do
  *  5. Programs grid
- *  6. Impact band  — live values from public_stats_cache
- *  7. Holiday clinic cards — live upcoming clinics
- *  8. How it works
- *  9. Testimonials — live approved testimonials
- * 10. B2B band
- * 11. Blog teasers — 3 latest published posts
- * 12. Newsletter signup
- * 13. Footer       — (marketing)/layout.tsx
+ *  6. Impact band  — owner-supplied career totals (IMPACT_STATS)
+ *  7. Partner strip — named partner schools/centres marquee
+ *  8. Holiday clinic cards — live upcoming clinics
+ *  9. How it works
+ * 10. Testimonials — live approved testimonials
+ * 11. B2B band
+ * 12. Blog teasers — 3 latest published posts
+ * 13. Newsletter signup
+ * 14. Footer       — (marketing)/layout.tsx
  */
 export default function HomePage() {
   return (
@@ -78,7 +80,9 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <ImpactBandSection />
+      <ImpactBand stats={[...IMPACT_STATS]} />
+
+      <PartnerStrip />
 
       <HolidayClinicsSection
         limit={4}
@@ -136,18 +140,6 @@ function NewsletterSection() {
       </div>
     </Section>
   );
-}
-
-/**
- * Live impact band — four counts from public_stats_cache. A failed
- * fetch degrades to the em-dash placeholders (IMPACT_FALLBACK) and
- * per-key gaps degrade inside getImpactStats, so the band always
- * renders. Refreshes with the page's ISR window (revalidate 300).
- */
-async function ImpactBandSection() {
-  const stats = await safeFetch(getImpactStats, IMPACT_FALLBACK);
-
-  return <ImpactBand stats={stats} />;
 }
 
 /**

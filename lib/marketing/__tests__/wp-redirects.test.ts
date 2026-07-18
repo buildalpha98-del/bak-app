@@ -87,7 +87,7 @@ describe("WP_REDIRECTS", () => {
     ["/our-services/high-school", "/programs/high-school"],
     ["/our-services/after-school-clinic", "/programs/after-school"],
     // Covers primary AND secondary, so it maps to the hub, not either leaf.
-    ["/our-services/school-1", "/programs"],
+    ["/our-services/school-1", "/schools"],
     ["/sample-page", "/"],
     ["/coming-soon", "/"],
     // The lorem-ipsum CPT entry routes to the real post of the same title.

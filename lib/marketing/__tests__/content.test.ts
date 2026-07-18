@@ -7,6 +7,10 @@ import {
   ENQUIRE_PAGE,
   getProgram,
   HOLIDAY_CLINICS_PAGE,
+  SCHOOLS_PAGE,
+  SPORTS,
+  PARTNERS,
+  IMPACT_STATS,
   HOMEPAGE,
   META_DESCRIPTION_MAX,
   PROGRAMS,
@@ -44,6 +48,7 @@ const META_DESCRIPTIONS: [name: string, text: string][] = [
   ["enquire", ENQUIRE_PAGE.description],
   ["blog index", BLOG_INDEX.description],
   ["holiday clinics", HOLIDAY_CLINICS_PAGE.description],
+  ["schools hub", SCHOOLS_PAGE.description],
   ...PROGRAMS.map(
     (p): [string, string] => [`program: ${p.slug}`, p.metaDescription]
   ),
@@ -62,7 +67,7 @@ describe("meta descriptions", () => {
 
   it("covers every marketing page (guard is useless if one slips through)", () => {
     expect(META_DESCRIPTIONS).toHaveLength(
-      7 + PROGRAMS.length + LEGAL_PAGES.length
+      8 + PROGRAMS.length + LEGAL_PAGES.length
     );
   });
 });
@@ -165,5 +170,39 @@ describe("adjacentPrograms", () => {
         program.slug
       );
     }
+  });
+});
+
+describe("sports roster and partners (owner-supplied 2026-07-18)", () => {
+  it("carries the full 17+ sport roster the copy claims", () => {
+    // HOMEPAGE.heroSub and SCHOOLS_PAGE say "18 sports" / "Eighteen
+    // sports" — this pins the roster to the claim so neither can
+    // drift without the other.
+    expect(SPORTS.length).toBe(18);
+  });
+
+  it("gives every sport a palette ball with an AA-verified fg", () => {
+    for (const sport of SPORTS) {
+      expect(sport.ball.color).toMatch(/^#[0-9A-F]{6}$/i);
+      expect(["#111111", "#FFFFFF"]).toContain(sport.ball.fg);
+    }
+  });
+
+  it("publishes real partner names only — no placeholders", () => {
+    expect(PARTNERS.length).toBeGreaterThanOrEqual(5);
+    for (const name of PARTNERS) {
+      expect(name).not.toMatch(/TODO/i);
+      expect(name.trim()).toBe(name);
+      expect(name.length).toBeGreaterThan(3);
+    }
+  });
+
+  it("keeps the impact band on the owner-supplied career totals", () => {
+    expect(IMPACT_STATS.map((s) => `${s.value} ${s.label}`)).toEqual([
+      "10+ Partner schools",
+      "50+ Childcare centres & ELCs",
+      "5,000+ Kids coached",
+      "10+ Years on the ground",
+    ]);
   });
 });

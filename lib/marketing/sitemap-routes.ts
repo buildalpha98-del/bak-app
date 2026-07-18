@@ -38,6 +38,8 @@ export type SitemapEntry = {
 export const STATIC_MARKETING_ROUTES: MarketingRoute[] = [
   { path: "/", changeFrequency: "weekly", priority: 1.0 },
   { path: "/programs", changeFrequency: "monthly", priority: 0.9 },
+  // The flagship B2B landing page — schools are a primary audience.
+  { path: "/schools", changeFrequency: "monthly", priority: 0.9 },
   // Clinic availability turns over each school-holiday cycle, so this
   // page genuinely changes more often than the evergreen program pages.
   { path: "/holiday-clinics", changeFrequency: "weekly", priority: 0.9 },
