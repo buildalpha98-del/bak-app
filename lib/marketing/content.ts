@@ -201,7 +201,13 @@ export const BALL_COLORS = {
   black: { color: "#111111", fg: "#FFFFFF" },
 } as const satisfies Record<string, BallColor>;
 
-/** The six sports we coach, in display order, keyed to their ball colour. */
+/**
+ * The full sports roster, in display order, keyed to a ball colour.
+ * Owner-supplied list (Jayden, 2026-07-18) — Build Alpha Kids runs
+ * 17+ sports, and naming them beats the old site's vague "wide range
+ * of sports programs". Colours cycle through the canonical palette;
+ * as strip pills they are decorative fills with an ink outline.
+ */
 export interface Sport {
   name: string;
   ball: BallColor;
@@ -213,14 +219,56 @@ export const SPORTS: Sport[] = [
   { name: "Cricket", ball: BALL_COLORS.red },
   { name: "Tennis", ball: BALL_COLORS.yellow },
   { name: "Volleyball", ball: BALL_COLORS.blue },
-  { name: "Rugby", ball: BALL_COLORS.black },
+  { name: "Rugby League", ball: BALL_COLORS.black },
+  { name: "Netball", ball: BALL_COLORS.orange },
+  { name: "AFL", ball: BALL_COLORS.red },
+  { name: "Dodgeball", ball: BALL_COLORS.blue },
+  { name: "Athletics", ball: BALL_COLORS.yellow },
+  { name: "Gymnastics", ball: BALL_COLORS.green },
+  { name: "Hockey", ball: BALL_COLORS.blue },
+  { name: "Oztag", ball: BALL_COLORS.green },
+  { name: "Handball", ball: BALL_COLORS.yellow },
+  { name: "Badminton", ball: BALL_COLORS.red },
+  { name: "T-ball", ball: BALL_COLORS.orange },
+  { name: "Martial arts", ball: BALL_COLORS.black },
+  { name: "Dance", ball: BALL_COLORS.yellow },
+];
+
+/**
+ * Owner-supplied impact numbers (Jayden, 2026-07-18) — career totals
+ * for the marketing site, deliberately NOT the live public_stats_cache
+ * counts (those are platform-era ops numbers; these cover the whole
+ * decade of coaching). Shown in the homepage impact band and restated
+ * nowhere else, so a corrected number is a one-line change.
+ */
+export const IMPACT_STATS = [
+  { value: "10+", label: "Partner schools" },
+  { value: "50+", label: "Childcare centres & ELCs" },
+  { value: "5,000+", label: "Kids coached" },
+  { value: "10+", label: "Years on the ground" },
+] as const;
+
+/**
+ * Named partner schools and centres, shown in the homepage partner
+ * strip. Owner-supplied (Jayden, 2026-07-18); spellings verified
+ * against each organisation's own site. Text names only until logo
+ * files and written permission to use them are collected.
+ */
+export const PARTNERS: string[] = [
+  "Bexley Public School",
+  "Al-Faisal College",
+  "Arrahman College",
+  "Clever Little Muslims",
+  "First Grammar",
 ];
 
 /** Homepage-specific copy shared between components and metadata. */
 export const HOMEPAGE = {
-  /** Hero sub copy — also the homepage meta description. */
+  /** Hero sub copy — also the homepage meta description (≤160 chars). */
   heroSub:
-    "Multi-sport coaching across South-West Sydney childcare centres, schools and holiday clinics. Book online in 60 seconds — then watch them grow all term.",
+    "Multi-sport coaching for schools and childcare centres across South-West Sydney. 18 sports, equipment supplied — and holiday clinics parents book online.",
+  /** Hero eyebrow — the strongest trust claim we hold, owner-sourced. */
+  heroEyebrow: "Trusted by 10+ schools & 50+ childcare centres",
 } as const;
 
 // ------------------------------------------------------------
@@ -282,6 +330,12 @@ export interface Program {
   accent: BallColor;
   /** Placeholder path — real photography swapped in later, here only. */
   heroImage: string;
+  /**
+   * Optional page FAQs, rendered as native <details> on the program
+   * page. Answers follow the same sourcing rules as body copy —
+   * old-site claims, owner answers, or restatements of this module.
+   */
+  faqs?: { q: string; a: string }[];
 }
 
 export const PROGRAMS: Program[] = [
@@ -295,7 +349,10 @@ export const PROGRAMS: Program[] = [
     accent: BALL_COLORS.green,
     description: [
       "Little kids are wired to move — we turn that energy into skills. Build Alpha Kids brings fun, fast-paced multi-sport sessions straight into your childcare centre, building coordination, confidence and a genuine love of active play from the very first session.",
-      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. Centres across South-West Sydney trust Build Alpha Kids every week — and we'd love yours to be next.",
+      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. More than fifty childcare centres and early learning centres across South-West Sydney trust Build Alpha Kids — and we'd love yours to be next.",
+      // Pricing model — owner-supplied (Jayden, 2026-07-18): centres
+      // either pay a flat fee, or families opt in on a session package.
+      "There are two simple ways to run it. Your centre can book us on a flat fee, so sport becomes part of the program for every child — or we run it as an opt-in program where families pay a simple session-package rate. Either way, our coaches handle the sessions end to end and your educators don't lift a thing.",
     ],
     ages: "Ages 2–5 (preschool and kindy-ready)",
     highlights: [
@@ -323,6 +380,28 @@ export const PROGRAMS: Program[] = [
       "All equipment supplied — no extra admin for your educators",
     ],
     heroImage: "/images/marketing/childcare-hero.jpg",
+    faqs: [
+      {
+        q: "Who pays — the centre or the families?",
+        a: "Either works. Your centre can book us on a flat fee so every child takes part as part of the program, or we run it as an opt-in program where families pay a simple session-package rate. Most centres pick whichever fits their community — we'll talk it through when you enquire.",
+      },
+      {
+        q: "Do our educators need to run or supervise anything?",
+        a: "No. Our coaches arrive with every bit of equipment, set up before the kids come out, run the session and pack down after. Your educators stay in ratio as normal — that's the only thing we ask.",
+      },
+      {
+        q: "How do sessions fit the EYLF?",
+        a: "Session plans are EYLF-aligned and built around fundamental movement skills — running, jumping, throwing, catching and balancing — with turn-taking and group play woven through. We're happy to walk your director through how the sessions map to your program.",
+      },
+      {
+        q: "What ages do you coach in centres?",
+        a: "Ages two to five. Rotations are short, games are scaled for growing bodies and short attention spans, and every child is in the game the whole way through — it's coaching, not spectating.",
+      },
+      {
+        q: "What do you need from us to start?",
+        a: "A space to play — indoors or out — and your preferred day and time. Tell us your centre, your ages and roughly how many kids, and we'll come back with a quote within one business day.",
+      },
+    ],
   },
   {
     slug: "primary-school",
@@ -335,6 +414,9 @@ export const PROGRAMS: Program[] = [
     description: [
       "Primary school is where kids decide whether sport is for them. Build Alpha Kids makes the answer a loud yes — dynamic multi-sport programs that sharpen physical skills, build real teamwork and get every kid in the class moving, not just the sporty ones.",
       "Our coaches deliver structured, curriculum-friendly sessions across footy, soccer, basketball, athletics and more, laying the foundation for lifelong fitness and personal growth. Schools across South-West Sydney trust us to run sport their teachers rave about and their students count down to.",
+      // Engagement model — owner-supplied (Jayden, 2026-07-18): the
+      // school engages and pays Build Alpha Kids directly.
+      "Working with us is deliberately simple: your school engages Build Alpha Kids directly, we build the program around your bell times and term dates, and our coaches deliver it on your grounds with every bit of equipment supplied. One provider, one invoice, no collection from parents — and a decade of school partnerships behind every session plan.",
     ],
     ages: "Kindergarten to Year 6 (ages 5–12)",
     highlights: [
@@ -374,6 +456,7 @@ export const PROGRAMS: Program[] = [
     description: [
       "High schoolers don't want babysitting — they want to be challenged. Build Alpha Kids runs advanced sports programs that push students harder, sharpen athletic skills and get them match-ready for competitive sport.",
       "From strength and conditioning fundamentals to game-day tactics and team culture, our coaches treat students like athletes. The result: fitter, more confident young people with habits that outlast the school bell — and school sport programs that actually go somewhere.",
+      "Like all our school programs, it's the school that engages us: we design the program around your timetable and sport structure, deliver it on your grounds with all equipment supplied, and invoice the school directly. Your sport coordinator gets a program that runs itself — and students who turn up.",
     ],
     ages: "Years 7–12 (ages 12–18)",
     highlights: [
@@ -413,6 +496,9 @@ export const PROGRAMS: Program[] = [
     description: [
       "The bell rings and the fun starts. Build Alpha Kids after school clinics are exciting, structured sessions that turn the after-school slump into the highlight of the week — kids build physical skills, sharpen teamwork and burn energy in a fun, supportive environment.",
       "Each clinic mixes skill drills with fast-paced games, so kids improve every week without ever feeling like they're training. Parents get a kid who's active, confident and happily worn out; schools and centres get a program that runs itself.",
+      // Payment model — owner-supplied (Jayden, 2026-07-18): after-school
+      // is parent-paid, and Active Kids vouchers apply.
+      "After-school clinics are parent-paid: families sign up directly, and NSW Active Kids vouchers can go towards the cost. For the school there's nothing to fund and nothing to run — we handle sign-ups, payments and the coaching, on your grounds, straight after the bell.",
     ],
     ages: "Primary-aged kids (ages 5–12)",
     highlights: [
@@ -619,7 +705,7 @@ export const ABOUT_PAGE = {
     "Every kid gets coached, not supervised",
     "Play first — kids learn most when they're laughing",
     "Sport should meet kids where they already are",
-    "Six sports beats specialising early",
+    "Eighteen sports beats specialising early",
     "Habits that outlast the school bell",
   ],
 
@@ -655,6 +741,103 @@ export const COACH_STANDARDS: CoachStandard[] = [
     ball: BALL_COLORS.red,
   },
 ];
+
+// ------------------------------------------------------------
+// Schools hub (/schools)
+// ------------------------------------------------------------
+//
+// The flagship B2B landing page — schools are a primary audience
+// (owner-directed, 2026-07-18: "our main target are schools and
+// childcare"). Engagement model, owner-supplied the same day: the
+// school engages and pays Build Alpha Kids directly for in-school
+// programs; after-school clinics are the exception (parent-paid,
+// Active Kids vouchers accepted). Claims about equipment, safety and
+// customisation restate this module or the old site's own copy.
+
+export const SCHOOLS_PAGE = {
+  eyebrow: "For schools",
+  title: "School sport your students count down to",
+  intro:
+    "Build Alpha Kids has spent over a decade running multi-sport programs on school grounds across South-West Sydney — primary, high school and after-school. Qualified coaches, 18 sports, all equipment supplied, built around your bell times.",
+  /** Meta description (≤160 chars). */
+  description:
+    "Multi-sport school programs across South-West Sydney — primary, high school and after-school. Coaches, equipment and session plans supplied. Get a quote.",
+
+  whyEyebrow: "Why schools pick us",
+  whyTitle: "A partner, not just a provider",
+  why: [
+    {
+      title: "Every student in the game",
+      body: "Sessions are scaled to all abilities, so the kid who'd never try out for a rep team gets coached as hard as the one who would. Eighteen sports means every student finds one that clicks.",
+    },
+    {
+      title: "Zero lift for your staff",
+      body: "Coaches arrive with every bit of equipment and a session plan that fits your timetable. Teachers stay teachers — nobody on your staff has to run a drill or pump up a ball.",
+    },
+    {
+      title: "Safety you can show parents",
+      body: "Every coach holds a current Working With Children Check and first-aid certification — both tracked per coach in our own system — and sessions are risk-assessed and scaled by age.",
+    },
+    {
+      title: "A decade on school grounds",
+      body: "We've partnered with more than ten schools across South-West Sydney, from public primaries to independent colleges, and coached over five thousand kids along the way.",
+    },
+  ],
+
+  offeringsEyebrow: "What we run",
+  offeringsTitle: "Three ways to bring us in",
+
+  stepsEyebrow: "How it works",
+  stepsTitle: "From enquiry to first session",
+  steps: [
+    {
+      title: "Tell us about your school",
+      body: "Your site, your year groups and the timeslot you have in mind — sport time, lunchtime or after the bell. Two minutes, one form.",
+    },
+    {
+      title: "We design the program",
+      body: "We come back within one business day and build the program around your bell times, term dates and facilities — sports, session structure and coach allocation included.",
+    },
+    {
+      title: "We deliver, you get one invoice",
+      body: "Your school engages us directly: our coaches run the sessions on your grounds and the school pays one provider, one invoice. After-school clinics are the exception — parents pay, and NSW Active Kids vouchers are accepted.",
+    },
+  ],
+
+  faqsEyebrow: "Questions schools ask",
+  faqsTitle: "The fine print, upfront",
+  faqs: [
+    {
+      q: "Who pays for the program?",
+      a: "For in-school programs — sport time, PE support, lunchtime clinics — the school engages Build Alpha Kids and pays us directly. One invoice, no collecting from parents. After-school clinics flip that: parents sign up and pay directly, and NSW Active Kids vouchers can go towards the cost.",
+    },
+    {
+      q: "Do you supply the equipment?",
+      a: "Yes — all of it. Coaches arrive with the gear and the session plan for every session, so there's nothing for your school to buy, store or maintain.",
+    },
+    {
+      q: "How do you keep sessions safe?",
+      a: "Every coach holds a current Working With Children Check and first-aid certification, both tracked in our own coaching platform. Sessions are risk-assessed and games are scaled to the age group in front of us.",
+    },
+    {
+      q: "Can the program fit our timetable?",
+      a: "That's the point of designing it with you. We build around your bell times, term dates and facilities — during sport time, at lunch, or straight after the bell — and progress the program week on week.",
+    },
+    {
+      q: "Which sports can our students do?",
+      a: "Eighteen and counting — soccer, basketball, cricket, netball, AFL, rugby league, athletics, gymnastics, dodgeball, oztag and more. Most schools run a multi-sport rotation so every student finds a sport that clicks.",
+    },
+  ],
+} as const;
+
+/**
+ * Partner strip — heading for the named-partners marquee. The names
+ * themselves are PARTNERS above.
+ */
+export const PARTNER_STRIP = {
+  eyebrow: "In good company",
+  title: "Some of the schools and centres we work with",
+} as const;
 
 // ------------------------------------------------------------
 // Contact

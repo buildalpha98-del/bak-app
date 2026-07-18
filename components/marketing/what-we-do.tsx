@@ -11,25 +11,32 @@ import { BALL_COLORS } from "@/lib/marketing/content";
  * canonical palette, used as a label fill with its AA-verified
  * foreground pairing.
  */
+/**
+ * Order is deliberate (owner-directed 2026-07-18): schools and
+ * childcare are the primary audiences and lead; the parent-facing
+ * clinics ride third. Engagement models in the copy are owner-supplied
+ * the same day — schools pay us directly; childcare is centre flat fee
+ * OR family session packages; clinics are parent-paid.
+ */
 const PILLARS = [
   {
-    label: "In childcare centres",
+    label: "For schools",
+    ball: BALL_COLORS.blue,
+    body: "Curriculum-friendly multi-sport programs on your grounds — primary, high school and after-school. Your school engages us directly: we design around your bell times, our coaches bring every bit of equipment, and you get one provider and one invoice.",
+    href: "/schools",
+    cta: "School programs",
+  },
+  {
+    label: "For childcare & ELCs",
     ball: BALL_COLORS.green,
-    body: "Our qualified coaches arrive at your centre with every bit of equipment and run structured, age-appropriate sessions built into the childcare day. Two- to five-year-olds learn to run, jump, throw, kick and catch through games — with zero extra admin for your educators.",
+    body: "EYLF-aligned sessions built into the childcare day for ages two to five. Your centre books us on a flat fee — or families opt in on a simple session-package rate. Either way our coaches run it end to end, with zero extra admin for your educators.",
     href: "/programs/childcare",
     cta: "Childcare programs",
   },
   {
-    label: "In schools",
-    ball: BALL_COLORS.blue,
-    body: "Curriculum-aligned multi-sport sessions delivered on your grounds, during sport time or straight after the bell. Coaches bring the gear and the session plan, progress skills week on week, and get every student involved — not just the sporty ones.",
-    href: "/programs/primary-school",
-    cta: "School programs",
-  },
-  {
-    label: "Holiday clinics",
+    label: "For parents",
     ball: BALL_COLORS.yellow,
-    body: "Full-throttle multi-sport days in the school holidays that parents book and pay for online in about 60 seconds. Numbers are capped so every kid gets coached, NSW Active Kids vouchers are accepted — and the best days sell out fast.",
+    body: "After-school clinics through term and full-throttle multi-sport days in the holidays. Book and pay online in about 60 seconds, NSW Active Kids vouchers accepted — numbers are capped and the best days sell out fast.",
     href: "/holiday-clinics",
     cta: "See clinic dates",
   },
@@ -41,7 +48,7 @@ export function WhatWeDo() {
       <SectionHeading
         eyebrow="What we do"
         title="Real coaching, wherever kids already are"
-        intro="Three ways Build Alpha Kids turns up across South-West Sydney — same coaches, same energy, zero hassle."
+        intro="Schools, childcare centres and holiday clinics across South-West Sydney — same coaches, same energy, zero hassle."
       />
 
       <div className="mt-12 grid gap-6 md:grid-cols-3">

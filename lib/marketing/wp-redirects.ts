@@ -72,7 +72,7 @@ const PAGE_REDIRECTS: WpRedirect[] = [
   // /programs/primary-school nor /programs/high-school alone is a
   // faithful destination — half its meaning would be dropped either
   // way. The hub is the honest match.
-  { source: "/our-services/school-1", destination: "/programs", permanent: true },
+  { source: "/our-services/school-1", destination: "/schools", permanent: true },
 
   // Direct 1:1 service → program matches, confirmed by reading each
   // page's copy (not just its slug).
