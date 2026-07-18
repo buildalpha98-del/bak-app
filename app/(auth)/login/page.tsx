@@ -6,6 +6,8 @@ import { signIn } from "@/lib/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/shared/auth-shell";
+import { stickerClasses } from "@/components/marketing/sticker-button";
+import { cn } from "@/lib/utils";
 import { Loader2, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -93,7 +95,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 font-bold text-sm tracking-wide group inline-flex items-center justify-center disabled:pointer-events-none disabled:opacity-50"
+          className={cn(stickerClasses({ size: "sm" }), "w-full group disabled:pointer-events-none disabled:opacity-50")}
           disabled={loading}
         >
           {loading ? (

@@ -6,9 +6,10 @@ import { sendParentMagicLink } from "@/lib/parent/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AppLogo } from "@/components/shared/app-logo";
+import { AuthShell } from "@/components/shared/auth-shell";
+import { stickerClasses } from "@/components/marketing/sticker-button";
+import { cn } from "@/lib/utils";
 import { Loader2, Mail, CheckCircle } from "lucide-react";
 
 // Only this component reads useSearchParams(), so only it suspends —
@@ -98,7 +99,7 @@ function ParentLoginForm() {
 
       <Button
         type="submit"
-        className="w-full h-12 bg-primary text-white hover:bg-[#D4651F] shadow-md shadow-orange-600/20 transition-all duration-200 rounded-lg text-base"
+        className={cn(stickerClasses({ size: "sm" }), "w-full")}
         disabled={loading || !email.trim()}
       >
         {loading ? (
@@ -121,8 +122,8 @@ function ParentLoginForm() {
   );
 }
 
-// Skeleton matching the form's shape (label, h-12 input, h-12 button,
-// caption) so the suspended slot doesn't shift the card's height.
+// Skeleton matching the form's shape (label, h-12 input, h-11 sticker
+// CTA, caption) so the suspended slot doesn't shift the card's height.
 function ParentLoginFormSkeleton() {
   return (
     <div className="space-y-4" aria-hidden>
@@ -130,7 +131,7 @@ function ParentLoginFormSkeleton() {
         <Skeleton className="h-4 w-28" />
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
-      <Skeleton className="h-12 w-full rounded-lg" />
+      <Skeleton className="h-11 w-full rounded-full" />
       <Skeleton className="mx-auto h-4 w-64" />
     </div>
   );
@@ -140,33 +141,19 @@ function ParentLoginFormSkeleton() {
 // (Next 16 CSR bailout rule). Keep the static shell OUTSIDE the
 // boundary so the prerendered conversion page never flashes blank —
 // only the form slot suspends, behind a same-height skeleton.
+//
+// Shell is the shared AuthShell (Tier-1 front door): one door, one
+// crest, one sticker CTA — this page carries the default orange
+// accent; /client-login carries teal.
 export default function ParentLoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-orange-50/50 px-4 relative overflow-hidden">
-      {/* Warm decorative background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-orange-200/30 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-orange-200/30 blur-3xl" />
-      </div>
-
-      <Card className="w-full max-w-md border-0 shadow-xl shadow-black/5 animate-scale-in relative">
-        <CardHeader className="space-y-4 text-center pb-2">
-          <AppLogo size="lg" className="mx-auto" />
-          <div>
-            <CardTitle className="text-2xl font-bold text-foreground font-heading">
-              Parent Portal
-            </CardTitle>
-            <CardDescription className="mt-1 text-muted-foreground">
-              Sign in to book sessions for your kids
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Suspense fallback={<ParentLoginFormSkeleton />}>
-            <ParentLoginForm />
-          </Suspense>
-        </CardContent>
-      </Card>
-    </main>
+    <AuthShell
+      title="Parent Portal"
+      description="Sign in to book sessions for your kids"
+    >
+      <Suspense fallback={<ParentLoginFormSkeleton />}>
+        <ParentLoginForm />
+      </Suspense>
+    </AuthShell>
   );
 }

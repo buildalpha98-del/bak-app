@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { setInitialPassword } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
+import { stickerClasses } from "@/components/marketing/sticker-button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/shared/auth-shell";
@@ -70,7 +72,7 @@ export default function SetPasswordPage() {
 
         <Button
           type="submit"
-          className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 transition-all duration-200"
+          className={cn(stickerClasses({ size: "sm" }), "w-full")}
           disabled={loading}
         >
           {loading ? (

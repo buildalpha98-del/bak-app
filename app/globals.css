@@ -640,3 +640,38 @@
     display: none;
   }
 }
+
+/* ------------------------------------------------------------
+   Auth light scope (app/(auth)/layout.tsx)
+   The front door renders LIGHT for everyone — the sticker
+   treatment (ink outlines, hard shadows, cream ground) is a
+   light-only design, and the sign-in pages are the brand
+   handshake between the marketing site and the portals.
+   Custom properties cascade, so restating the :root light
+   values here beats `.dark` on <html> inside this subtree
+   without touching the document theme — signing out of a dark
+   dashboard lands on a light login while the dashboard stays
+   dark for the trip back. The auth pages carry zero `dark:`
+   variant utilities (verified 2026-07-16, re-verified
+   2026-07-18), so nothing leaks around the variables.
+   KEEP IN SYNC with :root above — same values, same order.
+   ------------------------------------------------------------ */
+.auth-light-scope {
+  --background: oklch(0.985 0.004 75);
+  --foreground: oklch(0.165 0.014 55);
+  --card: oklch(0.995 0.002 75);
+  --card-foreground: oklch(0.165 0.014 55);
+  --popover: oklch(0.995 0.002 75);
+  --popover-foreground: oklch(0.165 0.014 55);
+  --primary: oklch(0.65 0.19 42);
+  --primary-foreground: oklch(0.216 0.006 56);
+  --secondary: oklch(0.955 0.006 75);
+  --secondary-foreground: oklch(0.28 0.012 55);
+  --muted: oklch(0.955 0.006 75);
+  --muted-foreground: oklch(0.50 0.012 55);
+  --accent: oklch(0.94 0.022 60);
+  --accent-foreground: oklch(0.28 0.012 55);
+  --border: oklch(0.91 0.008 75);
+  --input: oklch(0.91 0.008 75);
+  --ring: oklch(0.65 0.19 42);
+}
