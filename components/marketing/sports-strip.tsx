@@ -2,7 +2,7 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { SPORTS } from "@/lib/marketing/content";
 
 /**
- * "One club. Six sports." — sits directly under the hero and names
+ * "One club. Eighteen sports." — sits directly under the hero and names
  * every sport we coach as sticker chips, each carrying its ball
  * colour as an outlined dot (decorative; the text is always
  * black-on-white, 18.9:1). One chip gets a tiny rotation for the
@@ -13,7 +13,7 @@ export function SportsStrip() {
     <Section aria-label="Sports we coach" className="bg-white">
       <SectionHeading
         eyebrow="The sports"
-        title="One club. Six sports."
+        title="One club. Eighteen sports."
         intro="Every program mixes them all — so kids find the sports they love instead of specialising before they can tie their laces."
       />
 
