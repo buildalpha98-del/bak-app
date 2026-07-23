@@ -108,6 +108,7 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **Digest dedup** (067): `notifications.delivered_channels` — the daily digest skips anything already emailed/SMS'd.
 - **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
 - **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
+- **Fix sessions/session_coaches RLS recursion** (075): 068's `coach_update_own_sessions` (on `sessions`) queries `session_coaches`, which has its own read policy querying back into `sessions` — Postgres detects that cycle and fails the whole UPDATE with "infinite recursion detected in policy for relation sessions". Broke every edit to an existing session, not just the multi-coach path 068 targeted. Fixed with `auth_is_session_coach()` / `auth_is_session_primary_coach()`, SECURITY DEFINER helpers in the same bypass-RLS pattern as `auth_user_role()`, so neither policy re-enters the other's RLS.
 
 ## Page speed
 
