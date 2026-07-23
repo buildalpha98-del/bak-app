@@ -417,6 +417,9 @@ export function RosterPage({
     time?: string;
     coachId?: string;
   }>({});
+  const [editSession, setEditSession] = useState<SessionWithRelations | null>(
+    null
+  );
 
   const [genOpen, setGenOpen] = useState(false);
   const [aiGenOpen, setAiGenOpen] = useState(false);
@@ -484,12 +487,23 @@ export function RosterPage({
     setDetailOpen(true);
   }
   function handleEmptySlotClick(date: string, time: string, coachId?: string) {
+    setEditSession(null);
     setCreateDefaults({ date, time, coachId });
     setCreateOpen(true);
   }
   function handleAddSession() {
+    setEditSession(null);
     setCreateDefaults({});
     setCreateOpen(true);
+  }
+  function handleEditSession(session: SessionWithRelations) {
+    setDetailOpen(false);
+    setEditSession(session);
+    setCreateOpen(true);
+  }
+  function handleCreateOpenChange(open: boolean) {
+    setCreateOpen(open);
+    if (!open) setEditSession(null);
   }
   function handleRefresh() {
     router.refresh();
@@ -1067,6 +1081,7 @@ export function RosterPage({
         centres={centres}
         coaches={coaches}
         onUpdate={handleRefresh}
+        onEdit={handleEditSession}
         sessionCertWarnings={sessionCertWarnings}
         financialAccess={hasFinancialAccess}
       />
@@ -1074,13 +1089,14 @@ export function RosterPage({
       {/* Create Session Dialog */}
       <CreateSessionDialog
         open={createOpen}
-        onOpenChange={setCreateOpen}
+        onOpenChange={handleCreateOpenChange}
         termId={activeTerm?.id ?? ""}
         centres={centres}
         coaches={coaches}
         defaultDate={createDefaults.date}
         defaultTime={createDefaults.time}
         defaultCoachId={createDefaults.coachId}
+        editSession={editSession ?? undefined}
         onSuccess={handleRefresh}
       />
 

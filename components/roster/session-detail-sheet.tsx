@@ -106,6 +106,8 @@ interface SessionDetailSheetProps {
   centres: Pick<Centre, "id" | "name">[];
   coaches: Pick<Profile, "id" | "name">[];
   onUpdate: () => void;
+  /** Opens the session in the edit dialog (date/time/duration/etc). */
+  onEdit: (session: SessionWithRelations) => void;
   /** Per-session cert warnings keyed by session_id */
   sessionCertWarnings?: Record<string, SessionCertWarning>;
   /**
@@ -127,6 +129,7 @@ export function SessionDetailSheet({
   onOpenChange,
   coaches,
   onUpdate,
+  onEdit,
   sessionCertWarnings,
   financialAccess = false,
 }: SessionDetailSheetProps) {
@@ -398,7 +401,18 @@ export function SessionDetailSheet({
                 </a>
               )}
             </div>
-            <SessionStatusBadge status={session.status} />
+            <div className="flex shrink-0 items-center gap-2">
+              <SessionStatusBadge status={session.status} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                title="Edit session"
+                onClick={() => onEdit(session)}
+              >
+                <Pencil className="size-4" />
+              </Button>
+            </div>
           </div>
         </SheetHeader>
 

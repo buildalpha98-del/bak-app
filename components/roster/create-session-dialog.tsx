@@ -49,17 +49,6 @@ interface CreateSessionDialogProps {
 }
 
 // ============================================================
-// Duration options
-// ============================================================
-
-const DURATION_OPTIONS = [
-  { value: "30", label: "30 minutes" },
-  { value: "45", label: "45 minutes" },
-  { value: "60", label: "60 minutes" },
-  { value: "90", label: "90 minutes" },
-];
-
-// ============================================================
 // Component
 // ============================================================
 
@@ -127,6 +116,11 @@ export function CreateSessionDialog({
       setError("Please fill in all required fields.");
       return;
     }
+    const durationMinutes = parseInt(duration, 10);
+    if (!durationMinutes || durationMinutes <= 0) {
+      setError("Enter a valid duration in minutes.");
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -135,7 +129,7 @@ export function CreateSessionDialog({
       const { error: err } = await updateSession(editSession!.id, {
         date,
         time,
-        duration_minutes: parseInt(duration, 10),
+        duration_minutes: durationMinutes,
         centre_id: centreId,
         sport,
         coach_id: coachId || null,
@@ -153,7 +147,7 @@ export function CreateSessionDialog({
         term_id: termId,
         date,
         time,
-        duration_minutes: parseInt(duration, 10),
+        duration_minutes: durationMinutes,
         centre_id: centreId,
         sport,
         coach_id: coachId || undefined,
@@ -258,19 +252,16 @@ export function CreateSessionDialog({
 
           {/* Duration */}
           <div className="space-y-1.5">
-            <Label>Duration *</Label>
-            <Select value={duration} onValueChange={(v) => setDuration(v ?? "")}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DURATION_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="session-duration">Duration (minutes) *</Label>
+            <Input
+              id="session-duration"
+              type="number"
+              min={5}
+              step={5}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              required
+            />
           </div>
 
           {/* Centre */}
