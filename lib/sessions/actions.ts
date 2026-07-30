@@ -15,6 +15,7 @@ import {
 import {
   toLocalIso,
   buildRecurrenceDates,
+  sportRotationDates,
   type RecurrenceFrequency,
 } from "@/lib/utils/roster";
 
@@ -855,6 +856,64 @@ export async function createRecurringSessions(
   } catch (err) {
     console.error("createRecurringSessions error:", err);
     return { data: null, error: "Failed to create recurring sessions." };
+  }
+}
+
+// ============================================================
+// Sport rotation — one weekly session per week, sport changing at
+// block boundaries (e.g. 2 weeks Soccer, then 2 weeks Basketball at
+// the same centre/slot). Each block reuses createSessionsOnDates, so
+// the same per-sport "already booked" dedup applies within a block.
+// ============================================================
+
+export interface SportRotationBlock {
+  sport: string;
+  /** Number of weekly occurrences for this block. */
+  weeks: number;
+}
+
+export interface SportRotationResult {
+  created: number;
+  skipped: string[];
+  firstError: string | null;
+}
+
+export async function createSportRotationSessions(
+  data: Omit<CreateSessionData, "sport">,
+  blocks: SportRotationBlock[]
+): Promise<{ data: SportRotationResult | null; error: string | null }> {
+  try {
+    if (blocks.length === 0) {
+      return { data: null, error: "Add at least one sport block." };
+    }
+    if (blocks.some((b) => !b.sport || !b.weeks || b.weeks < 1)) {
+      return { data: null, error: "Each block needs a sport and at least 1 week." };
+    }
+
+    const perBlockDates = sportRotationDates(data.date, blocks);
+    const result: SportRotationResult = { created: 0, skipped: [], firstError: null };
+
+    for (let i = 0; i < blocks.length; i++) {
+      const { data: blockResult, error } = await createSessionsOnDates(
+        { ...data, sport: blocks[i].sport },
+        perBlockDates[i]
+      );
+      if (blockResult) {
+        result.created += blockResult.created;
+        result.skipped.push(...blockResult.skipped);
+        result.firstError = result.firstError ?? blockResult.firstError;
+      } else if (error) {
+        result.firstError = result.firstError ?? error;
+      }
+    }
+
+    if (result.created === 0 && result.firstError) {
+      return { data: result, error: result.firstError };
+    }
+    return { data: result, error: null };
+  } catch (err) {
+    console.error("createSportRotationSessions error:", err);
+    return { data: null, error: "Failed to create sport rotation sessions." };
   }
 }
 

@@ -7,6 +7,7 @@ import {
   formatDayHeaderShort,
   getMonday,
   buildRecurrenceDates,
+  sportRotationDates,
 } from "../roster";
 
 // Regression tests for the Saturday-start roster grid: local-midnight
@@ -121,5 +122,45 @@ describe("getMonday", () => {
       const viaDate = toLocalIso(getMonday(new Date(iso + "T00:00:00")));
       expect(viaDate).toBe(mondayOfIso(iso));
     }
+  });
+});
+
+describe("sportRotationDates", () => {
+  it("gives each block one weekly date, back to back", () => {
+    expect(
+      sportRotationDates("2026-07-13", [{ weeks: 2 }, { weeks: 2 }])
+    ).toEqual([
+      ["2026-07-13", "2026-07-20"],
+      ["2026-07-27", "2026-08-03"],
+    ]);
+  });
+
+  it("supports more than two blocks", () => {
+    expect(
+      sportRotationDates("2026-07-13", [
+        { weeks: 1 },
+        { weeks: 1 },
+        { weeks: 1 },
+      ])
+    ).toEqual([["2026-07-13"], ["2026-07-20"], ["2026-07-27"]]);
+  });
+
+  it("returns an empty array for a zero-week block without breaking later blocks", () => {
+    expect(
+      sportRotationDates("2026-07-13", [{ weeks: 0 }, { weeks: 1 }])
+    ).toEqual([[], ["2026-07-13"]]);
+  });
+
+  it("caps a single block at 52 weeks", () => {
+    expect(sportRotationDates("2026-07-13", [{ weeks: 999 }])[0].length).toBe(
+      52
+    );
+  });
+
+  it("returns empty date lists for a malformed start date", () => {
+    expect(sportRotationDates("bad", [{ weeks: 2 }, { weeks: 1 }])).toEqual([
+      [],
+      [],
+    ]);
   });
 });

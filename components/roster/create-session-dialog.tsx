@@ -23,8 +23,10 @@ import { toast } from "sonner";
 import {
   createSession,
   createRecurringSessions,
+  createSportRotationSessions,
   updateSession,
   deleteSession,
+  type SportRotationBlock,
 } from "@/lib/sessions/actions";
 import type { RecurrenceFrequency } from "@/lib/utils/roster";
 import { SPORTS } from "@/lib/types/enums";
@@ -77,6 +79,13 @@ export function CreateSessionDialog({
     "none"
   );
   const [repeatUntil, setRepeatUntil] = useState("");
+  const [rotateSports, setRotateSports] = useState(false);
+  const [sportBlocks, setSportBlocks] = useState<
+    { sport: string; weeks: string }[]
+  >([
+    { sport: "", weeks: "2" },
+    { sport: "", weeks: "2" },
+  ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -107,14 +116,34 @@ export function CreateSessionDialog({
       }
       setRepeatFreq("none");
       setRepeatUntil("");
+      setRotateSports(false);
+      setSportBlocks([
+        { sport: "", weeks: "2" },
+        { sport: "", weeks: "2" },
+      ]);
       setError(null);
       setConfirmDelete(false);
     }
   }, [open, editSession, defaultDate, defaultTime, defaultCoachId]);
 
+  function updateSportBlock(
+    index: number,
+    patch: Partial<{ sport: string; weeks: string }>
+  ) {
+    setSportBlocks((prev) =>
+      prev.map((b, i) => (i === index ? { ...b, ...patch } : b))
+    );
+  }
+  function addSportBlock() {
+    setSportBlocks((prev) => [...prev, { sport: "", weeks: "2" }]);
+  }
+  function removeSportBlock(index: number) {
+    setSportBlocks((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!date || !time || !centreId || !sport) {
+    if (!date || !time || !centreId || (!rotateSports && !sport)) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -143,6 +172,53 @@ export function CreateSessionDialog({
         setError(err);
         setSaving(false);
         return;
+      }
+    } else if (rotateSports) {
+      const blocks: SportRotationBlock[] = sportBlocks.map((b) => ({
+        sport: b.sport,
+        weeks: parseInt(b.weeks, 10),
+      }));
+      if (blocks.some((b) => !b.sport)) {
+        setError("Choose a sport for every block.");
+        setSaving(false);
+        return;
+      }
+      if (blocks.some((b) => !b.weeks || b.weeks < 1)) {
+        setError("Each block needs at least 1 week.");
+        setSaving(false);
+        return;
+      }
+
+      const { data: result, error: err } = await createSportRotationSessions(
+        {
+          term_id: termId,
+          date,
+          time,
+          duration_minutes: durationMinutes,
+          centre_id: centreId,
+          coach_id: coachId || undefined,
+          pay_rate_override: payRateOverride
+            ? parseFloat(payRateOverride)
+            : undefined,
+        },
+        blocks
+      );
+      if (err || !result) {
+        setError(err ?? "Failed to create sport rotation sessions.");
+        setSaving(false);
+        return;
+      }
+      toast.success(
+        `${result.created} session${result.created === 1 ? "" : "s"} created across ${blocks.length} sport block${blocks.length === 1 ? "" : "s"}` +
+          (result.skipped.length > 0
+            ? ` — ${result.skipped.length} date${
+                result.skipped.length === 1 ? "" : "s"
+              } skipped (already booked)`
+            : "") +
+          "."
+      );
+      if (result.firstError) {
+        toast.warning(`Some dates failed — first: ${result.firstError}`);
       }
     } else {
       const input = {
@@ -285,21 +361,23 @@ export function CreateSessionDialog({
           </div>
 
           {/* Sport */}
-          <div className="space-y-1.5">
-            <Label>Sport *</Label>
-            <Select value={sport} onValueChange={(v) => setSport(v ?? "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select sport" />
-              </SelectTrigger>
-              <SelectContent>
-                {SPORTS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!rotateSports && (
+            <div className="space-y-1.5">
+              <Label>Sport *</Label>
+              <Select value={sport} onValueChange={(v) => setSport(v ?? "")}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sport" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPORTS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Coach (optional) */}
           <div className="space-y-1.5">
@@ -333,7 +411,7 @@ export function CreateSessionDialog({
           </div>
 
           {/* Recurrence — create mode only; edits touch a single shift */}
-          {!isEdit && (
+          {!isEdit && !rotateSports && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Repeats</Label>
@@ -367,6 +445,92 @@ export function CreateSessionDialog({
                     onChange={(e) => setRepeatUntil(e.target.value)}
                     required
                   />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sport rotation — create mode only, alternative to Repeats */}
+          {!isEdit && (
+            <div className="space-y-3">
+              {repeatFreq === "none" && (
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <input
+                    type="checkbox"
+                    className="size-4 rounded border-input"
+                    checked={rotateSports}
+                    onChange={(e) => setRotateSports(e.target.checked)}
+                  />
+                  Rotate through multiple sports (weekly blocks)
+                </label>
+              )}
+
+              {rotateSports && (
+                <div className="space-y-3 rounded-lg border p-3">
+                  <Label>Sport Blocks *</Label>
+                  {sportBlocks.map((block, i) => (
+                    <div key={i} className="flex items-end gap-2">
+                      <div className="flex-1 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">
+                          Sport
+                        </Label>
+                        <Select
+                          value={block.sport}
+                          onValueChange={(v) =>
+                            updateSportBlock(i, { sport: v ?? "" })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select sport" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SPORTS.map((s) => (
+                              <SelectItem key={s} value={s}>
+                                {s}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="w-24 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">
+                          Weeks
+                        </Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={block.weeks}
+                          onChange={(e) =>
+                            updateSportBlock(i, { weeks: e.target.value })
+                          }
+                        />
+                      </div>
+                      {sportBlocks.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => removeSportBlock(i)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addSportBlock}
+                  >
+                    + Add sport block
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Creates one weekly session per week for each block, back
+                    to back, starting {date || "the date above"}.
+                  </p>
                 </div>
               )}
             </div>

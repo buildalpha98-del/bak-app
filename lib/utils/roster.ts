@@ -96,6 +96,35 @@ export function buildRecurrenceDates(
   return dates;
 }
 
+/**
+ * Dates ("YYYY-MM-DD") for a sport rotation: one weekly date per week
+ * for each block, back to back — block 2 starts the week right after
+ * block 1's last week, and so on. Same UTC string arithmetic as
+ * `buildRecurrenceDates` (no timezone drift).
+ */
+export function sportRotationDates(
+  startIso: string,
+  blocks: { weeks: number }[]
+): string[][] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso)) return blocks.map(() => []);
+  const cursor = new Date(
+    Date.UTC(
+      Number(startIso.slice(0, 4)),
+      Number(startIso.slice(5, 7)) - 1,
+      Number(startIso.slice(8, 10))
+    )
+  );
+  return blocks.map((block) => {
+    const dates: string[] = [];
+    const weeks = Math.max(0, Math.min(52, Math.floor(block.weeks)));
+    for (let i = 0; i < weeks; i++) {
+      dates.push(cursor.toISOString().split("T")[0]);
+      cursor.setUTCDate(cursor.getUTCDate() + 7);
+    }
+    return dates;
+  });
+}
+
 /** Get Monday of the week containing the given date */
 export function getMonday(date: Date): Date {
   const d = new Date(date);
