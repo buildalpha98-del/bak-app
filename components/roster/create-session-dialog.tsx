@@ -68,7 +68,7 @@ export function CreateSessionDialog({
 
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [duration, setDuration] = useState("45");
+  const [duration, setDuration] = useState("0.75"); // hours
   const [centreId, setCentreId] = useState("");
   const [sport, setSport] = useState("");
   const [coachId, setCoachId] = useState("");
@@ -87,7 +87,9 @@ export function CreateSessionDialog({
       if (editSession) {
         setDate(editSession.date);
         setTime(editSession.time.slice(0, 5));
-        setDuration(editSession.duration_minutes.toString());
+        setDuration(
+          (Math.round((editSession.duration_minutes / 60) * 100) / 100).toString()
+        );
         setCentreId(editSession.centre_id);
         setSport(editSession.sport);
         setCoachId(editSession.coach_id ?? "");
@@ -97,7 +99,7 @@ export function CreateSessionDialog({
       } else {
         setDate(defaultDate ?? "");
         setTime(defaultTime ?? "");
-        setDuration("45");
+        setDuration("0.75");
         setCentreId("");
         setSport("");
         setCoachId(defaultCoachId ?? "");
@@ -116,9 +118,9 @@ export function CreateSessionDialog({
       setError("Please fill in all required fields.");
       return;
     }
-    const durationMinutes = parseInt(duration, 10);
+    const durationMinutes = Math.round(parseFloat(duration) * 60);
     if (!durationMinutes || durationMinutes <= 0) {
-      setError("Enter a valid duration in minutes.");
+      setError("Enter a valid duration in hours.");
       return;
     }
 
@@ -252,12 +254,13 @@ export function CreateSessionDialog({
 
           {/* Duration */}
           <div className="space-y-1.5">
-            <Label htmlFor="session-duration">Duration (minutes) *</Label>
+            <Label htmlFor="session-duration">Duration (hours) *</Label>
             <Input
               id="session-duration"
               type="number"
-              min={5}
-              step={5}
+              min={0.25}
+              step="any"
+              placeholder="e.g. 1.5"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               required
