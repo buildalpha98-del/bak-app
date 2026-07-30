@@ -24,6 +24,7 @@ import {
   createSession,
   createRecurringSessions,
   createSportRotationSessions,
+  repeatSessionForward,
   updateSession,
   deleteSession,
   type SportRotationBlock,
@@ -87,6 +88,7 @@ export function CreateSessionDialog({
     { sport: "", weeks: "2" },
   ]);
   const [saving, setSaving] = useState(false);
+  const [repeating, setRepeating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -286,6 +288,34 @@ export function CreateSessionDialog({
       return;
     }
     onOpenChange(false);
+    onSuccess();
+  }
+
+  async function handleRepeatForward() {
+    if (!editSession || repeatFreq === "none" || !repeatUntil) return;
+    setRepeating(true);
+    setError(null);
+    const { data: result, error: err } = await repeatSessionForward(
+      editSession.id,
+      { frequency: repeatFreq, until: repeatUntil }
+    );
+    setRepeating(false);
+    if (err || !result) {
+      setError(err ?? "Failed to repeat this shift.");
+      return;
+    }
+    toast.success(
+      `${result.created} shift${result.created === 1 ? "" : "s"} created` +
+        (result.skipped.length > 0
+          ? ` — ${result.skipped.length} skipped (already booked)`
+          : "") +
+        "."
+    );
+    if (result.firstError) {
+      toast.warning(`Some dates failed — first: ${result.firstError}`);
+    }
+    setRepeatFreq("none");
+    setRepeatUntil("");
     onSuccess();
   }
 
@@ -533,6 +563,71 @@ export function CreateSessionDialog({
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Repeat this shift — edit mode only, any status. Copies the
+              shift forward; doesn't touch this shift's own fields. */}
+          {isEdit && (
+            <div className="space-y-3 rounded-lg border p-3">
+              <Label>Repeat this shift going forward</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">
+                    Frequency
+                  </Label>
+                  <Select
+                    value={repeatFreq}
+                    onValueChange={(v) =>
+                      setRepeatFreq(
+                        (v as RecurrenceFrequency | "none") ?? "none"
+                      )
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Does not repeat" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Does not repeat</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="fortnightly">Fortnightly</SelectItem>
+                      <SelectItem value="four_weekly">
+                        Monthly (every 4 weeks)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="repeat-forward-until"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Until
+                  </Label>
+                  <Input
+                    id="repeat-forward-until"
+                    type="date"
+                    value={repeatUntil}
+                    min={date || undefined}
+                    disabled={repeatFreq === "none"}
+                    onChange={(e) => setRepeatUntil(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={repeating || repeatFreq === "none" || !repeatUntil}
+                onClick={handleRepeatForward}
+              >
+                {repeating ? "Repeating…" : "Create repeats"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Copies this shift (same time, coach, centre and sport) into
+                future weeks, starting the week after {date || "this shift"}.
+                Doesn&apos;t change this shift itself.
+              </p>
             </div>
           )}
 
