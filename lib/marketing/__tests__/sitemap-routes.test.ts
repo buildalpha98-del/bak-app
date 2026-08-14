@@ -86,6 +86,10 @@ describe("STATIC_MARKETING_ROUTES", () => {
         "/programs/gymnastics-for-schools",
         "/programs/tee-ball-for-schools",
         "/programs/athletics-for-schools",
+        // Tranche 2 — the pack's unique differentiators.
+        "/programs/boxing-for-schools",
+        "/programs/self-defence-for-schools",
+        "/programs/taekwondo-for-schools",
       ])
     );
   });
