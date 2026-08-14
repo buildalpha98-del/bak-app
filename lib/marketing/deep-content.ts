@@ -462,6 +462,289 @@ export const SPORT_PAGES: SportPage[] = [
       },
     ],
   },
+  // ── Tranche 3 (added 2026-08-14): the mainstream sports. The pack's
+  // list names "football" alongside soccer — read as RUGBY LEAGUE (the
+  // code this region calls footy; soccer already has its own page).
+  {
+    slug: "soccer-for-schools",
+    sport: "Soccer",
+    h1: "Soccer Programs for Schools & Childcare Centres",
+    metaTitle: "Soccer Programs for Schools | Build Alpha Kids",
+    description:
+      "School soccer programs — first touch, passing and small-sided games where every kid plays, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.green,
+    unit: [
+      "Every playground already runs on soccer — our job is turning enthusiasm into skill. A typical 6–10 week unit builds from first touch and dribbling, through passing and receiving under pressure, into shooting technique and small-sided games that put every skill straight into play.",
+      "The format rule that changes everything: one ball between two, and games no bigger than four-a-side. Small-sided means constant touches, constant decisions and nowhere to hide — the strongest players are stretched and the beginners are never spectators.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — object control with the feet, spatial awareness and team play — with the standard assessment and reporting pack supplied.",
+    equipmentSafety:
+      "We bring size-appropriate balls, pop-up goals, cones and bibs for every class. Games are non-contact by rule, scaled to the age group, and refereed to keep them that way. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "What facilities do we need?",
+        a: "Any oval or hard court — pop-up goals and marked fields travel with us, and we run multiple small-sided fields side by side for full classes.",
+      },
+      {
+        q: "Our students are soccer-mad already. What do they get out of it?",
+        a: "Structure. Playground soccer is one big game dominated by three kids; our small-sided formats force touches, positions and decisions from everyone — which is where actual improvement lives.",
+      },
+    ],
+  },
+  {
+    slug: "basketball-for-schools",
+    sport: "Basketball",
+    h1: "Basketball Programs for Schools & Childcare Centres",
+    metaTitle: "Basketball Programs for Schools | Build Alpha Kids",
+    description:
+      "School basketball programs — dribbling, passing, shooting and modified games from WWCC-cleared coaches. Rings and equipment supplied. Get a quote.",
+    accent: BALL_COLORS.orange,
+    unit: [
+      "Basketball rewards exactly what school sport should build: hand skills, footwork and quick decisions. A typical 6–10 week unit runs from ball-handling and dribbling, through passing and cutting, into shooting form and modified games — lower rings and smaller balls where the age group needs them.",
+      "Sessions are station-based so a full class is always moving: a dribbling circuit, a passing grid, a shooting station and a half-court game rotating every few minutes. Modified rules — no contested steals for juniors, everyone-touches before a shot — keep the confident kids sharing the ball and the quiet kids in the game.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — object control, locomotor combinations and tactical awareness — with baseline and post-unit skill checks per stage.",
+    equipmentSafety:
+      "We bring size-graded balls, portable rings where courts need them, cones and bibs. Games are refereed non-contact with modified rules by stage. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "We only have one court. Does that work?",
+        a: "Yes — the station format is designed for it. One court comfortably runs a full class across four rotating stations, and we bring portable rings to open up extra shooting space.",
+      },
+      {
+        q: "What ages does the program suit?",
+        a: "K–Year 6 and into high school. Juniors play on lowered targets with smaller balls; upper stages progress to full rules, set plays and tournament formats.",
+      },
+    ],
+  },
+  {
+    slug: "netball-for-schools",
+    sport: "Netball",
+    h1: "Netball Programs for Schools & Childcare Centres",
+    metaTitle: "Netball Programs for Schools | Build Alpha Kids",
+    description:
+      "School netball programs — passing, footwork and positional play for all students, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.red,
+    unit: [
+      "Netball is one of the most-played sports in the country, and it teaches what few others do: precise passing, legal footwork and genuinely positional team play. A typical 6–10 week unit builds from catching and pivoting, through the footwork rule and lead-and-pass patterns, into positional mini-games and a round-robin finish.",
+      "Every student plays every position across the unit — attackers learn to defend, defenders learn to shoot — and the no-contact, no-travel rules mean success comes from movement and thinking, not size. It's a sport where a well-drilled quiet kid routinely beats a fast loud one, and they notice.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — object control, movement precision and cooperative play — with the standard assessment and reporting pack supplied.",
+    equipmentSafety:
+      "We bring size-appropriate netballs, bibs for every position and portable rings where courts need them. The sport is non-contact by rule and we referee it that way from week one. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is the program for girls only?",
+        a: "No — we coach netball as a whole-class sport for everyone. Mixed netball is one of the fastest-growing formats in the country, and the footwork and passing transfer to every court sport.",
+      },
+      {
+        q: "What facilities do we need?",
+        a: "A netball or basketball court is ideal, but any flat hard area works — portable rings and marked thirds travel with us.",
+      },
+    ],
+  },
+  {
+    slug: "cricket-for-schools",
+    sport: "Cricket",
+    h1: "Cricket Programs for Schools & Childcare Centres",
+    metaTitle: "Cricket Programs for Schools | Build Alpha Kids",
+    description:
+      "School cricket programs — striking, bowling and fielding through fast modified formats where everyone bats. WWCC-cleared coaches, gear supplied. Get a quote.",
+    accent: BALL_COLORS.yellow,
+    unit: [
+      "School cricket has a reputation problem: two kids batting, twenty kids waiting. Our unit kills the queue. A typical 6–10 weeks runs striking off tees and drop-feeds, straight-arm bowling basics, ground fielding and catching — then continuous-cricket formats where batters run on every hit, everyone bowls an over, and an innings takes minutes, not an afternoon.",
+      "Modified equipment does the rest: soft balls, flat bats for juniors and short pitches keep the game fast and fear-free, so students spend the unit hitting, bowling and diving instead of standing at fine leg watching clouds.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — striking, throwing and catching combinations, and game-sense decisions — with results in the standard assessment pack.",
+    equipmentSafety:
+      "We bring soft safety balls, age-graded bats, tees, stumps and cones — no hard balls in primary sessions, ever. Bat safety zones are taught from the first week. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "How do you keep a whole class involved?",
+        a: "Continuous formats — batters run on every hit, bowlers rotate every over, and fielding earns points. Nobody waits more than a couple of minutes for their next go.",
+      },
+      {
+        q: "When in the year should we run it?",
+        a: "Terms 1 and 4 suit cricket's season, but the modified indoor-friendly format runs year-round — a hall works fine in winter.",
+      },
+    ],
+  },
+  {
+    slug: "afl-for-schools",
+    sport: "AFL",
+    h1: "AFL Programs for Schools & Childcare Centres",
+    metaTitle: "AFL Programs for Schools | Build Alpha Kids",
+    description:
+      "School AFL programs — kicking, marking and handballing in non-contact modified formats, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.blue,
+    unit: [
+      "AFL's three core skills — the drop punt, the mark and the handball — are unlike anything else in school sport, which is exactly why kids love learning them. A typical 6–10 week unit builds each one through partner drills and target games, then combines them in modified, non-contact match formats built around space and possession.",
+      "Our school format is strictly modified: no tackling, no bumping — possession changes on touch or intercept, and marking contests are one-on-one leads rather than packs. All the spectacular parts of the game, none of the collisions.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — kicking and striking with force and accuracy, aerial catching and spatial play — with the standard assessment pack supplied.",
+    equipmentSafety:
+      "We bring age-graded synthetic footballs, portable goals, cones and bibs. The format is non-contact by rule — touch-based possession, no tackling at any stage — and refereed that way. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is there tackling?",
+        a: "No — the school format is entirely non-contact. Possession changes on touch, marking contests are leads not packs, and the rules are refereed tightly.",
+      },
+      {
+        q: "We're in rugby league territory. Will students take to it?",
+        a: "Reliably — the novelty is the point. Most students have never learned a drop punt or taken an overhead mark, so the skill ceiling feels fresh and the playing field starts level.",
+      },
+    ],
+  },
+  {
+    slug: "tennis-for-schools",
+    sport: "Tennis",
+    h1: "Tennis Programs for Schools & Childcare Centres",
+    metaTitle: "Tennis Programs for Schools | Build Alpha Kids",
+    description:
+      "School tennis programs — racquet skills, rallying and modified court games with low-compression balls. WWCC-cleared coaches, gear supplied. Get a quote.",
+    accent: BALL_COLORS.green,
+    unit: [
+      "Tennis in schools used to mean one court, thirty kids and a queue. Modified equipment changed the sport: low-compression balls that bounce slow enough to hit, lighter racquets and pop-up mini-nets mean a full class can rally in week one. A typical 6–10 week unit runs from racquet familiarity and forehands, through backhands and serving, into mini-court rally games and a round-robin ladder.",
+      "Everything is scored in rallies, not winners — the unit's goal is a class where every student can sustain a rally, because that's the skill that makes tennis playable for life.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — striking with an implement, hand-eye coordination and force control — with baseline and post-unit skill checks.",
+    equipmentSafety:
+      "We bring age-graded racquets, low-compression balls and pop-up nets — no full-speed balls in primary sessions. Racquet-space rules are taught from the first minute. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "We don't have tennis courts. Can we still run it?",
+        a: "Yes — pop-up nets turn any hard court, hall or covered area into six mini-courts. Line markings are handy but not required.",
+      },
+      {
+        q: "What ages does it suit?",
+        a: "K–Year 6 on modified equipment, progressing ball speed and court size by stage; high school groups move towards full-court play.",
+      },
+    ],
+  },
+  {
+    slug: "volleyball-for-schools",
+    sport: "Volleyball",
+    h1: "Volleyball Programs for Schools & Childcare Centres",
+    metaTitle: "Volleyball Programs for Schools | Build Alpha Kids",
+    description:
+      "School volleyball programs — catch-and-throw lead-ins to digging, setting and spiking, run by WWCC-cleared coaches. Nets and balls supplied. Get a quote.",
+    accent: BALL_COLORS.orange,
+    unit: [
+      "Volleyball is the rare sport that gets better as students get older — which makes primary the perfect place to plant it. A typical 6–10 week unit starts with catch-and-throw lead-in games that teach rotation and court coverage, then layers in the dig, the set and (for upper stages) the spike and serve, finishing in modified games with bounces allowed where the age group needs them.",
+      "The lead-in format matters: starting with catching means week-one games actually work, and every skill swap afterwards — catch becomes dig, throw becomes set — upgrades a game students already love playing.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — striking and volleying, reaction and teamwork under a shared objective — with the standard assessment pack supplied.",
+    equipmentSafety:
+      "We bring soft-touch volleyballs, adjustable portable nets and boundary markers. Ball weight and net height scale by stage, and rotations are structured so every student serves and plays front court. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Isn't volleyball too hard for primary students?",
+        a: "Full volleyball, yes — that's why we start from catch-and-throw formats that play like the real game and swap skills in one at a time. By the final weeks most classes are running genuine three-touch rallies.",
+      },
+      {
+        q: "What facilities do we need?",
+        a: "A hall or hard court. Our portable nets set up anywhere, and we run multiple short courts for full classes.",
+      },
+    ],
+  },
+  {
+    slug: "hockey-for-schools",
+    sport: "Hockey",
+    h1: "Hockey Programs for Schools & Childcare Centres",
+    metaTitle: "Hockey Programs for Schools | Build Alpha Kids",
+    description:
+      "School hockey programs — dribbling, passing and shooting with school-safe sticks and balls, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.red,
+    unit: [
+      "Hockey hands every student a stick and a reason to concentrate — few sports build coordination faster. A typical 6–10 week unit runs from grip and carrying the ball, through push passes and receiving, into dribbling under pressure, shooting and small-sided games with rolling substitutions.",
+      "Stick discipline is coached as a skill in itself: flat-stick rules, no lifting near others and defined shooting zones — which is exactly what makes the game safe enough to run fast.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — object control with an implement, agility and channel-based team play — with the standard assessment pack supplied.",
+    equipmentSafety:
+      "We bring school-safe sticks sized by age, soft low-bounce balls, flat goals and cones — never hard field balls in school sessions. Flat-stick and height rules are taught from week one and refereed throughout. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is hockey safe for a full class of beginners?",
+        a: "With the right equipment and rules, yes — soft balls, age-sized sticks, flat-stick rules and shooting zones are all non-negotiable in our format, and sessions are refereed to them.",
+      },
+      {
+        q: "Grass, court or turf?",
+        a: "Any of them — the soft ball runs true on hard court and short grass, and we adjust field sizes to whatever space you have.",
+      },
+    ],
+  },
+  {
+    slug: "golf-for-schools",
+    sport: "Golf",
+    h1: "Golf Programs for Schools & Childcare Centres",
+    metaTitle: "Golf Programs for Schools | Build Alpha Kids",
+    description:
+      "School golf programs — swing basics and target golf with school-safe clubs and soft balls, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.yellow,
+    unit: [
+      "Golf on school grounds works because of one design decision: everything is a target game. A typical 6–10 week unit runs grip and setup, chipping to rings and mats, putting circuits, then full-swing striking into nets and scoring courses laid out across the playground — closest-to-the-pin, ladder golf, team ambrose.",
+      "School-safe equipment makes it possible: plastic-headed clubs and soft low-flight balls that behave like the real thing without the danger, so a full class swings at once instead of waiting a turn.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — striking with an implement, force control and accuracy, and honest self-scoring — with the standard assessment pack supplied.",
+    equipmentSafety:
+      "We bring school-safe clubs sized by age, soft low-flight balls, hitting mats, nets and target rings. Swing-space safety zones are marked and taught before a single ball is hit. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Do we need to be near a golf course?",
+        a: "Not at all — the whole program runs on your oval, courts or hall. Targets, mats and nets travel with us.",
+      },
+      {
+        q: "Isn't golf slow for kids?",
+        a: "Traditional golf is; target golf isn't. Every station is score-as-you-go, every student has a club, and rotations keep the pace closer to a carnival than a fairway.",
+      },
+    ],
+  },
+  {
+    slug: "rugby-league-for-schools",
+    sport: "Rugby League",
+    h1: "Rugby League Programs for Schools & Childcare Centres",
+    metaTitle: "Rugby League Programs for Schools | Build Alpha Kids",
+    description:
+      "School rugby league programs — passing, evasion and footy fundamentals in tag-based non-contact formats. WWCC-cleared coaches, gear supplied. Get a quote.",
+    accent: BALL_COLORS.blue,
+    unit: [
+      "In South-West Sydney, footy is the language of the playground — our unit teaches students to speak it properly. A typical 6–10 weeks builds the catch-and-pass off both hands, running onto the ball, evasion and safe grounding, then layers league structure — the tackle count, the play-the-ball — into tag-based games.",
+      "The school format is strictly non-contact: tags replace tackles at every stage, and contested work happens on pads and shields, never between students. All the shape and speed of league, none of the collisions — and a natural pathway into our Oztag program for schools that want the tag code year-round.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — object control on the run, evasion and team structure — with the standard assessment and reporting pack supplied.",
+    equipmentSafety:
+      "We bring age-graded footballs, tags and belts, hit shields, cones and bibs. Tags replace tackles at every stage — no student-on-student contact — and any contact work is pads-only. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is there tackling?",
+        a: "No — tags replace tackles at every stage, and contested work is done on pads and shields only. The format keeps league's structure and speed without the contact.",
+      },
+      {
+        q: "How is this different from your Oztag program?",
+        a: "Oztag is its own code with its own rules and competitions; this unit teaches rugby league's specific structure — the tackle count, the play-the-ball, positional shape — in a tag-based format. Plenty of schools run one as the pathway into the other.",
+      },
+    ],
+  },
 ];
 
 /** Lookup for /programs/[slug] — undefined drives notFound(). */
