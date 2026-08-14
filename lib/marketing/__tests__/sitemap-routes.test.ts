@@ -90,6 +90,17 @@ describe("STATIC_MARKETING_ROUTES", () => {
         "/programs/boxing-for-schools",
         "/programs/self-defence-for-schools",
         "/programs/taekwondo-for-schools",
+        // Tranche 3 — the mainstream sports ("football" read as rugby league).
+        "/programs/soccer-for-schools",
+        "/programs/basketball-for-schools",
+        "/programs/netball-for-schools",
+        "/programs/cricket-for-schools",
+        "/programs/afl-for-schools",
+        "/programs/tennis-for-schools",
+        "/programs/volleyball-for-schools",
+        "/programs/hockey-for-schools",
+        "/programs/golf-for-schools",
+        "/programs/rugby-league-for-schools",
       ])
     );
   });
