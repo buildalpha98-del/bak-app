@@ -3,7 +3,7 @@ import { isPublicRoute } from "../public-routes";
 
 describe("isPublicRoute", () => {
   it.each([
-    "/", "/programs", "/programs/childcare", "/holiday-clinics",
+    "/", "/programs", "/programs/childcare", "/childcare", "/holiday-clinics",
     "/about", "/blog", "/blog/some-post", "/enquire", "/contact",
     // Legal pages: footer-linked from every page, and the old WP URLs
     // 301 here for signed-out crawlers.

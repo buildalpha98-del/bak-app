@@ -520,7 +520,7 @@ export function outboundInvoiceEmail(
       ${bankSection}
       ${payOnlineButton}
       <p style="color:${BRAND_GREY};font-size:13px;">The PDF invoice is attached to this email.</p>
-      <p>If you have any questions, please contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
       <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
     `),
   };
@@ -576,7 +576,7 @@ export function invoiceReminderEmail(
       ${openingLine}
       ${bankSection}
       ${payOnlineButton}
-      <p>If payment has already been made, please disregard this reminder. Otherwise, feel free to contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a> if you have any questions.</p>
+      <p>If payment has already been made, please disregard this reminder. Otherwise, feel free to contact us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a> if you have any questions.</p>
       <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
     `),
   };
@@ -603,7 +603,7 @@ export function invoicePaymentConfirmationEmail(
         </tr>
       </table>
       <p>No further action is required. We appreciate your prompt payment and look forward to continuing our partnership.</p>
-      <p>If you have any questions, please contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
       <p style="margin-top:24px;">Kind regards,<br><strong>Build Alpha Kids</strong></p>
     `),
   };
@@ -663,7 +663,7 @@ export function demoScheduledEmail(
         <tr><td style="padding:4px 8px;color:${BRAND_GREY};">Coach</td><td style="padding:4px 8px;font-weight:600;">${coachName}</td></tr>
       </table>
       <p>We look forward to showing you what Build Alpha Kids can do for your students. If you need to reschedule, please get in touch.</p>
-      <p style="color:${BRAND_GREY};font-size:13px;">Questions? Reply to this email or contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">Questions? Reply to this email or contact us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
     `),
   };
 }
@@ -680,7 +680,7 @@ export function enquiryAcknowledgementEmail(
       <p>Hi ${greeting},</p>
       <p>Thanks for getting in touch about <strong>${escapeHtml(centreName)}</strong>. We've received your enquiry and someone from our team will be in touch soon.</p>
       <p>If you'd like to add anything in the meantime, just reply to this email.</p>
-      <p style="color:${BRAND_GREY};font-size:13px;">You can also reach us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">You can also reach us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
     `),
   };
 }

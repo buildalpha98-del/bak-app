@@ -72,13 +72,20 @@ describe("STATIC_MARKETING_ROUTES", () => {
         "/contact",
         "/enquire",
         "/programs",
-        "/programs/childcare",
+        "/childcare",
         "/programs/primary-school",
         "/programs/high-school",
         "/programs/after-school",
         "/programs/holiday-programs",
         "/holiday-clinics",
         "/blog",
+        // SEO pack Cluster D tranche 1 — generated from SPORT_PAGES,
+        // but the guard names them so a refactor cannot silently drop them.
+        "/programs/archery-for-schools",
+        "/programs/oztag-for-schools",
+        "/programs/gymnastics-for-schools",
+        "/programs/tee-ball-for-schools",
+        "/programs/athletics-for-schools",
       ])
     );
   });

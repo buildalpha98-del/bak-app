@@ -76,7 +76,10 @@ const PAGE_REDIRECTS: WpRedirect[] = [
 
   // Direct 1:1 service → program matches, confirmed by reading each
   // page's copy (not just its slug).
-  { source: "/our-services/childcare", destination: "/programs/childcare", permanent: true },
+  { source: "/our-services/childcare", destination: "/childcare", permanent: true },
+  // The deep ELC page replaced the childcare program page (SEO pack §2);
+  // the old URL had a month of indexing, so it 308s rather than 404s.
+  { source: "/programs/childcare", destination: "/childcare", permanent: true },
   { source: "/our-services/primary-school", destination: "/programs/primary-school", permanent: true },
   { source: "/our-services/high-school", destination: "/programs/high-school", permanent: true },
   // Old copy is explicitly about "after-school hours" clinics, i.e. our

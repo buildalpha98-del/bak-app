@@ -326,7 +326,7 @@ export function LaunchInvoicePDF(props: LaunchInvoicePDFProps) {
             Payment due within 14 days. Please use invoice number as payment reference.
           </Text>
           <Text style={[s.footerText, { marginTop: 2 }]}>
-            Build Alpha Kids &bull; Multi-Sport Coaching &bull; info@buildalphakids.com.au
+            Build Alpha Kids &bull; Multi-Sport Coaching &bull; contact@buildalphakids.com.au
           </Text>
         </View>
       </Page>

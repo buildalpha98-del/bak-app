@@ -288,7 +288,7 @@ export function InvoicePDF({
               Bankstown, NSW 2200
             </Text>
             <Text style={styles.partyDetail}>
-              info@buildalphakids.com.au
+              contact@buildalphakids.com.au
             </Text>
           </View>
         </View>

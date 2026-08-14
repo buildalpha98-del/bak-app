@@ -148,7 +148,7 @@ export function eventJsonLd(clinic: PublicClinic) {
 export function articleJsonLd(post: PublicBlogPost) {
   return {
     "@context": SCHEMA_CONTEXT,
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: post.title,
     ...(post.excerpt ? { description: post.excerpt } : {}),
     ...(post.published_at ? { datePublished: post.published_at } : {}),
@@ -167,5 +167,23 @@ export function articleJsonLd(post: PublicBlogPost) {
       "@type": "WebPage",
       "@id": `${getCanonicalSiteUrl()}/blog/${post.slug}`,
     },
+  };
+}
+
+/**
+ * FAQPage schema for pages that render a visible FAQ accordion —
+ * /schools, /childcare and every sport page. Google shows FAQ rich
+ * results only when the same Q&A text is visible on the page, so
+ * callers must pass exactly the rendered list, never a superset.
+ */
+export function faqPageJsonLd(faqs: ReadonlyArray<{ q: string; a: string }>) {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
   };
 }

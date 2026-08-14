@@ -63,7 +63,7 @@ export const SITE: SiteInfo = {
   tagline: "Multi-sport coaching for kids across South-West Sydney",
   url: "https://buildalphakids.com.au",
   phone: "0426 722 003",
-  email: "info@buildalphakids.com.au",
+  email: "contact@buildalphakids.com.au",
   abn: "47 262 120 626",
   socials: {
     instagram: "https://instagram.com/buildalphakids",

@@ -133,7 +133,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
             </p>
             <p className="font-medium text-foreground">Build Alpha Kids</p>
             <p className="text-muted-foreground">Bankstown, NSW 2200</p>
-            <p className="text-muted-foreground">info@buildalphakids.com.au</p>
+            <p className="text-muted-foreground">contact@buildalphakids.com.au</p>
           </div>
         </div>
       </Card>

@@ -1,4 +1,5 @@
 // ============================================================
+import { SPORT_PAGES } from "./deep-content";
 // Sitemap route table + entry builder (pure)
 // ============================================================
 //
@@ -43,11 +44,20 @@ export const STATIC_MARKETING_ROUTES: MarketingRoute[] = [
   // Clinic availability turns over each school-holiday cycle, so this
   // page genuinely changes more often than the evergreen program pages.
   { path: "/holiday-clinics", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/programs/childcare", changeFrequency: "monthly", priority: 0.8 },
+  // The flagship ELC landing page — childcare is the volume audience
+  // (50+ centres). Replaced /programs/childcare, which now 308s here.
+  { path: "/childcare", changeFrequency: "monthly", priority: 0.9 },
   { path: "/programs/primary-school", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programs/high-school", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programs/after-school", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programs/holiday-programs", changeFrequency: "monthly", priority: 0.8 },
+  // Sport-specific school pages (SEO pack Cluster D) — generated from
+  // SPORT_PAGES so new tranches appear here without hand-editing.
+  ...SPORT_PAGES.map((p): MarketingRoute => ({
+    path: `/programs/${p.slug}`,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  })),
   { path: "/blog", changeFrequency: "weekly", priority: 0.7 },
   { path: "/enquire", changeFrequency: "yearly", priority: 0.7 },
   { path: "/about", changeFrequency: "yearly", priority: 0.6 },
