@@ -374,6 +374,94 @@ export const SPORT_PAGES: SportPage[] = [
       },
     ],
   },
+  // ── Tranche 2 (added 2026-08-14): the pack's "unique" differentiators.
+  // All three are delivered NON-CONTACT in schools — pad work, technique
+  // and forms, never sparring between students. Keep that framing in
+  // every sentence that could be read by a cautious principal.
+  {
+    slug: "boxing-for-schools",
+    sport: "Boxing",
+    h1: "Boxing Programs for Schools & Childcare Centres",
+    metaTitle: "Boxing Programs for Schools | Build Alpha Kids",
+    description:
+      "Non-contact boxing programs for schools — pad work, footwork and fitness with zero sparring, run by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.red,
+    unit: [
+      "School boxing done right is fitness, footwork and focus — never fighting. Our program is strictly non-contact: students work gloves-on-pads with a partner holding, and no student ever strikes another student. A typical 6–10 week unit builds from stance and footwork, through straight punches on pads, into combination work, skipping and boxing-style conditioning circuits.",
+      "The payoff schools notice isn't just fitness. Pad work demands concentration, controlled effort and trust between partners — which is why boxing units consistently engage the students who switch off in traditional sport, and why behaviour inside the sessions is a selling point, not a risk.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — movement control, fitness and self-management — with the same assessment and reporting pack as every Build Alpha Kids unit.",
+    equipmentSafety:
+      "We bring junior gloves, focus pads, skipping ropes and circuit equipment, all sized for school-aged hands. The non-contact rule is absolute: pads and bags only, no student-on-student contact of any kind, ever. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is there any sparring or student-on-student contact?",
+        a: "No — none, at any age, ever. Students punch pads and bags only. The program teaches boxing fitness and technique, not fighting.",
+      },
+      {
+        q: "What will parents think?",
+        a: "We supply a parent information note with the unit explaining the non-contact format. In our experience the objections disappear once families see it's pad work, footwork and fitness — most feedback is about how engaged their kids are.",
+      },
+    ],
+  },
+  {
+    slug: "self-defence-for-schools",
+    sport: "Self-Defence",
+    h1: "Self-Defence Programs for Schools & Childcare Centres",
+    metaTitle: "Self-Defence Programs for Schools | Build Alpha Kids",
+    description:
+      "Age-appropriate self-defence programs for schools — awareness, confidence and safe responses taught without sparring by WWCC-cleared coaches. Get a quote.",
+    accent: BALL_COLORS.blue,
+    unit: [
+      "Self-defence for school-aged kids is mostly not about physical technique — it's awareness, voice and confidence. A typical 6–10 week unit covers reading situations and trusting instincts, strong voice and body language, safe distance and escape movement, and simple age-appropriate physical responses practised on pads and shields — never on other students.",
+      "Sessions are scenario-based and deliberately calm: the goal is students who stand taller, speak up earlier and know what to do, not students who think they've learned to fight. Teachers consistently report the quietest kids getting the most out of it.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — personal safety, decision-making and confident communication — with assessment and reporting supplied like every unit.",
+    equipmentSafety:
+      "We bring strike pads, shields and all session equipment. Physical skills are practised on equipment only — no student-on-student contact — and every scenario is scripted to the age group in front of us. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is this teaching kids to fight?",
+        a: "No. The program is awareness, avoidance, voice and escape first; the physical component is simple, defensive and practised on pads only. Students never practise techniques on each other.",
+      },
+      {
+        q: "What ages is it appropriate for?",
+        a: "Years 3 and up works best for the full program. For younger students we run a simplified personal-safety format focused on awareness, voice and finding help.",
+      },
+    ],
+  },
+  {
+    slug: "taekwondo-for-schools",
+    sport: "Taekwondo",
+    h1: "Taekwondo Programs for Schools & Childcare Centres",
+    metaTitle: "Taekwondo Programs for Schools | Build Alpha Kids",
+    description:
+      "Non-contact taekwondo programs for schools — kicks, patterns, flexibility and discipline taught by WWCC-cleared coaches. Equipment supplied. Get a quote.",
+    accent: BALL_COLORS.yellow,
+    unit: [
+      "Taekwondo gives students something almost no school sport does: a discipline. A typical 6–10 week unit is strictly non-contact — stances and basic blocks, kicking technique on pads and shields, patterns (choreographed sequences that build memory and control), flexibility work, and a graded in-class demonstration to finish.",
+      "The structure is the point. Sessions open and close with the same rituals every week — lining up, the count, respect to the coach and partners — and students who struggle with free-form sport often thrive inside that predictability. Kicking pads is also, reliably, the most-requested station we run.",
+    ],
+    curriculumLine:
+      "Units map to stage-relevant PDHPE outcomes — balance, coordination, movement sequencing and self-discipline — with the standard assessment pack supplied.",
+    equipmentSafety:
+      "We bring kick pads, shields and all session equipment. Kicks and strikes are practised on equipment only — no student-on-student contact and no sparring. Every coach holds a current Working With Children Check and first-aid certification.",
+    faqs: [
+      QUOTE_FAQ,
+      {
+        q: "Is there sparring?",
+        a: "No — the school program is entirely non-contact. All kicks and strikes are practised on pads and shields, and patterns are performed solo.",
+      },
+      {
+        q: "Do students earn belts?",
+        a: "The school unit finishes with an in-class graded demonstration and completion certificates rather than formal belt gradings — and we can point keen students towards continuing the sport outside school.",
+      },
+    ],
+  },
 ];
 
 /** Lookup for /programs/[slug] — undefined drives notFound(). */
