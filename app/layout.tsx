@@ -40,6 +40,13 @@ export const metadata: Metadata = {
   title: "Build Alpha Kids",
   description:
     "Multi-sport coaching platform for Build Alpha Kids — managing workforce operations across childcare centres and schools.",
+  // Google Search Console ownership proof (Jayden's account, added
+  // 2026-08-14). Rendered on every page as
+  // <meta name="google-site-verification">; must survive layout
+  // refactors or Search Console ownership silently lapses.
+  verification: {
+    google: "OkNL3BHeIZdeBRTBiUgLZhCJYpJRueNw5PsRAkloMA0",
+  },
   manifest: "/manifest.json",
   // Standalone-mode iOS uses black-translucent so the status bar floats
   // over our top-bar gradient instead of carving out a white band.
