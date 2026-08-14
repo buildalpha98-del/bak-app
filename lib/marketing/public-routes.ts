@@ -6,6 +6,8 @@ export const PUBLIC_ROUTES = [
   "/",
   "/programs",
   "/schools",
+  // The deep ELC landing page (SEO pack §2) — same audience tier as /schools.
+  "/childcare",
   "/holiday-clinics",
   "/about",
   "/blog",
