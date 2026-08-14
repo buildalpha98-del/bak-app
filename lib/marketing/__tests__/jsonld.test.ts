@@ -253,7 +253,7 @@ describe("localBusinessJsonLd", () => {
 
   it("still publishes the contact email, which is real", () => {
     stubOrigin();
-    expect(localBusinessJsonLd().email).toBe("info@buildalphakids.com.au");
+    expect(localBusinessJsonLd().email).toBe("contact@buildalphakids.com.au");
   });
 });
 
@@ -262,11 +262,12 @@ describe("localBusinessJsonLd", () => {
 // ------------------------------------------------------------
 
 describe("articleJsonLd", () => {
-  it("carries the schema.org context and Article type", () => {
+  it("carries the schema.org context and BlogPosting type", () => {
     stubOrigin();
     const result = articleJsonLd(post());
     expect(result["@context"]).toBe("https://schema.org");
-    expect(result["@type"]).toBe("Article");
+    // BlogPosting (an Article subtype) per the SEO pack schema checklist.
+    expect(result["@type"]).toBe("BlogPosting");
     expect(result.headline).toBe("Why multi-sport works");
   });
 

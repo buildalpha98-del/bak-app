@@ -640,7 +640,7 @@ export function invoiceReady(data: {
 
       ${cta("View Invoice", data.portalUrl)}
 
-      <p>If you have any questions, please contact us at <a href="mailto:info@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">info@buildalphakids.com.au</a>.</p>
+      <p>If you have any questions, please contact us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
     `),
   };
 }

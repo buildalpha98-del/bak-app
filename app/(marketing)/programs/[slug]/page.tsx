@@ -17,6 +17,13 @@ import {
   type BallColor,
   type Program,
 } from "@/lib/marketing/content";
+import {
+  getSportPage,
+  SPORT_PAGES,
+  type SportPage,
+} from "@/lib/marketing/deep-content";
+import { JsonLd } from "@/components/marketing/json-ld";
+import { faqPageJsonLd } from "@/lib/marketing/jsonld";
 
 /**
  * ISR — this is a route-segment config, so it applies to all five
@@ -28,9 +35,19 @@ import {
  */
 export const revalidate = 300;
 
-/** The five program pages are known at build time — prerender them all. */
+/**
+ * Program pages plus the sport-specific school pages (SEO pack
+ * Cluster D) — all known at build time. childcare is excluded: that
+ * slug 308s to /childcare (next.config), so building it would ship
+ * an unreachable page.
+ */
 export function generateStaticParams() {
-  return PROGRAMS.map((program) => ({ slug: program.slug }));
+  return [
+    ...PROGRAMS.filter((p) => p.slug !== "childcare").map((program) => ({
+      slug: program.slug,
+    })),
+    ...SPORT_PAGES.map((p) => ({ slug: p.slug })),
+  ];
 }
 
 export async function generateMetadata({
@@ -39,6 +56,17 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const sportPage = getSportPage(slug);
+  if (sportPage) {
+    return {
+      // Absolute title: the pack pins the exact pattern
+      // "[Sport] Programs for Schools | Build Alpha Kids" (<=60 chars),
+      // so the layout template must not re-suffix it.
+      title: { absolute: sportPage.metaTitle },
+      description: sportPage.description,
+      alternates: { canonical: `/programs/${sportPage.slug}` },
+    };
+  }
   const program = getProgram(slug);
   if (!program) return {};
 
@@ -70,6 +98,8 @@ export default async function ProgramPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const sportPage = getSportPage(slug);
+  if (sportPage) return <SportProgramPage page={sportPage} />;
   const program = getProgram(slug);
   if (!program) notFound();
 
@@ -417,3 +447,77 @@ function CrossLink({
   );
 }
 
+
+// ------------------------------------------------------------
+// Sport-specific school pages (SEO pack Cluster D)
+// ------------------------------------------------------------
+//
+// The pack's fixed template: H1 → what a unit looks like → curriculum
+// line → equipment & safety → 3 FAQs (cost answers route to a quote,
+// never a figure) → quote CTA. Rendered from SPORT_PAGES in
+// lib/marketing/deep-content.ts; adding a tranche there is the whole
+// job of shipping the next sport.
+function SportProgramPage({ page }: { page: SportPage }) {
+  return (
+    <>
+      <HeroLite
+        label={page.h1}
+        eyebrow={`${page.sport} · Schools & centres`}
+        title={page.h1}
+        intro={page.unit[0]}
+      >
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <StickerButton href={SITE.enquiryUrl}>
+            {PROGRAM_PAGE.quoteCta}
+          </StickerButton>
+          <StickerButton href="/schools" fill="white">
+            All school programs
+          </StickerButton>
+        </div>
+      </HeroLite>
+
+      <Section aria-label={`What a ${page.sport} unit looks like`} className="bg-white">
+        <SectionHeading
+          eyebrow="On the ground"
+          title={`What a ${page.sport.toLowerCase()} unit looks like`}
+        />
+        <div className="mx-auto mt-10 max-w-3xl space-y-5">
+          {page.unit.slice(1).map((para) => (
+            <p
+              key={para.slice(0, 32)}
+              className="text-base leading-relaxed text-[#1A1A1A]/85"
+            >
+              {para}
+            </p>
+          ))}
+          <p className="rounded-2xl border-2 border-[#111] bg-[#FFF7F2] p-5 text-sm leading-relaxed text-[#1A1A1A]/85 shadow-[4px_4px_0_#111] sm:text-base">
+            {page.curriculumLine}
+          </p>
+        </div>
+      </Section>
+
+      <Section aria-label="Equipment and safety" className="bg-[#FFF7F2]">
+        <SectionHeading eyebrow="We bring everything" title="Equipment & safety" />
+        <p className="mx-auto mt-8 max-w-3xl text-base leading-relaxed text-[#1A1A1A]/85">
+          {page.equipmentSafety}
+        </p>
+      </Section>
+
+      <FaqList
+        eyebrow="Fast answers"
+        title={`${page.sport} program questions`}
+        faqs={page.faqs}
+        className="bg-white"
+      />
+      <JsonLd data={faqPageJsonLd(page.faqs)} />
+
+      <CtaBand
+        eyebrow={PROGRAM_PAGE.quoteEyebrow}
+        title={`Want ${page.sport.toLowerCase()} running at your school?`}
+        body={PROGRAM_PAGE.quoteBody}
+        href={SITE.enquiryUrl}
+        cta={PROGRAM_PAGE.quoteCta}
+      />
+    </>
+  );
+}

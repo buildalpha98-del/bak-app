@@ -1,3 +1,4 @@
+import { FOOTER_SPORT_LINKS } from "@/lib/marketing/deep-content";
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Mail, Phone } from "lucide-react";
@@ -74,10 +75,32 @@ export function MarketingFooter() {
               {PROGRAMS.map((program) => (
                 <li key={program.slug}>
                   <Link
-                    href={`/programs/${program.slug}`}
+                    href={
+                      program.slug === "childcare"
+                        ? "/childcare"
+                        : `/programs/${program.slug}`
+                    }
                     className="text-sm text-white/60 transition-colors hover:text-[#E8712A]"
                   >
                     {program.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-white">
+              Sports for schools
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {FOOTER_SPORT_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/60 transition-colors hover:text-[#E8712A]"
+                  >
+                    {link.label}
                   </Link>
                 </li>
               ))}

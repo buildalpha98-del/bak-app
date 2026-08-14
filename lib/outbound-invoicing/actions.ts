@@ -749,7 +749,7 @@ export async function generateInvoicePDF(invoiceId: string): Promise<{
         abn: settings.abn ?? "",
         address: settings.business_address ?? "",
         phone: settings.business_phone ?? "",
-        email: settings.business_email ?? "info@buildalphakids.com.au",
+        email: settings.business_email ?? "contact@buildalphakids.com.au",
       },
       to: {
         centreName: centre?.name ?? "Unknown",

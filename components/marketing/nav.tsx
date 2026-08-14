@@ -27,7 +27,7 @@ import {
  */
 const LINKS = [
   { href: "/schools", label: "Schools" },
-  { href: "/programs/childcare", label: "Childcare" },
+  { href: "/childcare", label: "Childcare" },
   { href: "/holiday-clinics", label: "Holiday clinics" },
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },

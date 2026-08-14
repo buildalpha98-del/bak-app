@@ -12,6 +12,7 @@ import {
   PROGRAMS,
   SITE, phoneHref,
 } from "@/lib/marketing/content";
+import { CARNIVAL_OFFER } from "@/lib/marketing/deep-content";
 import {
   buildEnquiryPayload,
   buildSourcePage,
@@ -95,11 +96,15 @@ export function EnquiryFormWithProgram() {
   // attacker-controllable, and a stale campaign link should still land
   // on a working form rather than an error.
   const programSlug = resolveProgramParam(searchParams.get("program"));
+  // ?offer=carnival-2027 — the schools-page banner CTA. Any other value
+  // is ignored for the same reason unknown program slugs are.
+  const offerPreselected = searchParams.get("offer") === "carnival-2027";
 
   return (
     <EnquiryForm
       mode="enquire"
       programSlug={programSlug}
+      offerPreselected={offerPreselected}
       sourcePage={buildSourcePage("/enquire", programSlug)}
     />
   );
@@ -109,11 +114,14 @@ export function EnquiryForm({
   mode = "enquire",
   /** Pre-ticked program, already validated against PROGRAMS. */
   programSlug = null,
+  /** Pre-ticks the 2027 carnival offer (schools-page banner CTA). */
+  offerPreselected = false,
   /** Recorded on the lead as source_detail. */
   sourcePage,
 }: {
   mode?: EnquiryMode;
   programSlug?: string | null;
+  offerPreselected?: boolean;
   sourcePage: string;
 }) {
   const uid = useId();
@@ -121,7 +129,10 @@ export function EnquiryForm({
 
   const [form, setForm] = useState<EnquiryFormState>(() => ({
     ...EMPTY_ENQUIRY_FORM,
-    programs: programSlug ? [programSlug] : [],
+    programs: [
+      ...(programSlug ? [programSlug] : []),
+      ...(offerPreselected ? [CARNIVAL_OFFER.interestValue] : []),
+    ],
     // The contact form has no org-type control, so it speaks for the
     // enquirer: "other" keeps a parent's message out of the centre
     // pipeline instead of defaulting them into it.
@@ -540,6 +551,14 @@ export function EnquiryForm({
                   onChange={() => toggleProgram(program.slug)}
                 />
               ))}
+              <Chip
+                type="checkbox"
+                name={id("programs")}
+                label={CARNIVAL_OFFER.interestLabel}
+                checked={form.programs.includes(CARNIVAL_OFFER.interestValue)}
+                disabled={submitting}
+                onChange={() => toggleProgram(CARNIVAL_OFFER.interestValue)}
+              />
             </div>
           </fieldset>
         </>

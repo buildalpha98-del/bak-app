@@ -6,7 +6,7 @@ import { ProgramLibrary } from "@/components/programs/program-library";
 import { ProgramsStatusPulseStrip } from "@/components/programs/programs-status-pulse";
 
 export const metadata = {
-  title: "Programmes | Build Alpha Kids",
+  title: "Programs | Build Alpha Kids",
 };
 
 export default async function AdminProgramsPage() {
@@ -37,7 +37,7 @@ export default async function AdminProgramsPage() {
   return (
     <div className="container max-w-6xl space-y-6 py-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Programmes</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
         <p className="text-sm text-muted-foreground">
           {list.length} programme{list.length === 1 ? "" : "s"} in the library.
           Generate session plans with AI or compose your own.

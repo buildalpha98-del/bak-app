@@ -6,6 +6,9 @@ import { PartnerStrip } from "@/components/marketing/partner-strip";
 import { FaqList } from "@/components/marketing/faq-list";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { StickerButton } from "@/components/marketing/sticker-button";
+import { JsonLd } from "@/components/marketing/json-ld";
+import { faqPageJsonLd } from "@/lib/marketing/jsonld";
+import { SCHOOLS_DEEP, CARNIVAL_OFFER } from "@/lib/marketing/deep-content";
 import {
   BALL_COLORS,
   PROGRAM_PAGE,
@@ -143,6 +146,155 @@ export default function SchoolsPage() {
         </ol>
       </Section>
 
+      {/* ── Deep-content pack §1: what delivery looks like ── */}
+      <Section
+        aria-label={SCHOOLS_DEEP.deliveryTitle}
+        className="bg-[#FFF7F2]"
+      >
+        <SectionHeading
+          eyebrow={SCHOOLS_DEEP.deliveryEyebrow}
+          title={SCHOOLS_DEEP.deliveryTitle}
+        />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          {SCHOOLS_DEEP.delivery.map((model) => (
+            <article
+              key={model.title}
+              className="rounded-2xl border-2 border-[#111] bg-white p-7 shadow-[4px_4px_0_#111]"
+            >
+              <span
+                aria-hidden
+                className="inline-block size-4 rounded-full border-2 border-[#111]"
+                style={{ backgroundColor: model.ball.color }}
+              />
+              <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-[#111]">
+                {model.title}
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-[#1A1A1A]/80 sm:text-base">
+                {model.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── What a term looks like — the 10-week arc ── */}
+      <Section aria-label={SCHOOLS_DEEP.termTitle} className="bg-white">
+        <SectionHeading
+          eyebrow={SCHOOLS_DEEP.termEyebrow}
+          title={SCHOOLS_DEEP.termTitle}
+        />
+        <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {SCHOOLS_DEEP.termWeeks.map((w, i) => (
+            <li
+              key={w.weeks}
+              className="rounded-2xl border-2 border-[#111] bg-[#FFF7F2] p-5 shadow-[4px_4px_0_#111]"
+            >
+              <span
+                className="inline-flex items-center rounded-full border-2 border-[#111] px-3 py-0.5 font-heading text-xs font-extrabold uppercase tracking-wide"
+                style={{
+                  backgroundColor: CARD_BALLS[i % CARD_BALLS.length].color,
+                  color: CARD_BALLS[i % CARD_BALLS.length].fg,
+                }}
+              >
+                {w.weeks}
+              </span>
+              <p className="mt-3 text-sm leading-relaxed text-[#1A1A1A]/80">
+                {w.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+        <p className="mx-auto mt-8 max-w-3xl text-center font-heading text-base font-bold text-[#111] sm:text-lg">
+          {SCHOOLS_DEEP.termArc}
+        </p>
+      </Section>
+
+      {/* ── Stage-by-stage outcomes ── */}
+      <Section aria-label={SCHOOLS_DEEP.stagesTitle} className="bg-[#FFF7F2]">
+        <SectionHeading
+          eyebrow={SCHOOLS_DEEP.stagesEyebrow}
+          title={SCHOOLS_DEEP.stagesTitle}
+        />
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {SCHOOLS_DEEP.stages.map((s) => (
+            <article
+              key={s.stage}
+              className="rounded-2xl border-2 border-[#111] bg-white p-7 shadow-[4px_4px_0_#111]"
+            >
+              <h3
+                className="inline-block rounded-full border-2 border-[#111] px-4 py-1 font-heading text-sm font-extrabold"
+                style={{ backgroundColor: s.ball.color, color: s.ball.fg }}
+              >
+                {s.stage}
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-[#1A1A1A]/80 sm:text-base">
+                {s.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Assessment & reporting + compliance pack ── */}
+      <Section aria-label={SCHOOLS_DEEP.assessmentTitle} className="bg-white">
+        <div className="grid gap-10 lg:grid-cols-2">
+          <div>
+            <SectionHeading
+              eyebrow={SCHOOLS_DEEP.assessmentEyebrow}
+              title={SCHOOLS_DEEP.assessmentTitle}
+            />
+            <ul className="mt-8 space-y-3">
+              {SCHOOLS_DEEP.assessmentPoints.map((point) => (
+                <li key={point} className="flex gap-3 text-sm sm:text-base">
+                  <span aria-hidden className="mt-1.5 inline-block size-2.5 shrink-0 rounded-full border-2 border-[#111] bg-[#FFD23F]" />
+                  <span className="text-[#1A1A1A]/85">{point}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 rounded-2xl border-2 border-[#111] bg-[#FFF7F2] p-5 text-sm leading-relaxed text-[#1A1A1A]/85 shadow-[4px_4px_0_#111]">
+              {SCHOOLS_DEEP.assessmentCurriculum}
+            </p>
+          </div>
+          <div>
+            <SectionHeading
+              eyebrow={SCHOOLS_DEEP.complianceEyebrow}
+              title={SCHOOLS_DEEP.complianceTitle}
+            />
+            <ul className="mt-8 space-y-3">
+              {SCHOOLS_DEEP.compliancePoints.map((point) => (
+                <li key={point} className="flex gap-3 text-sm sm:text-base">
+                  <span aria-hidden className="mt-1.5 inline-block size-2.5 shrink-0 rounded-full border-2 border-[#111] bg-[#7BC043]" />
+                  <span className="text-[#1A1A1A]/85">{point}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-sm leading-relaxed text-[#1A1A1A]/70 sm:text-base">
+              {SCHOOLS_DEEP.complianceNote}
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── 2027 carnival offer banner ── */}
+      <Section aria-label={CARNIVAL_OFFER.title} className="bg-[#1A1A1A]">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="font-heading text-sm font-extrabold uppercase tracking-widest text-[#FFD23F]">
+            {CARNIVAL_OFFER.eyebrow}
+          </p>
+          <h2 className="mt-3 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            {CARNIVAL_OFFER.title}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
+            {CARNIVAL_OFFER.body}
+          </p>
+          <div className="mt-8 flex justify-center">
+            <StickerButton href={CARNIVAL_OFFER.href} shadow="orange">
+              {CARNIVAL_OFFER.cta}
+            </StickerButton>
+          </div>
+        </div>
+      </Section>
+
       <PartnerStrip />
 
       <FaqList
@@ -151,6 +303,7 @@ export default function SchoolsPage() {
         faqs={SCHOOLS_PAGE.faqs}
         className="bg-[#FFF7F2]"
       />
+      <JsonLd data={faqPageJsonLd(SCHOOLS_PAGE.faqs)} />
 
       <CtaBand
         eyebrow={PROGRAM_PAGE.quoteEyebrow}

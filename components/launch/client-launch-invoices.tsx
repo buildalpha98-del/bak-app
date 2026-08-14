@@ -144,8 +144,8 @@ export function LaunchClientInvoices({
         <p>Please use your invoice number as the payment reference when making bank transfers.</p>
         <p className="mt-1 text-xs text-gray-500">
           Payment is due within 14 days of the invoice date. Contact us at{" "}
-          <a href="mailto:info@buildalphakids.com.au" className="text-primary hover:underline">
-            info@buildalphakids.com.au
+          <a href="mailto:contact@buildalphakids.com.au" className="text-primary hover:underline">
+            contact@buildalphakids.com.au
           </a>{" "}
           if you have any questions.
         </p>

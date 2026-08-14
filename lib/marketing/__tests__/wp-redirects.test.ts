@@ -82,7 +82,9 @@ describe("WP_REDIRECTS", () => {
     ["/contact-us", "/contact"],
     ["/blogs", "/blog"],
     ["/our-services", "/programs"],
-    ["/our-services/childcare", "/programs/childcare"],
+    ["/our-services/childcare", "/childcare"],
+    // The deep ELC page replaced the program page (SEO pack §2).
+    ["/programs/childcare", "/childcare"],
     ["/our-services/primary-school", "/programs/primary-school"],
     ["/our-services/high-school", "/programs/high-school"],
     ["/our-services/after-school-clinic", "/programs/after-school"],

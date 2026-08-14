@@ -126,7 +126,7 @@ export default async function ReferralLandingPage({
                 Convenient Sessions Near You
               </p>
               <p className="text-sm text-[#666666] mt-0.5">
-                Programmes run at childcare centres and schools across the
+                Programs run at childcare centres and schools across the
                 Bankstown &amp; Liverpool area
               </p>
             </div>
@@ -154,7 +154,7 @@ export default async function ReferralLandingPage({
             Build Alpha Kids
           </p>
           <p className="text-xs text-[#666666] mt-1">
-            Multi-sport programmes for kids across South-West Sydney
+            Multi-sport programs for kids across South-West Sydney
           </p>
           <p className="text-xs text-[#666666] mt-3">
             &copy; {new Date().getFullYear()} Build Alpha Kids. All rights
