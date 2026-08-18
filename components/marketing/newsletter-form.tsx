@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
+import { trackNewsletterSignup } from "@/lib/marketing/analytics";
 import { AlertTriangle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { NEWSLETTER } from "@/lib/marketing/content";
 import {
@@ -117,6 +118,7 @@ export function NewsletterForm({
         // the honeypot. All three are a success from here — a bot must
         // get no signal to retry against.
         setStatus("success");
+        trackNewsletterSignup(sourcePage);
         return;
       }
 

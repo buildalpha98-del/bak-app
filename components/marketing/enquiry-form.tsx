@@ -13,6 +13,7 @@ import {
   SITE, phoneHref,
 } from "@/lib/marketing/content";
 import { CARNIVAL_OFFER } from "@/lib/marketing/deep-content";
+import { trackLead } from "@/lib/marketing/analytics";
 import {
   buildEnquiryPayload,
   buildSourcePage,
@@ -256,6 +257,10 @@ export function EnquiryForm({
         // success from here: the enquirer's message is recorded either
         // way, and a bot must get no signal to retry against.
         setStatus("success");
+        // Fire-and-forget conversion event — null-safe, cannot throw
+        // (see analytics.ts); dedupe/honeypot 200s count too, which is
+        // fine: GA measures intent, the CRM stays the source of truth.
+        trackLead(sourcePage, mode);
         return;
       }
 
