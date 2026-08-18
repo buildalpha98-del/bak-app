@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
+import { GA_MEASUREMENT_ID } from "@/lib/marketing/analytics";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { JsonLd } from "@/components/marketing/json-ld";
@@ -82,8 +84,28 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // GA4 loads on the real production site only: previews, localhost and
+  // every portal surface stay unmeasured (see lib/marketing/analytics.ts
+  // for the full why). VERCEL_ENV is evaluated server-side, so non-prod
+  // HTML simply never contains the tag.
+  const gaEnabled = process.env.VERCEL_ENV === "production";
+
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1A1A1A]">
+      {gaEnabled && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga4-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+          </Script>
+        </>
+      )}
       {/*
         LocalBusiness, once, site-wide. It belongs in the layout rather
         than on the homepage because parents arrive from search onto
