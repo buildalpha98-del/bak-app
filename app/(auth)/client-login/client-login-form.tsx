@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { sendClientMagicLink } from "@/lib/client/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,33 @@ export function ClientLoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Admin-minted links (auth.admin.generateLink — the demo/tester login
+  // and re-invites) use Supabase's implicit flow: the verify endpoint
+  // redirects here with tokens in the URL FRAGMENT, which no server
+  // route can see and the PKCE-only /auth/callback can't exchange.
+  // Consume them client-side, then reload clean — the server layout
+  // sees the session and redirects into the portal.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.includes("access_token=")) return;
+    const params = new URLSearchParams(hash.slice(1));
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+    if (!access_token || !refresh_token) return;
+    setLoading(true);
+    createSupabaseBrowserClient()
+      .auth.setSession({ access_token, refresh_token })
+      .then(({ error: sessionError }) => {
+        if (sessionError) {
+          setLoading(false);
+          setError("That sign-in link has expired. Enter your email for a fresh one.");
+          window.history.replaceState(null, "", window.location.pathname);
+          return;
+        }
+        window.location.replace("/client-login");
+      });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

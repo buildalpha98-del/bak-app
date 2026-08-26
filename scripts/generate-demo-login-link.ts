@@ -30,7 +30,10 @@ async function main() {
     type: "magiclink",
     email: EMAIL,
     options: {
-      redirectTo: "https://buildalphakids.app/auth/callback?next=/client-login",
+      // Straight to the login page: admin links carry tokens in the URL
+      // fragment (implicit flow), which the client-login page consumes
+      // client-side — the PKCE-only /auth/callback can't see fragments.
+      redirectTo: "https://buildalphakids.app/client-login",
     },
   });
   if (error) throw error;
