@@ -20,5 +20,11 @@ export default async function ChildDetailPage({
     redirect(`/client/${centreId}/children`);
   }
 
-  return <ChildDetailView child={data} centreId={centreId} />;
+  return (
+    <ChildDetailView
+      child={data}
+      centreId={centreId}
+      isSchool={clientUser.centre_type === "school"}
+    />
+  );
 }

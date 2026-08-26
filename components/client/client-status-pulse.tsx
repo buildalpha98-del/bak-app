@@ -25,6 +25,14 @@ import {
   FileText,
   Receipt,
   MessageCircle,
+  CalendarDays,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  BookMarked,
+  Send,
+  Hourglass,
   type LucideIcon,
 } from "lucide-react";
 import { useCountUp } from "@/components/launch/use-count-up";
@@ -96,8 +104,27 @@ export function ClientHomePulseStrip({
 // Generic per-page strip
 // ============================================================
 
+// Server pages hand this component its stats, and props crossing the
+// server→client boundary must be serialisable — passing the Lucide
+// component itself crashes the whole page ("Only plain objects can be
+// passed to Client Components"). Icons are therefore named by string
+// and resolved here, on the client side of the boundary.
+const PULSE_ICONS = {
+  "file-text": FileText,
+  "calendar-days": CalendarDays,
+  "trending-up": TrendingUp,
+  "alert-circle": AlertCircle,
+  "check-circle": CheckCircle2,
+  sparkles: Sparkles,
+  "book-marked": BookMarked,
+  send: Send,
+  hourglass: Hourglass,
+} satisfies Record<string, LucideIcon>;
+
+export type PulseIconName = keyof typeof PULSE_ICONS;
+
 export interface ClientPortalPulseStat {
-  icon: LucideIcon;
+  icon: PulseIconName;
   count: number;
   label: string;
   href?: string;
@@ -115,7 +142,7 @@ export function ClientPortalPulseStrip({ stats }: ClientPortalPulseStripProps) {
           <Fragment key={stat.label}>
             {idx > 0 && <Divider />}
             <PulseStat
-              icon={stat.icon}
+              icon={PULSE_ICONS[stat.icon]}
               count={stat.count}
               label={stat.label}
               href={stat.href}

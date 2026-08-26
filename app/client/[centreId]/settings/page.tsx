@@ -3,6 +3,7 @@ import {
   getCurrentClientUser,
   getActiveSharedLinks,
   getCurrentClientUserCentres,
+  getCentreColleagues,
 } from "@/lib/client/actions";
 import { ClientSettings } from "@/components/client/client-settings";
 
@@ -21,7 +22,7 @@ export default async function ClientSettingsPage({
 
   const isPrimary = clientUser.is_primary ?? false;
 
-  const [sharedLinksRes, centresRes] = await Promise.all([
+  const [sharedLinksRes, centresRes, colleaguesRes] = await Promise.all([
     isPrimary
       ? getActiveSharedLinks(centreId)
       : Promise.resolve({
@@ -29,6 +30,12 @@ export default async function ClientSettingsPage({
           error: null,
         }),
     getCurrentClientUserCentres(),
+    isPrimary
+      ? getCentreColleagues(centreId)
+      : Promise.resolve({
+          data: [] as Awaited<ReturnType<typeof getCentreColleagues>>["data"],
+          error: null,
+        }),
   ]);
 
   return (
@@ -37,6 +44,8 @@ export default async function ClientSettingsPage({
       centreId={centreId}
       sharedLinks={sharedLinksRes.data}
       linkedCentres={centresRes.data ?? []}
+      currentUserName={clientUser.name ?? ""}
+      colleagues={colleaguesRes.data}
     />
   );
 }

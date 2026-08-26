@@ -53,6 +53,25 @@ export default async function ClientSessionPage({
           </ul>
         </div>
       )}
+
+      {/* Coach photos from the session — signed URLs, private bucket. */}
+      {(session.photos ?? []).length > 0 && (
+        <div className="rounded-2xl border bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground">Session photos</h2>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {(session.photos ?? []).map((url) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={url}
+                src={url}
+                alt={`${session.sport} session photo`}
+                loading="lazy"
+                className="aspect-square w-full rounded-lg border object-cover"
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

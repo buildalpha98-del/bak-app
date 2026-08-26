@@ -522,6 +522,7 @@ function CompletionSheetButton({
   const [notes, setNotes] = useState("");
   const [obsExpanded, setObsExpanded] = useState(false);
   const [observations, setObservations] = useState<Record<string, string>>({});
+  const [shareObs, setShareObs] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -547,6 +548,7 @@ function CompletionSheetButton({
       generalNotes: notes || undefined,
       rating,
       childObservations: childObs.length > 0 ? childObs : undefined,
+      shareObservationsWithCentre: shareObs,
     };
     const result = await submitOrQueue("observation", obsPayload, async (p) => {
       const r = await saveSessionNotes(p);
@@ -676,6 +678,20 @@ function CompletionSheetButton({
                     />
                   </div>
                 ))}
+                <label className="flex min-h-[44px] items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2">
+                  <span className="text-sm text-foreground">
+                    Share these observations with the centre
+                    <span className="block text-xs text-muted-foreground">
+                      Off by default — shared notes appear in the centre&apos;s portal.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={shareObs}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setShareObs(e.target.checked)}
+                    className="h-5 w-5 shrink-0 accent-[#E8712A]"
+                  />
+                </label>
               </div>
             )}
           </div>
