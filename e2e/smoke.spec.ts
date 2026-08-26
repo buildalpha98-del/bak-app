@@ -1,9 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 import {
   signInAs,
   findUserEmail,
   findClientUser,
   findUserWithoutFinancialAccess,
+  adminClient,
+  mintSession,
 } from "./fixtures/auth";
 import { mondayOfIso, formatDayHeaderShort, getWeekDates } from "../lib/utils/roster";
 import { sydneyTodayIso } from "../lib/utils/sydney-time";
@@ -17,7 +20,9 @@ import { sydneyTodayIso } from "../lib/utils/sydney-time";
 // seams unit tests don't reach: auth → RLS → query → render.
 //
 // Read-only by design: they run against the real database, so they
-// assert what a user SEES and never write. Run with `npm run e2e`.
+// assert what a user SEES and never write. Two deliberate exceptions
+// carry their own justification inline: the AI generation and the
+// feedback-RLS probe (which deletes its row). Run with `npm run e2e`.
 
 test.describe("auth", () => {
   // Regression (took production down): middleware read
@@ -189,5 +194,86 @@ test.describe("client portal", () => {
     expect(body).not.toMatch(/Application error|something went wrong/i);
     // The centre's own name is the cheapest proof RLS let a read through.
     expect(body.length, "portal rendered an empty shell").toBeGreaterThan(200);
+  });
+
+  // Regression: a director's FIRST rating on a session died with RLS
+  // 42501 — feedback_ratings had UPDATE and SELECT policies for the
+  // client role but no INSERT (added in migration 076) — and the server
+  // action swallowed the error, so the portal thanked them while saving
+  // nothing. Every unit test stayed green; only a real client-role
+  // INSERT reaches this seam.
+  //
+  // Like the AI spec, this one earns its exception to "never write":
+  // it inserts one rating with the exact shape submitSessionFeedback
+  // sends, edits it (the 077 client UPDATE policy), and deletes it via
+  // the service role in `finally`. No UI: the write is the seam that
+  // broke, and the browse-then-rate page filters to completed sessions
+  // the seed centres don't have.
+  test("a director's first-time rating passes RLS (migrations 076/077)", async () => {
+    const client = await findClientUser();
+    test.skip(!client, "No client_users row with a resolvable email.");
+
+    const admin = adminClient();
+    // Any non-draft session works: 076 checks the session belongs to
+    // the centre through the client's own read policy, which hides
+    // drafts. The completed-only rule is app-tier, not RLS.
+    const { data: session } = await admin
+      .from("sessions")
+      .select("id, coach_id, sport")
+      .eq("centre_id", client!.centreId)
+      .neq("status", "draft")
+      .limit(1)
+      .maybeSingle();
+    test.skip(!session, "Client's centre has no non-draft session to rate.");
+
+    const minted = await mintSession(client!.email);
+    const asClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { Authorization: `Bearer ${minted.access_token}` } },
+      }
+    );
+
+    let probeId: string | null = null;
+    try {
+      const { data: inserted, error: insErr } = await asClient
+        .from("feedback_ratings")
+        .insert({
+          session_id: session!.id,
+          centre_id: client!.centreId,
+          coach_id: session!.coach_id ?? null,
+          sport: session!.sport ?? null,
+          rating: 5,
+          comment: "e2e smoke probe (auto-deleted)",
+          feedback_token: crypto.randomUUID(),
+          submitted_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      probeId = inserted?.id ?? null;
+
+      expect(
+        insErr?.code,
+        "42501 on a client INSERT means migration 076 is not applied to this database"
+      ).not.toBe("42501");
+      expect(insErr, `first-time INSERT failed: ${insErr?.message}`).toBeNull();
+      expect(probeId, "insert returned no row").toBeTruthy();
+
+      // Editing the fresh rating is the other half of the portal flow
+      // (077 replaced the open UPDATE policy with a centre-scoped one).
+      const { data: updated, error: updErr } = await asClient
+        .from("feedback_ratings")
+        .update({ rating: 4, submitted_at: new Date().toISOString() })
+        .eq("id", probeId!)
+        .select("id");
+      expect(updErr, `rating edit failed: ${updErr?.message}`).toBeNull();
+      expect(updated?.length, "rating edit touched no rows").toBe(1);
+    } finally {
+      if (probeId) {
+        await admin.from("feedback_ratings").delete().eq("id", probeId);
+      }
+    }
   });
 });

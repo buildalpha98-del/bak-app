@@ -65,10 +65,11 @@ export async function submitSessionFeedback(
     .single();
 
   if (existing) {
-    await supabase
+    const { error } = await supabase
       .from("feedback_ratings")
       .update({ rating, comment, submitted_at: new Date().toISOString() })
       .eq("id", existing.id);
+    if (error) return { success: false, error: error.message };
   } else {
     const { data: session } = await supabase
       .from("sessions")
@@ -76,7 +77,7 @@ export async function submitSessionFeedback(
       .eq("id", sessionId)
       .single();
 
-    await supabase.from("feedback_ratings").insert({
+    const { error } = await supabase.from("feedback_ratings").insert({
       session_id: sessionId,
       centre_id: centreId,
       coach_id: session?.coach_id ?? null,
@@ -86,6 +87,7 @@ export async function submitSessionFeedback(
       feedback_token: crypto.randomUUID(),
       submitted_at: new Date().toISOString(),
     });
+    if (error) return { success: false, error: error.message };
   }
 
   return { success: true };

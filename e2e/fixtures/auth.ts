@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type Session } from "@supabase/supabase-js";
 import { createChunks, stringToBase64URL } from "@supabase/ssr";
 
 // ============================================================
@@ -34,7 +34,7 @@ function requireEnv(name: string): string {
   return v;
 }
 
-function adminClient() {
+export function adminClient() {
   return createClient(
     requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
     requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
@@ -97,11 +97,12 @@ export async function findClientUser(): Promise<{
   return null;
 }
 
-export async function signInAs(
-  page: Page,
-  email: string,
-  baseURL: string
-): Promise<void> {
+/**
+ * Mint a real session for an existing user (generateLink sends no
+ * email). Returned as-is for specs that need the access token to make
+ * direct role-scoped Supabase calls; signInAs wraps it into cookies.
+ */
+export async function mintSession(email: string): Promise<Session> {
   const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
 
   const { data: link, error: linkErr } = await adminClient().auth.admin.generateLink({
@@ -127,12 +128,22 @@ export async function signInAs(
       `Could not verify the OTP for ${email}: ${verifyErr?.message ?? "no session"}`
     );
   }
+  return verified.session;
+}
+
+export async function signInAs(
+  page: Page,
+  email: string,
+  baseURL: string
+): Promise<void> {
+  const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const session = await mintSession(email);
 
   // Mirror @supabase/ssr's storage format exactly (see cookies.ts:
   // BASE64_PREFIX + stringToBase64URL, then createChunks).
   const projectRef = new URL(url).hostname.split(".")[0];
   const storageKey = `sb-${projectRef}-auth-token`;
-  const encoded = "base64-" + stringToBase64URL(JSON.stringify(verified.session));
+  const encoded = "base64-" + stringToBase64URL(JSON.stringify(session));
   const chunks = createChunks(storageKey, encoded);
   const { hostname, protocol } = new URL(baseURL);
 

@@ -108,6 +108,7 @@ referral_codes, referrals, referral_rewards, referral_config, reengagement_campa
 - **Digest dedup** (067): `notifications.delivered_channels` — the daily digest skips anything already emailed/SMS'd.
 - **Coach write policies** (068): `coach_update_own_sessions` extended to `session_coaches` membership (secondary coaches' writes silently zero-rowed since P5); new `coach_respond_own_offer` on `rerostering_events` (accepting an offer zero-rowed, so it still escalated).
 - **Programme series** (069): `programs.series_id` / `series_week` / `series_length`. A series is ordinary programme rows sharing a `series_id` — the editor, versioning, PDFs and feedback work per week unchanged. `applySeriesToSessions` walks the block across the roster (week N → start week + N-1). The library collapses a series to its week 1.
+- **Client feedback write policies** (076–077): the portal's `submitSessionFeedback` writes `feedback_ratings` through the cookie (client-role) client, but the table had no client INSERT policy — first-time ratings died with 42501 and the action swallowed the error, so directors saw "Thanks!" while nothing saved. 076 adds a client INSERT policy (centre via `auth_client_centre_ids()` + session-must-belong-to-centre). 077 drops 015's `feedback_ratings_public_submit` (`FOR UPDATE USING (true)` — any principal could rewrite any rating) and replaces it with a client UPDATE policy scoped the same way; safe because every token-based feedback flow uses the service role, which bypasses RLS.
 - **Fix sessions/session_coaches RLS recursion** (075): 068's `coach_update_own_sessions` (on `sessions`) queries `session_coaches`, which has its own read policy querying back into `sessions` — Postgres detects that cycle and fails the whole UPDATE with "infinite recursion detected in policy for relation sessions". Broke every edit to an existing session, not just the multi-coach path 068 targeted. Fixed with `auth_is_session_coach()` / `auth_is_session_primary_coach()`, SECURITY DEFINER helpers in the same bypass-RLS pattern as `auth_user_role()`, so neither policy re-enters the other's RLS.
 
 ## Page speed
@@ -266,7 +267,7 @@ hoists it out of the table otherwise. Guarded by
 
 ### E2E smoke suite (`npm run e2e`)
 
-Seven Playwright specs in `e2e/smoke.spec.ts`, each pinning a bug that reached
+Eight Playwright specs in `e2e/smoke.spec.ts`, each pinning a bug that reached
 production while the unit suite stayed green — they live in the seam unit tests
 can't reach: auth → RLS → query → render. Add a spec here whenever a bug gets
 past `npm test`; that's the signal it belongs at this tier.
@@ -279,8 +280,10 @@ past `npm test`; that's the signal it belongs at this tier.
   Everything after sign-in is exercised for real; `/auth/callback` itself is not
   (needs localhost on Supabase's redirect allowlist).
 - Read-only: it runs against the production database and asserts what a user
-  sees. The AI spec bills one real generation on purpose — the three-layer AI
-  outage survived a full suite of mocks.
+  sees. Two deliberate exceptions: the AI spec bills one real generation on
+  purpose — the three-layer AI outage survived a full suite of mocks — and the
+  feedback-RLS spec inserts one rating as a real client session (migrations
+  076/077's seam) and deletes it via the service role in `finally`.
 - Needs the Supabase + Anthropic keys; the config reads `.env.production.local`
   and lets `.env.local` win where it defines a var.
 
