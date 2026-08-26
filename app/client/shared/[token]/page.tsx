@@ -1,7 +1,4 @@
-import {
-  validateSharedLink,
-  getSharedPortalSnapshot,
-} from "@/lib/client/actions";
+import { getSharedPortalView } from "@/lib/client/actions";
 import { SharedPortalView } from "@/components/client/shared-portal-view";
 
 interface Props {
@@ -10,7 +7,7 @@ interface Props {
 
 export default async function SharedLinkPage({ params }: Props) {
   const { token } = await params;
-  const { data, error } = await validateSharedLink(token);
+  const { data, error } = await getSharedPortalView(token);
 
   if (error || !data) {
     return (
@@ -33,14 +30,12 @@ export default async function SharedLinkPage({ params }: Props) {
     );
   }
 
-  const snapshot = await getSharedPortalSnapshot(data.centreId);
-
   return (
     <SharedPortalView
       centreId={data.centreId}
       centreName={data.centreName}
       primaryUserName={data.primaryUserName}
-      snapshot={snapshot}
+      snapshot={data.snapshot}
     />
   );
 }

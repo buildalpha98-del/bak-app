@@ -320,7 +320,7 @@ export async function sendTermPacks(): Promise<{
               ? `<p style="font-size:14px;color:#334155"><strong>Reports in your portal:</strong> ${reportTitles.join(" · ")}</p>`
               : ""
           }
-          <p style="font-size:14px;color:#334155">The full breakdown — skill progression, per-child insights and charts — is live on your Impact page.</p>
+          <p style="font-size:14px;color:#334155">The full breakdown — attendance trends, session ratings and sport-by-sport charts — is live on your Impact page.</p>
           <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:8px;background:#0891B2;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600">See your full term impact</a>
           <p style="font-size:12px;color:#94a3b8;margin-top:20px">Thanks for having us this term — we can't wait for the next one. Build Alpha Kids · South-West Sydney.</p>
         </div>`;
