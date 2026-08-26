@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Calendar, FileText, CalendarDays, TrendingUp } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientReports } from "@/lib/client/portal-actions";
 import { getClientPortalPulse } from "@/lib/client/status-pulse-actions";
@@ -47,18 +47,18 @@ export default async function ClientReportsPage({
       <ClientPortalPulseStrip
         stats={[
           {
-            icon: FileText,
+            icon: "file-text",
             count: pulse.reportsNewThisWeekCount,
-            label: pulse.reportsNewThisWeekCount === 1 ? "new this week" : "new this week",
+            label: "new this week",
             href: `/client/${centreId}/reports`,
           },
           {
-            icon: CalendarDays,
+            icon: "calendar-days",
             count: pulse.reportsThisTermCount,
             label: "reports this term",
           },
           {
-            icon: TrendingUp,
+            icon: "trending-up",
             count: data.length,
             label: "total available",
           },

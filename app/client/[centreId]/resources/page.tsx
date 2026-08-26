@@ -14,8 +14,6 @@ import {
   Download,
   ExternalLink,
   FolderOpen,
-  Sparkles,
-  BookMarked,
 } from "lucide-react";
 
 interface Document {
@@ -114,12 +112,12 @@ export default async function ResourcesPage({
       <ClientPortalPulseStrip
         stats={[
           {
-            icon: Sparkles,
+            icon: "sparkles",
             count: pulse.resourcesNewThisMonthCount,
-            label: pulse.resourcesNewThisMonthCount === 1 ? "new this month" : "new this month",
+            label: "new this month",
           },
           {
-            icon: BookMarked,
+            icon: "book-marked",
             count: pulse.resourcesPoliciesCount,
             label: pulse.resourcesPoliciesCount === 1 ? "policy on file" : "policies on file",
           },
