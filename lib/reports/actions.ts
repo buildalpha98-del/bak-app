@@ -7,7 +7,10 @@ import type { CentreReport, ReportContentJson } from "@/lib/types/database";
 // Types
 // ============================================================
 
-export type { ReportContentJson };
+// (No type re-exports in "use server" modules — the actions compiler
+// enumerates export-clause names and emits runtime references, which
+// crashes module evaluation. Import ReportContentJson from
+// @/lib/types/database.)
 
 export interface ReportListItem {
   id: string;

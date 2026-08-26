@@ -9,8 +9,11 @@ import type {
   SkillRatingEntry,
 } from "@/lib/types/database";
 
-// Re-export for consumer convenience
-export type { AssessmentSkill, SkillRatingEntry };
+// NOTE: no `export type { … }` re-exports here. In a "use server"
+// module the server-actions compiler enumerates every name in an
+// export clause and emits a runtime reference for it — a type-only
+// re-export then crashes module evaluation ("AssessmentSkill is not
+// defined"). Import these types from @/lib/types/database instead.
 
 // ============================================================
 // Types

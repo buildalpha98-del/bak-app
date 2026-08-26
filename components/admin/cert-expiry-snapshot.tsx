@@ -10,10 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
-import {
-  getCertExpirySnapshot,
-  type CertBucketResult,
-} from "@/lib/compliance/dashboard-actions";
+import { getCertExpirySnapshot } from "@/lib/compliance/dashboard-actions";
+import type { CertBucketResult } from "@/lib/utils/compliance/cert-expiry-summary";
 
 const DOC_LABELS: Record<string, string> = {
   wwcc: "WWCC",
