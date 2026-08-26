@@ -248,9 +248,12 @@ export async function markClientWelcomed(
 // ============================================================
 //
 // The shared page has no authenticated user, so this uses the admin
-// client — ONLY call it after validateSharedLink has accepted the
-// token. Deliberately a thin summary: upcoming sessions, headline
-// counts, recent report titles. Full detail requires a real login.
+// client. NOT exported: in a "use server" module every export is an
+// invocable endpoint, and this takes a bare centreId with no token
+// check — it is reachable only through getSharedPortalView, which
+// validates the token first. Deliberately a thin summary: upcoming
+// sessions, headline counts, recent report titles. Full detail
+// requires a real login.
 
 export interface SharedPortalSnapshot {
   upcomingSessions: { date: string; time: string; sport: string }[];
@@ -258,7 +261,7 @@ export interface SharedPortalSnapshot {
   recentReports: { title: string; sent_at: string | null }[];
 }
 
-export async function getSharedPortalSnapshot(
+async function buildSharedPortalSnapshot(
   centreId: string
 ): Promise<SharedPortalSnapshot> {
   const empty: SharedPortalSnapshot = {
@@ -300,7 +303,7 @@ export async function getSharedPortalSnapshot(
       recentReports: reportsRes.data ?? [],
     };
   } catch (err) {
-    console.error("getSharedPortalSnapshot error:", err);
+    console.error("buildSharedPortalSnapshot error:", err);
     return empty;
   }
 }
@@ -875,17 +878,21 @@ export async function revokeSharedLink(
 }
 
 // ============================================================
-// Validate shared link (for public access)
+// Shared-link view (public access)
 // ============================================================
 
-export async function validateSharedLink(
+async function validateSharedLink(
   token: string
 ): Promise<{
   data: { centreId: string; centreName: string; primaryUserName: string } | null;
   error: string | null;
 }> {
   try {
-    const supabase = await createSupabaseServerClient();
+    // Admin client on purpose: the visitor is anonymous, and shared_links,
+    // centres and client_users have no anon policies — the cookie client
+    // sees zero rows and every link reads as invalid. The unguessable
+    // token is the credential here.
+    const supabase = createSupabaseAdmin();
 
     const { data, error } = await supabase
       .from("shared_links")
@@ -922,6 +929,27 @@ export async function validateSharedLink(
     console.error("validateSharedLink error:", err);
     return { data: null, error: "Failed to validate link." };
   }
+}
+
+// The one public entry point for the shared page: token in, validated
+// link details + snapshot out. The snapshot builder above never runs
+// for a token that fails validation.
+export async function getSharedPortalView(token: string): Promise<{
+  data:
+    | {
+        centreId: string;
+        centreName: string;
+        primaryUserName: string;
+        snapshot: SharedPortalSnapshot;
+      }
+    | null;
+  error: string | null;
+}> {
+  const { data, error } = await validateSharedLink(token);
+  if (error || !data) return { data: null, error };
+
+  const snapshot = await buildSharedPortalSnapshot(data.centreId);
+  return { data: { ...data, snapshot }, error: null };
 }
 
 // ============================================================
