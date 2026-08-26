@@ -34,6 +34,8 @@ type Mode = "poster" | "ambient" | "manual";
 export function HeroVideo() {
   const [mode, setMode] = useState<Mode>("poster");
   const [playerReady, setPlayerReady] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(false);
 
   useEffect(() => {
     setMode(
@@ -42,6 +44,48 @@ export function HeroVideo() {
         : "ambient"
     );
   }, []);
+
+  // Ambient autoplay is not guaranteed even muted — iOS Low Power Mode
+  // (and some embedded webviews) block it, leaving a frozen first
+  // frame. Listen for the player's timeupdate events; if none arrive
+  // shortly after the player loads, surface a play affordance instead
+  // of a mystery still. Clicking it swaps to the controls-on player,
+  // whose own play button carries a real user gesture inside the
+  // iframe — the one thing every autoplay policy accepts.
+  useEffect(() => {
+    if (mode !== "ambient" || !playerReady) return;
+
+    const onMessage = (e: MessageEvent) => {
+      if (typeof e.data !== "string") return;
+      try {
+        const d = JSON.parse(e.data);
+        if (d.event === "timeupdate" || d.event === "play") {
+          setAdvancing(true);
+          setShowPlayButton(false);
+        }
+      } catch {
+        // Non-JSON messages from other embeds — ignore.
+      }
+    };
+    window.addEventListener("message", onMessage);
+
+    const frame = document.querySelector<HTMLIFrameElement>(
+      'iframe[data-hero-video]'
+    );
+    frame?.contentWindow?.postMessage(
+      JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
+      "*"
+    );
+
+    // The effect re-runs (clearing this timer) the moment `advancing`
+    // flips true, so if the timer fires at all, playback never started.
+    const timer = window.setTimeout(() => setShowPlayButton(true), 2500);
+
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.clearTimeout(timer);
+    };
+  }, [mode, playerReady, advancing]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-[1.4rem]">
@@ -63,6 +107,7 @@ export function HeroVideo() {
 
       {mode !== "poster" && (
         <iframe
+          data-hero-video
           src={mode === "ambient" ? AMBIENT_SRC : MANUAL_SRC}
           title="Build Alpha Kids — our sessions in action"
           allow="autoplay; fullscreen; picture-in-picture"
@@ -71,6 +116,29 @@ export function HeroVideo() {
             playerReady ? "opacity-100" : "opacity-0"
           }`}
         />
+      )}
+
+      {showPlayButton && mode === "ambient" && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowPlayButton(false);
+            setPlayerReady(false);
+            setMode("manual");
+          }}
+          aria-label="Play the Build Alpha Kids showreel"
+          className="absolute inset-0 z-10 flex items-center justify-center bg-[#111]/10 transition-colors hover:bg-[#111]/20"
+        >
+          <span className="flex size-16 items-center justify-center rounded-full border-2 border-[#111] bg-[#FFD23F] shadow-[4px_4px_0_#111] transition-transform hover:scale-105 sm:size-20">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="ml-1 size-7 fill-[#111] sm:size-9"
+            >
+              <path d="M8 5.5v13l11-6.5z" />
+            </svg>
+          </span>
+        </button>
       )}
     </div>
   );
