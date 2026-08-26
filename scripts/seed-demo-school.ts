@@ -231,11 +231,21 @@ async function getFirstActiveCoach(): Promise<string> {
 async function seedStudents(centreId: string): Promise<string[]> {
   const { data: existing } = await supabase
     .from("centre_children")
-    .select("child_id")
+    .select("child_id, children!inner(first_name, last_name)")
     .eq("centre_id", centreId);
   if ((existing ?? []).length >= STUDENTS.length) {
     console.log(`✓ ${existing!.length} students already linked`);
-    return existing!.map((c) => c.child_id);
+    // Return in STUDENTS order — later steps (assessments, classes)
+    // index into this array by cohort position.
+    const byName = new Map(
+      existing!.map((row) => {
+        const c = row.children as unknown as { first_name: string; last_name: string };
+        return [`${c.first_name} ${c.last_name}`, row.child_id];
+      })
+    );
+    return STUDENTS.map((s) => byName.get(`${s.first_name} ${s.last_name}`)).filter(
+      (id): id is string => !!id
+    );
   }
 
   const ids: string[] = [];
@@ -590,6 +600,51 @@ async function seedInvoices(centreId: string) {
   console.log(`+ Created paid invoice ($${(totalCents / 100).toFixed(2)})`);
 }
 
+// Class list (migration 080): students 0-5 are the 8-12 cohort, 6-11
+// the 5-8 cohort — split across four classes incl. a composite.
+const CLASSES: Array<{
+  name: string;
+  year_group: string;
+  teacher_name: string;
+  studentIdxs: number[];
+}> = [
+  { name: "KM", year_group: "K", teacher_name: "Ms Morrison", studentIdxs: [6, 7, 8] },
+  { name: "1G", year_group: "1", teacher_name: "Mr Georgiou", studentIdxs: [9, 10, 11] },
+  { name: "3B", year_group: "3", teacher_name: "Mrs Bennett", studentIdxs: [0, 1, 2] },
+  { name: "5/6M", year_group: "5/6", teacher_name: "Mr Malouf", studentIdxs: [3, 4, 5] },
+];
+
+async function seedClasses(centreId: string, studentIds: string[]) {
+  const { count } = await supabase
+    .from("school_classes")
+    .select("id", { count: "exact", head: true })
+    .eq("centre_id", centreId);
+  if ((count ?? 0) > 0) {
+    console.log(`✓ Classes already exist (${count})`);
+    return;
+  }
+
+  for (const cls of CLASSES) {
+    const { data: created, error } = await supabase
+      .from("school_classes")
+      .insert({
+        centre_id: centreId,
+        name: cls.name,
+        year_group: cls.year_group,
+        school_year: 2026,
+        teacher_name: cls.teacher_name,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    const { error: memberErr } = await supabase.from("school_class_children").insert(
+      cls.studentIdxs.map((i) => ({ class_id: created.id, child_id: studentIds[i] }))
+    );
+    if (memberErr) throw memberErr;
+  }
+  console.log(`+ Created ${CLASSES.length} classes with memberships`);
+}
+
 async function seedTesterAccount(centreId: string) {
   const { data: existing } = await supabase
     .from("client_users")
@@ -641,6 +696,7 @@ async function main() {
   await seedObservations(sessions, studentIds, coachId);
   await seedReport(centreId, termIds, coachId);
   await seedInvoices(centreId);
+  await seedClasses(centreId, studentIds);
   await seedTesterAccount(centreId);
 
   console.log(`\nDone. Demo school id: ${centreId}`);

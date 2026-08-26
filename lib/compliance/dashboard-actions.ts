@@ -7,7 +7,8 @@ import {
   type CertBucketResult,
 } from "@/lib/utils/compliance/cert-expiry-summary";
 
-export type { CertBucketResult } from "@/lib/utils/compliance/cert-expiry-summary";
+// (No type re-exports in "use server" modules — import CertBucketResult
+// from @/lib/utils/compliance/cert-expiry-summary.)
 
 /**
  * Aggregate cert-expiry buckets across every active coach.

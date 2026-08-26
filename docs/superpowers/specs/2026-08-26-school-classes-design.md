@@ -1,7 +1,16 @@
 # School classes & year groups — design proposal
 
-**Status:** proposal (no code). Written 2026-08-26 as part of the school-portal
-build-out; the goal is to agree the shape before any migration lands.
+**Status:** phases 1–3 SHIPPED 2026-08-26 (same day — Jayden approved the
+proposal's defaults). Migration 080 (schema + RLS), admin Classes tab on the
+school centre page (`components/centres/school-classes-tab.tsx`,
+`lib/schools/class-actions.ts`), and the portal roster grouped by class
+(`ClientChildren`). Open-question calls taken: composite classes are one row
+with `year_group` like "5/6"; `children.age_group` is derived from the class
+year group on assignment (older band wins; `lib/schools/year-groups.ts`);
+`teacher_email` column exists but the v1 UI collects `teacher_name` only.
+Still to build: CSV import, per-class attendance/assessment rollups (#2,
+next term boundary per rollout), session targeting + teacher-on-session-card
+(#3/#4 — `sessions.school_class_ids` is in place, unread).
 
 ## Problem
 

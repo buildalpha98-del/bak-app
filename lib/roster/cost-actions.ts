@@ -14,7 +14,8 @@ import {
 import type { CentreType } from "@/lib/types/enums";
 import { toLocalIso } from "@/lib/utils/roster";
 
-export type { CostProjection } from "@/lib/utils/roster/cost-projection";
+// (No type re-exports in "use server" modules — import CostProjection
+// from @/lib/utils/roster/cost-projection.)
 
 interface SessionRow {
   id: string;

@@ -64,6 +64,9 @@ export interface ClientChild {
   total_sessions: number;
   attendance_percentage: number;
   last_attended: string | null;
+  /** School class label (migration 080) — null for childcare or unassigned. */
+  class_name: string | null;
+  year_group: string | null;
 }
 
 export interface ChildDetail {
@@ -526,6 +529,27 @@ export async function getClientChildren(
       }
     }
 
+    // Current class labels (schools only — empty for childcare centres).
+    // RLS scopes both tables to the caller's centres; the explicit
+    // centre filter keeps a multi-centre child's other-school class out.
+    const { data: classRows } = await supabase
+      .from("school_class_children")
+      .select("child_id, school_classes!inner(name, year_group, centre_id)")
+      .in("child_id", childIds)
+      .is("ended_at", null);
+
+    const classByChild = new Map<string, { name: string; year_group: string }>();
+    for (const row of classRows ?? []) {
+      const cls = row.school_classes as unknown as {
+        name: string;
+        year_group: string;
+        centre_id: string;
+      };
+      if (cls.centre_id === centreId) {
+        classByChild.set(row.child_id, { name: cls.name, year_group: cls.year_group });
+      }
+    }
+
     const children: ClientChild[] = enrolments.map((e) => {
       const child = e.children as unknown as {
         id: string;
@@ -534,6 +558,7 @@ export async function getClientChildren(
         age_group: string;
       };
       const att = attendanceMap[child.id] ?? { attended: 0, lastDate: null };
+      const cls = classByChild.get(child.id) ?? null;
       return {
         id: child.id,
         first_name: child.first_name,
@@ -546,6 +571,8 @@ export async function getClientChildren(
             ? Math.round((att.attended / totalSessions) * 100)
             : 0,
         last_attended: att.lastDate,
+        class_name: cls?.name ?? null,
+        year_group: cls?.year_group ?? null,
       };
     });
 

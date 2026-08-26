@@ -21,7 +21,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { ReportDetail, ReportContentJson } from "@/lib/reports/actions";
+import type { ReportDetail } from "@/lib/reports/actions";
+import type { ReportContentJson } from "@/lib/types/database";
 import { updateReportContent, deleteReport } from "@/lib/reports/actions";
 import { sendReportEmail } from "@/lib/reports/send";
 

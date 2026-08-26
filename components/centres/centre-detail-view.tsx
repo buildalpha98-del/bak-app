@@ -81,6 +81,7 @@ import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
 import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
 import { PortalAccessTab } from "@/components/centres/portal-access-tab";
+import { SchoolClassesTab } from "@/components/centres/school-classes-tab";
 import { CentreGrantsTab } from "@/components/centres/centre-grants-tab";
 import type { CentreDetail, CentreNoteWithAuthor, UpdateCentreData } from "@/lib/centres/actions";
 import type {
@@ -373,6 +374,9 @@ export function CentreDetailView({
           <TabsTrigger value="children">
             Children ({data.children_count})
           </TabsTrigger>
+          {centre.type === "school" && (
+            <TabsTrigger value="classes">Classes</TabsTrigger>
+          )}
 
           <GroupLabel>Access</GroupLabel>
           <TabsTrigger value="portal">Portal Access</TabsTrigger>
@@ -710,6 +714,13 @@ export function CentreDetailView({
         {centre.type === "school" && (
           <TabsContent value="grants">
             <CentreGrantsTab centreId={centre.id} centreName={centre.name} />
+          </TabsContent>
+        )}
+
+        {/* ==================== Classes Tab (schools only) ==================== */}
+        {centre.type === "school" && (
+          <TabsContent value="classes">
+            <SchoolClassesTab centreId={centre.id} />
           </TabsContent>
         )}
       </Tabs>

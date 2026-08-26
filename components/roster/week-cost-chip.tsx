@@ -8,10 +8,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DollarSign, AlertTriangle } from "lucide-react";
-import {
-  getWeekCostProjection,
-  type CostProjection,
-} from "@/lib/roster/cost-actions";
+import { getWeekCostProjection } from "@/lib/roster/cost-actions";
+import type { CostProjection } from "@/lib/utils/roster/cost-projection";
 
 function fmtAud(amount: number): string {
   return new Intl.NumberFormat("en-AU", {

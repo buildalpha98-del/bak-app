@@ -8,10 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getChildAssessments } from "@/lib/assessments/actions";
-import type {
-  ChildAssessmentHistory,
-  SkillRatingEntry,
-} from "@/lib/assessments/actions";
+import type { ChildAssessmentHistory } from "@/lib/assessments/actions";
+import type { SkillRatingEntry } from "@/lib/types/database";
 
 interface ChildAssessmentDisplayProps {
   childId: string;
