@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { PartnerStrip } from "@/components/marketing/partner-strip";
@@ -63,6 +64,20 @@ export default function ChildcarePage() {
               </p>
             </article>
           ))}
+        </div>
+      </Section>
+
+      {/* Real footage still (showreel, 2026-08): a session mid-flight. */}
+      <Section aria-label="A Build Alpha Kids session in a childcare centre" className="bg-white pt-0">
+        <div className="mx-auto max-w-4xl rotate-1 rounded-[2rem] border-2 border-[#111] bg-white p-2.5 shadow-[8px_8px_0_#111] sm:p-3">
+          <Image
+            src="/images/marketing/childcare-session.jpg"
+            alt="A Build Alpha Kids coach runs a ball-skills session with toddlers between mini hoops at a Sydney childcare centre"
+            width={1600}
+            height={900}
+            sizes="(min-width: 1024px) 896px, 100vw"
+            className="h-auto w-full rounded-[1.4rem]"
+          />
         </div>
       </Section>
 
