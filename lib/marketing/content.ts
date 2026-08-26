@@ -171,10 +171,14 @@ export const BRAND = {
  * that lands, only this constant changes — every page inherits it.
  */
 export const OG_IMAGE = {
-  url: BRAND.logo,
-  width: 1604,
-  height: 1060,
-  alt: `${SITE.name} — ${SITE.tagline}`,
+  // The purpose-made 1200×630 card (2026-08): a showreel frame — a
+  // student mid-sprint with the ball, coaches behind — with the crest
+  // bottom-right. Regenerate from scratch/frames/reel_57.jpg if the
+  // showreel is recut.
+  url: "/images/marketing/og-card.jpg",
+  width: 1200,
+  height: 630,
+  alt: "A student sprints with the ball through a Build Alpha Kids multi-sport session, coaches behind",
 } as const;
 
 /**

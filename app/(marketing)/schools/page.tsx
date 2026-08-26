@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { ProgramCard } from "@/components/marketing/program-card";
@@ -96,6 +97,20 @@ export default function SchoolsPage() {
               </p>
             </article>
           ))}
+        </div>
+      </Section>
+
+      {/* Real footage still (showreel, 2026-08): the programs in action. */}
+      <Section aria-label="Build Alpha Kids sessions in action" className="bg-white pt-0">
+        <div className="mx-auto max-w-4xl rotate-[-1deg] rounded-[2rem] border-2 border-[#111] bg-white p-2.5 shadow-[8px_8px_0_#111] sm:p-3">
+          <Image
+            src="/images/marketing/schools-action.jpg"
+            alt="A student sprints with the ball through a Build Alpha Kids multi-sport school program, coaches running the drill behind"
+            width={1600}
+            height={900}
+            sizes="(min-width: 1024px) 896px, 100vw"
+            className="h-auto w-full rounded-[1.4rem]"
+          />
         </div>
       </Section>
 
