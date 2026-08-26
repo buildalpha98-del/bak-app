@@ -34,6 +34,8 @@ interface ClientDashboardProps {
   calendarFeedUrl?: string | null;
   /** All centres this director can access. Drives the optional roll-up. */
   centresSummary?: ClientUserCentreSummary[];
+  /** Schools see "students" vocabulary; childcare centres see "children". */
+  isSchool?: boolean;
 }
 
 function formatDateNice(dateStr: string): string {
@@ -92,6 +94,7 @@ export function ClientDashboard({
   pulse,
   calendarFeedUrl,
   centresSummary = [],
+  isSchool = false,
 }: ClientDashboardProps) {
   const { centreName, nextSession, stats, recentSessions } = data;
   const days = nextSession ? daysUntil(nextSession.date) : null;
@@ -142,7 +145,7 @@ export function ClientDashboard({
         <QuickAction
           href={`/client/${centreId}/children`}
           icon={Users}
-          label="View Children"
+          label={isSchool ? "View Students" : "View Children"}
         />
       </div>
 
@@ -229,7 +232,7 @@ export function ClientDashboard({
         <SummaryCard
           icon={Users}
           value={stats.totalChildren}
-          label="Total children"
+          label={isSchool ? "Total students" : "Total children"}
         />
         <RatingCard rating={stats.averageRating} />
         <AttendanceCard rate={stats.attendanceRate} />

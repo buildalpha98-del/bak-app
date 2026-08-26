@@ -14,18 +14,21 @@ export default async function ClientChildrenPage({
   if (authError || !clientUser) redirect("/client-login");
   if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
 
+  const isSchool = clientUser.centre_type === "school";
   const { data, error } = await getClientChildren(centreId);
 
   if (error) {
     return (
       <div className="animate-fade-up">
-        <h1 className="text-2xl font-bold font-heading text-foreground">Children</h1>
+        <h1 className="text-2xl font-bold font-heading text-foreground">
+          {isSchool ? "Students" : "Children"}
+        </h1>
         <p className="mt-4 text-muted-foreground">
-          Unable to load children data. Please try again later.
+          Unable to load {isSchool ? "student" : "children"} data. Please try again later.
         </p>
       </div>
     );
   }
 
-  return <ClientChildren children={data} centreId={centreId} />;
+  return <ClientChildren children={data} centreId={centreId} isSchool={isSchool} />;
 }

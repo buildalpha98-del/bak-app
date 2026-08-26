@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import { MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { sendCentreMessage } from "@/lib/client/portal-actions";
+import { sendCentreMessage, getCentreMessages } from "@/lib/client/portal-actions";
 import type { CentreMessageWithSender } from "@/lib/client/portal-actions";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface ClientMessagesProps {
   messages: CentreMessageWithSender[];
@@ -51,6 +52,42 @@ export function ClientMessages({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Live thread: staff replies appear without a reload. The realtime
+  // payload has no joined sender name, so re-fetch through the server
+  // action — which also marks the new staff message read, keeping the
+  // nav badge honest while the director is looking at the thread.
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    const channel = supabase
+      .channel(`client-messages-${centreId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "centre_messages",
+          filter: `centre_id=eq.${centreId}`,
+        },
+        (payload) => {
+          const row = payload.new as { sender_type?: string };
+          if (row.sender_type !== "staff") return;
+          getCentreMessages(centreId).then(({ data }) => {
+            if (!data) return;
+            // Keep any still-optimistic own message so a staff reply
+            // landing mid-send doesn't make the director's text vanish.
+            setMessages((prev) => [
+              ...data,
+              ...prev.filter((m) => m.id.startsWith("temp-")),
+            ]);
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [centreId]);
 
   function handleSend() {
     const trimmed = content.trim();

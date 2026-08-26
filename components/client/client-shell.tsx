@@ -41,13 +41,13 @@ interface ClientShellProps {
   children: React.ReactNode;
 }
 
-function getNavItems(centreId: string) {
+function getNavItems(centreId: string, isSchool: boolean) {
   return [
     { label: "Dashboard", href: `/client/${centreId}`, icon: Home, mobileOrder: 1 },
     { label: "Impact", href: `/client/${centreId}/impact`, icon: BarChart3, mobileOrder: 2 },
     { label: "Schedule", href: `/client/${centreId}/schedule`, icon: Calendar },
     { label: "Curriculum", href: `/client/${centreId}/curriculum`, icon: BookOpen, mobileOrder: 3 },
-    { label: "Children", href: `/client/${centreId}/children`, icon: Users },
+    { label: isSchool ? "Students" : "Children", href: `/client/${centreId}/children`, icon: Users },
     { label: "Our Coaches", href: `/client/${centreId}/staff`, icon: UserCheck },
     { label: "Resources", href: `/client/${centreId}/resources`, icon: Shield },
     { label: "Feedback", href: `/client/${centreId}/feedback`, icon: Star, mobileOrder: 4 },
@@ -70,7 +70,10 @@ export function ClientShell({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const navItems = getNavItems(clientUser.centre_id);
+  const navItems = getNavItems(
+    clientUser.centre_id,
+    clientUser.centre_type === "school"
+  );
   const mobileNavItems = [...navItems]
     .filter((item) => "mobileOrder" in item && item.mobileOrder !== undefined)
     .sort((a, b) => (a.mobileOrder ?? 99) - (b.mobileOrder ?? 99));

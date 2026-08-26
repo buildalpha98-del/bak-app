@@ -14,6 +14,8 @@ const AGE_GROUPS = ["All", "3-5", "5-8", "8-12"] as const;
 interface ClientChildrenProps {
   children: ClientChild[];
   centreId: string;
+  /** Schools see "students"; childcare centres see "children". */
+  isSchool?: boolean;
 }
 
 function formatDate(dateStr: string | null): string {
@@ -25,7 +27,14 @@ function formatDate(dateStr: string | null): string {
   });
 }
 
-export function ClientChildren({ children, centreId }: ClientChildrenProps) {
+export function ClientChildren({
+  children,
+  centreId,
+  isSchool = false,
+}: ClientChildrenProps) {
+  const noun = isSchool ? "student" : "child";
+  const nounPlural = isSchool ? "students" : "children";
+  const heading = isSchool ? "Students" : "Children";
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState<string>("All");
 
@@ -40,9 +49,9 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
     <div className="animate-fade-up space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-heading text-foreground">Children</h1>
+        <h1 className="text-2xl font-bold font-heading text-foreground">{heading}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {children.length} enrolled {children.length === 1 ? "child" : "children"}
+          {children.length} enrolled {children.length === 1 ? noun : nounPlural}
         </p>
       </div>
 
@@ -84,11 +93,13 @@ export function ClientChildren({ children, centreId }: ClientChildrenProps) {
             <Users className="h-6 w-6 text-[#0891B2]" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-foreground">
-            {children.length === 0 ? "No children enrolled" : "No children match your filters"}
+            {children.length === 0
+              ? `No ${nounPlural} enrolled`
+              : `No ${nounPlural} match your filters`}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
             {children.length === 0
-              ? "Enrolled children will appear here once added by your centre."
+              ? `Enrolled ${nounPlural} will appear here once added by your ${isSchool ? "school" : "centre"}.`
               : "Try adjusting your search or age group filter."}
           </p>
         </Card>

@@ -13,6 +13,8 @@ import type { ClientUser, SharedLink } from "@/lib/types/database";
 
 export interface ClientUserWithCentre extends ClientUser {
   centre_name: string;
+  /** Drives school-vs-childcare copy across the portal ("Students" vs "Children"). */
+  centre_type: "childcare_centre" | "school";
   /** Set by getCurrentClientUser(centreId) when the user has access to the requested centre. */
   is_authorised_for_current?: boolean;
 }
@@ -97,101 +99,120 @@ export async function inviteClientUser(input: {
       return { data: null, error: "Not authorised." };
     }
 
-    // Check for existing client user with this email + centre
-    const { data: existing } = await supabase
-      .from("client_users")
-      .select("id")
-      .eq("centre_id", input.centreId)
-      .eq("email", input.email)
-      .single();
-
-    if (existing) {
-      return { data: null, error: "This email already has portal access for this centre." };
-    }
-
-    // If marking as primary, unset existing primary users
-    if (input.isPrimary !== false) {
-      await supabase
-        .from("client_users")
-        .update({ is_primary: false })
-        .eq("centre_id", input.centreId)
-        .eq("is_primary", true);
-    }
-
-    // Create or find Supabase auth user
-    // First check if auth user already exists
-    const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-    const existingAuthUser = existingUsers?.users?.find(
-      (u) => u.email === input.email
-    );
-
-    let authUserId: string;
-
-    if (existingAuthUser) {
-      authUserId = existingAuthUser.id;
-    } else {
-      // Create new auth user with a random password (they'll use magic link)
-      const { data: newUser, error: createError } =
-        await adminClient.auth.admin.createUser({
-          email: input.email,
-          email_confirm: true,
-        });
-
-      if (createError || !newUser?.user) {
-        return { data: null, error: createError?.message ?? "Failed to create user." };
-      }
-      authUserId = newUser.user.id;
-    }
-
-    // Create client_users record
-    const { data: clientUser, error: insertError } = await supabase
-      .from("client_users")
-      .insert({
-        user_id: authUserId,
-        centre_id: input.centreId,
-        name: input.name,
-        email: input.email,
-        is_primary: input.isPrimary !== false,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      return { data: null, error: insertError.message };
-    }
-
-    // Get centre name for the email
-    const { data: centre } = await supabase
-      .from("centres")
-      .select("name")
-      .eq("id", input.centreId)
-      .single();
-
-    // Send invitation email with magic link
-    const callbackUrl = getAuthCallbackUrl("/client-login");
-    const { subject, html } = clientInvitationEmail(
-      input.name,
-      centre?.name ?? "your centre",
-      `${getBaseUrl()}/client-login`
-    );
-
-    await sendEmail(input.email, subject, html);
-
-    // Also send magic link via Supabase Auth (routes through SMTP
-    // configured in Supabase dashboard — needs Resend SMTP set up).
-    await adminClient.auth.admin.generateLink({
-      type: "magiclink",
+    return await provisionPortalUser({
+      centreId: input.centreId,
       email: input.email,
-      options: {
-        redirectTo: callbackUrl,
-      },
+      name: input.name,
+      isPrimary: input.isPrimary !== false,
     });
-
-    return { data: clientUser, error: null };
   } catch (err) {
     console.error("inviteClientUser error:", err);
     return { data: null, error: "Failed to invite user." };
   }
+}
+
+// Shared invite core — used by the staff invite above and the
+// primary-contact colleague invite below. Runs entirely on the admin
+// client: colleague invites come from the client role, which has no
+// write policies on client_users, and staff bypassed RLS here anyway.
+async function provisionPortalUser(input: {
+  centreId: string;
+  email: string;
+  name: string;
+  isPrimary: boolean;
+}): Promise<{ data: ClientUser | null; error: string | null }> {
+  const adminClient = createSupabaseAdmin();
+
+  // Check for existing client user with this email + centre
+  const { data: existing } = await adminClient
+    .from("client_users")
+    .select("id")
+    .eq("centre_id", input.centreId)
+    .eq("email", input.email)
+    .maybeSingle();
+
+  if (existing) {
+    return { data: null, error: "This email already has portal access for this centre." };
+  }
+
+  // If marking as primary, unset existing primary users
+  if (input.isPrimary) {
+    await adminClient
+      .from("client_users")
+      .update({ is_primary: false })
+      .eq("centre_id", input.centreId)
+      .eq("is_primary", true);
+  }
+
+  // Create or find Supabase auth user
+  const { data: existingUsers } = await adminClient.auth.admin.listUsers();
+  const existingAuthUser = existingUsers?.users?.find(
+    (u) => u.email === input.email
+  );
+
+  let authUserId: string;
+
+  if (existingAuthUser) {
+    authUserId = existingAuthUser.id;
+  } else {
+    // Create new auth user with no password (they'll use magic link)
+    const { data: newUser, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email: input.email,
+        email_confirm: true,
+      });
+
+    if (createError || !newUser?.user) {
+      return { data: null, error: createError?.message ?? "Failed to create user." };
+    }
+    authUserId = newUser.user.id;
+  }
+
+  // Create client_users record
+  const { data: clientUser, error: insertError } = await adminClient
+    .from("client_users")
+    .insert({
+      user_id: authUserId,
+      centre_id: input.centreId,
+      name: input.name,
+      email: input.email,
+      is_primary: input.isPrimary,
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    return { data: null, error: insertError.message };
+  }
+
+  // Get centre name for the email
+  const { data: centre } = await adminClient
+    .from("centres")
+    .select("name")
+    .eq("id", input.centreId)
+    .single();
+
+  // Send invitation email with magic link
+  const callbackUrl = getAuthCallbackUrl("/client-login");
+  const { subject, html } = clientInvitationEmail(
+    input.name,
+    centre?.name ?? "your centre",
+    `${getBaseUrl()}/client-login`
+  );
+
+  await sendEmail(input.email, subject, html);
+
+  // Also send magic link via Supabase Auth (routes through SMTP
+  // configured in Supabase dashboard — needs Resend SMTP set up).
+  await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email: input.email,
+    options: {
+      redirectTo: callbackUrl,
+    },
+  });
+
+  return { data: clientUser, error: null };
 }
 
 // ============================================================
@@ -395,7 +416,7 @@ export async function getCurrentClientUser(
 
     const { data: centre } = await supabase
       .from("centres")
-      .select("name")
+      .select("name, type")
       .eq("id", activeCentreId)
       .maybeSingle();
 
@@ -404,6 +425,7 @@ export async function getCurrentClientUser(
         ...cu,
         centre_id: activeCentreId,
         centre_name: centre?.name ?? "Your centre",
+        centre_type: centre?.type === "school" ? "school" : "childcare_centre",
         is_authorised_for_current: isAuthorised,
       } as ClientUserWithCentre,
       error: null,
@@ -899,5 +921,222 @@ export async function validateSharedLink(
   } catch (err) {
     console.error("validateSharedLink error:", err);
     return { data: null, error: "Failed to validate link." };
+  }
+}
+
+// ============================================================
+// Portal self-service — own details + colleague management
+// ============================================================
+
+export interface PortalColleague {
+  id: string;
+  name: string;
+  email: string;
+  is_primary: boolean;
+  last_login: string | null;
+  created_at: string;
+}
+
+// Resolve the caller's client_users row and whether they hold primary
+// access for the given centre. Every self-service action below gates
+// through this — server actions are directly callable, so the check
+// cannot live only in the UI.
+async function getCallerClientUser(centreId: string): Promise<{
+  cu: ClientUser | null;
+  isAuthorised: boolean;
+}> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { cu: null, isAuthorised: false };
+
+  const { data: cu } = await supabase
+    .from("client_users")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!cu) return { cu: null, isAuthorised: false };
+
+  if (cu.centre_id === centreId) return { cu, isAuthorised: true };
+
+  const { data: joinRow } = await supabase
+    .from("client_user_centres")
+    .select("centre_id")
+    .eq("client_user_id", cu.id)
+    .eq("centre_id", centreId)
+    .maybeSingle();
+
+  return { cu, isAuthorised: !!joinRow };
+}
+
+// Directors update their own display name — the one detail that is
+// theirs alone. Email changes stay with the office: email is the login
+// identity and a self-service change would silently break sign-in.
+export async function updateOwnClientDetails(
+  name: string
+): Promise<{ error: string | null }> {
+  try {
+    const trimmed = name.trim();
+    if (trimmed.length < 2 || trimmed.length > 100) {
+      return { error: "Please enter your name (2–100 characters)." };
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    // RLS: client_users_update_own_welcome (062) covers own-row updates.
+    const { error } = await supabase
+      .from("client_users")
+      .update({ name: trimmed })
+      .eq("user_id", user.id);
+
+    return { error: error?.message ?? null };
+  } catch (err) {
+    console.error("updateOwnClientDetails error:", err);
+    return { error: "Failed to update your details." };
+  }
+}
+
+export async function getCentreColleagues(
+  centreId: string
+): Promise<{ data: PortalColleague[]; error: string | null }> {
+  try {
+    const { cu, isAuthorised } = await getCallerClientUser(centreId);
+    if (!cu || !isAuthorised || !cu.is_primary) {
+      return { data: [], error: "Not authorised." };
+    }
+
+    // Clients can only read their own client_users row, so the roster
+    // comes through the admin client after the primary check above.
+    const adminClient = createSupabaseAdmin();
+    const { data, error } = await adminClient
+      .from("client_users")
+      .select("id, name, email, is_primary, last_login, created_at")
+      .eq("centre_id", centreId)
+      .order("is_primary", { ascending: false })
+      .order("name");
+
+    if (error) return { data: [], error: error.message };
+    return { data: (data ?? []) as PortalColleague[], error: null };
+  } catch (err) {
+    console.error("getCentreColleagues error:", err);
+    return { data: [], error: "Failed to load your team." };
+  }
+}
+
+// Primary contacts invite colleagues to their own centre. Invitees are
+// always non-primary — handing over primary access stays with the
+// office, since it also moves shared-link and team management rights.
+export async function invitePortalColleague(
+  centreId: string,
+  name: string,
+  email: string
+): Promise<{ error: string | null }> {
+  try {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    if (trimmedName.length < 2) return { error: "Please enter their name." };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return { error: "Please enter a valid email address." };
+    }
+
+    const { cu, isAuthorised } = await getCallerClientUser(centreId);
+    if (!cu || !isAuthorised || !cu.is_primary) {
+      return { error: "Only the primary contact can invite colleagues." };
+    }
+
+    const { error } = await provisionPortalUser({
+      centreId,
+      email: trimmedEmail,
+      name: trimmedName,
+      isPrimary: false,
+    });
+    if (error) return { error };
+
+    // Activity log — best effort, via admin client (the client role has
+    // no activity_log insert policy).
+    const adminClient = createSupabaseAdmin();
+    await adminClient.from("activity_log").insert({
+      user_id: cu.user_id,
+      action: "portal_colleague_invited",
+      entity_type: "client_user",
+      entity_id: cu.id,
+      metadata: { centre_id: centreId, invited_email: trimmedEmail },
+    });
+
+    return { error: null };
+  } catch (err) {
+    console.error("invitePortalColleague error:", err);
+    return { error: "Failed to send the invite." };
+  }
+}
+
+export async function removePortalColleague(
+  centreId: string,
+  colleagueId: string
+): Promise<{ error: string | null }> {
+  try {
+    const { cu, isAuthorised } = await getCallerClientUser(centreId);
+    if (!cu || !isAuthorised || !cu.is_primary) {
+      return { error: "Only the primary contact can remove colleagues." };
+    }
+    if (colleagueId === cu.id) {
+      return { error: "You can't remove your own access." };
+    }
+
+    const adminClient = createSupabaseAdmin();
+    const { data: target } = await adminClient
+      .from("client_users")
+      .select("id, centre_id, is_primary")
+      .eq("id", colleagueId)
+      .maybeSingle();
+
+    if (!target || target.centre_id !== centreId) {
+      return { error: "Colleague not found for this centre." };
+    }
+    if (target.is_primary) {
+      return { error: "Primary contacts can only be changed by Build Alpha Kids." };
+    }
+
+    // A colleague linked to other centres is managed by the office —
+    // deleting the row here would silently revoke access everywhere.
+    const { data: otherLinks } = await adminClient
+      .from("client_user_centres")
+      .select("centre_id")
+      .eq("client_user_id", colleagueId)
+      .neq("centre_id", centreId);
+    if (otherLinks && otherLinks.length > 0) {
+      return {
+        error:
+          "This person has access to other centres too — contact Build Alpha Kids to change their access.",
+      };
+    }
+
+    await adminClient
+      .from("client_user_centres")
+      .delete()
+      .eq("client_user_id", colleagueId);
+    const { error: delErr } = await adminClient
+      .from("client_users")
+      .delete()
+      .eq("id", colleagueId);
+    if (delErr) return { error: delErr.message };
+
+    await adminClient.from("activity_log").insert({
+      user_id: cu.user_id,
+      action: "portal_colleague_removed",
+      entity_type: "client_user",
+      entity_id: colleagueId,
+      metadata: { centre_id: centreId },
+    });
+
+    return { error: null };
+  } catch (err) {
+    console.error("removePortalColleague error:", err);
+    return { error: "Failed to remove access." };
   }
 }
