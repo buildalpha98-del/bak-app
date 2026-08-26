@@ -414,6 +414,8 @@ export async function saveSessionNotes(params: {
   generalNotes?: string;
   rating?: number;
   childObservations?: Array<{ childId: string; observation: string }>;
+  /** Coach opted to share this save's observations with the centre/school portal. */
+  shareObservationsWithCentre?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createSupabaseServerClient();
@@ -446,6 +448,7 @@ export async function saveSessionNotes(params: {
           child_id: o.childId,
           coach_id: params.coachId,
           observation: o.observation.trim(),
+          visible_to_centre: !!params.shareObservationsWithCentre,
         }));
 
       if (obsRows.length > 0) {

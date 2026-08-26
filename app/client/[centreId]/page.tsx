@@ -62,6 +62,7 @@ export default async function ClientDashboardPage({
         pulse={pulse}
         calendarFeedUrl={calendarFeedUrl}
         centresSummary={centresSummaryRes.data ?? []}
+        isSchool={clientUser.centre_type === "school"}
       />
     </div>
   );

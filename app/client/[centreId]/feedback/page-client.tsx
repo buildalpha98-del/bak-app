@@ -5,8 +5,6 @@ import {
   Star,
   MessageSquare,
   CheckCircle,
-  Send,
-  Hourglass,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -219,12 +217,12 @@ export function FeedbackPageClient({
       <ClientPortalPulseStrip
         stats={[
           {
-            icon: Send,
+            icon: "send",
             count: pulse.feedbackSubmittedThisTermCount,
             label: "submitted this term",
           },
           {
-            icon: Hourglass,
+            icon: "hourglass",
             count: pulse.feedbackPendingCount,
             label: "awaiting your rating",
           },

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import type { CentreMessage } from "@/lib/types/database";
@@ -50,6 +51,8 @@ export interface ClientSession {
   coach_notes: string | null;
   /** Populated on the detail fetch only — list views omit it. */
   attendees?: { name: string; present: boolean }[];
+  /** Signed URLs for coach-uploaded photos — detail fetch only. */
+  photos?: string[];
 }
 
 export interface ClientChild {
@@ -82,6 +85,27 @@ export interface ChildDetail {
     skills: { skill_name: string; rating: number }[];
     assessed_at: string;
   }[];
+  insights: ChildInsightSummary[];
+  /** Coach observations explicitly shared with the centre (migration 079). */
+  observations: SharedObservation[];
+}
+
+export interface SharedObservation {
+  id: string;
+  observation: string;
+  date: string;
+  sport: string;
+  coach_name: string | null;
+}
+
+export interface ChildInsightSummary {
+  id: string;
+  term_name: string | null;
+  summary: string | null;
+  strengths: string[];
+  areas_for_growth: string[];
+  recommendations: string[];
+  created_at: string;
 }
 
 export interface ClientReport {
@@ -395,6 +419,30 @@ export async function getClientSessionDetail(
       .filter((a): a is { name: string; present: boolean } => a !== null)
       .sort((a, b) => a.name.localeCompare(b.name));
 
+    // Coach photos. The metadata rows come through the cookie client
+    // (RLS-scoped, migration 078); the files themselves live in a
+    // private bucket, so mint short-lived signed URLs with the admin
+    // client — the session query above already proved centre access.
+    const { data: photoRows } = await supabase
+      .from("session_photos")
+      .select("storage_path")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
+
+    let photos: string[] = [];
+    if (photoRows && photoRows.length > 0) {
+      const admin = createSupabaseAdmin();
+      const { data: signed } = await admin.storage
+        .from("session-photos")
+        .createSignedUrls(
+          photoRows.map((p) => p.storage_path),
+          60 * 60 // 1 hour — plenty for a page view, useless if leaked
+        );
+      photos = (signed ?? [])
+        .filter((s) => !s.error && s.signedUrl)
+        .map((s) => s.signedUrl);
+    }
+
     return {
       data: {
         id: data.id,
@@ -410,6 +458,7 @@ export async function getClientSessionDetail(
         rating: feedbacks?.[0]?.rating ?? null,
         coach_notes: feedbacks?.[0]?.comment ?? data.coach_notes,
         attendees,
+        photos,
       },
       error: null,
     };
@@ -581,6 +630,58 @@ export async function getChildDetail(
       })
       .sort((a, b) => b.assessed_at.localeCompare(a.assessed_at));
 
+    // AI development insights — RLS (078) scopes these to the caller's
+    // centres, so a plain child_id filter is safe here.
+    const { data: insightRows } = await supabase
+      .from("child_insights")
+      .select(
+        "id, summary, strengths, areas_for_growth, recommendations, created_at, terms(name)"
+      )
+      .eq("child_id", childId)
+      .order("created_at", { ascending: false });
+
+    // Coach observations the coach chose to share (visible_to_centre).
+    // RLS already gates on the flag + the caller's centres; the explicit
+    // filters keep another centre's sessions for the same child out.
+    const { data: obsRows } = await supabase
+      .from("child_observations")
+      .select(
+        "id, observation, sessions!inner(date, sport, centre_id), profiles(name)"
+      )
+      .eq("child_id", childId)
+      .eq("visible_to_centre", true);
+
+    const observations: SharedObservation[] = (obsRows ?? [])
+      .filter((o) => {
+        const session = o.sessions as unknown as { centre_id: string };
+        return session.centre_id === centreId;
+      })
+      .map((o) => {
+        const session = o.sessions as unknown as { date: string; sport: string };
+        const coach = o.profiles as unknown as { name: string } | null;
+        return {
+          id: o.id,
+          observation: o.observation,
+          date: session.date,
+          sport: session.sport,
+          coach_name: coach?.name ?? null,
+        };
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const insights: ChildInsightSummary[] = (insightRows ?? []).map((row) => {
+      const term = row.terms as unknown as { name: string } | null;
+      return {
+        id: row.id,
+        term_name: term?.name ?? null,
+        summary: row.summary,
+        strengths: row.strengths ?? [],
+        areas_for_growth: row.areas_for_growth ?? [],
+        recommendations: row.recommendations ?? [],
+        created_at: row.created_at,
+      };
+    });
+
     return {
       data: {
         id: child.id,
@@ -590,6 +691,8 @@ export async function getChildDetail(
         date_of_birth: child.date_of_birth,
         attendanceHistory,
         assessments,
+        insights,
+        observations,
       },
       error: null,
     };

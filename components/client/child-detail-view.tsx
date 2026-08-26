@@ -13,6 +13,9 @@ import {
   TrendingUp,
   CheckCircle2,
   XCircle,
+  Sparkles,
+  Lightbulb,
+  StickyNote,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +25,18 @@ import type { ChildDetail } from "@/lib/client/portal-actions";
 interface ChildDetailViewProps {
   child: ChildDetail;
   centreId: string;
+  /** Schools see "Students" vocabulary; childcare centres see "Children". */
+  isSchool?: boolean;
 }
 
-type TabKey = "attendance" | "assessments" | "progression";
+type TabKey = "attendance" | "assessments" | "progression" | "insights" | "notes";
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: "attendance", label: "Attendance", icon: CalendarCheck },
   { key: "assessments", label: "Assessments", icon: ClipboardCheck },
   { key: "progression", label: "Progression", icon: TrendingUp },
+  { key: "insights", label: "Insights", icon: Sparkles },
+  { key: "notes", label: "Coach Notes", icon: StickyNote },
 ];
 
 function formatDate(dateStr: string): string {
@@ -57,7 +64,11 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   );
 }
 
-export function ChildDetailView({ child, centreId }: ChildDetailViewProps) {
+export function ChildDetailView({
+  child,
+  centreId,
+  isSchool = false,
+}: ChildDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("attendance");
 
   // Group assessments by term
@@ -170,7 +181,7 @@ export function ChildDetailView({ child, centreId }: ChildDetailViewProps) {
         )}
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Children
+        Back to {isSchool ? "Students" : "Children"}
       </Button>
 
       {/* Header */}
@@ -231,6 +242,155 @@ export function ChildDetailView({ child, centreId }: ChildDetailViewProps) {
       {activeTab === "progression" && (
         <ProgressionTab data={progressionData} />
       )}
+      {activeTab === "insights" && <InsightsTab insights={child.insights} />}
+      {activeTab === "notes" && (
+        <CoachNotesTab observations={child.observations} />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Coach Notes Tab                                                     */
+/* ------------------------------------------------------------------ */
+
+function CoachNotesTab({
+  observations,
+}: {
+  observations: ChildDetail["observations"];
+}) {
+  if (observations.length === 0) {
+    return (
+      <Card className="flex flex-col items-center justify-center p-8 text-center">
+        <StickyNote className="h-8 w-8 text-muted-foreground" />
+        <h3 className="mt-3 text-sm font-medium text-foreground">No shared notes yet</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Coaches can share individual session observations here — notes
+          appear once a coach chooses to share them.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {observations.map((obs) => (
+        <Card key={obs.id} className="p-4">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <Badge
+              variant="secondary"
+              className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+            >
+              {obs.sport}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(obs.date)}
+            </span>
+          </div>
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+            {obs.observation}
+          </p>
+          {obs.coach_name && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              — {obs.coach_name}
+            </p>
+          )}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Insights Tab                                                        */
+/* ------------------------------------------------------------------ */
+
+function InsightsTab({ insights }: { insights: ChildDetail["insights"] }) {
+  if (insights.length === 0) {
+    return (
+      <Card className="flex flex-col items-center justify-center p-8 text-center">
+        <Sparkles className="h-8 w-8 text-muted-foreground" />
+        <h3 className="mt-3 text-sm font-medium text-foreground">No insights yet</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A development insight is written at the end of each term, once
+          enough sessions and assessments have been recorded.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {insights.map((insight) => (
+        <Card key={insight.id} className="p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <Badge
+              variant="secondary"
+              className="gap-1 bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+            >
+              <Sparkles className="h-3 w-3" />
+              {insight.term_name ?? "Development insight"}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(insight.created_at)}
+            </span>
+          </div>
+
+          {insight.summary && (
+            <p className="text-sm leading-relaxed text-foreground">
+              {insight.summary}
+            </p>
+          )}
+
+          {insight.strengths.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                Strengths
+              </h4>
+              <ul className="mt-1.5 space-y-1">
+                {insight.strengths.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {insight.areas_for_growth.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                Areas for growth
+              </h4>
+              <ul className="mt-1.5 space-y-1">
+                {insight.areas_for_growth.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                    <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {insight.recommendations.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+                Recommendations
+              </h4>
+              <ul className="mt-1.5 space-y-1">
+                {insight.recommendations.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-600" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Card>
+      ))}
     </div>
   );
 }

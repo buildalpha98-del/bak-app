@@ -12,15 +12,23 @@ import {
   ShieldAlert,
   Building2,
   Star,
+  UserRound,
+  UsersRound,
+  Mail,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   createSharedLink,
   revokeSharedLink,
+  updateOwnClientDetails,
+  invitePortalColleague,
+  removePortalColleague,
+  getCentreColleagues,
 } from "@/lib/client/actions";
-import type { ClientUserCentre } from "@/lib/client/actions";
+import type { ClientUserCentre, PortalColleague } from "@/lib/client/actions";
 
 interface SharedLink {
   id: string;
@@ -38,6 +46,10 @@ interface ClientSettingsProps {
   sharedLinks: SharedLink[];
   /** All centres this director can access. Read-only on the portal side. */
   linkedCentres?: ClientUserCentre[];
+  /** The signed-in portal user's display name — editable in Your details. */
+  currentUserName?: string;
+  /** Portal users at this centre — primary contacts manage the list. */
+  colleagues?: PortalColleague[];
 }
 
 function formatDate(dateStr: string): string {
@@ -66,6 +78,8 @@ export function ClientSettings({
   centreId,
   sharedLinks: initialLinks,
   linkedCentres = [],
+  currentUserName = "",
+  colleagues: initialColleagues = [],
 }: ClientSettingsProps) {
   const [links, setLinks] = useState(initialLinks);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -114,6 +128,7 @@ export function ClientSettings({
     return (
       <div className="animate-fade-up space-y-6">
         <h1 className="text-2xl font-bold font-heading text-foreground">Settings</h1>
+        <YourDetailsCard initialName={currentUserName} />
         <LinkedCentresCard centres={linkedCentres} currentCentreId={centreId} />
         <Card className="rounded-2xl">
           <CardContent className="flex flex-col items-center py-12 text-center">
@@ -138,6 +153,16 @@ export function ClientSettings({
       <p className="mt-1 text-sm text-muted-foreground">
         Manage shared access links and preferences
       </p>
+
+      {/* Your details — every portal user manages their own name. */}
+      <div className="mt-6">
+        <YourDetailsCard initialName={currentUserName} />
+      </div>
+
+      {/* Team access — primary contacts invite and remove colleagues. */}
+      <div className="mt-6">
+        <TeamAccessCard centreId={centreId} initialColleagues={initialColleagues} />
+      </div>
 
       {/* Your linked centres — visible whenever the user has any centre access. */}
       <div className="mt-6">
@@ -307,6 +332,205 @@ function LinkedCentresCard({
           Centre links are managed by Build Alpha Kids admin. Contact your account
           manager to add or remove centres.
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
+// Your details — self-service name edit for every portal user
+// ============================================================
+
+function YourDetailsCard({ initialName }: { initialName: string }) {
+  const [name, setName] = useState(initialName);
+  const [savedName, setSavedName] = useState(initialName);
+  const [isSaving, startSaveTransition] = useTransition();
+
+  const dirty = name.trim() !== savedName && name.trim().length > 0;
+
+  function handleSave() {
+    const next = name.trim();
+    startSaveTransition(async () => {
+      const { error } = await updateOwnClientDetails(next);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setSavedName(next);
+      toast.success("Your details are updated.");
+    });
+  }
+
+  return (
+    <Card className="rounded-2xl transition-shadow hover:shadow-md">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <UserRound className="h-4 w-4 text-[#0891B2]" />
+          Your details
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            aria-label="Your name"
+            className="min-h-[44px] sm:max-w-sm"
+          />
+          <Button
+            onClick={handleSave}
+            disabled={!dirty || isSaving}
+            className="min-h-[44px] rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+          >
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Your sign-in email can only be changed by Build Alpha Kids — message
+          us from the portal if it needs updating.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
+// Team access — primary contact invites/removes colleagues
+// ============================================================
+
+function TeamAccessCard({
+  centreId,
+  initialColleagues,
+}: {
+  centreId: string;
+  initialColleagues: PortalColleague[];
+}) {
+  const [colleagues, setColleagues] = useState(initialColleagues);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [isInviting, startInviteTransition] = useTransition();
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  function refresh() {
+    getCentreColleagues(centreId).then(({ data }) => setColleagues(data));
+  }
+
+  function handleInvite() {
+    startInviteTransition(async () => {
+      const { error } = await invitePortalColleague(
+        centreId,
+        inviteName,
+        inviteEmail
+      );
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      toast.success(`Invite sent to ${inviteEmail.trim()}.`);
+      setInviteName("");
+      setInviteEmail("");
+      refresh();
+    });
+  }
+
+  function handleRemove(colleague: PortalColleague) {
+    setRemovingId(colleague.id);
+    removePortalColleague(centreId, colleague.id).then(({ error }) => {
+      setRemovingId(null);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      setColleagues((prev) => prev.filter((c) => c.id !== colleague.id));
+      toast.success(`${colleague.name} no longer has portal access.`);
+    });
+  }
+
+  return (
+    <Card className="rounded-2xl transition-shadow hover:shadow-md">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <UsersRound className="h-4 w-4 text-[#0891B2]" />
+          Team access
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col gap-2">
+          {colleagues.map((c) => (
+            <li
+              key={c.id}
+              className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-xs font-semibold text-cyan-700">
+                {c.name.charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-foreground">
+                  {c.name}
+                </span>
+                <span className="block truncate text-[11px] text-muted-foreground">
+                  {c.email}
+                </span>
+              </span>
+              {c.is_primary ? (
+                <Badge
+                  variant="outline"
+                  className="shrink-0 border-cyan-200 bg-cyan-50 text-cyan-700"
+                >
+                  Primary
+                </Badge>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemove(c)}
+                  disabled={removingId === c.id}
+                  className="shrink-0 text-muted-foreground hover:text-red-600"
+                  aria-label={`Remove ${c.name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-4 rounded-xl border bg-muted/30 p-3">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+            <Mail className="h-3.5 w-3.5 text-[#0891B2]" />
+            Invite a colleague
+          </p>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <Input
+              placeholder="Their name"
+              value={inviteName}
+              onChange={(e) => setInviteName(e.target.value)}
+              aria-label="Colleague name"
+              className="min-h-[44px]"
+            />
+            <Input
+              placeholder="Their email"
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              aria-label="Colleague email"
+              className="min-h-[44px]"
+            />
+            <Button
+              onClick={handleInvite}
+              disabled={
+                isInviting || !inviteName.trim() || !inviteEmail.trim()
+              }
+              className="min-h-[44px] shrink-0 rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+            >
+              {isInviting ? "Sending..." : "Send invite"}
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            They'll get a sign-in link by email with the same view of the
+            portal as you, minus these settings.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

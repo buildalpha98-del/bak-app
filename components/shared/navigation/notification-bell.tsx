@@ -296,18 +296,23 @@ export function NotificationBell({
           )}
         </div>
 
-        <div className="border-t border-border px-4 py-2.5 text-center bg-secondary/20">
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              router.push(`/${userRole}/notifications`);
-            }}
-            className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
-          >
-            View all notifications
-          </button>
-        </div>
+        {/* Portal (client) users have no notifications page — their
+            /{role}/notifications route doesn't exist, so the link would
+            silently bounce to the dashboard. */}
+        {userRole !== "client" && (
+          <div className="border-t border-border px-4 py-2.5 text-center bg-secondary/20">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                router.push(`/${userRole}/notifications`);
+              }}
+              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
+            >
+              View all notifications
+            </button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );

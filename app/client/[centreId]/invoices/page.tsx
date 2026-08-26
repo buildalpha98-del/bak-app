@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { AlertCircle, FileText, CheckCircle2 } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientInvoices } from "@/lib/client/portal-actions";
 import { getInvoices as getLaunchInvoices } from "@/lib/launch/invoice-actions";
@@ -35,18 +34,18 @@ export default async function ClientInvoicesPage({
       <ClientPortalPulseStrip
         stats={[
           {
-            icon: AlertCircle,
+            icon: "alert-circle",
             count: pulse.invoicesOverdueCount,
-            label: pulse.invoicesOverdueCount === 1 ? "overdue" : "overdue",
+            label: "overdue",
             href: `/client/${centreId}/invoices`,
           },
           {
-            icon: FileText,
+            icon: "file-text",
             count: pulse.invoicesUnpaidCount,
-            label: pulse.invoicesUnpaidCount === 1 ? "unpaid" : "unpaid",
+            label: "unpaid",
           },
           {
-            icon: CheckCircle2,
+            icon: "check-circle",
             count: pulse.invoicesPaidThisMonthCount,
             label: "paid this month",
           },
