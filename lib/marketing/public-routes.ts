@@ -26,6 +26,9 @@ export const PUBLIC_ROUTES = [
   "/feedback",
   "/refer",
   "/client/shared",
+  // The proposal demo entry point: anonymous by design — the route
+  // handler signs the visitor into the view-only demo-school account.
+  "/demo",
   // Crawler endpoints. The middleware matcher only excludes _next,
   // static assets and a file-extension list that these two do not
   // match, so without an entry here an anonymous GET /sitemap.xml is
