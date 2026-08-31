@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/ui/app-link";
-import { ArrowLeft, Calendar, Clock, User, Users, Star, MessageSquare } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, GraduationCap, User, Users, Star, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +87,18 @@ export function ClientSessionDetail({ session, centreId }: ClientSessionDetailPr
               <User className="h-4 w-4 shrink-0 text-cyan-600" />
               <span>Coach: {session.coach_name ?? "TBC"}</span>
             </div>
+            {session.class_names.length > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <GraduationCap className="h-4 w-4 shrink-0 text-cyan-600" />
+                <div className="flex flex-wrap gap-1.5">
+                  {session.class_names.map((name) => (
+                    <Badge key={name} variant="outline" className="text-xs">
+                      {name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             {session.headcount !== null && (
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-4 w-4 shrink-0 text-cyan-600" />
