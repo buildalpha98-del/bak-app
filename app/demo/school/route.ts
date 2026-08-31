@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { DEMO_VIEWER_EMAIL } from "@/lib/demo";
 
 // ============================================================
 // /demo/school — the shareable demo-portal link for proposals
@@ -25,8 +26,6 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 //     prospect, is the point.
 
 export const dynamic = "force-dynamic";
-
-const DEMO_VIEWER_EMAIL = "demo-viewer@buildalphakids.app";
 
 export async function GET(request: NextRequest) {
   const fallback = NextResponse.redirect(new URL("/client-login", request.url));
