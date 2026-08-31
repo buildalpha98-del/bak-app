@@ -56,11 +56,13 @@ export async function getCentreCoaches(centreId: string): Promise<VerifiedCoach[
     .select("id, name, photo_url, date_of_birth")
     .in("id", coachIds);
 
-  // Get compliance docs
+  // Get compliance docs. The table keys on user_id / doc_number — the
+  // old coach_id / document_number select errored silently, so every
+  // coach rendered with no WWCC or first aid on file.
   const { data: compDocs } = await supabase
     .from("compliance_docs")
-    .select("coach_id, doc_type, status, expiry_date, document_number")
-    .in("coach_id", coachIds)
+    .select("user_id, doc_type, status, expiry_date, doc_number")
+    .in("user_id", coachIds)
     .in("doc_type", ["wwcc", "first_aid"]);
 
   // Build results
@@ -69,8 +71,8 @@ export async function getCentreCoaches(centreId: string): Promise<VerifiedCoach[
     const info = coachMap[profile.id];
     if (!info) continue;
 
-    const wwccDoc = compDocs?.find((d) => d.coach_id === profile.id && d.doc_type === "wwcc");
-    const firstAidDoc = compDocs?.find((d) => d.coach_id === profile.id && d.doc_type === "first_aid");
+    const wwccDoc = compDocs?.find((d) => d.user_id === profile.id && d.doc_type === "wwcc");
+    const firstAidDoc = compDocs?.find((d) => d.user_id === profile.id && d.doc_type === "first_aid");
 
     coaches.push({
       id: profile.id,
@@ -82,8 +84,8 @@ export async function getCentreCoaches(centreId: string): Promise<VerifiedCoach[
         ? {
             status: wwccDoc.status,
             expiry_date: wwccDoc.expiry_date,
-            document_number: wwccDoc.document_number
-              ? `...${wwccDoc.document_number.slice(-4)}`
+            document_number: wwccDoc.doc_number
+              ? `...${wwccDoc.doc_number.slice(-4)}`
               : undefined,
           }
         : null,
