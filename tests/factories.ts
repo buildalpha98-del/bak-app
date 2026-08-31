@@ -154,6 +154,7 @@ export function createMockSession(overrides: Partial<Session> = {}): Session {
     notes: null,
     needs_ops_review: false,
     is_trial: false,
+    school_class_ids: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,

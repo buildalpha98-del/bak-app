@@ -7,6 +7,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { yearGroupToAgeBand } from "@/lib/schools/year-groups";
+import {
+  parseClassListCsv,
+  buildClassImportPlan,
+  type ClassImportPlan,
+} from "@/lib/schools/class-import";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 export interface SchoolClassSummary {
@@ -262,6 +267,211 @@ export async function assignChildrenToClass(
   } catch (err) {
     console.error("assignChildrenToClass error:", err);
     return { error: "Failed to assign students." };
+  }
+}
+
+export interface ClassOption {
+  id: string;
+  name: string;
+  year_group: string;
+  teacher_name: string | null;
+}
+
+/**
+ * Lightweight class list for pickers (roster session sheet). Staff-only;
+ * the coach/portal surfaces read classes through their own RLS-scoped
+ * queries instead.
+ */
+export async function getClassOptionsForCentre(
+  centreId: string
+): Promise<{ data: ClassOption[] | null; error: string | null }> {
+  try {
+    const { error: authError } = await requireStaff();
+    if (authError) return { data: null, error: authError };
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("school_classes")
+      .select("id, name, year_group, teacher_name")
+      .eq("centre_id", centreId)
+      .eq("school_year", Number(sydneyTodayIso().slice(0, 4)))
+      .order("name");
+    if (error) return { data: null, error: error.message };
+    return { data: data ?? [], error: null };
+  } catch (err) {
+    console.error("getClassOptionsForCentre error:", err);
+    return { data: null, error: "Failed to load classes." };
+  }
+}
+
+export interface ClassImportPreview {
+  plan: ClassImportPlan;
+  parseErrors: { line: number; message: string }[];
+  rowCount: number;
+}
+
+async function buildImportPreview(
+  centreId: string,
+  csvText: string
+): Promise<{ data: ClassImportPreview | null; error: string | null }> {
+  const parsed = parseClassListCsv(csvText);
+  if (parsed.rows.length === 0) {
+    return {
+      data: null,
+      error:
+        parsed.errors[0]?.message ??
+        "No student rows found in the file.",
+    };
+  }
+
+  const { data, error } = await getSchoolClasses(centreId);
+  if (error || !data) return { data: null, error: error ?? "Failed to load the roster." };
+
+  const schoolYear = Number(sydneyTodayIso().slice(0, 4));
+  const currentYearClasses = await (async () => {
+    const supabase = await createSupabaseServerClient();
+    const { data: classes } = await supabase
+      .from("school_classes")
+      .select("id, name, year_group, teacher_name")
+      .eq("centre_id", centreId)
+      .eq("school_year", schoolYear);
+    return classes ?? [];
+  })();
+
+  const plan = buildClassImportPlan(
+    parsed.rows,
+    data.roster.map((c) => ({
+      child_id: c.child_id,
+      first_name: c.first_name,
+      last_name: c.last_name,
+    })),
+    currentYearClasses
+  );
+  return {
+    data: { plan, parseErrors: parsed.errors, rowCount: parsed.rows.length },
+    error: null,
+  };
+}
+
+/** Parse a pasted/uploaded class-list CSV and report what a commit would do. */
+export async function previewClassImport(
+  centreId: string,
+  csvText: string
+): Promise<{ data: ClassImportPreview | null; error: string | null }> {
+  try {
+    const { error: authError } = await requireStaff();
+    if (authError) return { data: null, error: authError };
+    if (csvText.length > 500_000) return { data: null, error: "File too large (500KB max)." };
+    return await buildImportPreview(centreId, csvText);
+  } catch (err) {
+    console.error("previewClassImport error:", err);
+    return { data: null, error: "Failed to read the file." };
+  }
+}
+
+export interface ClassImportResult {
+  createdClasses: number;
+  assigned: number;
+  unmatched: number;
+  ambiguous: number;
+  warnings: string[];
+}
+
+/**
+ * Commit a class-list import: create missing classes for the current
+ * school year, fill in missing teachers, and assign matched children.
+ * The CSV is re-parsed server-side — the preview the user approved is
+ * advisory, never the write payload. Unmatched/ambiguous rows are
+ * skipped and reported, not guessed at.
+ */
+export async function commitClassImport(
+  centreId: string,
+  csvText: string
+): Promise<{ data: ClassImportResult | null; error: string | null }> {
+  try {
+    const { userId, error: authError } = await requireStaff();
+    if (authError) return { data: null, error: authError };
+    if (csvText.length > 500_000) return { data: null, error: "File too large (500KB max)." };
+
+    const { data: preview, error } = await buildImportPreview(centreId, csvText);
+    if (error || !preview) return { data: null, error: error ?? "Failed to read the file." };
+
+    const supabase = await createSupabaseServerClient();
+    const schoolYear = Number(sydneyTodayIso().slice(0, 4));
+    const classIdByName = new Map<string, string>();
+    let createdClasses = 0;
+
+    for (const cls of preview.plan.classes) {
+      if (cls.existing_id) {
+        classIdByName.set(cls.name, cls.existing_id);
+        if (cls.teacher_name) {
+          // Fill a missing teacher; never overwrite one already on file.
+          await supabase
+            .from("school_classes")
+            .update({ teacher_name: cls.teacher_name })
+            .eq("id", cls.existing_id)
+            .is("teacher_name", null);
+        }
+        continue;
+      }
+      const { data: inserted, error: insErr } = await supabase
+        .from("school_classes")
+        .insert({
+          centre_id: centreId,
+          name: cls.name,
+          year_group: cls.year_group,
+          school_year: schoolYear,
+          teacher_name: cls.teacher_name,
+        })
+        .select("id")
+        .single();
+      if (insErr || !inserted) {
+        return { data: null, error: `Failed to create class "${cls.name}": ${insErr?.message}` };
+      }
+      classIdByName.set(cls.name, inserted.id);
+      createdClasses++;
+    }
+
+    const childrenByClass = new Map<string, string[]>();
+    for (const a of preview.plan.assignments) {
+      const list = childrenByClass.get(a.className) ?? [];
+      list.push(a.child_id);
+      childrenByClass.set(a.className, list);
+    }
+    let assigned = 0;
+    for (const [className, childIds] of childrenByClass) {
+      const classId = classIdByName.get(className);
+      if (!classId) continue;
+      const { error: assignErr } = await assignChildrenToClass(classId, childIds);
+      if (assignErr) return { data: null, error: assignErr };
+      assigned += childIds.length;
+    }
+
+    await supabase.from("activity_log").insert({
+      user_id: userId,
+      action: "school_class_list_imported",
+      entity_type: "centre",
+      entity_id: centreId,
+      metadata: {
+        created_classes: createdClasses,
+        assigned,
+        unmatched: preview.plan.unmatched.length,
+        ambiguous: preview.plan.ambiguous.length,
+      },
+    });
+
+    return {
+      data: {
+        createdClasses,
+        assigned,
+        unmatched: preview.plan.unmatched.length,
+        ambiguous: preview.plan.ambiguous.length,
+        warnings: preview.plan.warnings,
+      },
+      error: null,
+    };
+  } catch (err) {
+    console.error("commitClassImport error:", err);
+    return { data: null, error: "Failed to import the class list." };
   }
 }
 

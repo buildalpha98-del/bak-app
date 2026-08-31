@@ -149,6 +149,11 @@ function SessionCard({
               >
                 {session.sport}
               </Badge>
+              {session.class_names.map((name) => (
+                <Badge key={name} variant="outline" className="text-xs">
+                  {name}
+                </Badge>
+              ))}
               <span className="text-sm text-muted-foreground">
                 Coach {coachFirstName(session.coach_name)}
               </span>

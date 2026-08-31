@@ -81,7 +81,7 @@ function useElapsedTimer(startedAt: string | null) {
 // ============================================================
 
 export function ActiveSessionView({ data }: ActiveSessionViewProps) {
-  const { session, centre_name, centre_children, program } = data;
+  const { session, centre_name, school_class_label, centre_children, program } = data;
   const colour = sportColour(session.sport);
   const elapsed = useElapsedTimer(session.started_at);
 
@@ -273,6 +273,7 @@ export function ActiveSessionView({ data }: ActiveSessionViewProps) {
         </div>
         <p className="mx-auto max-w-lg mt-0.5 text-xs text-muted-foreground truncate">
           {centre_name}
+          {school_class_label ? ` — ${school_class_label}` : ""}
         </p>
       </div>
 

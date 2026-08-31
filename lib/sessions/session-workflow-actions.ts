@@ -53,6 +53,9 @@ export interface ActiveSessionData {
     centre_id: string;
   };
   centre_name: string;
+  /** e.g. "3B & 5/6M" when the session targets school classes and the
+   *  children list is pre-filtered to them; null otherwise. */
+  school_class_label: string | null;
   centre_children: {
     id: string;
     first_name: string;
@@ -460,7 +463,7 @@ export async function getActiveSessionData(
         `id, date, time, duration_minutes, sport, status,
          started_at, completed_at, headcount, coach_notes,
          actual_duration_minutes, needs_ops_review,
-         coach_id, centre_id, program_id`
+         coach_id, centre_id, program_id, school_class_ids`
       )
       .eq("id", sessionId)
       .single();
@@ -487,8 +490,40 @@ export async function getActiveSessionData(
       .eq("centre_id", session.centre_id)
       .eq("status", "active");
 
+    // Class targeting (design phase 3): pre-filter the named-attendance
+    // list to the targeted classes' current members. If the filter would
+    // empty the list (classes with no members yet), fall back to the full
+    // roster — a data-entry gap shouldn't cost the coach the whole list.
+    const targetClassIds = (session.school_class_ids as string[] | null) ?? [];
+    let schoolClassLabel: string | null = null;
+    let classMemberIds: Set<string> | null = null;
+    if (targetClassIds.length > 0) {
+      const [{ data: targetClasses }, { data: members }] = await Promise.all([
+        supabase
+          .from("school_classes")
+          .select("name")
+          .in("id", targetClassIds)
+          .order("name"),
+        supabase
+          .from("school_class_children")
+          .select("child_id")
+          .in("class_id", targetClassIds)
+          .is("ended_at", null),
+      ]);
+      if (targetClasses && targetClasses.length > 0) {
+        schoolClassLabel = targetClasses.map((c) => c.name).join(" & ");
+      }
+      if (members && members.length > 0) {
+        classMemberIds = new Set(members.map((m) => m.child_id));
+      }
+    }
+
     if (childLinks && childLinks.length > 0) {
-      const childIds = childLinks.map((l) => l.child_id);
+      const allIds = childLinks.map((l) => l.child_id);
+      const filtered = classMemberIds
+        ? allIds.filter((id) => classMemberIds.has(id))
+        : allIds;
+      const childIds = filtered.length > 0 ? filtered : allIds;
       const { data: children } = await supabase
         .from("children")
         .select("id, first_name, last_name, age_group")
@@ -540,6 +575,7 @@ export async function getActiveSessionData(
           centre_id: session.centre_id,
         },
         centre_name: centre?.name ?? "Unknown",
+        school_class_label: schoolClassLabel,
         centre_children: centreChildren,
         program,
       },

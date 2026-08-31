@@ -71,6 +71,7 @@ export interface UpdateSessionData {
   pay_rate_override?: number | null;
   cancellation_reason?: string;
   program_id?: string | null;
+  school_class_ids?: string[] | null;
 }
 
 // ============================================================
@@ -145,6 +146,8 @@ export async function getSessionsForWeek(
       notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
+      school_class_ids:
+        ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? null,
       started_at: s.started_at,
       completed_at: s.completed_at,
       created_at: s.created_at,
@@ -237,6 +240,8 @@ export async function getSessionDetail(
       notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
+      school_class_ids:
+        ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? null,
       started_at: s.started_at,
       completed_at: s.completed_at,
       created_at: s.created_at,

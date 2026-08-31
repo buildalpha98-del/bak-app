@@ -64,6 +64,10 @@ import {
   getSessionEquipmentCheck,
   type EquipmentCheckResult,
 } from "@/lib/sessions/equipment-check";
+import {
+  getClassOptionsForCentre,
+  type ClassOption,
+} from "@/lib/schools/class-actions";
 import type { ProgramListItem } from "@/lib/programs/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { SessionStatus } from "@/lib/types/enums";
@@ -163,6 +167,19 @@ export function SessionDetailSheet({
   // Equipment mismatch — programme needs vs the session's kit
   const [equipmentCheck, setEquipmentCheck] =
     useState<EquipmentCheckResult | null>(null);
+
+  // School class targeting (design phase 3) — null until loaded.
+  const [classOptions, setClassOptions] = useState<ClassOption[] | null>(null);
+
+  useEffect(() => {
+    if (open && session?.centre_type === "school" && session.centre_id) {
+      getClassOptionsForCentre(session.centre_id).then(({ data }) =>
+        setClassOptions(data ?? [])
+      );
+    } else {
+      setClassOptions(null);
+    }
+  }, [open, session?.centre_id, session?.centre_type]);
 
   useEffect(() => {
     if (open && session?.id && session?.program_id) {
@@ -278,6 +295,23 @@ export function SessionDetailSheet({
     );
     setRerosteringEvent(match ?? null);
     setStartingReroster(false);
+    onUpdate();
+  }
+
+  async function handleToggleClass(classId: string) {
+    const current = session!.school_class_ids ?? [];
+    const next = current.includes(classId)
+      ? current.filter((id) => id !== classId)
+      : [...current, classId];
+    setSaving(true);
+    const { error } = await updateSession(session!.id, {
+      school_class_ids: next.length > 0 ? next : null,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     onUpdate();
   }
 
@@ -474,6 +508,50 @@ export function SessionDetailSheet({
               </div>
             </div>
           </div>
+
+          {/* Classes (school sessions only, design phase 3). Toggling a
+              chip saves immediately — no classes selected = whole school. */}
+          {session.centre_type === "school" &&
+            classOptions !== null &&
+            classOptions.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-foreground">Classes</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {(session.school_class_ids?.length ?? 0) === 0
+                      ? "Whole school"
+                      : `${session.school_class_ids!.length} selected`}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {classOptions.map((cls) => {
+                    const selected =
+                      session.school_class_ids?.includes(cls.id) ?? false;
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        disabled={saving || isTerminal}
+                        onClick={() => handleToggleClass(cls.id)}
+                        title={cls.teacher_name ?? undefined}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60 ${
+                          selected
+                            ? "border-primary/40 bg-primary/10 text-primary"
+                            : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {cls.name}
+                        {selected && cls.teacher_name && (
+                          <span className="font-normal opacity-75">
+                            {cls.teacher_name}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
           {/* Time clock — only shown once a session has been started */}
           {(session.started_at || session.completed_at) && (

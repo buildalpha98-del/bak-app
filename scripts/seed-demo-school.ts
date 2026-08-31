@@ -1034,6 +1034,27 @@ async function refreshSchedule(
       .from("session_coaches")
       .insert({ session_id: created.id, user_id: coachIds[0], is_primary: true });
   }
+
+  // 3. Class-targeted scheduling demo: the Netball session targets 3B +
+  //    5/6M so the portal shows class badges and the coach sheet shows
+  //    the teachers. The other upcoming sessions stay whole-school on
+  //    purpose — the contrast is part of the demo.
+  const { data: targetClasses } = await supabase
+    .from("school_classes")
+    .select("id")
+    .eq("centre_id", centreId)
+    .in("name", ["3B", "5/6M"]);
+  if ((targetClasses ?? []).length > 0) {
+    await supabase
+      .from("sessions")
+      .update({ school_class_ids: targetClasses!.map((c) => c.id) })
+      .eq("centre_id", centreId)
+      .eq("sport", "Netball")
+      .eq("status", "published")
+      .gte("date", today)
+      .is("school_class_ids", null);
+  }
+
   console.log(`✓ Upcoming schedule fresh — Netball on ${nextWednesday}`);
 }
 

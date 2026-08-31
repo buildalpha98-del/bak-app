@@ -1,0 +1,307 @@
+// CSV class-list import (pure parsing/matching — no IO). Schools export
+// "student, year, class, teacher" from their SIS; this turns that file
+// into a reviewable plan: classes to create/update and child→class
+// assignments against the centre's enrolled roster. Design:
+// docs/superpowers/specs/2026-08-26-school-classes-design.md ("Data entry").
+
+export interface ParsedClassRow {
+  /** 1-based data line number (header excluded) for error reporting. */
+  line: number;
+  studentName: string;
+  firstName: string;
+  lastName: string;
+  className: string;
+  yearGroup: string;
+  teacherName: string | null;
+}
+
+export interface ClassImportParseResult {
+  rows: ParsedClassRow[];
+  errors: { line: number; message: string }[];
+}
+
+export interface RosterChildLite {
+  child_id: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface ExistingClassLite {
+  id: string;
+  name: string;
+  year_group: string;
+  teacher_name: string | null;
+}
+
+export interface ClassImportPlan {
+  classes: {
+    name: string;
+    year_group: string;
+    teacher_name: string | null;
+    /** Matching class already on file for this school year, if any. */
+    existing_id: string | null;
+  }[];
+  assignments: { child_id: string; className: string }[];
+  unmatched: ParsedClassRow[];
+  ambiguous: { row: ParsedClassRow; candidates: RosterChildLite[] }[];
+  warnings: string[];
+}
+
+/**
+ * Normalise free-text year groups: "Kindy" → "K", "Year 3" → "3",
+ * "5-6" → "5/6". Returns null when nothing year-like remains.
+ */
+export function normaliseYearGroup(input: string): string | null {
+  const cleaned = input
+    .trim()
+    .toUpperCase()
+    .replace(/\b(YEAR|YR|GRADE)\b\.?/g, "")
+    .trim();
+  if (/^KIND/.test(cleaned)) return "K";
+  const tokens = cleaned.split(/[^0-9K]+/).filter(Boolean);
+  const parts = tokens
+    .map((t) => (t === "K" ? "K" : /^[0-6]$/.test(t) ? t : null))
+    .filter((t): t is string => t !== null);
+  if (parts.length === 0) return null;
+  return parts.join("/");
+}
+
+/** "3B" → "3", "KM" → "K", "5/6M" → "5/6" — the leading year token(s) of a class name. */
+function yearGroupFromClassName(className: string): string | null {
+  const match = className.trim().toUpperCase().match(/^(K|[1-6])([/\-](K|[1-6]))?/);
+  if (!match) return null;
+  return match[3] ? `${match[1]}/${match[3]}` : match[1];
+}
+
+/** Minimal quote-aware CSV: handles quoted fields, embedded commas, doubled quotes. */
+function splitCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      fields.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current);
+  return fields.map((f) => f.trim());
+}
+
+interface HeaderMap {
+  fullName: number | null;
+  firstName: number | null;
+  lastName: number | null;
+  year: number | null;
+  className: number | null;
+  teacher: number | null;
+}
+
+function mapHeader(cells: string[]): HeaderMap | null {
+  const map: HeaderMap = {
+    fullName: null,
+    firstName: null,
+    lastName: null,
+    year: null,
+    className: null,
+    teacher: null,
+  };
+  cells.forEach((raw, i) => {
+    const h = raw.toLowerCase().replace(/[^a-z ]/g, "").trim();
+    if (/^(first ?name|given ?name)$/.test(h)) map.firstName = i;
+    else if (/^(last ?name|surname|family ?name)$/.test(h)) map.lastName = i;
+    else if (/^(student ?name|student|child ?name|child|name|full ?name)$/.test(h)) map.fullName = i;
+    else if (/^(year ?group|year|grade|yr)$/.test(h)) map.year = i;
+    else if (/^(class ?name|class|roll ?class|home ?class)$/.test(h)) map.className = i;
+    else if (/^(class ?teacher|teacher ?name|teacher)$/.test(h)) map.teacher = i;
+  });
+  const hasName = map.fullName !== null || (map.firstName !== null && map.lastName !== null);
+  if (!hasName || map.className === null) return null;
+  return map;
+}
+
+/** "Ava Nguyen" or "Nguyen, Ava" → { first, last }. */
+function splitStudentName(name: string): { first: string; last: string } {
+  const trimmed = name.trim().replace(/\s+/g, " ");
+  if (trimmed.includes(",")) {
+    const [last, first] = trimmed.split(",").map((p) => p.trim());
+    return { first: first ?? "", last: last ?? "" };
+  }
+  const parts = trimmed.split(" ");
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts.slice(0, -1).join(" "), last: parts[parts.length - 1] };
+}
+
+export function parseClassListCsv(text: string): ClassImportParseResult {
+  const lines = text
+    .replace(/^﻿/, "")
+    .split(/\r\n|\r|\n/)
+    .map((l) => l.replace(/^﻿/, ""));
+
+  let header: HeaderMap | null = null;
+  let headerIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === "") continue;
+    header = mapHeader(splitCsvLine(lines[i]));
+    headerIndex = i;
+    break;
+  }
+  if (!header) {
+    return {
+      rows: [],
+      errors: [
+        {
+          line: 0,
+          message:
+            "Couldn't find a recognisable header row. Expected columns like: Student name, Year, Class, Teacher.",
+        },
+      ],
+    };
+  }
+
+  const rows: ParsedClassRow[] = [];
+  const errors: { line: number; message: string }[] = [];
+  let dataLine = 0;
+  for (let i = headerIndex + 1; i < lines.length; i++) {
+    if (lines[i].trim() === "") continue;
+    dataLine++;
+    const cells = splitCsvLine(lines[i]);
+    const get = (idx: number | null) => (idx !== null ? (cells[idx] ?? "").trim() : "");
+
+    let first = get(header.firstName);
+    let last = get(header.lastName);
+    let studentName = `${first} ${last}`.trim();
+    if (header.fullName !== null && !first && !last) {
+      studentName = get(header.fullName);
+      const split = splitStudentName(studentName);
+      first = split.first;
+      last = split.last;
+      studentName = `${first} ${last}`.trim();
+    }
+    const className = get(header.className);
+
+    if (!studentName) {
+      errors.push({ line: dataLine, message: "Missing student name." });
+      continue;
+    }
+    if (!className) {
+      errors.push({ line: dataLine, message: `Missing class for ${studentName}.` });
+      continue;
+    }
+
+    const rawYear = get(header.year);
+    const yearGroup =
+      (rawYear ? normaliseYearGroup(rawYear) : null) ?? yearGroupFromClassName(className);
+    if (!yearGroup) {
+      errors.push({
+        line: dataLine,
+        message: `Couldn't work out a year group for ${studentName} (class "${className}"${rawYear ? `, year "${rawYear}"` : ""}).`,
+      });
+      continue;
+    }
+
+    const teacher = get(header.teacher);
+    rows.push({
+      line: dataLine,
+      studentName,
+      firstName: first,
+      lastName: last,
+      className,
+      yearGroup,
+      teacherName: teacher || null,
+    });
+  }
+  return { rows, errors };
+}
+
+const nameKey = (first: string, last: string) =>
+  `${first.trim().toLowerCase()}|${last.trim().toLowerCase()}`;
+
+/**
+ * Turn parsed rows into a reviewable plan against the centre's enrolled
+ * roster and existing classes. Never guesses: duplicate roster names are
+ * surfaced as ambiguous, unknown names as unmatched.
+ */
+export function buildClassImportPlan(
+  rows: ParsedClassRow[],
+  roster: RosterChildLite[],
+  existingClasses: ExistingClassLite[]
+): ClassImportPlan {
+  const rosterByName = new Map<string, RosterChildLite[]>();
+  for (const child of roster) {
+    const key = nameKey(child.first_name, child.last_name);
+    const list = rosterByName.get(key) ?? [];
+    list.push(child);
+    rosterByName.set(key, list);
+  }
+  const existingByName = new Map(existingClasses.map((c) => [c.name.toLowerCase(), c]));
+
+  const classes = new Map<string, ClassImportPlan["classes"][number]>();
+  const assignments: ClassImportPlan["assignments"] = [];
+  const unmatched: ParsedClassRow[] = [];
+  const ambiguous: ClassImportPlan["ambiguous"] = [];
+  const warnings: string[] = [];
+  const warned = new Set<string>();
+
+  for (const row of rows) {
+    const clsKey = row.className.toLowerCase();
+    const existing = existingByName.get(clsKey) ?? null;
+    let cls = classes.get(clsKey);
+    if (!cls) {
+      cls = {
+        name: existing?.name ?? row.className,
+        year_group: row.yearGroup,
+        teacher_name: row.teacherName,
+        existing_id: existing?.id ?? null,
+      };
+      classes.set(clsKey, cls);
+    } else {
+      if (cls.year_group !== row.yearGroup && !warned.has(`y:${clsKey}`)) {
+        warned.add(`y:${clsKey}`);
+        warnings.push(
+          `Class "${cls.name}" appears with two year groups ("${cls.year_group}" and "${row.yearGroup}") — keeping "${cls.year_group}".`
+        );
+      }
+      if (!cls.teacher_name && row.teacherName) {
+        cls.teacher_name = row.teacherName;
+      } else if (
+        cls.teacher_name &&
+        row.teacherName &&
+        cls.teacher_name.toLowerCase() !== row.teacherName.toLowerCase() &&
+        !warned.has(`t:${clsKey}`)
+      ) {
+        warned.add(`t:${clsKey}`);
+        warnings.push(
+          `Class "${cls.name}" appears with two teachers ("${cls.teacher_name}" and "${row.teacherName}") — keeping "${cls.teacher_name}".`
+        );
+      }
+    }
+
+    const candidates = rosterByName.get(nameKey(row.firstName, row.lastName)) ?? [];
+    if (candidates.length === 1) {
+      assignments.push({ child_id: candidates[0].child_id, className: cls.name });
+    } else if (candidates.length > 1) {
+      ambiguous.push({ row, candidates });
+    } else {
+      unmatched.push(row);
+    }
+  }
+
+  return { classes: [...classes.values()], assignments, unmatched, ambiguous, warnings };
+}

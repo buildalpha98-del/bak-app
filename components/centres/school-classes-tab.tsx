@@ -29,6 +29,7 @@ import {
   type ClassRosterChild,
 } from "@/lib/schools/class-actions";
 import { YEAR_GROUP_OPTIONS, yearGroupSortKey } from "@/lib/schools/year-groups";
+import { ClassImportDialog } from "@/components/centres/class-import-dialog";
 
 interface SchoolClassesTabProps {
   centreId: string;
@@ -73,6 +74,9 @@ export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ClassImportDialog centreId={centreId} onImported={load} />
+      </div>
       <CreateClassCard centreId={centreId} onCreated={load} />
 
       {classes.length === 0 ? (

@@ -95,7 +95,7 @@ export function SessionDetailView({
   currentUserId,
 }: SessionDetailViewProps) {
   const router = useRouter();
-  const { session, centreNotes, program, equipmentKit, equipmentItems, shiftThread, feedback } = detail;
+  const { session, centreNotes, program, equipmentKit, equipmentItems, shiftThread, feedback, schoolClasses } = detail;
 
   const [showNotes, setShowNotes] = useState(false);
   const [showDeclineReason, setShowDeclineReason] = useState(false);
@@ -225,6 +225,23 @@ export function SessionDetailView({
                     ? "School"
                     : session.centre_type}
               </Badge>
+              {/* Targeted classes + class teacher (day-of logistics) */}
+              {schoolClasses.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {schoolClasses.map((cls) => (
+                    <p
+                      key={cls.id}
+                      className="text-xs text-muted-foreground"
+                    >
+                      <span className="font-medium text-foreground">
+                        {cls.name}
+                      </span>{" "}
+                      · Year {cls.year_group}
+                      {cls.teacher_name ? ` · ${cls.teacher_name}` : ""}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

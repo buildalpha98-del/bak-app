@@ -246,6 +246,9 @@ export interface Session {
   notes: string | null;
   needs_ops_review: boolean;
   is_trial: boolean;
+  /** School sessions only (migration 080): the school_classes this
+   *  session is delivered to. Null/empty → whole-school/childcare. */
+  school_class_ids: string[] | null;
   created_at: string;
   updated_at: string;
 }
