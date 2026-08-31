@@ -8,13 +8,6 @@ import type { AgeGroup } from "@/lib/types/enums";
 // Types
 // ============================================================
 
-export interface AttendanceChild {
-  id: string;
-  first_name: string;
-  last_name: string;
-  age_group: AgeGroup;
-}
-
 export interface SessionAttendanceRecord {
   child_id: string;
   first_name: string;
@@ -26,67 +19,6 @@ export interface SessionAttendanceRecord {
 export interface AttendanceEntry {
   child_id: string;
   present: boolean;
-}
-
-// ============================================================
-// getChildrenForSession — pre-populated attendance list
-// ============================================================
-
-export async function getChildrenForSession(
-  sessionId: string
-): Promise<{
-  data: AttendanceChild[] | null;
-  centreId: string | null;
-  error: string | null;
-}> {
-  try {
-    const supabase = await createSupabaseServerClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, centreId: null, error: "Not authenticated." };
-
-    // Get session to find centre and age group
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("centre_id, coach_id, sport")
-      .eq("id", sessionId)
-      .single();
-
-    if (sessionError || !session)
-      return { data: null, centreId: null, error: "Session not found." };
-
-    // Get children linked to this centre (active enrolments only)
-    const { data: links } = await supabase
-      .from("centre_children")
-      .select("child_id")
-      .eq("centre_id", session.centre_id)
-      .eq("status", "active");
-
-    if (!links || links.length === 0)
-      return { data: [], centreId: session.centre_id, error: null };
-
-    const childIds = links.map((l) => l.child_id);
-
-    const { data: children, error: childrenError } = await supabase
-      .from("children")
-      .select("id, first_name, last_name, age_group")
-      .in("id", childIds)
-      .eq("status", "active")
-      .order("first_name");
-
-    if (childrenError) throw childrenError;
-
-    return {
-      data: children ?? [],
-      centreId: session.centre_id,
-      error: null,
-    };
-  } catch (err) {
-    console.error("getChildrenForSession error:", err);
-    return { data: null, centreId: null, error: "Failed to load children." };
-  }
 }
 
 // ============================================================
