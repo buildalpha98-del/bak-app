@@ -16,6 +16,7 @@ import {
   Sparkles,
   Lightbulb,
   StickyNote,
+  Download,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -185,28 +186,44 @@ export function ChildDetailView({
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100 text-lg font-semibold text-cyan-700">
-          {child.first_name.charAt(0)}
-        </div>
-        <div>
-          <h1 className="text-xl font-bold font-heading text-foreground sm:text-2xl">
-            {child.first_name} {child.last_name}
-          </h1>
-          <div className="flex items-center gap-2 mt-0.5">
-            <Badge
-              variant="secondary"
-              className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
-            >
-              {child.age_group} yrs
-            </Badge>
-            {child.date_of_birth && (
-              <span className="text-xs text-muted-foreground">
-                DOB: {formatDate(child.date_of_birth)}
-              </span>
-            )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-lg font-semibold text-cyan-700">
+            {child.first_name.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold font-heading text-foreground sm:text-2xl">
+              {child.first_name} {child.last_name}
+            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <Badge
+                variant="secondary"
+                className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+              >
+                {child.age_group} yrs
+              </Badge>
+              {child.date_of_birth && (
+                <span className="text-xs text-muted-foreground">
+                  DOB: {formatDate(child.date_of_birth)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
+        {/* Per-student report card — hidden until an assessment exists,
+            since the PDF is built from assessment terms. */}
+        {child.assessments.length > 0 && (
+          <a
+            href={`/api/client/${centreId}/student-report-pdf?childId=${child.id}`}
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-[#0891B2]/30 bg-[#0891B2]/5 px-3 py-2 text-sm font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/10"
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {isSchool ? "Student report" : "Progress report"}
+            </span>
+            <span className="sm:hidden">Report</span>
+          </a>
+        )}
       </div>
 
       {/* Tabs */}
