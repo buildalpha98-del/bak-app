@@ -159,6 +159,31 @@ const styles = StyleSheet.create({
     color: GREY,
     marginLeft: 8,
   },
+  classTable: {
+    marginBottom: 12,
+  },
+  classRow: {
+    flexDirection: "row",
+    paddingVertical: 4,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#E0E0E0",
+    alignItems: "center",
+  },
+  classHeaderRow: {
+    flexDirection: "row",
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#C0C0C0",
+  },
+  classCellName: { flex: 2.2, fontSize: 10, fontFamily: "Helvetica-Bold" },
+  classCellTeacher: { flex: 2, fontSize: 9, color: GREY },
+  classCell: { flex: 1.1, fontSize: 10, textAlign: "right" },
+  classHeaderCell: {
+    fontSize: 8,
+    color: GREY,
+    fontFamily: "Helvetica-Bold",
+    textTransform: "uppercase",
+  },
   footer: {
     position: "absolute",
     bottom: 30,
@@ -277,9 +302,67 @@ export function ReportPDF({
               <Text style={styles.summaryText}>
                 {content.assessment_summary.children_assessed} children were
                 formally assessed during this term.
+                {content.assessment_summary.average_improvement > 0
+                  ? ` Skill marks improved by an average of ${content.assessment_summary.average_improvement.toFixed(1)} (on the 1–5 scale) since last term.`
+                  : ""}
               </Text>
             </>
           )}
+
+        {/* By class (schools with a class list) */}
+        {content.class_breakdown && content.class_breakdown.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: accent }]}>
+              By Class
+            </Text>
+            <View style={styles.classTable}>
+              <View style={styles.classHeaderRow}>
+                <Text style={[styles.classCellName, styles.classHeaderCell]}>
+                  Class
+                </Text>
+                <Text style={[styles.classCellTeacher, styles.classHeaderCell]}>
+                  Teacher
+                </Text>
+                <Text style={[styles.classCell, styles.classHeaderCell]}>
+                  Students
+                </Text>
+                <Text style={[styles.classCell, styles.classHeaderCell]}>
+                  Attendance
+                </Text>
+                <Text style={[styles.classCell, styles.classHeaderCell]}>
+                  Avg Mark
+                </Text>
+                <Text style={[styles.classCell, styles.classHeaderCell]}>
+                  Movement
+                </Text>
+              </View>
+              {content.class_breakdown.map((cls) => (
+                <View key={cls.id} style={styles.classRow}>
+                  <Text style={styles.classCellName}>
+                    {cls.name} (Year {cls.year_group})
+                  </Text>
+                  <Text style={styles.classCellTeacher}>
+                    {cls.teacher_name ?? ""}
+                  </Text>
+                  <Text style={styles.classCell}>{cls.student_count}</Text>
+                  <Text style={styles.classCell}>
+                    {cls.attendance_percentage != null
+                      ? `${cls.attendance_percentage}%`
+                      : "—"}
+                  </Text>
+                  <Text style={styles.classCell}>
+                    {cls.avg_mark != null ? cls.avg_mark.toFixed(1) : "—"}
+                  </Text>
+                  <Text style={styles.classCell}>
+                    {cls.mark_delta != null
+                      ? `${cls.mark_delta > 0 ? "+" : ""}${cls.mark_delta.toFixed(1)}`
+                      : "—"}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {/* Highlights */}
         {content.highlights && content.highlights.length > 0 && (

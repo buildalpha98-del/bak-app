@@ -235,6 +235,71 @@ export function ReportPreview({ report }: ReportPreviewProps) {
         </Card>
       )}
 
+      {/* ---- By class (schools with a class list) ---- */}
+      {(content.class_breakdown ?? []).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">By Class</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-1.5 pr-3 font-medium">Class</th>
+                  <th className="py-1.5 pr-3 font-medium">Teacher</th>
+                  <th className="py-1.5 pr-3 text-right font-medium">Students</th>
+                  <th className="py-1.5 pr-3 text-right font-medium">Attendance</th>
+                  <th className="py-1.5 pr-3 text-right font-medium">Avg mark</th>
+                  <th className="py-1.5 text-right font-medium">Movement</th>
+                </tr>
+              </thead>
+              <tbody>
+                {content.class_breakdown!.map((cls) => (
+                  <tr key={cls.id} className="border-b last:border-0">
+                    <td className="py-1.5 pr-3 font-medium">
+                      {cls.name}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        Yr {cls.year_group}
+                      </span>
+                    </td>
+                    <td className="py-1.5 pr-3 text-muted-foreground">
+                      {cls.teacher_name ?? "—"}
+                    </td>
+                    <td className="py-1.5 pr-3 text-right">{cls.student_count}</td>
+                    <td className="py-1.5 pr-3 text-right">
+                      {cls.attendance_percentage != null
+                        ? `${cls.attendance_percentage}%`
+                        : "—"}
+                    </td>
+                    <td className="py-1.5 pr-3 text-right">
+                      {cls.avg_mark != null ? cls.avg_mark.toFixed(1) : "—"}
+                    </td>
+                    <td className="py-1.5 text-right">
+                      {cls.mark_delta != null ? (
+                        <span
+                          className={
+                            cls.mark_delta > 0
+                              ? "text-green-600"
+                              : cls.mark_delta < 0
+                                ? "text-red-600"
+                                : ""
+                          }
+                        >
+                          {cls.mark_delta > 0 ? "+" : ""}
+                          {cls.mark_delta.toFixed(1)}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ---- Highlights ---- */}
       <Card>
         <CardHeader>

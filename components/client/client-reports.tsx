@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ClientReport } from "@/lib/client/portal-actions";
+import type { ReportContentJson } from "@/lib/types/database";
 
 interface ClientReportsProps {
   reports: ClientReport[];
@@ -105,7 +106,9 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
       <div className="mt-6 space-y-3">
         {reports.map((report) => {
           const isExpanded = expandedId === report.id;
-          const content = report.content_json as Record<string, string | number | string[] | null>;
+          const content = report.content_json as Record<string, string | number | string[] | null> & {
+            class_breakdown?: ReportContentJson["class_breakdown"];
+          };
 
           return (
             <Card key={report.id} className="overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
@@ -217,6 +220,80 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                                 {sport}
                               </Badge>
                             ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* By class (schools with a class list) */}
+                    {Array.isArray(content.class_breakdown) &&
+                      content.class_breakdown.length > 0 && (
+                        <div className="sm:col-span-2">
+                          <h4 className="text-sm font-medium text-gray-700">
+                            By Class
+                          </h4>
+                          <div className="mt-2 overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+                                  <th className="py-1.5 pr-3 font-medium">Class</th>
+                                  <th className="py-1.5 pr-3 text-right font-medium">
+                                    Students
+                                  </th>
+                                  <th className="py-1.5 pr-3 text-right font-medium">
+                                    Attendance
+                                  </th>
+                                  <th className="py-1.5 pr-3 text-right font-medium">
+                                    Avg mark
+                                  </th>
+                                  <th className="py-1.5 text-right font-medium">
+                                    Movement
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {content.class_breakdown.map((cls) => (
+                                  <tr key={cls.id} className="border-b last:border-0">
+                                    <td className="py-1.5 pr-3 font-medium text-gray-900">
+                                      {cls.name}{" "}
+                                      <span className="text-xs text-gray-500">
+                                        Yr {cls.year_group}
+                                      </span>
+                                    </td>
+                                    <td className="py-1.5 pr-3 text-right text-gray-600">
+                                      {cls.student_count}
+                                    </td>
+                                    <td className="py-1.5 pr-3 text-right text-gray-600">
+                                      {cls.attendance_percentage != null
+                                        ? `${cls.attendance_percentage}%`
+                                        : "—"}
+                                    </td>
+                                    <td className="py-1.5 pr-3 text-right text-gray-600">
+                                      {cls.avg_mark != null
+                                        ? cls.avg_mark.toFixed(1)
+                                        : "—"}
+                                    </td>
+                                    <td className="py-1.5 text-right">
+                                      {cls.mark_delta != null ? (
+                                        <span
+                                          className={
+                                            cls.mark_delta > 0
+                                              ? "text-green-600"
+                                              : cls.mark_delta < 0
+                                                ? "text-red-600"
+                                                : "text-gray-600"
+                                          }
+                                        >
+                                          {cls.mark_delta > 0 ? "+" : ""}
+                                          {cls.mark_delta.toFixed(1)}
+                                        </span>
+                                      ) : (
+                                        "—"
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       )}

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { computeClassRollups } from "@/lib/schools/class-rollups";
 import type { CentreReport, ReportContentJson } from "@/lib/types/database";
 
 // ============================================================
@@ -74,28 +75,73 @@ export async function compileReportData(
 
     const sessionIds = sessions.map((s) => s.id);
 
+    // Previous term (by dates) for term-over-term movement.
+    const { data: termRow } = await supabase
+      .from("terms")
+      .select("start_date")
+      .eq("id", termId)
+      .maybeSingle();
+    let prevTermId: string | null = null;
+    if (termRow) {
+      const { data: prev } = await supabase
+        .from("terms")
+        .select("id")
+        .lt("end_date", termRow.start_date)
+        .order("end_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      prevTermId = prev?.id ?? null;
+    }
+
+    // This centre's enrolled children — scopes the marks queries to the
+    // centre (skill_ratings has no centre column of its own).
+    const { data: enrolled } = await supabase
+      .from("centre_children")
+      .select("child_id")
+      .eq("centre_id", centreId)
+      .eq("status", "active");
+    const enrolledIds = (enrolled ?? []).map((e) => e.child_id);
+
     // Parallel queries for attendance, feedback, assessments
-    const [attendanceResult, feedbackResult, assessmentResult] =
+    const [attendanceResult, feedbackResult, assessmentResult, prevAssessmentResult, classBreakdown] =
       await Promise.all([
         supabase
           .from("session_attendances")
           .select("session_id, child_id, present")
           .in("session_id", sessionIds),
+        // Term-scoped: only feedback left on this term's sessions.
         supabase
           .from("feedback_ratings")
           .select("rating, comment")
           .eq("centre_id", centreId)
+          .in("session_id", sessionIds)
           .not("rating", "is", null)
           .not("submitted_at", "is", null),
-        supabase
-          .from("skill_ratings")
-          .select("child_id, ratings_json")
-          .eq("term_id", termId),
+        enrolledIds.length > 0
+          ? supabase
+              .from("skill_ratings")
+              .select("child_id, ratings_json")
+              .eq("term_id", termId)
+              .in("child_id", enrolledIds)
+          : Promise.resolve({ data: [] as { child_id: string; ratings_json: unknown }[] }),
+        prevTermId && enrolledIds.length > 0
+          ? supabase
+              .from("skill_ratings")
+              .select("child_id, ratings_json")
+              .eq("term_id", prevTermId)
+              .in("child_id", enrolledIds)
+          : Promise.resolve({ data: [] as { child_id: string; ratings_json: unknown }[] }),
+        computeClassRollups(supabase, centreId, {
+          termId,
+          prevTermId,
+          termSessionIds: sessionIds,
+        }),
       ]);
 
     const attendances = attendanceResult.data ?? [];
     const feedbackRatings = feedbackResult.data ?? [];
     const skillRatings = assessmentResult.data ?? [];
+    const prevSkillRatings = prevAssessmentResult.data ?? [];
 
     // Calculate stats
     const sportsSet = new Set(sessions.map((s) => s.sport));
@@ -119,8 +165,35 @@ export async function compileReportData(
       .map((s) => s.coach_notes!.trim())
       .slice(0, 10);
 
-    // Assessment summary
+    // Assessment summary — real term-over-term movement: for children
+    // assessed in both terms, the change in their average mark.
     const childrenAssessed = new Set(skillRatings.map((r) => r.child_id)).size;
+    const avgByChild = (rows: { child_id: string; ratings_json: unknown }[]) => {
+      const map = new Map<string, number[]>();
+      for (const row of rows) {
+        const marks = ((row.ratings_json as { rating: number }[]) ?? [])
+          .map((s) => s.rating)
+          .filter((n) => Number.isFinite(n));
+        if (marks.length === 0) continue;
+        map.set(row.child_id, [...(map.get(row.child_id) ?? []), ...marks]);
+      }
+      const out = new Map<string, number>();
+      for (const [id, marks] of map) {
+        out.set(id, marks.reduce((a, b) => a + b, 0) / marks.length);
+      }
+      return out;
+    };
+    const termAvg = avgByChild(skillRatings);
+    const prevAvg = avgByChild(prevSkillRatings);
+    const deltas: number[] = [];
+    for (const [id, cur] of termAvg) {
+      const prev = prevAvg.get(id);
+      if (prev !== undefined) deltas.push(cur - prev);
+    }
+    const averageImprovement =
+      deltas.length > 0
+        ? Math.round((deltas.reduce((a, b) => a + b, 0) / deltas.length) * 10) / 10
+        : 0;
 
     const content: ReportContentJson = {
       summary: `${sessions.length} sessions delivered across ${sportsSet.size} sport${sportsSet.size !== 1 ? "s" : ""} during this term.`,
@@ -139,8 +212,12 @@ export async function compileReportData(
       },
       assessment_summary:
         childrenAssessed > 0
-          ? { children_assessed: childrenAssessed, average_improvement: 0 }
+          ? {
+              children_assessed: childrenAssessed,
+              average_improvement: averageImprovement,
+            }
           : undefined,
+      class_breakdown: classBreakdown.length > 0 ? classBreakdown : undefined,
       photos: [],
     };
 

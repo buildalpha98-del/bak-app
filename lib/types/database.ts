@@ -871,6 +871,18 @@ export interface ReportContentJson {
     children_assessed: number;
     average_improvement: number;
   };
+  /** Per-class rollups for schools with a class list; absent for
+   *  childcare centres. Mirrors lib/schools/class-rollups.ClassRollup. */
+  class_breakdown?: Array<{
+    id: string;
+    name: string;
+    year_group: string;
+    teacher_name: string | null;
+    student_count: number;
+    attendance_percentage: number | null;
+    avg_mark: number | null;
+    mark_delta: number | null;
+  }>;
   photos?: string[];
 }
 
