@@ -41,6 +41,9 @@ interface CoachAssessmentTask {
   skills: AssessmentSkill[];
   centre_id: string;
   centre_name: string;
+  /** Schools with a class list get one task per class (Seam D). */
+  class_id: string | null;
+  class_name: string | null;
   term_id: string;
   term_name: string;
   children: AssessmentChild[];
@@ -107,7 +110,11 @@ function TaskCard({
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
-            <CardTitle>{task.centre_name}</CardTitle>
+            <CardTitle>
+              {task.class_name
+                ? `${task.class_name} — ${task.centre_name}`
+                : task.centre_name}
+            </CardTitle>
             <Badge
               variant="secondary"
               className="bg-orange-100 text-orange-700 border-orange-200 shrink-0"
@@ -164,6 +171,7 @@ function CompletionScreen({
           Assessment Complete
         </h2>
         <p className="text-sm text-muted-foreground">
+          {task.class_name ? `${task.class_name} · ` : ""}
           {task.centre_name} &middot; {task.sport}
         </p>
       </div>
@@ -338,7 +346,7 @@ export default function CoachAssessmentView({
           <div className="space-y-3">
             {tasks.map((task, i) => (
               <TaskCard
-                key={`${task.template_id}-${task.centre_id}`}
+                key={`${task.template_id}-${task.centre_id}-${task.class_id ?? "all"}`}
                 task={task}
                 onSelect={() => handleSelectTask(i)}
               />
@@ -387,7 +395,11 @@ export default function CoachAssessmentView({
           Save &amp; Exit
         </Button>
         <div className="text-right text-xs text-muted-foreground">
-          <span className="font-medium">{selectedTask.centre_name}</span>
+          <span className="font-medium">
+            {selectedTask.class_name
+              ? `${selectedTask.class_name} — ${selectedTask.centre_name}`
+              : selectedTask.centre_name}
+          </span>
           <br />
           {selectedTask.sport}
         </div>
