@@ -23,7 +23,8 @@ export default async function ImpactDashboardPage({
 
   const data = await getImpactDashboard(centreId);
   if (!data) redirect(`/client/${clientUser.centre_id}`);
-  const { stats, attendanceTrend, ratingTrend, sportBreakdown, termName } = data;
+  const { stats, attendanceTrend, ratingTrend, sportBreakdown, classRollups, termName } =
+    data;
 
   const sessionChange =
     stats.sessionsLastTerm > 0
@@ -165,6 +166,80 @@ export default async function ImpactDashboardPage({
           );
         })}
       </div>
+
+      {/* By class — schools with a class list (design phase 2) */}
+      {classRollups.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-base font-semibold text-foreground">By class</h2>
+            <span className="text-xs text-muted-foreground">
+              Attendance &amp; average skill mark, {termName}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {classRollups.map((cls) => (
+              <Card
+                key={cls.id}
+                className="rounded-2xl bg-card transition-all hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-foreground">{cls.name}</p>
+                    <Badge
+                      variant="secondary"
+                      className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                    >
+                      Year {cls.year_group}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {[cls.teacher_name, `${cls.student_count} students`]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-lg font-bold text-foreground">
+                        {cls.attendance_percentage != null
+                          ? `${cls.attendance_percentage}%`
+                          : "—"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">Attendance</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-foreground">
+                        {cls.avg_mark != null ? (
+                          <>
+                            {cls.avg_mark.toFixed(1)}
+                            <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+                              / 5
+                            </span>
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">Avg skill mark</p>
+                    </div>
+                  </div>
+                  {cls.mark_delta != null && cls.mark_delta !== 0 && (
+                    <Badge
+                      className={`mt-2 text-xs ${
+                        cls.mark_delta > 0
+                          ? "border-green-200 bg-green-50 text-green-700"
+                          : "border-red-200 bg-red-50 text-red-700"
+                      }`}
+                    >
+                      {cls.mark_delta > 0 ? "▲" : "▼"} {Math.abs(cls.mark_delta).toFixed(1)}{" "}
+                      vs last term
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Charts section */}
       <div className="grid gap-4 lg:grid-cols-2">
