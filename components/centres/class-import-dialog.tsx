@@ -50,12 +50,18 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
       toast.error("File too large (500KB max).");
       return;
     }
-    const text = await file.text();
-    setCsvText(text);
-    setFileName(file.name);
     setBusy(true);
-    const { data, error } = await previewClassImport(centreId, text);
-    setBusy(false);
+    let data, error;
+    try {
+      const text = await file.text();
+      setCsvText(text);
+      setFileName(file.name);
+      ({ data, error } = await previewClassImport(centreId, text));
+    } catch {
+      error = "Couldn't read that file — check the connection and try again.";
+    } finally {
+      setBusy(false);
+    }
     if (error || !data) {
       toast.error(error ?? "Couldn't read that file.");
       setCsvText(null);
@@ -68,8 +74,14 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
   const handleCommit = async () => {
     if (!csvText) return;
     setBusy(true);
-    const { data, error } = await commitClassImport(centreId, csvText);
-    setBusy(false);
+    let data, error;
+    try {
+      ({ data, error } = await commitClassImport(centreId, csvText));
+    } catch {
+      error = "Import failed — check the connection and try again.";
+    } finally {
+      setBusy(false);
+    }
     if (error || !data) {
       toast.error(error ?? "Import failed.");
       return;

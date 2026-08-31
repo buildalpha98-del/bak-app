@@ -78,6 +78,13 @@ describe("parseClassListCsv", () => {
     expect(result.rows.map((r) => r.yearGroup)).toEqual(["3", "K", "5/6"]);
   });
 
+  it("rejects multi-digit class names rather than misreading '12B' as year 1", () => {
+    const csv = ["Name,Class", "Ava Nguyen,12B", "Noah Smith,10G"].join("\n");
+    const result = parseClassListCsv(csv);
+    expect(result.rows).toEqual([]);
+    expect(result.errors).toHaveLength(2);
+  });
+
   it("handles quoted fields containing commas", () => {
     const csv = ['Name,Year,Class,Teacher', '"Nguyen, Ava",3,3B,"Chen, Sarah"'].join("\n");
     const result = parseClassListCsv(csv);
@@ -170,6 +177,35 @@ describe("buildClassImportPlan", () => {
     const b3 = plan.classes.find((c) => c.name === "3B");
     expect(b3?.teacher_name).toBe("Ms Chen");
     expect(plan.warnings.some((w) => /teacher/i.test(w))).toBe(true);
+  });
+
+  it("dedupes a student repeated in the same class and warns when the classes differ", () => {
+    const rows = parse([
+      "Ava Nguyen,3,3B,",
+      "Ava Nguyen,3,3B,", // exact duplicate row — silently deduped
+      "Noah Smith,K,KM,",
+      "Noah Smith,1,1G,", // conflicting second class — first wins + warning
+    ]);
+    const plan = buildClassImportPlan(rows, roster, existing);
+    expect(plan.assignments).toEqual([
+      { child_id: "c1", className: "3B" },
+      { child_id: "c2", className: "KM" },
+    ]);
+    expect(plan.warnings.some((w) => w.includes("Noah Smith"))).toBe(true);
+    expect(plan.warnings.some((w) => w.includes("Ava Nguyen"))).toBe(false);
+  });
+
+  it("carries the on-file year/teacher for existing classes and warns when the file disagrees", () => {
+    const withTeacher: ExistingClassLite[] = [
+      { id: "cls-3b", name: "3B", year_group: "3", teacher_name: "Ms Old" },
+    ];
+    const rows = parse(["Ava Nguyen,4,3B,Ms Chen"]);
+    const plan = buildClassImportPlan(rows, roster, withTeacher);
+    const b3 = plan.classes.find((c) => c.name === "3B");
+    // The preview must show what commit will leave in place, not the CSV.
+    expect(b3).toMatchObject({ year_group: "3", teacher_name: "Ms Old" });
+    expect(plan.warnings.some((w) => w.includes("Year 3"))).toBe(true);
+    expect(plan.warnings.some((w) => w.includes("Ms Old"))).toBe(true);
   });
 
   it("flags one class name appearing with two different year groups", () => {

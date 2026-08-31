@@ -194,6 +194,22 @@ export async function deleteSchoolClass(classId: string): Promise<{ error: strin
     const { error } = await supabase.from("school_classes").delete().eq("id", classId);
     if (error) return { error: error.message };
 
+    // sessions.school_class_ids is a bare uuid[] (no FK) — scrub the
+    // deleted id so targeted sessions don't carry a dangling reference.
+    const { data: targeted } = await supabase
+      .from("sessions")
+      .select("id, school_class_ids")
+      .contains("school_class_ids", [classId]);
+    for (const s of targeted ?? []) {
+      const remaining = ((s.school_class_ids as string[]) ?? []).filter(
+        (id) => id !== classId
+      );
+      await supabase
+        .from("sessions")
+        .update({ school_class_ids: remaining.length > 0 ? remaining : null })
+        .eq("id", s.id);
+    }
+
     await supabase.from("activity_log").insert({
       user_id: userId,
       action: "school_class_deleted",
@@ -277,6 +293,25 @@ export interface ClassOption {
   teacher_name: string | null;
 }
 
+/** Sydney calendar year — the school year for class scoping. */
+function currentSchoolYear(): number {
+  return Number(sydneyTodayIso().slice(0, 4));
+}
+
+// Single definition of "this centre's current-year classes" — the
+// picker and the import preview must agree on which classes exist.
+function fetchCurrentYearClasses(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  centreId: string
+) {
+  return supabase
+    .from("school_classes")
+    .select("id, name, year_group, teacher_name")
+    .eq("centre_id", centreId)
+    .eq("school_year", currentSchoolYear())
+    .order("name");
+}
+
 /**
  * Lightweight class list for pickers (roster session sheet). Staff-only;
  * the coach/portal surfaces read classes through their own RLS-scoped
@@ -289,12 +324,7 @@ export async function getClassOptionsForCentre(
     const { error: authError } = await requireStaff();
     if (authError) return { data: null, error: authError };
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("school_classes")
-      .select("id, name, year_group, teacher_name")
-      .eq("centre_id", centreId)
-      .eq("school_year", Number(sydneyTodayIso().slice(0, 4)))
-      .order("name");
+    const { data, error } = await fetchCurrentYearClasses(supabase, centreId);
     if (error) return { data: null, error: error.message };
     return { data: data ?? [], error: null };
   } catch (err) {
@@ -323,28 +353,34 @@ async function buildImportPreview(
     };
   }
 
-  const { data, error } = await getSchoolClasses(centreId);
-  if (error || !data) return { data: null, error: error ?? "Failed to load the roster." };
-
-  const schoolYear = Number(sydneyTodayIso().slice(0, 4));
-  const currentYearClasses = await (async () => {
-    const supabase = await createSupabaseServerClient();
-    const { data: classes } = await supabase
-      .from("school_classes")
-      .select("id, name, year_group, teacher_name")
-      .eq("centre_id", centreId)
-      .eq("school_year", schoolYear);
-    return classes ?? [];
-  })();
+  const supabase = await createSupabaseServerClient();
+  const [{ data: enrolments, error: enrErr }, { data: currentYearClasses, error: clsErr }] =
+    await Promise.all([
+      supabase
+        .from("centre_children")
+        .select("child_id, children!inner(id, first_name, last_name)")
+        .eq("centre_id", centreId)
+        .eq("status", "active"),
+      fetchCurrentYearClasses(supabase, centreId),
+    ]);
+  if (enrErr) return { data: null, error: enrErr.message };
+  if (clsErr) return { data: null, error: clsErr.message };
 
   const plan = buildClassImportPlan(
     parsed.rows,
-    data.roster.map((c) => ({
-      child_id: c.child_id,
-      first_name: c.first_name,
-      last_name: c.last_name,
-    })),
-    currentYearClasses
+    (enrolments ?? []).map((e) => {
+      const child = e.children as unknown as {
+        id: string;
+        first_name: string;
+        last_name: string;
+      };
+      return {
+        child_id: child.id,
+        first_name: child.first_name,
+        last_name: child.last_name,
+      };
+    }),
+    currentYearClasses ?? []
   );
   return {
     data: { plan, parseErrors: parsed.errors, rowCount: parsed.rows.length },
@@ -396,7 +432,7 @@ export async function commitClassImport(
     if (error || !preview) return { data: null, error: error ?? "Failed to read the file." };
 
     const supabase = await createSupabaseServerClient();
-    const schoolYear = Number(sydneyTodayIso().slice(0, 4));
+    const schoolYear = currentSchoolYear();
     const classIdByName = new Map<string, string>();
     let createdClasses = 0;
 

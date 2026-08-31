@@ -299,7 +299,13 @@ export function SessionDetailSheet({
   }
 
   async function handleToggleClass(classId: string) {
-    const current = session!.school_class_ids ?? [];
+    // Build from the intersection with the pickable options — ids for
+    // deleted or prior-year classes (uuid[] has no FK) would otherwise
+    // survive every toggle and make "Whole school" unreachable.
+    const optionIds = new Set((classOptions ?? []).map((c) => c.id));
+    const current = (session!.school_class_ids ?? []).filter((id) =>
+      optionIds.has(id)
+    );
     const next = current.includes(classId)
       ? current.filter((id) => id !== classId)
       : [...current, classId];
@@ -518,9 +524,12 @@ export function SessionDetailSheet({
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-foreground">Classes</h3>
                   <span className="text-xs text-muted-foreground">
-                    {(session.school_class_ids?.length ?? 0) === 0
-                      ? "Whole school"
-                      : `${session.school_class_ids!.length} selected`}
+                    {(() => {
+                      const live = (session.school_class_ids ?? []).filter((id) =>
+                        classOptions.some((c) => c.id === id)
+                      ).length;
+                      return live === 0 ? "Whole school" : `${live} selected`;
+                    })()}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">

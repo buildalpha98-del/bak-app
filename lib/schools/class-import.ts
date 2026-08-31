@@ -66,9 +66,14 @@ export function normaliseYearGroup(input: string): string | null {
   return parts.join("/");
 }
 
-/** "3B" → "3", "KM" → "K", "5/6M" → "5/6" — the leading year token(s) of a class name. */
+/** "3B" → "3", "KM" → "K", "5/6M" → "5/6" — the leading year token(s) of a
+ *  class name. Lookaheads reject multi-digit years ("12B") rather than
+ *  silently reading them as year 1. */
 function yearGroupFromClassName(className: string): string | null {
-  const match = className.trim().toUpperCase().match(/^(K|[1-6])([/\-](K|[1-6]))?/);
+  const match = className
+    .trim()
+    .toUpperCase()
+    .match(/^(K|[1-6](?!\d))([/\-](K|[1-6](?!\d)))?/);
   if (!match) return null;
   return match[3] ? `${match[1]}/${match[3]}` : match[1];
 }
@@ -259,18 +264,37 @@ export function buildClassImportPlan(
   const warnings: string[] = [];
   const warned = new Set<string>();
 
+  const assignedChildClass = new Map<string, string>();
+
   for (const row of rows) {
     const clsKey = row.className.toLowerCase();
     const existing = existingByName.get(clsKey) ?? null;
     let cls = classes.get(clsKey);
     if (!cls) {
+      // For a class already on file, the plan carries what will actually
+      // be in effect after commit (commit never changes year_group and
+      // only fills a missing teacher) — the preview must not overstate.
       cls = {
         name: existing?.name ?? row.className,
-        year_group: row.yearGroup,
-        teacher_name: row.teacherName,
+        year_group: existing?.year_group ?? row.yearGroup,
+        teacher_name: existing?.teacher_name ?? row.teacherName,
         existing_id: existing?.id ?? null,
       };
       classes.set(clsKey, cls);
+      if (existing && existing.year_group !== row.yearGroup) {
+        warnings.push(
+          `Class "${existing.name}" is on file as Year ${existing.year_group} but the file says Year ${row.yearGroup} — keeping Year ${existing.year_group}.`
+        );
+      }
+      if (
+        existing?.teacher_name &&
+        row.teacherName &&
+        existing.teacher_name.toLowerCase() !== row.teacherName.toLowerCase()
+      ) {
+        warnings.push(
+          `Class "${existing.name}" already has teacher ${existing.teacher_name} on file — the file's "${row.teacherName}" won't overwrite it.`
+        );
+      }
     } else {
       if (cls.year_group !== row.yearGroup && !warned.has(`y:${clsKey}`)) {
         warned.add(`y:${clsKey}`);
@@ -295,6 +319,18 @@ export function buildClassImportPlan(
 
     const candidates = rosterByName.get(nameKey(row.firstName, row.lastName)) ?? [];
     if (candidates.length === 1) {
+      // The same student on two rows: first class wins; a second row
+      // naming a different class is a data problem worth surfacing.
+      const prior = assignedChildClass.get(candidates[0].child_id);
+      if (prior !== undefined) {
+        if (prior.toLowerCase() !== cls.name.toLowerCase()) {
+          warnings.push(
+            `${row.studentName} appears in both "${prior}" and "${cls.name}" — keeping "${prior}".`
+          );
+        }
+        continue;
+      }
+      assignedChildClass.set(candidates[0].child_id, cls.name);
       assignments.push({ child_id: candidates[0].child_id, className: cls.name });
     } else if (candidates.length > 1) {
       ambiguous.push({ row, candidates });
