@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import AppLink from "@/components/ui/app-link";
 import {
   Card,
   CardHeader,
@@ -173,6 +174,17 @@ function StepRow({
             </span>
             {isEmailStep && (
               <Mail className="size-3.5 text-muted-foreground" />
+            )}
+            {/* The import step lives on the centre page (Classes tab
+                for schools, Children tab for childcare) — one level up
+                from this /centres/[id]/onboarding route. */}
+            {step.step_number === 5 && !isDone && (
+              <AppLink
+                href="."
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Open centre page
+              </AppLink>
             )}
           </div>
 

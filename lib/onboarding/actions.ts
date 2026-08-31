@@ -30,6 +30,22 @@ const ONBOARDING_STEPS = [
   { number: 10, name: "Post first-session follow-up", type: "auto_email" as const },
 ] as const;
 
+// Schools speak in class lists, not child lists (roster-to-report Seam
+// F): their one SIS export creates students, classes and enrolments in
+// the unified import on the centre's Classes tab. Email routing keys
+// off step_number, so per-type names are safe.
+const SCHOOL_STEP_NAMES: Record<number, string> = {
+  4: "Request student & class list",
+  5: "Import student & class list (Classes tab)",
+};
+
+function stepsForCentreType(centreType: string | null) {
+  if (centreType !== "school") return ONBOARDING_STEPS;
+  return ONBOARDING_STEPS.map((s) =>
+    SCHOOL_STEP_NAMES[s.number] ? { ...s, name: SCHOOL_STEP_NAMES[s.number] } : s
+  );
+}
+
 const TOTAL_STEPS = ONBOARDING_TOTAL_STEPS;
 
 // ─────────────────────────────────────────────
@@ -172,11 +188,17 @@ export async function startCentreOnboarding(
 
   if (checklistErr) return { error: checklistErr.message };
 
-  // Create all 10 steps
+  // Create all 10 steps — names adapt to the centre type (Seam F).
+  const { data: centreRow } = await supabase
+    .from("centres")
+    .select("type")
+    .eq("id", centreId)
+    .maybeSingle();
+
   const now = new Date();
   const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
-  const steps = ONBOARDING_STEPS.map((s) => ({
+  const steps = stepsForCentreType(centreRow?.type ?? null).map((s) => ({
     checklist_id: checklist.id,
     step_number: s.number,
     step_name: s.name,
