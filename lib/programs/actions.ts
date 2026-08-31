@@ -2,6 +2,11 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import {
+  programBands,
+  bandsForYearGroups,
+  bandMatchScore,
+} from "@/lib/programs/band-match";
 import type { Program } from "@/lib/types/database";
 import type { ProgramContentJson } from "@/lib/ai/types";
 
@@ -1373,6 +1378,7 @@ export async function applySeriesToSessions(input: {
   startWeekOf: string;
   centreId?: string;
   overwrite?: boolean;
+  schoolClassIds?: string[];
 }): Promise<{ data: ApplySeriesResult | null; error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
@@ -1410,6 +1416,7 @@ export async function applySeriesToSessions(input: {
         weekOf,
         centreId: input.centreId,
         overwrite: input.overwrite,
+        schoolClassIds: input.schoolClassIds,
       });
       if (error) {
         return { data: result, error: `Week ${w.series_week}: ${error}` };
@@ -1485,16 +1492,33 @@ export async function getRecommendedPrograms(
 
     const { data: session } = await supabase
       .from("sessions")
-      .select("id, sport, centre_id")
+      .select("id, sport, centre_id, school_class_ids")
       .eq("id", sessionId)
       .maybeSingle();
     if (!session) return { data: [], error: "Session not found." };
+
+    // Band awareness (Seam C): a session targeting classes knows its
+    // age bands, and band-matched programmes outrank raw usage counts.
+    const targetClassIds =
+      ((session as Record<string, unknown>).school_class_ids as string[] | null) ?? [];
+    let sessionBands: string[] = [];
+    if (targetClassIds.length > 0) {
+      const { data: targetClasses } = await supabase
+        .from("school_classes")
+        .select("year_group")
+        .in("id", targetClassIds);
+      sessionBands = bandsForYearGroups(
+        (targetClasses ?? []).map((c) => c.year_group)
+      );
+    }
 
     const [{ data: programs }, { data: centreUsage }, { data: globalUsage }] =
       await Promise.all([
         supabase
           .from("programs")
-          .select("id, sport, content_json, version_number, tags, created_at")
+          .select(
+            "id, sport, content_json, version_number, tags, created_at, age_group, age_groups"
+          )
           .eq("sport", session.sport),
         supabase
           .from("sessions")
@@ -1534,16 +1558,21 @@ export async function getRecommendedPrograms(
         tags: (p.tags as string[]) ?? [],
         usedAtCentre: centreCounts.get(p.id as string) ?? 0,
         usedTotal: globalCounts.get(p.id as string) ?? 0,
+        bandMatch: bandMatchScore(
+          programBands(p as { age_group?: string | null; age_groups?: unknown }),
+          sessionBands
+        ),
         created_at: p.created_at as string,
       }))
       .sort(
         (a, b) =>
+          b.bandMatch - a.bandMatch ||
           b.usedAtCentre - a.usedAtCentre ||
           b.usedTotal - a.usedTotal ||
           b.created_at.localeCompare(a.created_at)
       )
       .slice(0, 3)
-      .map(({ created_at: _createdAt, ...rest }) => rest);
+      .map(({ created_at: _createdAt, bandMatch: _bandMatch, ...rest }) => rest);
 
     return { data: ranked, error: null };
   } catch (err) {
@@ -1641,6 +1670,9 @@ export interface ApplyProgramInput {
   centreId?: string;
   /** When false (default) only sessions without a programme are touched. */
   overwrite?: boolean;
+  /** Only touch sessions targeting at least one of these classes
+   *  (Seam C — a Year 3 series lands on Year 3 sessions only). */
+  schoolClassIds?: string[];
 }
 
 export async function applyProgramToSessions(
@@ -1681,6 +1713,9 @@ export async function applyProgramToSessions(
       .lte("date", friday)
       .not("status", "in", "(cancelled,completed)");
     if (input.centreId) matchQuery = matchQuery.eq("centre_id", input.centreId);
+    if (input.schoolClassIds && input.schoolClassIds.length > 0) {
+      matchQuery = matchQuery.overlaps("school_class_ids", input.schoolClassIds);
+    }
 
     const { data: matches, error: matchErr } = await matchQuery;
     if (matchErr) return { data: null, error: "Failed to look up sessions." };

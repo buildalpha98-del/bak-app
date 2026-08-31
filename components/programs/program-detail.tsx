@@ -107,6 +107,7 @@ import {
   applySeriesToSessions,
   getSeriesWeeks,
 } from "@/lib/programs/actions";
+import { ClassChipPicker } from "@/components/roster/class-chip-picker";
 import type {
   LinkedCentreSummary,
   ProgramDetail as ProgramDetailType,
@@ -240,6 +241,7 @@ export function ProgramDetailView({
       .split("T")[0];
   });
   const [applyCentre, setApplyCentre] = useState<string>("all");
+  const [applyClassIds, setApplyClassIds] = useState<string[]>([]);
   const [applyOverwrite, setApplyOverwrite] = useState(false);
   const [centreOptions, setCentreOptions] = useState<
     Array<{ id: string; name: string }>
@@ -272,6 +274,10 @@ export function ProgramDetailView({
         startWeekOf: applyWeek,
         centreId: applyCentre === "all" ? undefined : applyCentre,
         overwrite: applyOverwrite,
+        schoolClassIds:
+          applyCentre !== "all" && applyClassIds.length > 0
+            ? applyClassIds
+            : undefined,
       });
       setApplyBusy(false);
       if (error || !data) {
@@ -306,6 +312,10 @@ export function ProgramDetailView({
       weekOf: applyWeek,
       centreId: applyCentre === "all" ? undefined : applyCentre,
       overwrite: applyOverwrite,
+      schoolClassIds:
+        applyCentre !== "all" && applyClassIds.length > 0
+          ? applyClassIds
+          : undefined,
     });
     setApplyBusy(false);
     if (error || !data) {
@@ -375,6 +385,13 @@ export function ProgramDetailView({
                 </SelectContent>
               </Select>
             </div>
+            {/* Class scoping (schools only; needs a single centre chosen) */}
+            <ClassChipPicker
+              centreId={applyCentre === "all" ? null : applyCentre}
+              value={applyClassIds}
+              onChange={setApplyClassIds}
+              disabled={applyBusy}
+            />
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={applyOverwrite}
