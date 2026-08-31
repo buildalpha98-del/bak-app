@@ -58,6 +58,10 @@ export interface CoachAssessmentTask {
   skills: AssessmentSkill[];
   centre_id: string;
   centre_name: string;
+  /** Set when the centre is a school with a class list — the task is
+   *  one class's list ("3B · Netball"), not the whole band (Seam D). */
+  class_id: string | null;
+  class_name: string | null;
   term_id: string;
   term_name: string;
   children: {
@@ -557,6 +561,49 @@ export async function getCoachAssessmentTasks(): Promise<{
 
     const tasks: CoachAssessmentTask[] = [];
 
+    // Class lists per centre (Seam D) — fetched once per centre, reused
+    // across templates. Schools get one task per class instead of one
+    // undifferentiated band-wide list.
+    const classCache = new Map<
+      string,
+      {
+        classes: { id: string; name: string; year_group: string }[];
+        classByChild: Map<string, string>;
+      }
+    >();
+    async function centreClasses(centreId: string) {
+      const cached = classCache.get(centreId);
+      if (cached) return cached;
+      const { data: classes } = await supabase
+        .from("school_classes")
+        .select("id, name, year_group, school_year")
+        .eq("centre_id", centreId);
+      const latestYear =
+        classes && classes.length > 0
+          ? Math.max(...classes.map((c) => c.school_year))
+          : null;
+      const current = (classes ?? []).filter((c) => c.school_year === latestYear);
+      const classByChild = new Map<string, string>();
+      if (current.length > 0) {
+        const { data: members } = await supabase
+          .from("school_class_children")
+          .select("class_id, child_id")
+          .in("class_id", current.map((c) => c.id))
+          .is("ended_at", null);
+        for (const m of members ?? []) classByChild.set(m.child_id, m.class_id);
+      }
+      const entry = {
+        classes: current.map((c) => ({
+          id: c.id,
+          name: c.name,
+          year_group: c.year_group,
+        })),
+        classByChild,
+      };
+      classCache.set(centreId, entry);
+      return entry;
+    }
+
     for (const template of templates) {
       // Only show templates for centres the coach works at
       if (template.centre_id && !coachCentreIds.includes(template.centre_id)) continue;
@@ -606,23 +653,68 @@ export async function getCoachAssessmentTasks(): Promise<{
           (existingRatings ?? []).map((r) => r.child_id)
         );
 
-        tasks.push({
-          template_id: template.id,
-          sport: template.sport,
-          age_group: template.age_group as AgeGroup,
-          skills: template.skills_json as AssessmentSkill[],
-          centre_id: centreId,
-          centre_name: centre?.name ?? "Unknown",
-          term_id: activeTerm.id,
-          term_name: activeTerm.name,
-          children: children.map((c) => ({
-            id: c.id,
-            first_name: c.first_name,
-            last_name: c.last_name,
-            age_group: c.age_group as AgeGroup,
-            already_rated: ratedChildIds.has(c.id),
-          })),
+        const mapChild = (c: (typeof children)[number]) => ({
+          id: c.id,
+          first_name: c.first_name,
+          last_name: c.last_name,
+          age_group: c.age_group as AgeGroup,
+          already_rated: ratedChildIds.has(c.id),
         });
+
+        const { classes, classByChild } = await centreClasses(centreId);
+        if (classes.length > 0) {
+          // School: one task per class with band-matched members, plus
+          // an unlabelled task for band children not in any class yet.
+          for (const cls of classes) {
+            const clsChildren = children.filter(
+              (c) => classByChild.get(c.id) === cls.id
+            );
+            if (clsChildren.length === 0) continue;
+            tasks.push({
+              template_id: template.id,
+              sport: template.sport,
+              age_group: template.age_group as AgeGroup,
+              skills: template.skills_json as AssessmentSkill[],
+              centre_id: centreId,
+              centre_name: centre?.name ?? "Unknown",
+              class_id: cls.id,
+              class_name: cls.name,
+              term_id: activeTerm.id,
+              term_name: activeTerm.name,
+              children: clsChildren.map(mapChild),
+            });
+          }
+          const unassigned = children.filter((c) => !classByChild.has(c.id));
+          if (unassigned.length > 0) {
+            tasks.push({
+              template_id: template.id,
+              sport: template.sport,
+              age_group: template.age_group as AgeGroup,
+              skills: template.skills_json as AssessmentSkill[],
+              centre_id: centreId,
+              centre_name: centre?.name ?? "Unknown",
+              class_id: null,
+              class_name: null,
+              term_id: activeTerm.id,
+              term_name: activeTerm.name,
+              children: unassigned.map(mapChild),
+            });
+          }
+        } else {
+          tasks.push({
+            template_id: template.id,
+            sport: template.sport,
+            age_group: template.age_group as AgeGroup,
+            skills: template.skills_json as AssessmentSkill[],
+            centre_id: centreId,
+            centre_name: centre?.name ?? "Unknown",
+            class_id: null,
+            class_name: null,
+            term_id: activeTerm.id,
+            term_name: activeTerm.name,
+            children: children.map(mapChild),
+          });
+        }
       }
     }
 
