@@ -114,6 +114,14 @@ export interface CoachSessionDetail {
   equipmentItems: SessionEquipmentItem[];
   shiftThread: ShiftThreadMessage[];
   feedback: FeedbackRating | null;
+  /** Classes this school session targets (empty for whole-school and
+   *  childcare sessions). Includes the class teacher for day-of logistics. */
+  schoolClasses: Array<{
+    id: string;
+    name: string;
+    year_group: string;
+    teacher_name: string | null;
+  }>;
 }
 
 // ============================================================
@@ -483,8 +491,10 @@ export async function getCoachSessionDetail(
       })(),
     };
 
+    const classIds = (raw as unknown as Session).school_class_ids ?? [];
+
     // Fetch related data in parallel
-    const [notesRes, programRes, itemsRes, threadRes, feedbackRes] =
+    const [notesRes, programRes, itemsRes, threadRes, feedbackRes, classesRes] =
       await Promise.all([
         // Centre notes (coach-visible categories only)
         supabase
@@ -526,6 +536,15 @@ export async function getCoachSessionDetail(
               .select("*")
               .eq("session_id", sessionId)
               .maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+
+        // Targeted school classes (migration 080; coach RLS allows SELECT)
+        classIds.length > 0
+          ? supabase
+              .from("school_classes")
+              .select("id, name, year_group, teacher_name")
+              .in("id", classIds)
+              .order("name")
           : Promise.resolve({ data: null, error: null }),
       ]);
 
@@ -573,6 +592,8 @@ export async function getCoachSessionDetail(
         equipmentItems: (itemsRes.data ?? []) as SessionEquipmentItem[],
         shiftThread,
         feedback: (feedbackRes.data as FeedbackRating) ?? null,
+        schoolClasses: (classesRes.data ??
+          []) as CoachSessionDetail["schoolClasses"],
       },
       error: null,
     };

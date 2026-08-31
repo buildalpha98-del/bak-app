@@ -49,6 +49,9 @@ export interface ClientSession {
   headcount: number | null;
   rating: number | null;
   coach_notes: string | null;
+  /** Names of the school classes this session targets (schools only;
+   *  empty when whole-school or childcare). */
+  class_names: string[];
   /** Populated on the detail fetch only — list views omit it. */
   attendees?: { name: string; present: boolean }[];
   /** Signed URLs for coach-uploaded photos — detail fetch only. */
@@ -329,7 +332,7 @@ export async function getClientSchedule(
     let query = supabase
       .from("sessions")
       .select(
-        "id, date, time, sport, duration_minutes, status, headcount, coach_notes, program_id, coach_id, profiles!sessions_coach_id_fkey(name), programs(sport, skill_focus), feedback_ratings(rating)"
+        "id, date, time, sport, duration_minutes, status, headcount, coach_notes, program_id, coach_id, school_class_ids, profiles!sessions_coach_id_fkey(name), programs(sport, skill_focus), feedback_ratings(rating)"
       )
       .eq("centre_id", centreId);
 
@@ -350,6 +353,24 @@ export async function getClientSchedule(
 
     if (error) return { data: [], error: error.message };
 
+    // Resolve targeted class ids → names in one query (schools only;
+    // client RLS on school_classes is centre-scoped, migration 080).
+    const allClassIds = [
+      ...new Set(
+        (data ?? []).flatMap(
+          (s) => ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? []
+        )
+      ),
+    ];
+    const classNameById = new Map<string, string>();
+    if (allClassIds.length > 0) {
+      const { data: classes } = await supabase
+        .from("school_classes")
+        .select("id, name")
+        .in("id", allClassIds);
+      for (const c of classes ?? []) classNameById.set(c.id, c.name);
+    }
+
     return {
       data: (data ?? []).map((s) => {
         const coach = s.profiles as unknown as { name: string } | null;
@@ -368,6 +389,12 @@ export async function getClientSchedule(
           headcount: s.headcount,
           rating: feedbacks?.[0]?.rating ?? null,
           coach_notes: s.coach_notes,
+          class_names: (
+            ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? []
+          )
+            .map((id) => classNameById.get(id))
+            .filter((n): n is string => Boolean(n))
+            .sort(),
         };
       }),
       error: null,
@@ -388,7 +415,7 @@ export async function getClientSessionDetail(
     const { data, error } = await supabase
       .from("sessions")
       .select(
-        "id, date, time, sport, duration_minutes, status, headcount, coach_notes, program_id, coach_id, profiles!sessions_coach_id_fkey(name), programs(sport, skill_focus, content_json), feedback_ratings(rating, comment)"
+        "id, date, time, sport, duration_minutes, status, headcount, coach_notes, program_id, coach_id, school_class_ids, profiles!sessions_coach_id_fkey(name), programs(sport, skill_focus, content_json), feedback_ratings(rating, comment)"
       )
       .eq("id", sessionId)
       .eq("centre_id", centreId)
@@ -399,6 +426,18 @@ export async function getClientSessionDetail(
     const coach = data.profiles as unknown as { name: string } | null;
     const program = data.programs as unknown as { sport: string; skill_focus: string | null; content_json: Record<string, unknown> } | null;
     const feedbacks = data.feedback_ratings as unknown as { rating: number | null; comment: string | null }[];
+
+    const detailClassIds =
+      ((data as Record<string, unknown>).school_class_ids as string[] | null) ?? [];
+    let classNames: string[] = [];
+    if (detailClassIds.length > 0) {
+      const { data: classes } = await supabase
+        .from("school_classes")
+        .select("name")
+        .in("id", detailClassIds)
+        .order("name");
+      classNames = (classes ?? []).map((c) => c.name);
+    }
 
     // Per-child attendance — directors verify who actually attended.
     const { data: attendanceRows } = await supabase
@@ -460,6 +499,7 @@ export async function getClientSessionDetail(
         headcount: data.headcount,
         rating: feedbacks?.[0]?.rating ?? null,
         coach_notes: feedbacks?.[0]?.comment ?? data.coach_notes,
+        class_names: classNames,
         attendees,
         photos,
       },

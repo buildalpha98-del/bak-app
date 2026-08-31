@@ -71,6 +71,7 @@ export interface UpdateSessionData {
   pay_rate_override?: number | null;
   cancellation_reason?: string;
   program_id?: string | null;
+  school_class_ids?: string[] | null;
 }
 
 // ============================================================
@@ -145,6 +146,8 @@ export async function getSessionsForWeek(
       notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
+      school_class_ids:
+        ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? null,
       started_at: s.started_at,
       completed_at: s.completed_at,
       created_at: s.created_at,
@@ -237,6 +240,8 @@ export async function getSessionDetail(
       notes: (s as Record<string, unknown>).notes as string | null ?? null,
       needs_ops_review: (s as Record<string, unknown>).needs_ops_review as boolean ?? false,
       is_trial: (s as Record<string, unknown>).is_trial as boolean ?? false,
+      school_class_ids:
+        ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? null,
       started_at: s.started_at,
       completed_at: s.completed_at,
       created_at: s.created_at,
@@ -1002,7 +1007,7 @@ export async function duplicateSession(
     const { data: original, error: fetchErr } = await supabase
       .from("sessions")
       .select(
-        "term_id, date, time, duration_minutes, centre_id, sport, program_id, pay_rate_override, notes"
+        "term_id, date, time, duration_minutes, centre_id, sport, program_id, pay_rate_override, notes, school_class_ids"
       )
       .eq("id", id)
       .single();
@@ -1022,6 +1027,7 @@ export async function duplicateSession(
         program_id: original.program_id,
         pay_rate_override: original.pay_rate_override,
         notes: original.notes,
+        school_class_ids: original.school_class_ids,
         // No coach_id — duplicates start as unassigned drafts. P5
         // moved coach assignment to session_coaches; omitting the
         // column lets the default NULL stand. The CI guard in
