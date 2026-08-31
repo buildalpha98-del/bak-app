@@ -28,6 +28,7 @@ import {
 import type { TermTemplateWithRelations } from "@/lib/terms/actions";
 import type { Centre, Profile } from "@/lib/types/database";
 import { SPORTS } from "@/lib/types/enums";
+import { ClassChipPicker } from "./class-chip-picker";
 
 // ============================================================
 // Constants
@@ -83,6 +84,7 @@ export function TemplateEntryDialog({
   const [centreId, setCentreId] = useState("");
   const [sport, setSport] = useState("");
   const [coachId, setCoachId] = useState("");
+  const [classIds, setClassIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +97,7 @@ export function TemplateEntryDialog({
       setCentreId(entry.centre_id);
       setSport(entry.sport);
       setCoachId(entry.default_coach_id ?? "");
+      setClassIds(entry.school_class_ids ?? []);
     } else {
       setDayOfWeek(defaultDay ?? 1);
       setTime(defaultTime ?? "09:00");
@@ -102,6 +105,7 @@ export function TemplateEntryDialog({
       setCentreId("");
       setSport("");
       setCoachId("");
+      setClassIds([]);
     }
     setError(null);
   }, [entry, open, defaultDay, defaultTime]);
@@ -127,6 +131,7 @@ export function TemplateEntryDialog({
         centre_id: centreId,
         sport,
         default_coach_id: coachId || null,
+        school_class_ids: classIds.length > 0 ? classIds : null,
       });
       setLoading(false);
       if (updateError) {
@@ -142,6 +147,7 @@ export function TemplateEntryDialog({
         centre_id: centreId,
         sport,
         default_coach_id: coachId || undefined,
+        school_class_ids: classIds.length > 0 ? classIds : null,
       });
       setLoading(false);
       if (createError) {
@@ -295,6 +301,14 @@ export function TemplateEntryDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Classes (renders only for schools with a class list) */}
+          <ClassChipPicker
+            centreId={centreId || null}
+            value={classIds}
+            onChange={setClassIds}
+            disabled={loading}
+          />
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">

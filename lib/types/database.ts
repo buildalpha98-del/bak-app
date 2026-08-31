@@ -216,6 +216,9 @@ export interface TermTemplate {
   centre_id: string;
   sport: string;
   default_coach_id: string | null;
+  /** School sessions only (migration 083): classes this weekly slot is
+   *  delivered to; copied onto generated sessions. Null → whole school. */
+  school_class_ids: string[] | null;
   created_at: string;
 }
 

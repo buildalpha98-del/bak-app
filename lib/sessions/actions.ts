@@ -59,6 +59,7 @@ export interface CreateSessionData {
   sport: string;
   coach_id?: string;
   pay_rate_override?: number;
+  school_class_ids?: string[] | null;
 }
 
 export interface UpdateSessionData {
@@ -327,6 +328,10 @@ export async function createSession(
         centre_id: data.centre_id,
         sport: data.sport,
         pay_rate_override: data.pay_rate_override ?? null,
+        school_class_ids:
+          data.school_class_ids && data.school_class_ids.length > 0
+            ? data.school_class_ids
+            : null,
         status: "draft" as SessionStatus,
       })
       .select()
@@ -936,7 +941,7 @@ export async function repeatSessionForward(
     const { data: source } = await supabase
       .from("sessions")
       .select(
-        "id, term_id, date, time, duration_minutes, centre_id, sport, coach_id, pay_rate_override"
+        "id, term_id, date, time, duration_minutes, centre_id, sport, coach_id, pay_rate_override, school_class_ids"
       )
       .eq("id", sessionId)
       .maybeSingle();
@@ -964,6 +969,7 @@ export async function repeatSessionForward(
         sport: source.sport,
         coach_id: source.coach_id ?? undefined,
         pay_rate_override: source.pay_rate_override ?? undefined,
+        school_class_ids: source.school_class_ids ?? null,
       },
       dates
     );

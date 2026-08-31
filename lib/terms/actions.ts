@@ -42,6 +42,7 @@ export interface CreateTemplateEntryData {
   centre_id: string;
   sport: string;
   default_coach_id?: string;
+  school_class_ids?: string[] | null;
 }
 
 export interface UpdateTemplateEntryData {
@@ -51,6 +52,7 @@ export interface UpdateTemplateEntryData {
   centre_id?: string;
   sport?: string;
   default_coach_id?: string | null;
+  school_class_ids?: string[] | null;
 }
 
 export interface DuplicateTermData {
@@ -171,6 +173,8 @@ export async function getTermTemplates(
       centre_id: t.centre_id,
       sport: t.sport,
       default_coach_id: t.default_coach_id,
+      school_class_ids:
+        ((t as Record<string, unknown>).school_class_ids as string[] | null) ?? null,
       created_at: t.created_at,
       centre_name:
         (t.centres as unknown as { name: string } | null)?.name ?? "Unknown",
@@ -345,6 +349,10 @@ export async function createTemplateEntry(
         centre_id: data.centre_id,
         sport: data.sport,
         default_coach_id: data.default_coach_id ?? null,
+        school_class_ids:
+          data.school_class_ids && data.school_class_ids.length > 0
+            ? data.school_class_ids
+            : null,
       })
       .select()
       .single();
@@ -471,6 +479,7 @@ export async function generateSessionsForWeek(
       coach_id: string | null;
       sport: string;
       status: string;
+      school_class_ids: string[] | null;
     }> = [];
 
     let skipped = 0;
@@ -498,6 +507,7 @@ export async function generateSessionsForWeek(
         coach_id: tpl.default_coach_id,
         sport: tpl.sport,
         status: "draft",
+        school_class_ids: tpl.school_class_ids ?? null,
       });
     }
 
@@ -562,6 +572,7 @@ export async function duplicateTerm(
         centre_id: t.centre_id,
         sport: t.sport,
         default_coach_id: data.clear_coaches ? null : t.default_coach_id,
+        school_class_ids: t.school_class_ids ?? null,
       }));
 
       const { error: copyError } = await supabase
