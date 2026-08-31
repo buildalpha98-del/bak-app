@@ -50,7 +50,28 @@ const withPWA = require("next-pwa")({
   ],
 });
 
+// Centre logos (white-label shells, migration 019's logo_url) live in
+// Supabase's public storage bucket — allow next/image to optimise them.
+const supabaseHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname;
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: supabaseHost
+      ? [
+          {
+            protocol: "https" as const,
+            hostname: supabaseHost,
+            pathname: "/storage/v1/object/public/**",
+          },
+        ]
+      : [],
+  },
   // Old WordPress URLs → their new home. Next evaluates redirects()
   // BEFORE middleware, so these fire for signed-out crawlers without
   // ever hitting the auth gate.

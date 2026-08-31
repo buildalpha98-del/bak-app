@@ -15,6 +15,10 @@ export interface ClientUserWithCentre extends ClientUser {
   centre_name: string;
   /** Drives school-vs-childcare copy across the portal ("Students" vs "Children"). */
   centre_type: "childcare_centre" | "school";
+  /** White-label shell (migration 019): swap the BAK crest for the
+   *  centre's own mark when mode is white_label and a logo is on file. */
+  centre_branding_mode: "bak_branded" | "white_label";
+  centre_logo_url: string | null;
   /** Set by getCurrentClientUser(centreId) when the user has access to the requested centre. */
   is_authorised_for_current?: boolean;
 }
@@ -419,7 +423,7 @@ export async function getCurrentClientUser(
 
     const { data: centre } = await supabase
       .from("centres")
-      .select("name, type")
+      .select("name, type, branding_mode, logo_url")
       .eq("id", activeCentreId)
       .maybeSingle();
 
@@ -429,6 +433,9 @@ export async function getCurrentClientUser(
         centre_id: activeCentreId,
         centre_name: centre?.name ?? "Your centre",
         centre_type: centre?.type === "school" ? "school" : "childcare_centre",
+        centre_branding_mode:
+          centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
+        centre_logo_url: centre?.logo_url ?? null,
         is_authorised_for_current: isAuthorised,
       } as ClientUserWithCentre,
       error: null,
@@ -884,7 +891,13 @@ export async function revokeSharedLink(
 async function validateSharedLink(
   token: string
 ): Promise<{
-  data: { centreId: string; centreName: string; primaryUserName: string } | null;
+  data: {
+    centreId: string;
+    centreName: string;
+    /** Non-null only for white-label centres with a logo on file. */
+    centreLogoUrl: string | null;
+    primaryUserName: string;
+  } | null;
   error: string | null;
 }> {
   try {
@@ -896,7 +909,9 @@ async function validateSharedLink(
 
     const { data, error } = await supabase
       .from("shared_links")
-      .select("centre_id, is_active, expires_at, created_by, centres!inner(name)")
+      .select(
+        "centre_id, is_active, expires_at, created_by, centres!inner(name, branding_mode, logo_url)"
+      )
       .eq("token", token)
       .single();
 
@@ -908,7 +923,11 @@ async function validateSharedLink(
       return { data: null, error: "This link has expired." };
     }
 
-    const centre = data.centres as unknown as { name: string };
+    const centre = data.centres as unknown as {
+      name: string;
+      branding_mode: string | null;
+      logo_url: string | null;
+    };
 
     // Get primary user name
     const { data: creator } = await supabase
@@ -921,6 +940,8 @@ async function validateSharedLink(
       data: {
         centreId: data.centre_id,
         centreName: centre.name,
+        centreLogoUrl:
+          centre.branding_mode === "white_label" ? (centre.logo_url ?? null) : null,
         primaryUserName: creator?.name ?? "the centre administrator",
       },
       error: null,
@@ -939,6 +960,7 @@ export async function getSharedPortalView(token: string): Promise<{
     | {
         centreId: string;
         centreName: string;
+        centreLogoUrl: string | null;
         primaryUserName: string;
         snapshot: SharedPortalSnapshot;
       }

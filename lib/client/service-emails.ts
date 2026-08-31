@@ -63,7 +63,7 @@ export async function sendWeeklyCentreDigests(): Promise<{
   // Centres with portal users + a live contract
   const { data: centres } = await admin
     .from("centres")
-    .select("id, name, contract_status, client_users(id, name, email)")
+    .select("id, name, contract_status, branding_mode, client_users(id, name, email)")
     .in("contract_status", ["active", "trial"]);
 
   const withUsers = (centres ?? []).filter(
@@ -149,9 +149,22 @@ export async function sendWeeklyCentreDigests(): Promise<{
         .filter(Boolean)
         .join(" · ");
 
+      // White-label centres (migration 019, like the report emails):
+      // the eyebrow, subject and sign-off drop the BAK name.
+      const isWhiteLabel = centre.branding_mode === "white_label";
+      const eyebrow = isWhiteLabel
+        ? "Your week of sport"
+        : "Your week with Build Alpha Kids";
+      const signoff = isWhiteLabel
+        ? "Reply anytime, a real person reads this inbox."
+        : "Build Alpha Kids · South-West Sydney · Reply anytime, a real person reads this inbox.";
+      const subject = isWhiteLabel
+        ? `This week at ${centre.name}`
+        : `This week at ${centre.name} — Build Alpha Kids`;
+
       const html = `
         <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
-          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#0891B2;text-transform:uppercase">Your week with Build Alpha Kids</p>
+          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#0891B2;text-transform:uppercase">${eyebrow}</p>
           <h1 style="font-size:20px;margin:4px 0 12px">Hi ${centre.name},</h1>
           ${
             upcoming.length > 0
@@ -161,7 +174,7 @@ export async function sendWeeklyCentreDigests(): Promise<{
           }
           ${lastWeekLine ? `<p style="font-size:14px;color:#334155"><strong>Last week:</strong> ${lastWeekLine}</p>` : ""}
           <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:12px;background:#0891B2;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600">Open your portal</a>
-          <p style="font-size:12px;color:#94a3b8;margin-top:20px">Build Alpha Kids · South-West Sydney · Reply anytime, a real person reads this inbox.</p>
+          <p style="font-size:12px;color:#94a3b8;margin-top:20px">${signoff}</p>
         </div>`;
 
       for (const cu of centre.client_users as Array<{
@@ -170,7 +183,7 @@ export async function sendWeeklyCentreDigests(): Promise<{
       }>) {
         const result = await sendEmail(
           cu.email,
-          `This week at ${centre.name} — Build Alpha Kids`,
+          subject,
           html,
           "weekly_digest"
         );
@@ -229,7 +242,7 @@ export async function sendTermPacks(): Promise<{
 
   const { data: centres } = await admin
     .from("centres")
-    .select("id, name, contract_status, client_users(name, email)")
+    .select("id, name, contract_status, branding_mode, client_users(name, email)")
     .in("contract_status", ["active", "trial"]);
 
   for (const centre of (centres ?? []).filter(
@@ -322,7 +335,11 @@ export async function sendTermPacks(): Promise<{
           }
           <p style="font-size:14px;color:#334155">The full breakdown — attendance trends, session ratings and sport-by-sport charts — is live on your Impact page.</p>
           <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:8px;background:#0891B2;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600">See your full term impact</a>
-          <p style="font-size:12px;color:#94a3b8;margin-top:20px">Thanks for having us this term — we can't wait for the next one. Build Alpha Kids · South-West Sydney.</p>
+          <p style="font-size:12px;color:#94a3b8;margin-top:20px">${
+            centre.branding_mode === "white_label"
+              ? "Thanks for a great term of sport — we can't wait for the next one."
+              : "Thanks for having us this term — we can't wait for the next one. Build Alpha Kids · South-West Sydney."
+          }</p>
         </div>`;
 
       for (const cu of centre.client_users as Array<{
@@ -331,7 +348,9 @@ export async function sendTermPacks(): Promise<{
       }>) {
         const result = await sendEmail(
           cu.email,
-          `${term.name} wrap-up — ${centre.name} × Build Alpha Kids`,
+          centre.branding_mode === "white_label"
+            ? `${term.name} wrap-up — ${centre.name}`
+            : `${term.name} wrap-up — ${centre.name} × Build Alpha Kids`,
           html,
           "term_pack"
         );

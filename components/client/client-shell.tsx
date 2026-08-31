@@ -107,9 +107,18 @@ export function ClientShell({
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
 
-        {/* Logo */}
+        {/* Logo — white-label centres show their own mark (falls back
+            to the BAK crest until a logo is uploaded). */}
         <Link href={`/client/${clientUser.centre_id}`} className="shrink-0">
-          <AppLogo size="sm" />
+          <AppLogo
+            size="sm"
+            logoUrl={
+              clientUser.centre_branding_mode === "white_label"
+                ? clientUser.centre_logo_url
+                : null
+            }
+            alt={clientUser.centre_name}
+          />
         </Link>
 
         {/* Centre name or multi-centre switcher */}

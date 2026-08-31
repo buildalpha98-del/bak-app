@@ -9,6 +9,7 @@ import type {
   PricingModel,
   ContractStatus,
   CentreNoteCategory,
+  BrandingMode,
 } from "@/lib/types/enums";
 import type {
   Centre,
@@ -142,6 +143,9 @@ export interface UpdateCentreData {
   contract_status?: ContractStatus;
   /** P4 roster colour (#RRGGBB). */
   colour?: string;
+  /** Portal + report branding: white_label swaps the BAK crest for the
+   *  centre's own logo (uploaded via uploadCentreLogo). */
+  branding_mode?: BrandingMode;
 }
 
 export interface AddNoteData {

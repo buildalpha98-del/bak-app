@@ -17,6 +17,8 @@ import type { SharedPortalSnapshot } from "@/lib/client/actions";
 interface SharedPortalViewProps {
   centreId: string;
   centreName: string;
+  /** White-label centres' own mark; null renders the BAK crest. */
+  centreLogoUrl: string | null;
   primaryUserName: string;
   snapshot: SharedPortalSnapshot;
 }
@@ -31,6 +33,7 @@ function fmtDate(dateStr: string): string {
 
 export function SharedPortalView({
   centreName,
+  centreLogoUrl,
   primaryUserName,
   snapshot,
 }: SharedPortalViewProps) {
@@ -51,7 +54,7 @@ export function SharedPortalView({
       {/* Top bar */}
       <header className="border-b bg-card px-4 py-3">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <AppLogo size="sm" />
+          <AppLogo size="sm" logoUrl={centreLogoUrl} alt={centreName} />
           <span className="text-base font-semibold text-foreground">
             {centreName}
           </span>
