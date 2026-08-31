@@ -339,9 +339,16 @@ export interface ClassImportPreview {
   rowCount: number;
 }
 
+export interface ClassImportOptions {
+  /** Create + enrol students the roster doesn't have yet (schools upload
+   *  one SIS file; without this every new student is a skip). */
+  createMissing?: boolean;
+}
+
 async function buildImportPreview(
   centreId: string,
-  csvText: string
+  csvText: string,
+  opts: ClassImportOptions = {}
 ): Promise<{ data: ClassImportPreview | null; error: string | null }> {
   const parsed = parseClassListCsv(csvText);
   if (parsed.rows.length === 0) {
@@ -380,7 +387,8 @@ async function buildImportPreview(
         last_name: child.last_name,
       };
     }),
-    currentYearClasses ?? []
+    currentYearClasses ?? [],
+    { createMissing: opts.createMissing }
   );
   return {
     data: { plan, parseErrors: parsed.errors, rowCount: parsed.rows.length },
@@ -391,13 +399,14 @@ async function buildImportPreview(
 /** Parse a pasted/uploaded class-list CSV and report what a commit would do. */
 export async function previewClassImport(
   centreId: string,
-  csvText: string
+  csvText: string,
+  opts: ClassImportOptions = {}
 ): Promise<{ data: ClassImportPreview | null; error: string | null }> {
   try {
     const { error: authError } = await requireStaff();
     if (authError) return { data: null, error: authError };
     if (csvText.length > 500_000) return { data: null, error: "File too large (500KB max)." };
-    return await buildImportPreview(centreId, csvText);
+    return await buildImportPreview(centreId, csvText, opts);
   } catch (err) {
     console.error("previewClassImport error:", err);
     return { data: null, error: "Failed to read the file." };
@@ -406,6 +415,7 @@ export async function previewClassImport(
 
 export interface ClassImportResult {
   createdClasses: number;
+  createdStudents: number;
   assigned: number;
   unmatched: number;
   ambiguous: number;
@@ -421,14 +431,15 @@ export interface ClassImportResult {
  */
 export async function commitClassImport(
   centreId: string,
-  csvText: string
+  csvText: string,
+  opts: ClassImportOptions = {}
 ): Promise<{ data: ClassImportResult | null; error: string | null }> {
   try {
     const { userId, error: authError } = await requireStaff();
     if (authError) return { data: null, error: authError };
     if (csvText.length > 500_000) return { data: null, error: "File too large (500KB max)." };
 
-    const { data: preview, error } = await buildImportPreview(centreId, csvText);
+    const { data: preview, error } = await buildImportPreview(centreId, csvText, opts);
     if (error || !preview) return { data: null, error: error ?? "Failed to read the file." };
 
     const supabase = await createSupabaseServerClient();
@@ -473,6 +484,41 @@ export async function commitClassImport(
       list.push(a.child_id);
       childrenByClass.set(a.className, list);
     }
+
+    // New students (createMissing): one batched children insert + one
+    // batched enrolment insert, then they join the per-class assignment
+    // like any matched child (which also derives their age band).
+    let createdStudents = 0;
+    if (opts.createMissing && preview.plan.creations.length > 0) {
+      const { data: newChildren, error: childErr } = await supabase
+        .from("children")
+        .insert(
+          preview.plan.creations.map((c) => ({
+            first_name: c.firstName,
+            last_name: c.lastName,
+            date_of_birth: c.dateOfBirth,
+            age_group: c.ageGroup,
+          }))
+        )
+        .select("id");
+      if (childErr || !newChildren) {
+        return { data: null, error: `Failed to create students: ${childErr?.message}` };
+      }
+      const { error: linkErr } = await supabase.from("centre_children").insert(
+        newChildren.map((c) => ({ centre_id: centreId, child_id: c.id }))
+      );
+      if (linkErr) {
+        return { data: null, error: `Failed to enrol new students: ${linkErr.message}` };
+      }
+      // insert preserves input order, so ids line up with creations.
+      newChildren.forEach((c, i) => {
+        const className = preview.plan.creations[i].className;
+        const list = childrenByClass.get(className) ?? [];
+        list.push(c.id);
+        childrenByClass.set(className, list);
+      });
+      createdStudents = newChildren.length;
+    }
     let assigned = 0;
     for (const [className, childIds] of childrenByClass) {
       const classId = classIdByName.get(className);
@@ -489,6 +535,7 @@ export async function commitClassImport(
       entity_id: centreId,
       metadata: {
         created_classes: createdClasses,
+        created_students: createdStudents,
         assigned,
         unmatched: preview.plan.unmatched.length,
         ambiguous: preview.plan.ambiguous.length,
@@ -498,6 +545,7 @@ export async function commitClassImport(
     return {
       data: {
         createdClasses,
+        createdStudents,
         assigned,
         unmatched: preview.plan.unmatched.length,
         ambiguous: preview.plan.ambiguous.length,

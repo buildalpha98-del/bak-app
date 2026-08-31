@@ -1,3 +1,5 @@
+import { yearGroupToAgeBand } from "@/lib/schools/year-groups";
+
 // CSV class-list import (pure parsing/matching — no IO). Schools export
 // "student, year, class, teacher" from their SIS; this turns that file
 // into a reviewable plan: classes to create/update and child→class
@@ -13,6 +15,8 @@ export interface ParsedClassRow {
   className: string;
   yearGroup: string;
   teacherName: string | null;
+  /** ISO date when the file carries a parseable DOB column; else null. */
+  dateOfBirth: string | null;
 }
 
 export interface ClassImportParseResult {
@@ -33,6 +37,15 @@ export interface ExistingClassLite {
   teacher_name: string | null;
 }
 
+export interface PlannedCreation {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string | null;
+  /** Platform age band derived from the class's year group. */
+  ageGroup: "5-8" | "8-12";
+  className: string;
+}
+
 export interface ClassImportPlan {
   classes: {
     name: string;
@@ -42,6 +55,8 @@ export interface ClassImportPlan {
     existing_id: string | null;
   }[];
   assignments: { child_id: string; className: string }[];
+  /** New students to create + enrol (createMissing only); deduped by name+DOB. */
+  creations: PlannedCreation[];
   unmatched: ParsedClassRow[];
   ambiguous: { row: ParsedClassRow; candidates: RosterChildLite[] }[];
   warnings: string[];
@@ -76,6 +91,28 @@ function yearGroupFromClassName(className: string): string | null {
     .match(/^(K|[1-6](?!\d))([/\-](K|[1-6](?!\d)))?/);
   if (!match) return null;
   return match[3] ? `${match[1]}/${match[3]}` : match[1];
+}
+
+/**
+ * Parse a DOB cell to ISO. Accepts DD/MM/YYYY (how Australian SIS exports
+ * write dates) and YYYY-MM-DD; anything else → null — DOB is auxiliary,
+ * never worth failing a row over.
+ */
+function parseDob(raw: string): string | null {
+  const s = raw.trim();
+  if (!s) return null;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const au = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  let y: number, m: number, d: number;
+  if (iso) {
+    [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
+  } else if (au) {
+    [d, m, y] = [Number(au[1]), Number(au[2]), Number(au[3])];
+  } else {
+    return null;
+  }
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1990 || y > 2100) return null;
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
 /** Minimal quote-aware CSV: handles quoted fields, embedded commas, doubled quotes. */
@@ -116,6 +153,7 @@ interface HeaderMap {
   year: number | null;
   className: number | null;
   teacher: number | null;
+  dob: number | null;
 }
 
 function mapHeader(cells: string[]): HeaderMap | null {
@@ -126,6 +164,7 @@ function mapHeader(cells: string[]): HeaderMap | null {
     year: null,
     className: null,
     teacher: null,
+    dob: null,
   };
   cells.forEach((raw, i) => {
     const h = raw.toLowerCase().replace(/[^a-z ]/g, "").trim();
@@ -135,6 +174,7 @@ function mapHeader(cells: string[]): HeaderMap | null {
     else if (/^(year ?group|year|grade|yr)$/.test(h)) map.year = i;
     else if (/^(class ?name|class|roll ?class|home ?class)$/.test(h)) map.className = i;
     else if (/^(class ?teacher|teacher ?name|teacher)$/.test(h)) map.teacher = i;
+    else if (/^(dob|date ?of ?birth|birth ?date|birthdate)$/.test(h)) map.dob = i;
   });
   const hasName = map.fullName !== null || (map.firstName !== null && map.lastName !== null);
   if (!hasName || map.className === null) return null;
@@ -230,6 +270,7 @@ export function parseClassListCsv(text: string): ClassImportParseResult {
       className,
       yearGroup,
       teacherName: teacher || null,
+      dateOfBirth: header.dob !== null ? parseDob(get(header.dob)) : null,
     });
   }
   return { rows, errors };
@@ -241,12 +282,16 @@ const nameKey = (first: string, last: string) =>
 /**
  * Turn parsed rows into a reviewable plan against the centre's enrolled
  * roster and existing classes. Never guesses: duplicate roster names are
- * surfaced as ambiguous, unknown names as unmatched.
+ * surfaced as ambiguous, unknown names as unmatched — unless
+ * `createMissing` is on, in which case unmatched rows become planned
+ * creations (new student + enrolment + class membership in one commit),
+ * deduped by name + DOB.
  */
 export function buildClassImportPlan(
   rows: ParsedClassRow[],
   roster: RosterChildLite[],
-  existingClasses: ExistingClassLite[]
+  existingClasses: ExistingClassLite[],
+  opts: { createMissing?: boolean } = {}
 ): ClassImportPlan {
   const rosterByName = new Map<string, RosterChildLite[]>();
   for (const child of roster) {
@@ -259,6 +304,8 @@ export function buildClassImportPlan(
 
   const classes = new Map<string, ClassImportPlan["classes"][number]>();
   const assignments: ClassImportPlan["assignments"] = [];
+  const creations: PlannedCreation[] = [];
+  const creationByKey = new Map<string, PlannedCreation>();
   const unmatched: ParsedClassRow[] = [];
   const ambiguous: ClassImportPlan["ambiguous"] = [];
   const warnings: string[] = [];
@@ -334,10 +381,39 @@ export function buildClassImportPlan(
       assignments.push({ child_id: candidates[0].child_id, className: cls.name });
     } else if (candidates.length > 1) {
       ambiguous.push({ row, candidates });
+    } else if (opts.createMissing) {
+      const key = `${nameKey(row.firstName, row.lastName)}|${row.dateOfBirth ?? ""}`;
+      const prior = creationByKey.get(key);
+      if (prior) {
+        if (prior.className.toLowerCase() !== cls.name.toLowerCase()) {
+          warnings.push(
+            `${row.studentName} appears in both "${prior.className}" and "${cls.name}" — keeping "${prior.className}".`
+          );
+        }
+        continue;
+      }
+      const creation: PlannedCreation = {
+        firstName: row.firstName,
+        lastName: row.lastName,
+        dateOfBirth: row.dateOfBirth,
+        // Band follows the effective class year (DB value for an
+        // existing class), matching what assignChildrenToClass derives.
+        ageGroup: yearGroupToAgeBand(cls.year_group),
+        className: cls.name,
+      };
+      creationByKey.set(key, creation);
+      creations.push(creation);
     } else {
       unmatched.push(row);
     }
   }
 
-  return { classes: [...classes.values()], assignments, unmatched, ambiguous, warnings };
+  return {
+    classes: [...classes.values()],
+    assignments,
+    creations,
+    unmatched,
+    ambiguous,
+    warnings,
+  };
 }

@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { calculateAgeGroup } from "@/lib/utils/ageGroup";
 
 import {
   importChildren,
@@ -150,8 +151,16 @@ function parseCsv(text: string): { rows: ParsedRow[]; unmappedHeaders: string[] 
     const errors: string[] = [];
     if (!row.first_name) errors.push("Missing first name");
     if (!row.last_name) errors.push("Missing last name");
+    if (!row.age_group && row.date_of_birth) {
+      // Derive the band from DOB like the parent flow does — most
+      // centre exports have a DOB column but not our band vocabulary.
+      const dob = new Date(row.date_of_birth);
+      if (!Number.isNaN(dob.getTime())) {
+        row.age_group = calculateAgeGroup(dob);
+      }
+    }
     if (!row.age_group) {
-      errors.push("Missing age group");
+      errors.push("Missing age group (add an Age Group or Date of Birth column)");
     } else if (!VALID_AGE_GROUPS.includes(row.age_group as AgeGroup)) {
       errors.push(`Invalid age group "${row.age_group}" — must be 3-5, 5-8, or 8-12`);
     }

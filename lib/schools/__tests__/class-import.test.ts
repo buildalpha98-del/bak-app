@@ -78,6 +78,24 @@ describe("parseClassListCsv", () => {
     expect(result.rows.map((r) => r.yearGroup)).toEqual(["3", "K", "5/6"]);
   });
 
+  it("parses an optional date-of-birth column in AU or ISO format", () => {
+    const csv = [
+      "Name,Year,Class,DOB",
+      "Ava Nguyen,3,3B,14/05/2018",
+      "Noah Smith,K,KM,2020-11-03",
+      "Mia Jones,1,1G,not-a-date",
+      "Ethan Roberts,2,2K,",
+    ].join("\n");
+    const result = parseClassListCsv(csv);
+    expect(result.errors).toEqual([]);
+    expect(result.rows.map((r) => r.dateOfBirth)).toEqual([
+      "2018-05-14",
+      "2020-11-03",
+      null,
+      null,
+    ]);
+  });
+
   it("rejects multi-digit class names rather than misreading '12B' as year 1", () => {
     const csv = ["Name,Class", "Ava Nguyen,12B", "Noah Smith,10G"].join("\n");
     const result = parseClassListCsv(csv);
@@ -169,6 +187,56 @@ describe("buildClassImportPlan", () => {
     expect(plan.assignments).toEqual([]);
     expect(plan.ambiguous).toHaveLength(1);
     expect(plan.ambiguous[0].candidates.map((c) => c.child_id)).toEqual(["c3", "c5"]);
+  });
+
+  it("turns unmatched rows into creations when createMissing is on", () => {
+    const rows = parse([
+      "Ava Nguyen,3,3B,",      // on roster → assignment
+      "Zara Unknown,3,3B,",    // not on roster → creation
+      "Billy New,K,KM,",       // not on roster → creation
+    ]);
+    const plan = buildClassImportPlan(rows, roster, existing, { createMissing: true });
+    expect(plan.assignments).toEqual([{ child_id: "c1", className: "3B" }]);
+    expect(plan.unmatched).toEqual([]);
+    expect(plan.creations).toEqual([
+      {
+        firstName: "Zara",
+        lastName: "Unknown",
+        dateOfBirth: null,
+        ageGroup: "8-12",
+        className: "3B",
+      },
+      {
+        firstName: "Billy",
+        lastName: "New",
+        dateOfBirth: null,
+        ageGroup: "5-8",
+        className: "KM",
+      },
+    ]);
+  });
+
+  it("dedupes repeated creation rows and warns when their classes differ", () => {
+    const rows = parse([
+      "Zara Unknown,3,3B,",
+      "Zara Unknown,3,3B,",   // exact repeat — silently deduped
+      "Billy New,K,KM,",
+      "Billy New,1,1G,",      // conflicting class — first wins + warning
+    ]);
+    const plan = buildClassImportPlan(rows, roster, existing, { createMissing: true });
+    expect(plan.creations.map((c) => `${c.firstName} ${c.lastName} ${c.className}`)).toEqual([
+      "Zara Unknown 3B",
+      "Billy New KM",
+    ]);
+    expect(plan.warnings.some((w) => w.includes("Billy New"))).toBe(true);
+    expect(plan.warnings.some((w) => w.includes("Zara"))).toBe(false);
+  });
+
+  it("keeps unmatched as skips (no creations) when createMissing is off", () => {
+    const rows = parse(["Zara Unknown,3,3B,"]);
+    const plan = buildClassImportPlan(rows, roster, existing);
+    expect(plan.creations).toEqual([]);
+    expect(plan.unmatched).toHaveLength(1);
   });
 
   it("keeps the first non-empty teacher and flags conflicting teachers", () => {

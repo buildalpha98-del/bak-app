@@ -35,6 +35,7 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
   const [csvText, setCsvText] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<ClassImportPreview | null>(null);
+  const [createMissing, setCreateMissing] = useState(true);
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -42,21 +43,17 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
     setCsvText(null);
     setFileName(null);
     setPreview(null);
+    setCreateMissing(true);
     setBusy(false);
   };
 
-  const handleFile = async (file: File) => {
-    if (file.size > 500_000) {
-      toast.error("File too large (500KB max).");
-      return;
-    }
+  const runPreview = async (text: string, cm: boolean) => {
     setBusy(true);
     let data, error;
     try {
-      const text = await file.text();
-      setCsvText(text);
-      setFileName(file.name);
-      ({ data, error } = await previewClassImport(centreId, text));
+      ({ data, error } = await previewClassImport(centreId, text, {
+        createMissing: cm,
+      }));
     } catch {
       error = "Couldn't read that file — check the connection and try again.";
     } finally {
@@ -64,11 +61,34 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
     }
     if (error || !data) {
       toast.error(error ?? "Couldn't read that file.");
-      setCsvText(null);
-      setFileName(null);
-      return;
+      return false;
     }
     setPreview(data);
+    return true;
+  };
+
+  const handleFile = async (file: File) => {
+    if (file.size > 500_000) {
+      toast.error("File too large (500KB max).");
+      return;
+    }
+    const text = await file.text().catch(() => null);
+    if (text === null) {
+      toast.error("Couldn't read that file.");
+      return;
+    }
+    setCsvText(text);
+    setFileName(file.name);
+    const ok = await runPreview(text, createMissing);
+    if (!ok) {
+      setCsvText(null);
+      setFileName(null);
+    }
+  };
+
+  const handleToggleCreateMissing = async (next: boolean) => {
+    setCreateMissing(next);
+    if (csvText) await runPreview(csvText, next);
   };
 
   const handleCommit = async () => {
@@ -76,7 +96,9 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
     setBusy(true);
     let data, error;
     try {
-      ({ data, error } = await commitClassImport(centreId, csvText));
+      ({ data, error } = await commitClassImport(centreId, csvText, {
+        createMissing,
+      }));
     } catch {
       error = "Import failed — check the connection and try again.";
     } finally {
@@ -89,6 +111,9 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
     const parts = [
       data.createdClasses > 0
         ? `${data.createdClasses} class${data.createdClasses === 1 ? "" : "es"} created`
+        : null,
+      data.createdStudents > 0
+        ? `${data.createdStudents} new student${data.createdStudents === 1 ? "" : "s"} enrolled`
         : null,
       `${data.assigned} student${data.assigned === 1 ? "" : "s"} assigned`,
     ].filter(Boolean);
@@ -195,6 +220,39 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
                 enrolled roster and will be assigned.
               </div>
 
+              {(plan?.creations.length ?? 0) > 0 && (
+                <div className="space-y-1 rounded-lg border border-green-200 bg-green-50 p-3 text-green-800">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Check className="size-4 shrink-0" />
+                    {plan!.creations.length} new student
+                    {plan!.creations.length === 1 ? "" : "s"} will be created and
+                    enrolled
+                  </div>
+                  <p className="text-xs">
+                    {plan!.creations
+                      .slice(0, 10)
+                      .map((c) => `${c.firstName} ${c.lastName} (${c.className})`)
+                      .join(", ")}
+                    {plan!.creations.length > 10 ? "…" : ""}
+                  </p>
+                </div>
+              )}
+
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={createMissing}
+                  disabled={busy}
+                  onChange={(e) => void handleToggleCreateMissing(e.target.checked)}
+                />
+                <span>
+                  Create and enrol students who aren&apos;t on the roster yet.
+                  Untick to only assign students already enrolled (new names are
+                  skipped and listed instead).
+                </span>
+              </label>
+
               {(plan?.unmatched.length ?? 0) > 0 && (
                 <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800">
                   <div className="flex items-center gap-2 font-medium">
@@ -256,7 +314,13 @@ export function ClassImportDialog({ centreId, onImported }: ClassImportDialogPro
                 Choose another file
               </Button>
               <Button
-                disabled={busy || (plan?.assignments.length ?? 0) + (plan?.classes.length ?? 0) === 0}
+                disabled={
+                  busy ||
+                  (plan?.assignments.length ?? 0) +
+                    (plan?.creations.length ?? 0) +
+                    (plan?.classes.length ?? 0) ===
+                    0
+                }
                 onClick={handleCommit}
               >
                 {busy && <Loader2 className="mr-1.5 size-4 animate-spin" />}
