@@ -32,6 +32,7 @@ import {
 import type { RecurrenceFrequency } from "@/lib/utils/roster";
 import { SPORTS } from "@/lib/types/enums";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
+import { ClassChipPicker } from "./class-chip-picker";
 import type { Centre, Profile } from "@/lib/types/database";
 
 // ============================================================
@@ -75,6 +76,7 @@ export function CreateSessionDialog({
   const [centreId, setCentreId] = useState("");
   const [sport, setSport] = useState("");
   const [coachId, setCoachId] = useState("");
+  const [classIds, setClassIds] = useState<string[]>([]);
   const [payRateOverride, setPayRateOverride] = useState("");
   const [repeatFreq, setRepeatFreq] = useState<RecurrenceFrequency | "none">(
     "none"
@@ -104,6 +106,7 @@ export function CreateSessionDialog({
         setCentreId(editSession.centre_id);
         setSport(editSession.sport);
         setCoachId(editSession.coach_id ?? "");
+        setClassIds(editSession.school_class_ids ?? []);
         setPayRateOverride(
           editSession.pay_rate_override?.toString() ?? ""
         );
@@ -114,6 +117,7 @@ export function CreateSessionDialog({
         setCentreId("");
         setSport("");
         setCoachId(defaultCoachId ?? "");
+        setClassIds([]);
         setPayRateOverride("");
       }
       setRepeatFreq("none");
@@ -166,6 +170,7 @@ export function CreateSessionDialog({
         centre_id: centreId,
         sport,
         coach_id: coachId || null,
+        school_class_ids: classIds.length > 0 ? classIds : null,
         pay_rate_override: payRateOverride
           ? parseFloat(payRateOverride)
           : null,
@@ -199,6 +204,7 @@ export function CreateSessionDialog({
           duration_minutes: durationMinutes,
           centre_id: centreId,
           coach_id: coachId || undefined,
+          school_class_ids: classIds.length > 0 ? classIds : null,
           pay_rate_override: payRateOverride
             ? parseFloat(payRateOverride)
             : undefined,
@@ -231,6 +237,7 @@ export function CreateSessionDialog({
         centre_id: centreId,
         sport,
         coach_id: coachId || undefined,
+        school_class_ids: classIds.length > 0 ? classIds : null,
         pay_rate_override: payRateOverride
           ? parseFloat(payRateOverride)
           : undefined,
@@ -426,6 +433,14 @@ export function CreateSessionDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Classes (renders only for schools with a class list) */}
+          <ClassChipPicker
+            centreId={centreId || null}
+            value={classIds}
+            onChange={setClassIds}
+            disabled={saving}
+          />
 
           {/* Pay Rate Override (optional) */}
           <div className="space-y-1.5">
