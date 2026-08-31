@@ -41,6 +41,15 @@ interface AppLogoProps {
    * above the fold as page chrome or as a login card's focal point.
    */
   priority?: boolean;
+  /**
+   * White-label override (centres.logo_url): render the centre's own
+   * mark instead of the BAK crest. Stays inside this component so the
+   * "no raw <img>" rule below keeps holding. School logos have unknown
+   * aspect ratios, so overrides always render boxed via object-contain.
+   */
+  logoUrl?: string | null;
+  /** Accessible name for an overridden mark (the centre's name). */
+  alt?: string;
 }
 
 /**
@@ -57,16 +66,28 @@ interface AppLogoProps {
  * `lib/launch/email-templates.ts`, which needs an absolute URL that
  * `next/image` cannot give it.
  */
-export function AppLogo({ size = "sm", className, priority }: AppLogoProps) {
+export function AppLogo({
+  size = "sm",
+  className,
+  priority,
+  logoUrl,
+  alt,
+}: AppLogoProps) {
   const { width, height, className: sizeClass } = SIZES[size];
 
   return (
     <Image
-      src="/logo.png"
-      alt="Build Alpha Kids"
+      src={logoUrl || "/logo.png"}
+      alt={logoUrl ? (alt ?? "Centre logo") : "Build Alpha Kids"}
       width={width}
       height={height}
-      className={cn(sizeClass, className)}
+      className={cn(
+        sizeClass,
+        // Arbitrary-ratio centre marks must letterbox, never stretch —
+        // and a very wide wordmark can't be allowed to eat the header.
+        logoUrl && "object-contain max-w-[140px]",
+        className
+      )}
       priority={priority ?? (size === "lg" || size === "xl" || size === "rail")}
     />
   );

@@ -805,18 +805,22 @@ export async function uploadCentreLogo(
       data: { publicUrl },
     } = supabase.storage.from("assets").getPublicUrl(filePath);
 
+    // Same path on every replacement → same public URL → CDN serves the
+    // stale mark. A version query param makes each upload a fresh URL.
+    const versionedUrl = `${publicUrl}?v=${Date.now()}`;
+
     // Update centre record
     const { error: updateError } = await supabase
       .from("centres")
-      .update({ logo_url: publicUrl })
+      .update({ logo_url: versionedUrl })
       .eq("id", centreId);
 
     if (updateError) {
       console.error("Centre logo_url update error:", updateError);
-      return { url: publicUrl, error: "Logo uploaded but failed to save URL." };
+      return { url: versionedUrl, error: "Logo uploaded but failed to save URL." };
     }
 
-    return { url: publicUrl, error: null };
+    return { url: versionedUrl, error: null };
   } catch (err) {
     console.error("uploadCentreLogo error:", err);
     return { url: null, error: "Failed to upload logo." };

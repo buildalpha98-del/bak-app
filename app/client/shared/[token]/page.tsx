@@ -34,6 +34,7 @@ export default async function SharedLinkPage({ params }: Props) {
     <SharedPortalView
       centreId={data.centreId}
       centreName={data.centreName}
+      centreLogoUrl={data.centreLogoUrl}
       primaryUserName={data.primaryUserName}
       snapshot={data.snapshot}
     />

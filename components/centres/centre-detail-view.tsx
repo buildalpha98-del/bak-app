@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "@/components/ui/app-link";
+import { AppLogo } from "@/components/shared/app-logo";
+import { uploadCentreLogo } from "@/lib/reports/actions";
+import type { BrandingMode } from "@/lib/types/enums";
 import {
   ArrowLeft,
   Building2,
@@ -806,6 +809,29 @@ function EditCentreDialog({
   const [colour, setColour] = useState(
     centreColour({ id: centre.id, colour: centre.colour }),
   );
+  const [brandingMode, setBrandingMode] = useState<BrandingMode>(
+    centre.branding_mode
+  );
+  const [logoUrl, setLogoUrl] = useState(centre.logo_url);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleLogoUpload(file: File) {
+    setLogoUploading(true);
+    setError(null);
+    const formData = new FormData();
+    formData.append("logo", file);
+    const { url, error: uploadError } = await uploadCentreLogo(
+      centre.id,
+      formData
+    );
+    setLogoUploading(false);
+    if (uploadError || !url) {
+      setError(uploadError ?? "Failed to upload the logo.");
+      return;
+    }
+    setLogoUrl(url);
+  }
 
   async function handleSave() {
     if (!name.trim()) {
@@ -828,6 +854,7 @@ function EditCentreDialog({
       contract_status: contractStatus,
       group_size: groupSize ? parseInt(groupSize, 10) : null,
       colour,
+      branding_mode: brandingMode,
     };
 
     const { error: updateError } = await updateCentre(centre.id, payload);
@@ -882,6 +909,57 @@ function EditCentreDialog({
             <CentreColourPicker value={colour} onChange={setColour} />
             <p className="text-xs text-muted-foreground">
               Shown as the card accent when the roster is coloured by centre.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label>Portal branding</Label>
+            <Select
+              value={brandingMode}
+              onValueChange={(v) => setBrandingMode(v as BrandingMode)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bak_branded">Build Alpha Kids branded</SelectItem>
+                <SelectItem value="white_label">
+                  White label (centre&apos;s own logo)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-3 pt-1">
+              {logoUrl ? (
+                <AppLogo size="sm" logoUrl={logoUrl} alt={`${name} logo`} />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  No logo uploaded
+                </span>
+              )}
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleLogoUpload(file);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={logoUploading}
+                onClick={() => logoInputRef.current?.click()}
+              >
+                {logoUploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              White label swaps the Build Alpha Kids crest for this logo in the
+              centre&apos;s portal, shared links, and report PDFs. PNG, JPG,
+              SVG or WebP, max 2MB.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
