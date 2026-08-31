@@ -24,6 +24,8 @@ import {
 import { AppLogo } from "@/components/shared/app-logo";
 import { NotificationBell } from "@/components/shared/navigation/notification-bell";
 import { CentreSwitcher } from "@/components/client/centre-switcher";
+import { DemoGuide } from "@/components/client/demo-guide";
+import { isDemoViewerEmail } from "@/lib/demo";
 import { IosInstallPrompt } from "@/components/shared/ios-install-prompt";
 import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
@@ -276,6 +278,12 @@ export function ClientShell({
       </div>
 
       <IosInstallPrompt />
+
+      {/* Self-guided tour — only for /demo/school visitors, never real
+          clients or the primary tester. */}
+      {isDemoViewerEmail(clientUser.email) && (
+        <DemoGuide centreId={clientUser.centre_id} />
+      )}
 
       {/* Mobile bottom tabs */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
