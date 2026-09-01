@@ -558,6 +558,44 @@ export async function toggleSessionStatus(
 // 8. Get all bookable sessions (for filter dropdowns)
 // ============================================================
 
+/**
+ * Upcoming ROSTER sessions for the "link to roster session" picker
+ * (seam S1): the link is what routes booked children onto the coach's
+ * attendance list, so the form should make it a first-class field.
+ */
+export async function getRosterSessionsForLink(): Promise<{
+  data: { id: string; label: string }[];
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    await verifyAdminOrOps(supabase);
+
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("id, date, time, sport, centres:centre_id(name)")
+      .gte("date", new Date().toISOString().split("T")[0])
+      .not("status", "in", "(cancelled,completed)")
+      .order("date")
+      .order("time")
+      .limit(200);
+
+    if (error) return { data: [], error: error.message };
+    return {
+      data: (data ?? []).map((s) => ({
+        id: s.id,
+        label: `${s.date} ${String(s.time).slice(0, 5)} · ${s.sport} · ${
+          (s.centres as unknown as { name: string } | null)?.name ?? "Unknown"
+        }`,
+      })),
+      error: null,
+    };
+  } catch (err) {
+    console.error("getRosterSessionsForLink error:", err);
+    return { data: [], error: "Failed to load roster sessions." };
+  }
+}
+
 export async function getSessionsForDropdown(): Promise<{
   data: { id: string; title: string; date: string }[];
   error: string | null;

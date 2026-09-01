@@ -154,7 +154,19 @@ export function SquarePayment({
         return;
       }
 
-      onPaymentSuccess(data.paymentId || data.squarePaymentId);
+      // A 200 with no paymentId means the card WAS charged but our
+      // record failed — that is a needs-support state, never a
+      // "Booking Confirmed!" screen.
+      if (!data.paymentId) {
+        onPaymentError(
+          data.warning ??
+            "Your payment went through but we couldn't finish the booking — please contact us and we'll sort it immediately. Don't pay again."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      onPaymentSuccess(data.paymentId);
     } catch {
       onPaymentError("An unexpected error occurred. Please try again.");
     } finally {
