@@ -19,7 +19,12 @@ function ParentLoginForm() {
   // Post-login destination (e.g. /parent/book/<id>?waitlist=<entry>
   // from the marketing site's Book now buttons or a waitlist email).
   // Sanitised server-side by parentSafeNext.
-  const next = searchParams.get("next") ?? undefined;
+  // Legacy referral links used ?ref=CODE directly — carry it into the
+  // registration path so the referral survives the login wall (S9).
+  const refCode = searchParams.get("ref");
+  const next =
+    searchParams.get("next") ??
+    (refCode ? `/parent/register?ref=${encodeURIComponent(refCode)}` : undefined);
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);

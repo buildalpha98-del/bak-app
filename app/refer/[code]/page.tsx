@@ -135,7 +135,7 @@ export default async function ReferralLandingPage({
 
         {/* CTA */}
         <div className="mt-10 text-center">
-          <Link href={`/parent-login?ref=${code}`}>
+          <Link href={`/parent-login?next=${encodeURIComponent(`/parent/register?ref=${code}`)}`}>
             <Button className="bg-primary hover:bg-[#d4651f] text-white min-h-[52px] px-8 text-base font-semibold w-full sm:w-auto">
               Sign Up Now
               <ArrowRight className="h-5 w-5 ml-2" />

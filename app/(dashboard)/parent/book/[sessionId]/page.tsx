@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getBookableSession } from "@/lib/bookings/actions";
 import { getParentChildren } from "@/lib/parent/actions";
@@ -100,6 +100,11 @@ function formatPrice(cents: number) {
 
 export default function BookingFlowPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  // Waitlist offer flow (seam S8): arriving via "Confirm spot" carries
+  // the offered entry id; confirming the booking accepts the offer so
+  // the hourly expiry cron doesn't re-offer an already-taken seat.
+  const waitlistEntryId = searchParams.get("waitlist");
   const router = useRouter();
   const sessionId = params.sessionId as string;
 
@@ -209,6 +214,37 @@ export default function BookingFlowPage() {
     selectedChildIds.includes(c.id)
   );
   const subtotal = (session?.price_cents ?? 0) * selectedChildIds.length;
+
+  // Full session (seam S8): without an offer in hand, the flow becomes
+  // "join the waitlist" — createBooking would reject anyway.
+  const sessionFull =
+    !!session &&
+    !waitlistEntryId &&
+    session.current_bookings >= session.max_capacity;
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+
+  async function handleJoinWaitlist() {
+    if (!session || selectedChildIds.length === 0) return;
+    setJoiningWaitlist(true);
+    const { joinWaitlist } = await import("@/lib/bookings/actions");
+    let ok = 0;
+    let firstError: string | null = null;
+    for (const childId of selectedChildIds) {
+      const { error } = await joinWaitlist(session.id, childId);
+      if (error) firstError = firstError ?? error;
+      else ok++;
+    }
+    setJoiningWaitlist(false);
+    if (ok === 0) {
+      toast.error(firstError ?? "Couldn't join the waitlist.");
+      return;
+    }
+    setWaitlistJoined(true);
+    toast.success(
+      `You're on the waitlist — we'll email you the moment a spot opens.`
+    );
+  }
 
   async function handlePackageRedemption(packageBalanceId: string) {
     if (!session) return;
@@ -342,13 +378,22 @@ export default function BookingFlowPage() {
       toast.error(error);
       return;
     }
+    acceptWaitlistOfferIfAny();
     toast.success("Booking confirmed — no payment needed!");
     setStep(4);
+  }
+
+  function acceptWaitlistOfferIfAny() {
+    if (!waitlistEntryId) return;
+    import("@/lib/bookings/actions")
+      .then(({ acceptWaitlistOffer }) => acceptWaitlistOffer(waitlistEntryId))
+      .catch(console.error);
   }
 
   function handlePaymentSuccess(_paymentId: string) {
     // Discount/credit redemption happens server-side inside
     // confirmBookingPayment — nothing to fire from the browser.
+    acceptWaitlistOfferIfAny();
     toast.success("Payment successful! Your booking is confirmed.");
     setStep(4);
   }
@@ -612,13 +657,34 @@ export default function BookingFlowPage() {
             </div>
           )}
 
-          <Button
-            className="w-full bg-primary hover:bg-[#d4651f] h-11"
-            disabled={selectedChildIds.length === 0}
-            onClick={() => setStep(3)}
-          >
-            Continue to Payment
-          </Button>
+          {sessionFull ? (
+            waitlistJoined ? (
+              <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                You&apos;re on the waitlist. We&apos;ll email you the moment a
+                spot opens — offers hold for 24 hours.
+              </div>
+            ) : (
+              <Button
+                className="w-full bg-primary hover:bg-[#d4651f] h-11"
+                disabled={selectedChildIds.length === 0 || joiningWaitlist}
+                onClick={handleJoinWaitlist}
+              >
+                {joiningWaitlist ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "This session is full — join the waitlist"
+                )}
+              </Button>
+            )
+          ) : (
+            <Button
+              className="w-full bg-primary hover:bg-[#d4651f] h-11"
+              disabled={selectedChildIds.length === 0}
+              onClick={() => setStep(3)}
+            >
+              Continue to Payment
+            </Button>
+          )}
         </div>
       )}
 

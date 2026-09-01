@@ -148,6 +148,35 @@ export async function createBooking(
       return { data: null, error: "Session not found." };
     }
 
+    // Age eligibility (seam S14): the check was client-only. Validate
+    // each booked child's age against the session's band server-side.
+    if (session.age_group_min != null || session.age_group_max != null) {
+      const childIds = input.children.map((c) => c.child_id).filter(Boolean);
+      if (childIds.length > 0) {
+        const { data: childRows } = await supabase
+          .from("children")
+          .select("id, first_name, date_of_birth")
+          .in("id", childIds);
+        for (const child of childRows ?? []) {
+          if (!child.date_of_birth) continue;
+          const dob = new Date(child.date_of_birth);
+          const now = new Date();
+          let age = now.getFullYear() - dob.getFullYear();
+          const m = now.getMonth() - dob.getMonth();
+          if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+          if (
+            age < (session.age_group_min ?? 0) ||
+            age > (session.age_group_max ?? 99)
+          ) {
+            return {
+              data: null,
+              error: `${child.first_name} is outside this session's age range (${session.age_group_min ?? "any"}–${session.age_group_max ?? "any"}).`,
+            };
+          }
+        }
+      }
+    }
+
     // Capacity guard (seam S8): the "Session full" gate was UI-only and
     // bypassable by URL.
     if (
@@ -663,6 +692,24 @@ export async function cancelBooking(
 
     // Process waitlist for the session
     await processWaitlistForSession(booking.bookable_session_id);
+
+    // Seam S11: refunds are manual (no Square Refunds integration),
+    // but the parent email promises one — so the owed refund must land
+    // in an operator's queue, not vanish. Card bookings only; package
+    // credits are restored above.
+    if (refundEligible && booking.payment_type === "single_payment") {
+      const { triggerNotificationForOps } = await import(
+        "@/lib/notifications/send"
+      );
+      void triggerNotificationForOps({
+        type: "invoice_status_changed",
+        title: `Refund owed: $${((booking.total_cents as number) / 100).toFixed(2)}`,
+        body: `Booking for ${session.title ?? "a session"} on ${session.date} was cancelled >24h out — process the Square refund manually.`,
+        entityType: "session",
+        entityId: booking.bookable_session_id,
+        data: { booking_id: bookingId },
+      }).catch(console.error);
+    }
 
     // Send cancellation email + notification (fire-and-forget)
     void (async () => {

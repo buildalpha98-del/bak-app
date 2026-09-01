@@ -378,6 +378,42 @@ export async function joinWaitlist(
 // Waitlist: cancel
 // ============================================================
 
+/**
+ * Mark an offered waitlist entry as accepted (seam S8). Called when the
+ * parent completes the booking they were offered — without this the
+ * hourly expiry cron re-offered an already-taken seat to the next
+ * parent in line.
+ */
+export async function acceptWaitlistOffer(
+  entryId: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+    if (!parentProfile) return { error: "No parent profile." };
+
+    const { error } = await supabase
+      .from("waitlist")
+      .update({ status: "accepted" })
+      .eq("id", entryId)
+      .eq("parent_id", parentProfile.id)
+      .eq("status", "offered");
+    return { error: error?.message ?? null };
+  } catch (err) {
+    console.error("acceptWaitlistOffer error:", err);
+    return { error: "Failed to accept the offer." };
+  }
+}
+
 export async function cancelWaitlistEntry(
   waitlistId: string
 ): Promise<{ error: string | null }> {
