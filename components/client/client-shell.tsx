@@ -96,7 +96,12 @@ export function ClientShell({
       : undefined;
 
   return (
-    <div className="min-h-dvh bg-gray-50" style={brandStyle}>
+    <div
+      // portal-brand-scope makes this element recompute the accent
+      // scale from the inline --portal-brand (see globals.css).
+      className={`min-h-dvh bg-gray-50 ${brandStyle ? "portal-brand-scope" : ""}`}
+      style={brandStyle}
+    >
       {/* Top bar */}
       <header
         // iOS notch / dynamic island: in standalone PWA mode the inset

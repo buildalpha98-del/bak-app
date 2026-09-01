@@ -89,24 +89,6 @@
     --sidebar-border: oklch(0.22 0.012 45);
     --sidebar-ring: oklch(0.65 0.19 42);
 
-    /* Client-portal accent scale (white-label, PR #36 follow-up).
-       One anchor var — --portal-brand — drives the whole scale via
-       color-mix, so a white-label centre re-themes the portal by
-       setting a single inline variable on the shell root. Defaults
-       reproduce the portal's original cyan (tailwind cyan-600 anchor).
-       Numbered like the tailwind shades they replaced, so a sweep of
-       cyan-N → portal-N stays reviewable. */
-    --portal-brand: #0891B2;
-    --portal-50: color-mix(in oklab, var(--portal-brand) 7%, white);
-    --portal-100: color-mix(in oklab, var(--portal-brand) 14%, white);
-    --portal-200: color-mix(in oklab, var(--portal-brand) 28%, white);
-    --portal-300: color-mix(in oklab, var(--portal-brand) 45%, white);
-    --portal-400: color-mix(in oklab, var(--portal-brand) 65%, white);
-    --portal-500: color-mix(in oklab, var(--portal-brand) 88%, white);
-    --portal-600: var(--portal-brand);
-    --portal-700: color-mix(in oklab, var(--portal-brand) 82%, black);
-    --portal-800: color-mix(in oklab, var(--portal-brand) 68%, black);
-
     /* Brand colour tokens (hex for SVGs, gradients, direct use) */
     --brand-orange: #E8712A;
     --brand-orange-light: #FFF3EB;
@@ -153,6 +135,32 @@
     --safe-right: env(safe-area-inset-right, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Client-portal accent scale (white-label). One anchor var —
+   --portal-brand — drives the whole scale via color-mix; defaults
+   reproduce the portal's original cyan, and shades are numbered like
+   the tailwind ones they replaced so the cyan-N → portal-N sweep
+   stays reviewable.
+
+   The formulas are declared on BOTH :root and .portal-brand-scope on
+   purpose: a custom property that references another resolves where
+   it is DECLARED, so overriding --portal-brand on a descendant of
+   :root alone would never reach shades computed at :root. The shell
+   sets `--portal-brand` inline AND carries .portal-brand-scope, so
+   the same element recomputes the scale and its subtree inherits the
+   re-themed values. */
+:root, .portal-brand-scope {
+    --portal-brand: #0891B2;
+    --portal-50: color-mix(in oklab, var(--portal-brand) 7%, white);
+    --portal-100: color-mix(in oklab, var(--portal-brand) 14%, white);
+    --portal-200: color-mix(in oklab, var(--portal-brand) 28%, white);
+    --portal-300: color-mix(in oklab, var(--portal-brand) 45%, white);
+    --portal-400: color-mix(in oklab, var(--portal-brand) 65%, white);
+    --portal-500: color-mix(in oklab, var(--portal-brand) 88%, white);
+    --portal-600: var(--portal-brand);
+    --portal-700: color-mix(in oklab, var(--portal-brand) 82%, black);
+    --portal-800: color-mix(in oklab, var(--portal-brand) 68%, black);
 }
 
 .dark {
