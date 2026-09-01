@@ -377,9 +377,9 @@ export function CentreDetailView({
           <TabsTrigger value="children">
             Children ({data.children_count})
           </TabsTrigger>
-          {centre.type === "school" && (
-            <TabsTrigger value="classes">Classes</TabsTrigger>
-          )}
+          <TabsTrigger value="classes">
+            {centre.type === "school" ? "Classes" : "Rooms"}
+          </TabsTrigger>
 
           <GroupLabel>Access</GroupLabel>
           <TabsTrigger value="portal">Portal Access</TabsTrigger>
@@ -720,12 +720,10 @@ export function CentreDetailView({
           </TabsContent>
         )}
 
-        {/* ==================== Classes Tab (schools only) ==================== */}
-        {centre.type === "school" && (
-          <TabsContent value="classes">
-            <SchoolClassesTab centreId={centre.id} />
-          </TabsContent>
-        )}
+        {/* ==================== Classes / Rooms Tab ==================== */}
+        <TabsContent value="classes">
+          <SchoolClassesTab centreId={centre.id} centreType={centre.type} />
+        </TabsContent>
       </Tabs>
 
       {/* Edit Centre Dialog */}

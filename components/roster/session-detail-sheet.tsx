@@ -168,18 +168,20 @@ export function SessionDetailSheet({
   const [equipmentCheck, setEquipmentCheck] =
     useState<EquipmentCheckResult | null>(null);
 
-  // School class targeting (design phase 3) — null until loaded.
+  // Class/room targeting (design phase 3; rooms parity) — null until
+  // loaded. Self-gating: centres without groups return [] and the
+  // section never renders.
   const [classOptions, setClassOptions] = useState<ClassOption[] | null>(null);
 
   useEffect(() => {
-    if (open && session?.centre_type === "school" && session.centre_id) {
+    if (open && session?.centre_id) {
       getClassOptionsForCentre(session.centre_id).then(({ data }) =>
         setClassOptions(data ?? [])
       );
     } else {
       setClassOptions(null);
     }
-  }, [open, session?.centre_id, session?.centre_type]);
+  }, [open, session?.centre_id]);
 
   useEffect(() => {
     if (open && session?.id && session?.program_id) {
@@ -515,20 +517,25 @@ export function SessionDetailSheet({
             </div>
           </div>
 
-          {/* Classes (school sessions only, design phase 3). Toggling a
-              chip saves immediately — no classes selected = whole school. */}
-          {session.centre_type === "school" &&
-            classOptions !== null &&
+          {/* Classes / rooms (design phase 3 + rooms parity). Toggling a
+              chip saves immediately — nothing selected = whole centre. */}
+          {classOptions !== null &&
             classOptions.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-foreground">Classes</h3>
+                  <h3 className="text-sm font-medium text-foreground">
+                    {session.centre_type === "school" ? "Classes" : "Rooms"}
+                  </h3>
                   <span className="text-xs text-muted-foreground">
                     {(() => {
                       const live = (session.school_class_ids ?? []).filter((id) =>
                         classOptions.some((c) => c.id === id)
                       ).length;
-                      return live === 0 ? "Whole school" : `${live} selected`;
+                      return live === 0
+                        ? session.centre_type === "school"
+                          ? "Whole school"
+                          : "Whole centre"
+                        : `${live} selected`;
                     })()}
                   </span>
                 </div>

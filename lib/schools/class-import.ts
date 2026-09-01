@@ -42,7 +42,7 @@ export interface PlannedCreation {
   lastName: string;
   dateOfBirth: string | null;
   /** Platform age band derived from the class's year group. */
-  ageGroup: "5-8" | "8-12";
+  ageGroup: "3-5" | "5-8" | "8-12";
   className: string;
 }
 

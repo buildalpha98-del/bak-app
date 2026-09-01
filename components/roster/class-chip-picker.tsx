@@ -63,12 +63,23 @@ export function ClassChipPicker({
     );
   };
 
+  // Rooms parity: childcare rooms store an age band as their group, so
+  // the header self-infers without threading centre type through props.
+  const isRooms =
+    options.length > 0 && options.every((o) => /^\d+-\d+$/.test(o.year_group));
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">Classes</span>
+        <span className="text-sm font-medium text-foreground">
+          {isRooms ? "Rooms" : "Classes"}
+        </span>
         <span className="text-xs text-muted-foreground">
-          {value.length === 0 ? "Whole school" : `${value.length} selected`}
+          {value.length === 0
+            ? isRooms
+              ? "Whole centre"
+              : "Whole school"
+            : `${value.length} selected`}
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5">
