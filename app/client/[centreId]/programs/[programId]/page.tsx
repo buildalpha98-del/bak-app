@@ -11,11 +11,11 @@ export default async function ClientProgramDetailPage({
   params: Promise<{ centreId: string; programId: string }>;
 }) {
   const { centreId, programId } = await params;
-  const { data: clientUser } = await getCurrentClientUser();
+  const { data: clientUser } = await getCurrentClientUser(centreId);
 
-  if (!clientUser || clientUser.centre_id !== centreId) {
-    redirect("/client-login");
-  }
+  if (!clientUser) redirect("/client-login");
+  if (clientUser.is_authorised_for_current === false)
+    redirect(`/client/${clientUser.centre_id}`);
 
   const { data: program, error } = await getClientProgramDetail(programId, centreId);
 

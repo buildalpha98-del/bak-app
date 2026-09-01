@@ -482,17 +482,33 @@ async function notifyCentreDirector(invoiceId: string) {
     metadata: { invoice_id: invoiceId },
   }).catch(console.error);
 
-  // Find the client user for this centre and send notification
-  const { data: clientUser } = await adminClient
-    .from("client_users")
-    .select("user_id")
-    .eq("centre_id", invoice.centre_id)
-    .eq("is_primary", true)
-    .maybeSingle();
+  // Find the client user for this centre and send notification.
+  // Multi-campus: the primary may default to another centre, so fall
+  // back to a primary linked here via client_user_centres.
+  let notifyUserId: string | null = null;
+  {
+    const { data: direct } = await adminClient
+      .from("client_users")
+      .select("user_id")
+      .eq("centre_id", invoice.centre_id)
+      .eq("is_primary", true)
+      .limit(1);
+    notifyUserId = direct?.[0]?.user_id ?? null;
+    if (!notifyUserId) {
+      const { data: joined } = await adminClient
+        .from("client_user_centres")
+        .select("client_users!inner(user_id, is_primary)")
+        .eq("centre_id", invoice.centre_id);
+      notifyUserId =
+        (joined ?? [])
+          .map((j) => j.client_users as unknown as { user_id: string; is_primary: boolean })
+          .find((cu) => cu?.is_primary)?.user_id ?? null;
+    }
+  }
 
-  if (clientUser?.user_id) {
+  if (notifyUserId) {
     void createNotification({
-      userId: clientUser.user_id,
+      userId: notifyUserId,
       type: "invoice_ready",
       title: "Invoice Available",
       message: `Invoice ${invoice.invoice_number} for ${amount} is ready.`,

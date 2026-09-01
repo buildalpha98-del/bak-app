@@ -954,13 +954,17 @@ export async function sendCentreMessage(
     if (!user) return { error: "Not authenticated." };
 
     if (senderType === "client") {
-      // Get client_user record
-      const { data: clientUser } = await supabase
+      // Resolve the caller's client_users row. Multi-campus: the row's
+      // own centre_id may be their DEFAULT centre — authorisation for
+      // this centre comes from the join table (and RLS enforces it
+      // again on the insert via auth_client_centre_ids, migration 085).
+      const { data: cuRows } = await supabase
         .from("client_users")
-        .select("id")
+        .select("id, centre_id")
         .eq("user_id", user.id)
-        .eq("centre_id", centreId)
-        .single();
+        .order("created_at", { ascending: true });
+      const clientUser =
+        cuRows?.find((r) => r.centre_id === centreId) ?? cuRows?.[0];
 
       if (!clientUser) return { error: "Not authorised." };
 

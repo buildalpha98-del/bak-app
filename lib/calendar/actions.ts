@@ -57,12 +57,23 @@ export async function getCalendarToken(
     const isStaff =
       profile?.role === "admin" || profile?.role === "operations";
     if (!isStaff) {
-      const { data: clientUser } = await supabase
+      // Multi-campus: authorised centres = default column ∪ join table.
+      const { data: cuRows } = await supabase
         .from("client_users")
-        .select("centre_id")
-        .eq("user_id", user.id)
-        .single();
-      if (!clientUser || clientUser.centre_id !== entityId) {
+        .select("id, centre_id")
+        .eq("user_id", user.id);
+      const direct = (cuRows ?? []).some((r) => r.centre_id === entityId);
+      let viaJoin = false;
+      if (!direct && cuRows && cuRows.length > 0) {
+        const { data: joinRows } = await supabase
+          .from("client_user_centres")
+          .select("centre_id")
+          .in("client_user_id", cuRows.map((r) => r.id))
+          .eq("centre_id", entityId)
+          .limit(1);
+        viaJoin = (joinRows?.length ?? 0) > 0;
+      }
+      if (!direct && !viaJoin) {
         return { token: null, error: "Not authorised." };
       }
     }
