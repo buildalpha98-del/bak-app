@@ -225,11 +225,15 @@ export async function middleware(request: NextRequest) {
     let centreId: string | null = hint?.role === "client" ? hint.status : null;
 
     if (!centreId) {
-      const { data: clientUser } = await supabase
+      // limit(1), not maybeSingle: an invite to a second centre can
+      // legally create a second client_users row for the same auth
+      // user, and maybeSingle() would error and lock them out.
+      const { data: clientUserRows } = await supabase
         .from("client_users")
         .select("centre_id")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .limit(1);
+      const clientUser = clientUserRows?.[0] ?? null;
 
       if (!clientUser) {
         // Not a client user — check if they're staff
@@ -263,14 +267,14 @@ export async function middleware(request: NextRequest) {
       setRoleHint(response, user.id, "client", centreId!, false);
     }
 
-    // Client users can only access their own centre's portal
-    const centreIdMatch = pathname.match(/^\/client\/([^/]+)/);
-    if (centreIdMatch && centreIdMatch[1] !== centreId) {
-      const correctUrl = request.nextUrl.clone();
-      correctUrl.pathname = `/client/${centreId}`;
-      return NextResponse.redirect(correctUrl);
-    }
-
+    // Multi-campus: do NOT pin /client/[centreId] to the default
+    // centre here. The edge only knows the default (the role hint is a
+    // single value), so an equality check bounced every authorised
+    // non-default centre and made the CentreSwitcher inert. Real
+    // enforcement lives in app/client/[centreId]/layout.tsx (which
+    // checks the client_user_centres join via getCurrentClientUser)
+    // with RLS as the backstop — an unauthorised centreId renders
+    // nothing and redirects there.
     return response;
   }
 
@@ -389,12 +393,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(portalUrl);
     }
 
-    // Maybe it's a client user on the staff login page
-    const { data: clientUser } = await supabase
+    // Maybe it's a client user on the staff login page. limit(1), not
+    // single(): multi-centre invites can create a second row.
+    const { data: clientUserRows } = await supabase
       .from("client_users")
       .select("centre_id")
       .eq("user_id", user.id)
-      .single();
+      .limit(1);
+    const clientUser = clientUserRows?.[0] ?? null;
 
     if (clientUser) {
       const clientUrl = request.nextUrl.clone();
@@ -405,11 +411,12 @@ export async function middleware(request: NextRequest) {
 
   // Authenticated user on client-login page → redirect
   if (user && pathname === "/client-login") {
-    const { data: clientUser } = await supabase
+    const { data: clientUserRows } = await supabase
       .from("client_users")
       .select("centre_id")
       .eq("user_id", user.id)
-      .single();
+      .limit(1);
+    const clientUser = clientUserRows?.[0] ?? null;
 
     if (clientUser) {
       const clientUrl = request.nextUrl.clone();

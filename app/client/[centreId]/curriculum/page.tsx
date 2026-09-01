@@ -12,9 +12,12 @@ export default async function CurriculumPage({
 }) {
   const { centreId } = await params;
 
-  const { data: clientUser, error: authError } = await getCurrentClientUser();
+  const { data: clientUser, error: authError } = await getCurrentClientUser(centreId);
   if (authError || !clientUser) redirect("/client-login");
-  if (clientUser.centre_id !== centreId) redirect(`/client/${clientUser.centre_id}`);
+  // Multi-campus: authorisation comes from the join table, not the
+  // default centre. Bounce only when genuinely unauthorised.
+  if (clientUser.is_authorised_for_current === false)
+    redirect(`/client/${clientUser.centre_id}`);
 
   // Fetch centre type
   const admin = createSupabaseAdmin();

@@ -250,17 +250,29 @@ async function getCentreContact(
   admin: ReturnType<typeof createSupabaseAdmin>,
   centreId: string
 ): Promise<{ name: string; email: string } | null> {
-  // Try client_users first (primary contact)
-  const { data: clientUser } = await admin
+  // Try client_users first (primary contact) — then the join table,
+  // for a multi-campus primary defaulted at another centre.
+  const { data: clientUsers } = await admin
     .from("client_users")
     .select("name, email")
     .eq("centre_id", centreId)
     .eq("is_primary", true)
-    .limit(1)
-    .single();
+    .limit(1);
+  const clientUser = clientUsers?.[0] ?? null;
 
   if (clientUser?.email) {
     return { name: clientUser.name ?? "Team", email: clientUser.email };
+  }
+
+  const { data: joined } = await admin
+    .from("client_user_centres")
+    .select("client_users!inner(name, email, is_primary)")
+    .eq("centre_id", centreId);
+  const joinedPrimary = (joined ?? [])
+    .map((j) => j.client_users as unknown as { name: string | null; email: string; is_primary: boolean })
+    .find((cu) => cu?.is_primary && cu.email);
+  if (joinedPrimary) {
+    return { name: joinedPrimary.name ?? "Team", email: joinedPrimary.email };
   }
 
   // Fallback to centre contact_email

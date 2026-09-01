@@ -17,6 +17,47 @@ import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 const PORTAL_BASE = "https://buildalphakids.app";
 
+interface PortalRecipient {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * centre_id → portal recipients, resolved through BOTH the legacy
+ * client_users.centre_id column and the client_user_centres join
+ * (migration 053), deduped by email per centre. Service emails were
+ * the quiet multi-campus failure: a director defaulted at centre A
+ * simply never received centre B's digests.
+ */
+async function resolvePortalRecipients(
+  admin: ReturnType<typeof createSupabaseAdmin>
+): Promise<Map<string, PortalRecipient[]>> {
+  const [{ data: legacy }, { data: joined }] = await Promise.all([
+    admin.from("client_users").select("id, name, email, centre_id"),
+    admin
+      .from("client_user_centres")
+      .select("centre_id, client_users!inner(id, name, email)"),
+  ]);
+
+  const byCentre = new Map<string, Map<string, PortalRecipient>>();
+  const add = (centreId: string, r: PortalRecipient) => {
+    const bucket = byCentre.get(centreId) ?? new Map<string, PortalRecipient>();
+    if (!bucket.has(r.email)) bucket.set(r.email, r);
+    byCentre.set(centreId, bucket);
+  };
+  for (const cu of legacy ?? []) {
+    add(cu.centre_id, { id: cu.id, name: cu.name, email: cu.email });
+  }
+  for (const j of joined ?? []) {
+    const cu = j.client_users as unknown as PortalRecipient;
+    if (cu) add(j.centre_id, cu);
+  }
+  return new Map(
+    [...byCentre.entries()].map(([id, bucket]) => [id, [...bucket.values()]])
+  );
+}
+
 function fmtDay(dateIso: string): string {
   return new Date(dateIso + "T00:00:00").toLocaleDateString("en-AU", {
     weekday: "long",
@@ -60,15 +101,22 @@ export async function sendWeeklyCentreDigests(): Promise<{
   const lastWeekStart = addDays(weekStart, -7);
   const lastWeekEnd = addDays(weekStart, -1);
 
-  // Centres with portal users + a live contract
+  // Centres with portal users + a live contract. Multi-campus: a
+  // contact belongs to a centre by default (client_users.centre_id)
+  // OR via client_user_centres — resolve recipients through both, so
+  // a director defaulted elsewhere still gets this centre's digest.
   const { data: centres } = await admin
     .from("centres")
-    .select("id, name, contract_status, branding_mode, client_users(id, name, email)")
+    .select("id, name, contract_status, branding_mode")
     .in("contract_status", ["active", "trial"]);
+  const recipientsByCentre = await resolvePortalRecipients(admin);
 
-  const withUsers = (centres ?? []).filter(
-    (c) => (c.client_users ?? []).length > 0
-  );
+  const withUsers = (centres ?? [])
+    .map((c) => ({
+      ...c,
+      client_users: recipientsByCentre.get(c.id) ?? [],
+    }))
+    .filter((c) => c.client_users.length > 0);
 
   for (const centre of withUsers) {
     try {
@@ -242,12 +290,16 @@ export async function sendTermPacks(): Promise<{
 
   const { data: centres } = await admin
     .from("centres")
-    .select("id, name, contract_status, branding_mode, client_users(name, email)")
+    .select("id, name, contract_status, branding_mode")
     .in("contract_status", ["active", "trial"]);
+  const recipientsByCentre = await resolvePortalRecipients(admin);
 
-  for (const centre of (centres ?? []).filter(
-    (c) => (c.client_users ?? []).length > 0
-  )) {
+  for (const centre of (centres ?? [])
+    .map((c) => ({
+      ...c,
+      client_users: recipientsByCentre.get(c.id) ?? [],
+    }))
+    .filter((c) => c.client_users.length > 0)) {
     try {
       const { data: already } = await admin
         .from("email_log")

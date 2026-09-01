@@ -14,9 +14,10 @@ export default async function ClientInvoicesPage({
 }) {
   const { centreId } = await params;
 
-  const { data: clientUser, error: authError } = await getCurrentClientUser();
+  const { data: clientUser, error: authError } = await getCurrentClientUser(centreId);
   if (authError || !clientUser) redirect("/client-login");
-  if (clientUser!.centre_id !== centreId) redirect(`/client/${clientUser!.centre_id}`);
+  if (clientUser!.is_authorised_for_current === false)
+    redirect(`/client/${clientUser!.centre_id}`);
 
   const [outboundRes, launchInvoices, pulse] = await Promise.all([
     getClientInvoices(centreId),

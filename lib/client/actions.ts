@@ -174,21 +174,78 @@ async function provisionPortalUser(input: {
     authUserId = newUser.user.id;
   }
 
-  // Create client_users record
-  const { data: clientUser, error: insertError } = await adminClient
+  // Multi-centre: if this person already holds a client_users row for
+  // ANOTHER centre, link the new centre through client_user_centres
+  // instead of inserting a second row — two rows per auth user breaks
+  // every .single() reader and used to lock the account out entirely.
+  const { data: existingRows } = await adminClient
     .from("client_users")
-    .insert({
-      user_id: authUserId,
-      centre_id: input.centreId,
-      name: input.name,
-      email: input.email,
-      is_primary: input.isPrimary,
-    })
-    .select()
-    .single();
+    .select("*")
+    .eq("user_id", authUserId)
+    .order("created_at", { ascending: true })
+    .limit(1);
+  const existingCu = existingRows?.[0] ?? null;
 
-  if (insertError) {
-    return { data: null, error: insertError.message };
+  let clientUser: ClientUser;
+  if (existingCu) {
+    const { data: joinRows } = await adminClient
+      .from("client_user_centres")
+      .select("centre_id")
+      .eq("client_user_id", existingCu.id);
+    const toInsert: Array<{
+      client_user_id: string;
+      centre_id: string;
+      is_default: boolean;
+    }> = [];
+    if (!joinRows || joinRows.length === 0) {
+      // Legacy row with no join entries yet — seed their default first.
+      toInsert.push({
+        client_user_id: existingCu.id,
+        centre_id: existingCu.centre_id,
+        is_default: true,
+      });
+    }
+    if (!joinRows?.some((r) => r.centre_id === input.centreId)) {
+      toInsert.push({
+        client_user_id: existingCu.id,
+        centre_id: input.centreId,
+        is_default: false,
+      });
+    }
+    if (toInsert.length > 0) {
+      const { error: joinErr } = await adminClient
+        .from("client_user_centres")
+        .upsert(toInsert, {
+          onConflict: "client_user_id,centre_id",
+          ignoreDuplicates: true,
+        });
+      if (joinErr) return { data: null, error: joinErr.message };
+    }
+    // Note: an existing person keeps their is_primary flag — primary
+    // status is per-person today and escalation stays with the office.
+    clientUser = existingCu as ClientUser;
+  } else {
+    const { data: inserted, error: insertError } = await adminClient
+      .from("client_users")
+      .insert({
+        user_id: authUserId,
+        centre_id: input.centreId,
+        name: input.name,
+        email: input.email,
+        is_primary: input.isPrimary,
+      })
+      .select()
+      .single();
+
+    if (insertError || !inserted) {
+      return { data: null, error: insertError?.message ?? "Failed to create the portal user." };
+    }
+    // Join-table native from day one.
+    await adminClient.from("client_user_centres").upsert(
+      [{ client_user_id: inserted.id, centre_id: input.centreId, is_default: true }],
+      { onConflict: "client_user_id,centre_id", ignoreDuplicates: true }
+    );
+    clientUser = inserted as ClientUser;
   }
 
   // Get centre name for the email
@@ -388,12 +445,20 @@ export async function getCurrentClientUser(
 
     if (!user) return { data: null, error: "Not authenticated." };
 
-    // Pull the client_users row — legacy single mapping.
-    const { data: cu, error: cuErr } = await supabase
+    // Pull the caller's client_users row(s). Multi-centre invites can
+    // legally create one row per centre for the same auth user, so
+    // never .single() here — prefer the row matching the requested
+    // centre, else the legacy default (oldest row).
+    const { data: cuRows, error: cuErr } = await supabase
       .from("client_users")
       .select("*")
       .eq("user_id", user.id)
-      .single();
+      .order("created_at", { ascending: true });
+
+    const cu =
+      (currentCentreId
+        ? cuRows?.find((r) => r.centre_id === currentCentreId)
+        : undefined) ?? cuRows?.[0];
 
     if (cuErr || !cu) {
       return { data: null, error: cuErr?.message ?? "Not found." };
@@ -817,15 +882,12 @@ export async function createSharedLink(
 
     if (!user) return { data: null, error: "Not authenticated." };
 
-    // Get client_user ID
-    const { data: clientUser } = await supabase
-      .from("client_users")
-      .select("id, is_primary")
-      .eq("user_id", user.id)
-      .eq("centre_id", centreId)
-      .single();
-
-    if (!clientUser) return { data: null, error: "Not a portal user." };
+    // Resolve the caller's row for this centre — join-aware, so a
+    // multi-campus primary can mint links at any authorised centre.
+    const { cu: clientUser, isAuthorised } = await getCallerClientUser(centreId);
+    if (!clientUser || !isAuthorised) {
+      return { data: null, error: "Not a portal user." };
+    }
     if (!clientUser.is_primary) return { data: null, error: "Only primary users can create shared links." };
 
     const expiresAt = new Date();
@@ -1015,23 +1077,27 @@ async function getCallerClientUser(centreId: string): Promise<{
   } = await supabase.auth.getUser();
   if (!user) return { cu: null, isAuthorised: false };
 
-  const { data: cu } = await supabase
+  // Multi-row tolerant: one auth user can hold a client_users row per
+  // centre. Prefer the row for the requested centre.
+  const { data: cuRows } = await supabase
     .from("client_users")
     .select("*")
     .eq("user_id", user.id)
-    .maybeSingle();
-  if (!cu) return { cu: null, isAuthorised: false };
+    .order("created_at", { ascending: true });
+  if (!cuRows || cuRows.length === 0) return { cu: null, isAuthorised: false };
 
-  if (cu.centre_id === centreId) return { cu, isAuthorised: true };
+  const direct = cuRows.find((r) => r.centre_id === centreId);
+  if (direct) return { cu: direct, isAuthorised: true };
 
+  const cu = cuRows[0];
   const { data: joinRow } = await supabase
     .from("client_user_centres")
     .select("centre_id")
-    .eq("client_user_id", cu.id)
+    .in("client_user_id", cuRows.map((r) => r.id))
     .eq("centre_id", centreId)
-    .maybeSingle();
+    .limit(1);
 
-  return { cu, isAuthorised: !!joinRow };
+  return { cu, isAuthorised: (joinRow?.length ?? 0) > 0 };
 }
 
 // Directors update their own display name — the one detail that is
@@ -1076,16 +1142,36 @@ export async function getCentreColleagues(
 
     // Clients can only read their own client_users row, so the roster
     // comes through the admin client after the primary check above.
+    // Multi-campus: a colleague can belong to this centre either by
+    // default (client_users.centre_id) or via the join table — union
+    // both, deduped by row id.
     const adminClient = createSupabaseAdmin();
-    const { data, error } = await adminClient
-      .from("client_users")
-      .select("id, name, email, is_primary, last_login, created_at")
-      .eq("centre_id", centreId)
-      .order("is_primary", { ascending: false })
-      .order("name");
+    const [{ data: direct, error }, { data: joined }] = await Promise.all([
+      adminClient
+        .from("client_users")
+        .select("id, name, email, is_primary, last_login, created_at")
+        .eq("centre_id", centreId),
+      adminClient
+        .from("client_user_centres")
+        .select(
+          "client_users!inner(id, name, email, is_primary, last_login, created_at)"
+        )
+        .eq("centre_id", centreId),
+    ]);
 
     if (error) return { data: [], error: error.message };
-    return { data: (data ?? []) as PortalColleague[], error: null };
+    const byId = new Map<string, PortalColleague>();
+    for (const row of (direct ?? []) as PortalColleague[]) byId.set(row.id, row);
+    for (const j of joined ?? []) {
+      const row = j.client_users as unknown as PortalColleague;
+      if (row && !byId.has(row.id)) byId.set(row.id, row);
+    }
+    const colleagues = [...byId.values()].sort(
+      (a, b) =>
+        Number(b.is_primary) - Number(a.is_primary) ||
+        a.name.localeCompare(b.name)
+    );
+    return { data: colleagues, error: null };
   } catch (err) {
     console.error("getCentreColleagues error:", err);
     return { data: [], error: "Failed to load your team." };

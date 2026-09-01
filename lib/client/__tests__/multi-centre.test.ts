@@ -448,18 +448,21 @@ describe("getCurrentClientUser(currentCentreId)", () => {
 
     supabaseMock.from.mockImplementation((table: string) => {
       if (table === "client_users") {
+        // Multi-row tolerant read: select().eq().order() resolves a LIST.
         return {
           select: () => ({
             eq: () => ({
-              single: () =>
+              order: () =>
                 Promise.resolve({
-                  data: {
-                    id: "cu-1",
-                    centre_id: "centre-a",
-                    name: "Trish",
-                    email: "trish@example.com",
-                    is_primary: true,
-                  },
+                  data: [
+                    {
+                      id: "cu-1",
+                      centre_id: "centre-a",
+                      name: "Trish",
+                      email: "trish@example.com",
+                      is_primary: true,
+                    },
+                  ],
                   error: null,
                 }),
             }),
@@ -518,15 +521,17 @@ describe("getCurrentClientUser backwards compat", () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () =>
+              order: () =>
                 Promise.resolve({
-                  data: {
-                    id: "cu-legacy",
-                    centre_id: "legacy-centre",
-                    name: "Legacy",
-                    email: "legacy@example.com",
-                    is_primary: true,
-                  },
+                  data: [
+                    {
+                      id: "cu-legacy",
+                      centre_id: "legacy-centre",
+                      name: "Legacy",
+                      email: "legacy@example.com",
+                      is_primary: true,
+                    },
+                  ],
                   error: null,
                 }),
             }),
@@ -564,5 +569,60 @@ describe("getCurrentClientUser backwards compat", () => {
     // cu.centre_id === currentCentreId fallback.
     expect(data?.is_authorised_for_current).toBe(true);
     expect(data?.centre_id).toBe("legacy-centre");
+  });
+
+  it("tolerates two client_users rows for one auth user (multi-centre invite)", async () => {
+    // Inviting the same person to a second centre used to create a
+    // second client_users row, and .single() readers then locked the
+    // account out entirely. The reader must pick the row matching the
+    // requested centre.
+    authAs();
+
+    supabaseMock.from.mockImplementation((table: string) => {
+      if (table === "client_users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () =>
+                Promise.resolve({
+                  data: [
+                    {
+                      id: "cu-a",
+                      centre_id: "centre-a",
+                      name: "Dual",
+                      email: "dual@example.com",
+                      is_primary: true,
+                    },
+                    {
+                      id: "cu-b",
+                      centre_id: "centre-b",
+                      name: "Dual",
+                      email: "dual@example.com",
+                      is_primary: false,
+                    },
+                  ],
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
+      if (table === "centres") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: { name: "Centre B" }, error: null }),
+            }),
+          }),
+        };
+      }
+      return noopChain();
+    });
+
+    const { data, error } = await getCurrentClientUser("centre-b");
+    expect(error).toBeNull();
+    expect(data?.centre_id).toBe("centre-b");
+    expect(data?.is_authorised_for_current).toBe(true);
   });
 });
