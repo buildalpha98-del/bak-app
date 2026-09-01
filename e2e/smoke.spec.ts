@@ -115,6 +115,34 @@ test.describe("admin", () => {
     expect(body).not.toMatch(/Sat \d+\/\d+[\s\S]{0,40}Sun \d+\/\d+/);
   });
 
+  // Curriculum build: the Auto-programme dialog's preview is a pure
+  // dry-run — it must render (or say there's nothing to do) without
+  // writing anything. We never click Apply here: this suite is
+  // read-only against production.
+  test("auto-programme preview renders without applying", async ({
+    page,
+    baseURL,
+  }) => {
+    await signInAs(page, email, baseURL!);
+    await page.goto("/admin/roster");
+    await expect(page.getByRole("heading", { name: "Roster" })).toBeVisible();
+
+    const trigger = page.getByRole("button", { name: /auto-programme/i });
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+
+    // Preview loads: either group rows with session counts, or the
+    // explicit "nothing to programme" state.
+    await expect(
+      page
+        .getByText(/session(s)? will be programmed|Nothing to programme/i)
+        .first()
+    ).toBeVisible({ timeout: 20_000 });
+
+    // Close WITHOUT applying.
+    await page.getByRole("button", { name: "Cancel" }).click();
+  });
+
   // Regression: 19 seeded series × 8 weeks would flood the library
   // with 152 cards; a series must collapse to its week 1.
   test("programme library collapses each series to a single card", async ({

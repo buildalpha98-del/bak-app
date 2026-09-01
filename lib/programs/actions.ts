@@ -7,6 +7,7 @@ import {
   bandsForYearGroups,
   bandMatchScore,
 } from "@/lib/programs/band-match";
+import { yearGroupToAgeBand } from "@/lib/schools/year-groups";
 import type { Program } from "@/lib/types/database";
 import type { ProgramContentJson } from "@/lib/ai/types";
 
@@ -170,7 +171,7 @@ export async function getPrograms(
 
     const { data, error } = await supabase
       .from("programs")
-      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
+      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, tags, series_id, series_week, series_length, created_at, created_by, profiles:created_by(name)")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -698,7 +699,7 @@ export async function getProgramsForSport(
 
     const { data, error } = await supabase
       .from("programs")
-      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, created_at, created_by, profiles:created_by(name)")
+      .select("id, sport, age_group, age_groups, duration_minutes, skill_focus, content_json, equipment_used, version_number, parent_version_id, tags, series_id, series_week, series_length, created_at, created_by, profiles:created_by(name)")
       .eq("sport", sport)
       .order("created_at", { ascending: false })
       .limit(30);
@@ -1758,5 +1759,353 @@ export async function applyProgramToSessions(
   } catch (err) {
     console.error("applyProgramToSessions error:", err);
     return { data: null, error: "Failed to apply the programme." };
+  }
+}
+
+// ============================================================
+// Library coverage + one-click term programming (curriculum build)
+// ============================================================
+
+export interface CoverageCell {
+  sport: string;
+  band: string;
+  /** Standalone programmes pitched at this band. */
+  singles: number;
+  /** Multi-week series (counted once, not per week). */
+  series: number;
+  /** Longest series length available for this cell. */
+  longestSeries: number;
+}
+
+/**
+ * Sport × age-band coverage of the programme library, with each series
+ * counted once. Drives the Library coverage grid so gaps ("no 8-12
+ * Netball block") are visible instead of inferred.
+ */
+export async function getLibraryCoverage(): Promise<{
+  data: CoverageCell[];
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: [], error: "Not authenticated." };
+
+    const { data, error } = await supabase
+      .from("programs")
+      .select("sport, age_group, age_groups, series_id, series_week, series_length");
+    if (error) return { data: [], error: error.message };
+
+    const cells = new Map<string, CoverageCell>();
+    const bump = (
+      sport: string,
+      band: string,
+      kind: "single" | "series",
+      length: number
+    ) => {
+      const key = `${sport}|${band}`;
+      const cell =
+        cells.get(key) ??
+        ({ sport, band, singles: 0, series: 0, longestSeries: 0 } as CoverageCell);
+      if (kind === "single") cell.singles++;
+      else {
+        cell.series++;
+        cell.longestSeries = Math.max(cell.longestSeries, length);
+      }
+      cells.set(key, cell);
+    };
+
+    for (const p of data ?? []) {
+      // Series rows count once, at week 1.
+      if (p.series_id && p.series_week !== 1) continue;
+      const bands = programBands(p as { age_group?: string | null; age_groups?: unknown });
+      for (const band of bands.length > 0 ? bands : ["?"]) {
+        bump(
+          p.sport,
+          band,
+          p.series_id ? "series" : "single",
+          p.series_length ?? 0
+        );
+      }
+    }
+
+    return {
+      data: [...cells.values()].sort(
+        (a, b) => a.sport.localeCompare(b.sport) || a.band.localeCompare(b.band)
+      ),
+      error: null,
+    };
+  } catch (err) {
+    console.error("getLibraryCoverage error:", err);
+    return { data: [], error: "Failed to load coverage." };
+  }
+}
+
+export interface AutoProgrammeGroup {
+  centre_name: string;
+  sport: string;
+  bands: string[];
+  /** What will be attached: a series title or a single programme title. */
+  source: string | null;
+  source_kind: "series" | "single" | "none";
+  session_count: number;
+}
+
+export interface AutoProgrammeResult {
+  groups: AutoProgrammeGroup[];
+  programmed: number;
+  skipped: number;
+}
+
+/**
+ * One-click term programming: walk every UNPROGRAMMED session of a term
+ * (optionally one centre), group by centre + sport + audience band, and
+ * attach the best band-matched series week-by-week (falling back to the
+ * best single programme). Session bands derive from targeted classes /
+ * rooms; whole-centre sessions use the centre's age_groups. Assigns
+ * per-session by chronological position, so weekend sessions and
+ * odd cadences programme correctly (no Mon–Fri window).
+ */
+export async function autoProgrammeTerm(input: {
+  termId: string;
+  centreId?: string | null;
+  dryRun?: boolean;
+}): Promise<{ data: AutoProgrammeResult | null; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    let sessionQuery = supabase
+      .from("sessions")
+      .select("id, date, sport, centre_id, school_class_ids")
+      .eq("term_id", input.termId)
+      .is("program_id", null)
+      .not("status", "in", "(cancelled,completed)")
+      .order("date")
+      .order("time");
+    if (input.centreId) sessionQuery = sessionQuery.eq("centre_id", input.centreId);
+    const { data: sessions, error: sessErr } = await sessionQuery;
+    if (sessErr) return { data: null, error: sessErr.message };
+    if (!sessions || sessions.length === 0) {
+      return { data: { groups: [], programmed: 0, skipped: 0 }, error: null };
+    }
+
+    // Resolve audiences: classes → bands, centres → fallback bands.
+    const centreIds = [...new Set(sessions.map((s) => s.centre_id))];
+    const classIds = [
+      ...new Set(
+        sessions.flatMap(
+          (s) =>
+            ((s as Record<string, unknown>).school_class_ids as string[] | null) ??
+            []
+        )
+      ),
+    ];
+    const [{ data: centres }, { data: classes }, { data: programs }] =
+      await Promise.all([
+        supabase.from("centres").select("id, name, age_groups").in("id", centreIds),
+        classIds.length > 0
+          ? supabase
+              .from("school_classes")
+              .select("id, year_group")
+              .in("id", classIds)
+          : Promise.resolve({ data: [] as { id: string; year_group: string }[] }),
+        supabase
+          .from("programs")
+          .select(
+            "id, sport, age_group, age_groups, skill_focus, series_id, series_week, series_length, created_at"
+          ),
+      ]);
+
+    const centreById = new Map(
+      (centres ?? []).map((c) => [
+        c.id,
+        { name: c.name as string, bands: (c.age_groups as string[]) ?? [] },
+      ])
+    );
+    const bandByClass = new Map(
+      (classes ?? []).map((c) => [c.id, yearGroupToAgeBand(c.year_group)])
+    );
+
+    // Group unprogrammed sessions by centre + sport + audience bands.
+    interface Group {
+      centreId: string;
+      sport: string;
+      bands: string[];
+      sessions: { id: string; date: string }[];
+    }
+    const groups = new Map<string, Group>();
+    for (const s of sessions) {
+      const sessionClassIds =
+        ((s as Record<string, unknown>).school_class_ids as string[] | null) ?? [];
+      const classBands = [
+        ...new Set(
+          sessionClassIds
+            .map((id) => bandByClass.get(id) as string | undefined)
+            .filter((b): b is string => Boolean(b))
+        ),
+      ];
+      const bands =
+        classBands.length > 0
+          ? classBands
+          : (centreById.get(s.centre_id)?.bands ?? []);
+      const key = `${s.centre_id}|${s.sport}|${[...bands].sort().join(",")}`;
+      const group =
+        groups.get(key) ??
+        ({ centreId: s.centre_id, sport: s.sport, bands, sessions: [] } as Group);
+      group.sessions.push({ id: s.id, date: s.date });
+      groups.set(key, group);
+    }
+
+    // Candidate lookup structures.
+    const allPrograms = programs ?? [];
+    const seriesWeeks = new Map<string, Map<number, string>>(); // series_id → week → program id
+    for (const p of allPrograms) {
+      if (!p.series_id || p.series_week == null) continue;
+      const weeks = seriesWeeks.get(p.series_id) ?? new Map<number, string>();
+      weeks.set(p.series_week, p.id);
+      seriesWeeks.set(p.series_id, weeks);
+    }
+
+    const resultGroups: AutoProgrammeGroup[] = [];
+    const updates = new Map<string, string[]>(); // program_id → session ids
+    let programmed = 0;
+    let skipped = 0;
+
+    for (const group of groups.values()) {
+      const centreName = centreById.get(group.centreId)?.name ?? "Unknown";
+      const sportPrograms = allPrograms.filter((p) => p.sport === group.sport);
+
+      // Best series: band overlap first, then length fit, then recency.
+      const seriesHeads = sportPrograms.filter(
+        (p) => p.series_id && p.series_week === 1
+      );
+      const rankedSeries = seriesHeads
+        .map((p) => {
+          const pBands = programBands(
+            p as { age_group?: string | null; age_groups?: unknown }
+          );
+          return {
+            p,
+            match: bandMatchScore(pBands, group.bands),
+            // Specificity: a series pitched at exactly this band beats a
+            // broad all-ages series that merely overlaps it.
+            breadth: Math.max(1, pBands.length),
+          };
+        })
+        .filter((r) => r.match > 0 || group.bands.length === 0)
+        .sort(
+          (a, b) =>
+            b.match - a.match ||
+            a.breadth - b.breadth ||
+            Math.abs((a.p.series_length ?? 0) - group.sessions.length) -
+              Math.abs((b.p.series_length ?? 0) - group.sessions.length) ||
+            String(b.p.created_at).localeCompare(String(a.p.created_at))
+        );
+      const bestSeries = rankedSeries[0]?.p ?? null;
+
+      if (bestSeries?.series_id) {
+        const weeks = seriesWeeks.get(bestSeries.series_id)!;
+        const length = bestSeries.series_length ?? weeks.size;
+        group.sessions.forEach((sess, i) => {
+          const week = (i % Math.max(1, length)) + 1;
+          const programId = weeks.get(week) ?? bestSeries.id;
+          const list = updates.get(programId) ?? [];
+          list.push(sess.id);
+          updates.set(programId, list);
+        });
+        programmed += group.sessions.length;
+        resultGroups.push({
+          centre_name: centreName,
+          sport: group.sport,
+          bands: group.bands,
+          source: `${bestSeries.skill_focus ?? group.sport} (${length}-week series)`,
+          source_kind: "series",
+          session_count: group.sessions.length,
+        });
+        continue;
+      }
+
+      // Fallback: best band-matched single programme for every session.
+      const singles = sportPrograms.filter((p) => !p.series_id);
+      const rankedSingles = singles
+        .map((p) => ({
+          p,
+          match: bandMatchScore(
+            programBands(p as { age_group?: string | null; age_groups?: unknown }),
+            group.bands
+          ),
+        }))
+        .sort(
+          (a, b) =>
+            b.match - a.match ||
+            String(b.p.created_at).localeCompare(String(a.p.created_at))
+        );
+      const best = rankedSingles.find((r) => r.match > 0)?.p ?? rankedSingles[0]?.p;
+
+      if (best) {
+        const list = updates.get(best.id) ?? [];
+        list.push(...group.sessions.map((x) => x.id));
+        updates.set(best.id, list);
+        programmed += group.sessions.length;
+        resultGroups.push({
+          centre_name: centreName,
+          sport: group.sport,
+          bands: group.bands,
+          source: best.skill_focus ?? group.sport,
+          source_kind: "single",
+          session_count: group.sessions.length,
+        });
+      } else {
+        skipped += group.sessions.length;
+        resultGroups.push({
+          centre_name: centreName,
+          sport: group.sport,
+          bands: group.bands,
+          source: null,
+          source_kind: "none",
+          session_count: group.sessions.length,
+        });
+      }
+    }
+
+    if (!input.dryRun && updates.size > 0) {
+      for (const [programId, sessionIds] of updates) {
+        const { error: updateErr } = await supabase
+          .from("sessions")
+          .update({ program_id: programId })
+          .in("id", sessionIds)
+          .is("program_id", null);
+        if (updateErr) return { data: null, error: updateErr.message };
+      }
+      await supabase.from("activity_log").insert({
+        user_id: user.id,
+        action: "term_auto_programmed",
+        entity_type: "term",
+        entity_id: input.termId,
+        metadata: {
+          centre_id: input.centreId ?? null,
+          programmed,
+          skipped,
+        },
+      });
+      revalidatePath("/admin/roster");
+      revalidatePath("/ops/roster");
+    }
+
+    resultGroups.sort(
+      (a, b) =>
+        a.centre_name.localeCompare(b.centre_name) ||
+        a.sport.localeCompare(b.sport)
+    );
+    return { data: { groups: resultGroups, programmed, skipped }, error: null };
+  } catch (err) {
+    console.error("autoProgrammeTerm error:", err);
+    return { data: null, error: "Failed to programme the term." };
   }
 }
