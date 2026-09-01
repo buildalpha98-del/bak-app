@@ -74,22 +74,22 @@ export function ClientSessionDetail({ session, centreId }: ClientSessionDetailPr
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 shrink-0 text-cyan-600" />
+              <Calendar className="h-4 w-4 shrink-0 text-portal-600" />
               <span>{formatDate(session.date)}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 shrink-0 text-cyan-600" />
+              <Clock className="h-4 w-4 shrink-0 text-portal-600" />
               <span>
                 {formatTime(session.time)} ({session.duration_minutes} min)
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 shrink-0 text-cyan-600" />
+              <User className="h-4 w-4 shrink-0 text-portal-600" />
               <span>Coach: {session.coach_name ?? "TBC"}</span>
             </div>
             {session.class_names.length > 0 && (
               <div className="flex items-center gap-2 text-sm">
-                <GraduationCap className="h-4 w-4 shrink-0 text-cyan-600" />
+                <GraduationCap className="h-4 w-4 shrink-0 text-portal-600" />
                 <div className="flex flex-wrap gap-1.5">
                   {session.class_names.map((name) => (
                     <Badge key={name} variant="outline" className="text-xs">
@@ -101,7 +101,7 @@ export function ClientSessionDetail({ session, centreId }: ClientSessionDetailPr
             )}
             {session.headcount !== null && (
               <div className="flex items-center gap-2 text-sm">
-                <Users className="h-4 w-4 shrink-0 text-cyan-600" />
+                <Users className="h-4 w-4 shrink-0 text-portal-600" />
                 <span>{session.headcount} children attended</span>
               </div>
             )}

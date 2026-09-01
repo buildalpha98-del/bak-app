@@ -169,7 +169,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
       <button
         type="button"
         onClick={toggleCollapsed}
-        className="fixed bottom-20 right-4 z-40 flex min-h-[44px] items-center gap-2 rounded-full bg-[#0891B2] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 md:bottom-6"
+        className="fixed bottom-20 right-4 z-40 flex min-h-[44px] items-center gap-2 rounded-full bg-portal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 md:bottom-6"
         aria-label="Open the demo guide"
       >
         <Compass className="h-4 w-4" />
@@ -180,10 +180,10 @@ export function DemoGuide({ centreId }: { centreId: string }) {
 
   return (
     <aside
-      className="fixed bottom-20 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-2xl border border-[#0891B2]/20 bg-card shadow-2xl md:bottom-6"
+      className="fixed bottom-20 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-2xl border border-portal-600/20 bg-card shadow-2xl md:bottom-6"
       aria-label="Demo guide"
     >
-      <div className="flex items-center justify-between gap-2 bg-[#0891B2] px-4 py-3 text-white">
+      <div className="flex items-center justify-between gap-2 bg-portal-600 px-4 py-3 text-white">
         <div className="flex items-center gap-2">
           <Compass className="h-4 w-4 shrink-0" />
           <p className="text-sm font-semibold">
@@ -231,7 +231,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
                     className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
                       done
                         ? "bg-emerald-100 text-emerald-700"
-                        : "bg-[#0891B2]/10 text-[#0891B2]"
+                        : "bg-portal-600/10 text-portal-600"
                     }`}
                   >
                     {done ? <Check className="h-3 w-3" /> : i + 1}
@@ -257,13 +257,13 @@ export function DemoGuide({ centreId }: { centreId: string }) {
         </ul>
 
         {allDone && (
-          <div className="m-2 rounded-xl bg-[#0891B2]/5 p-3">
+          <div className="m-2 rounded-xl bg-portal-600/5 p-3">
             <p className="text-sm font-medium text-foreground">
               This is what your school gets from week one.
             </p>
             <a
               href="https://buildalphakids.app/enquire"
-              className="mt-2 inline-flex min-h-[40px] items-center gap-1.5 rounded-2xl bg-[#0891B2] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0891B2]/90"
+              className="mt-2 inline-flex min-h-[40px] items-center gap-1.5 rounded-2xl bg-portal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-portal-600/90"
             >
               Talk to Build Alpha Kids
               <ArrowRight className="h-4 w-4" />

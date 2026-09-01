@@ -75,7 +75,7 @@ function statusColour(status: string): string {
     case "pending_confirmation":
       return "bg-amber-50 text-amber-700";
     case "published":
-      return "bg-cyan-50 text-cyan-700";
+      return "bg-portal-50 text-portal-700";
     case "in_progress":
       return "bg-blue-50 text-blue-700";
     case "completed":
@@ -145,7 +145,7 @@ function SessionCard({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="secondary"
-                className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                className="bg-portal-50 text-portal-700 hover:bg-portal-50"
               >
                 {session.sport}
               </Badge>
@@ -186,7 +186,7 @@ function SessionCard({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
+              className="text-portal-600 hover:bg-portal-600/10 hover:text-portal-600"
               render={
                 <Link href={`/client/${centreId}/schedule/${session.id}`} />
               }
@@ -240,7 +240,7 @@ export function ClientSchedule({ upcoming, past, centreId }: ClientScheduleProps
           {upcoming.length > 0 && (
             <Badge
               variant="secondary"
-              className="ml-2 bg-cyan-100 text-cyan-700 hover:bg-cyan-100"
+              className="ml-2 bg-portal-100 text-portal-700 hover:bg-portal-100"
             >
               {upcoming.length}
             </Badge>

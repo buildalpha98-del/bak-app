@@ -54,15 +54,15 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
   const totalReports = centres.reduce((s, c) => s + c.unread_report_count, 0);
 
   return (
-    <Card className="rounded-2xl border-cyan-200/60 bg-gradient-to-br from-cyan-50/60 to-white">
+    <Card className="rounded-2xl border-portal-200/60 bg-gradient-to-br from-portal-50/60 to-white">
       <CardContent className="p-0">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-card/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/40"
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-card/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-portal-600/40"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-portal-100 text-portal-700">
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
@@ -84,7 +84,7 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
         </button>
 
         {expanded && (
-          <div className="border-t border-cyan-200/60 px-2 pb-2 pt-2">
+          <div className="border-t border-portal-200/60 px-2 pb-2 pt-2">
             <ul className="flex flex-col gap-1">
               {centres.map((c) => {
                 const isCurrent = c.id === currentCentreId;
@@ -96,7 +96,7 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
                       className={cn(
                         "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                         isCurrent
-                          ? "bg-[#0891B2]/5 ring-1 ring-inset ring-[#0891B2]/30"
+                          ? "bg-portal-600/5 ring-1 ring-inset ring-portal-600/30"
                           : "hover:bg-card",
                       )}
                     >
@@ -106,12 +106,12 @@ export function MultiCentreRollUp({ centres, currentCentreId }: MultiCentreRollU
                             {c.name}
                           </span>
                           {c.is_default && (
-                            <Badge variant="outline" className="border-cyan-200 bg-card text-[10px] text-cyan-700">
+                            <Badge variant="outline" className="border-portal-200 bg-card text-[10px] text-portal-700">
                               Default
                             </Badge>
                           )}
                           {isCurrent && (
-                            <Badge className="bg-[#0891B2]/10 text-[10px] text-[#0891B2] hover:bg-[#0891B2]/10">
+                            <Badge className="bg-portal-600/10 text-[10px] text-portal-600 hover:bg-portal-600/10">
                               Current
                             </Badge>
                           )}

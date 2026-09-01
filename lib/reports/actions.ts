@@ -30,6 +30,7 @@ export interface ReportDetail extends CentreReport {
   centre_name: string;
   centre_logo_url: string | null;
   centre_branding_mode: string;
+  centre_brand_colour: string | null;
   centre_contact_email: string | null;
   term_name: string;
 }
@@ -305,7 +306,7 @@ export async function getReportDetail(
       .select(
         `
         *,
-        centres!inner(name, logo_url, branding_mode, primary_contact_email),
+        centres!inner(name, logo_url, branding_mode, brand_colour, primary_contact_email),
         terms!inner(name)
       `
       )
@@ -320,6 +321,7 @@ export async function getReportDetail(
       name: string;
       logo_url: string | null;
       branding_mode: string;
+      brand_colour: string | null;
       primary_contact_email: string | null;
     };
     const term = data.terms as unknown as { name: string };
@@ -341,6 +343,7 @@ export async function getReportDetail(
       centre_name: centre.name,
       centre_logo_url: centre.logo_url,
       centre_branding_mode: centre.branding_mode,
+      centre_brand_colour: centre.brand_colour,
       centre_contact_email: centre.primary_contact_email,
       term_name: term.name,
     };

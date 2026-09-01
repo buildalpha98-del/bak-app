@@ -103,7 +103,7 @@ function SessionFeedbackCard({
               <span className="text-sm font-semibold text-foreground">
                 {formatDateNice(session.date)}
               </span>
-              <Badge variant="secondary" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50">
+              <Badge variant="secondary" className="bg-portal-50 text-portal-700 hover:bg-portal-50">
                 {session.sport}
               </Badge>
             </div>
@@ -134,7 +134,7 @@ function SessionFeedbackCard({
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="text-[#0891B2] hover:bg-[#0891B2]/10 hover:text-[#0891B2]"
+                className="text-portal-600 hover:bg-portal-600/10 hover:text-portal-600"
               >
                 {expanded ? "Close" : "Edit"}
               </Button>
@@ -142,7 +142,7 @@ function SessionFeedbackCard({
               <Button
                 size="sm"
                 onClick={onToggle}
-                className="bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+                className="bg-portal-600 text-white hover:bg-portal-600/90"
               >
                 {expanded ? "Close" : "Rate this session"}
               </Button>
@@ -243,7 +243,7 @@ export function FeedbackPageClient({
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
             <div
-              className="h-full rounded-full bg-[#0891B2] transition-all duration-500"
+              className="h-full rounded-full bg-portal-600 transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -266,7 +266,7 @@ export function FeedbackPageClient({
         <Card className="rounded-2xl transition-shadow hover:shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <CheckCircle className="h-4 w-4 text-[#0891B2]" />
+              <CheckCircle className="h-4 w-4 text-portal-600" />
               Recent submissions
             </CardTitle>
           </CardHeader>
@@ -280,7 +280,7 @@ export function FeedbackPageClient({
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       variant="secondary"
-                      className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                      className="bg-portal-50 text-portal-700 hover:bg-portal-50"
                     >
                       {s.sport}
                     </Badge>

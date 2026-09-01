@@ -87,8 +87,16 @@ export function ClientShell({
     return pathname.startsWith(href);
   }
 
+  // White-label accent: one CSS variable re-derives the whole portal
+  // accent scale (globals.css --portal-*) for this centre's pages.
+  const brandStyle =
+    clientUser.centre_branding_mode === "white_label" &&
+    clientUser.centre_brand_colour
+      ? ({ "--portal-brand": clientUser.centre_brand_colour } as React.CSSProperties)
+      : undefined;
+
   return (
-    <div className="min-h-dvh bg-gray-50">
+    <div className="min-h-dvh bg-gray-50" style={brandStyle}>
       {/* Top bar */}
       <header
         // iOS notch / dynamic island: in standalone PWA mode the inset
@@ -138,7 +146,7 @@ export function ClientShell({
           <div className="relative">
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 text-sm font-medium text-cyan-700 hover:bg-cyan-200 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-portal-100 text-sm font-medium text-portal-700 hover:bg-portal-200 transition-colors"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             aria-label="User menu"
           >
@@ -200,14 +208,14 @@ export function ClientShell({
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "border-l-2 border-cyan-600 bg-cyan-50 text-cyan-700"
+                      ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   {item.label}
                   {showMessagesBadge(item.label) && (
-                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-600 px-1.5 text-[11px] font-semibold text-white">
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-portal-600 px-1.5 text-[11px] font-semibold text-white">
                       {unreadMessages}
                     </span>
                   )}
@@ -222,7 +230,7 @@ export function ClientShell({
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive(`/client/${clientUser.centre_id}/settings`)
-                  ? "border-l-2 border-cyan-600 bg-cyan-50 text-cyan-700"
+                  ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               )}
             >
@@ -252,7 +260,7 @@ export function ClientShell({
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                         active
-                          ? "border-l-2 border-cyan-600 bg-cyan-50 text-cyan-700"
+                          ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       )}
                     >
@@ -270,7 +278,7 @@ export function ClientShell({
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive(`/client/${clientUser.centre_id}/settings`)
-                      ? "border-l-2 border-cyan-600 bg-cyan-50 text-cyan-700"
+                      ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
@@ -305,13 +313,13 @@ export function ClientShell({
               href={item.href}
               className={cn(
                 "flex flex-col items-center gap-0.5 px-2 py-2 text-[11px] transition-colors min-w-[3rem]",
-                active ? "text-cyan-600" : "text-gray-400"
+                active ? "text-portal-600" : "text-gray-400"
               )}
             >
               <span className="relative">
                 <Icon className="h-5 w-5" />
                 {showMessagesBadge(item.label) && (
-                  <span className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-600 ring-2 ring-white" />
+                  <span className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-portal-600 ring-2 ring-white" />
                 )}
               </span>
               <span className="max-w-[4.5rem] truncate whitespace-nowrap">

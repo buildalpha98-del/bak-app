@@ -151,8 +151,8 @@ export function ClientMessages({
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
-              <MessageSquare className="h-6 w-6 text-[#0891B2]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-portal-600/10">
+              <MessageSquare className="h-6 w-6 text-portal-600" />
             </div>
             <p className="mt-4 text-sm font-medium text-foreground">
               No messages yet
@@ -172,12 +172,12 @@ export function ClientMessages({
                 <div
                   className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 ${
                     own
-                      ? "bg-[#0891B2] text-white rounded-br-md"
+                      ? "bg-portal-600 text-white rounded-br-md"
                       : "bg-card border border-gray-200 text-foreground rounded-bl-md"
                   }`}
                 >
                   {!own && (
-                    <p className="text-xs font-medium text-[#0891B2] mb-0.5">
+                    <p className="text-xs font-medium text-portal-600 mb-0.5">
                       {msg.sender_name}
                     </p>
                   )}
@@ -214,7 +214,7 @@ export function ClientMessages({
           onClick={handleSend}
           disabled={isPending || !content.trim()}
           size="icon"
-          className="h-11 w-11 shrink-0 rounded-2xl bg-[#0891B2] hover:bg-[#0891B2]/90 text-white"
+          className="h-11 w-11 shrink-0 rounded-2xl bg-portal-600 hover:bg-portal-600/90 text-white"
           aria-label="Send message"
         >
           <Send className="h-4 w-4" />

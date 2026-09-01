@@ -185,14 +185,14 @@ function PulseStat({
       <Icon
         className={
           active
-            ? "size-3.5 text-[#0891B2]"
+            ? "size-3.5 text-portal-600"
             : "size-3.5 text-muted-foreground"
         }
       />
       <span
         className={
           active
-            ? "text-base font-semibold tabular-nums text-[#0891B2]"
+            ? "text-base font-semibold tabular-nums text-portal-600"
             : "text-base font-semibold tabular-nums text-muted-foreground"
         }
       >
@@ -232,7 +232,7 @@ function NextSessionStat({
         <Icon
           className={
             active
-              ? "size-3.5 text-[#0891B2]"
+              ? "size-3.5 text-portal-600"
               : "size-3.5 text-muted-foreground"
           }
         />

@@ -188,7 +188,7 @@ export function ChildDetailView({
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-lg font-semibold text-cyan-700">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-portal-100 text-lg font-semibold text-portal-700">
             {child.first_name.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -198,7 +198,7 @@ export function ChildDetailView({
             <div className="flex items-center gap-2 mt-0.5">
               <Badge
                 variant="secondary"
-                className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                className="bg-portal-50 text-portal-700 hover:bg-portal-50"
               >
                 {child.age_group} yrs
               </Badge>
@@ -215,7 +215,7 @@ export function ChildDetailView({
         {child.assessments.length > 0 && (
           <a
             href={`/api/client/${centreId}/student-report-pdf?childId=${child.id}`}
-            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-[#0891B2]/30 bg-[#0891B2]/5 px-3 py-2 text-sm font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/10"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
           >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">
@@ -238,7 +238,7 @@ export function ChildDetailView({
               onClick={() => setActiveTab(tab.key)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-card text-cyan-700 shadow-sm"
+                  ? "bg-card text-portal-700 shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -296,7 +296,7 @@ function CoachNotesTab({
           <div className="mb-2 flex items-center justify-between gap-2">
             <Badge
               variant="secondary"
-              className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+              className="bg-portal-50 text-portal-700 hover:bg-portal-50"
             >
               {obs.sport}
             </Badge>
@@ -343,7 +343,7 @@ function InsightsTab({ insights }: { insights: ChildDetail["insights"] }) {
           <div className="mb-3 flex items-center justify-between gap-2">
             <Badge
               variant="secondary"
-              className="gap-1 bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+              className="gap-1 bg-portal-50 text-portal-700 hover:bg-portal-50"
             >
               <Sparkles className="h-3 w-3" />
               {insight.term_name ?? "Development insight"}
@@ -393,13 +393,13 @@ function InsightsTab({ insights }: { insights: ChildDetail["insights"] }) {
 
           {insight.recommendations.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-portal-700">
                 Recommendations
               </h4>
               <ul className="mt-1.5 space-y-1">
                 {insight.recommendations.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-foreground">
-                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-600" />
+                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-portal-600" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -498,7 +498,7 @@ function AssessmentsTab({
                 <div className="flex items-center justify-between mb-3">
                   <Badge
                     variant="secondary"
-                    className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                    className="bg-portal-50 text-portal-700 hover:bg-portal-50"
                   >
                     {entry.sport}
                   </Badge>
@@ -616,7 +616,7 @@ function ProgressionTab({
       </div>
 
       {/* Summary */}
-      <Card className="bg-cyan-50 p-4">
+      <Card className="bg-portal-50 p-4">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-lg font-bold text-emerald-600">

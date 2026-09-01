@@ -74,7 +74,7 @@ export function StaffCard({ coach }: StaffCardProps) {
               className="h-16 w-16 rounded-full object-cover flex-shrink-0"
             />
           ) : (
-            <div className="h-16 w-16 rounded-full bg-[#0891B2] flex items-center justify-center flex-shrink-0">
+            <div className="h-16 w-16 rounded-full bg-portal-600 flex items-center justify-center flex-shrink-0">
               <span className="text-white text-lg font-bold">
                 {getInitials(coach.name)}
               </span>

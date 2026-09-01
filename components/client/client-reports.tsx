@@ -49,7 +49,7 @@ function formatDateRange(start: string, end: string): string {
 function statusBadge(status: string) {
   switch (status) {
     case "sent":
-      return <Badge className="bg-cyan-50 text-cyan-700 border-cyan-200">Sent</Badge>;
+      return <Badge className="bg-portal-50 text-portal-700 border-portal-200">Sent</Badge>;
     case "draft":
       return <Badge variant="secondary">Draft</Badge>;
     default:
@@ -67,15 +67,15 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#0891B2]/30 bg-[#0891B2]/5 px-3 py-2 text-sm font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/10"
+            className="inline-flex items-center gap-2 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar
           </a>
         </div>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
-            <FileText className="h-6 w-6 text-[#0891B2]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-portal-600/10">
+            <FileText className="h-6 w-6 text-portal-600" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No reports yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -93,7 +93,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
         <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
         <a
           href={`/api/client/${centreId}/calendar`}
-          className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-portal-200 bg-portal-50 px-3 py-2 text-sm font-medium text-portal-700 hover:bg-portal-100 transition-colors"
         >
           <Calendar className="h-4 w-4" />
           Sync Calendar
@@ -171,8 +171,8 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                     {/* Sessions delivered */}
                     {content.sessions_delivered != null && (
                       <div className="flex items-start gap-3 rounded-lg bg-card p-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-50">
-                          <BarChart3 className="h-4 w-4 text-cyan-600" />
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-portal-50">
+                          <BarChart3 className="h-4 w-4 text-portal-600" />
                         </div>
                         <div>
                           <p className="text-xs font-medium text-gray-500">
@@ -312,7 +312,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                                 key={i}
                                 className="flex items-start gap-2 text-sm text-gray-600"
                               >
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500" />
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-portal-500" />
                                 {highlight}
                               </li>
                             ))}

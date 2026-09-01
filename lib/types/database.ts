@@ -171,6 +171,9 @@ export interface Centre {
   send_feedback_emails: boolean;
   logo_url: string | null;
   branding_mode: BrandingMode;
+  /** White-label portal accent anchor (#RRGGBB, migration 084). Null →
+   *  default portal cyan. Read only when branding_mode is white_label. */
+  brand_colour: string | null;
   health_score: number | null;
   health_status: HealthStatus | null;
   health_score_updated_at: string | null;
