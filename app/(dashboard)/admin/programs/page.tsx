@@ -4,6 +4,7 @@ import { getPrograms } from "@/lib/programs/actions";
 import { getProgramsStatusPulse } from "@/lib/programs/status-pulse-actions";
 import { ProgramLibrary } from "@/components/programs/program-library";
 import { ProgramsStatusPulseStrip } from "@/components/programs/programs-status-pulse";
+import { LibraryCoverage } from "@/components/programs/library-coverage";
 
 export const metadata = {
   title: "Programmes | Build Alpha Kids",
@@ -45,6 +46,8 @@ export default async function AdminProgramsPage() {
       </div>
 
       <ProgramsStatusPulseStrip pulse={pulse} basePath="/admin/programs" />
+
+      <LibraryCoverage />
 
       <ProgramLibrary programs={list} basePath="/admin/programs" />
     </div>

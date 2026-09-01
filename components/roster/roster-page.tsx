@@ -57,6 +57,7 @@ import {
   Dumbbell,
   MapPin,
   GripVertical,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,7 @@ import { SessionListView } from "./session-list-view";
 import { SessionDetailSheet } from "./session-detail-sheet";
 import { CreateSessionDialog } from "./create-session-dialog";
 import { GenerateSessionsDialog } from "./generate-sessions-dialog";
+import { AutoProgrammeDialog } from "./auto-programme-dialog";
 import { AIGenerateDialog } from "./ai-generate-dialog";
 import { AISummaryBar } from "./ai-summary-bar";
 import { ConfidenceBadge } from "./confidence-badge";
@@ -422,6 +424,7 @@ export function RosterPage({
   );
 
   const [genOpen, setGenOpen] = useState(false);
+  const [autoProgOpen, setAutoProgOpen] = useState(false);
   const [aiGenOpen, setAiGenOpen] = useState(false);
 
   // AI review mode state
@@ -833,6 +836,16 @@ export function RosterPage({
               Generate Week
             </Button>
           )}
+          {activeTerm && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAutoProgOpen(true)}
+            >
+              <BookOpen className="size-4" />
+              Auto-programme
+            </Button>
+          )}
         </div>
 
         {/* Publish week — both desktop and mobile (high-value CTA). */}
@@ -1107,6 +1120,18 @@ export function RosterPage({
           onOpenChange={setGenOpen}
           term={activeTerm}
           templateCount={0}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {/* Auto-programme term (curriculum build) */}
+      {activeTerm && (
+        <AutoProgrammeDialog
+          open={autoProgOpen}
+          onOpenChange={setAutoProgOpen}
+          termId={activeTerm.id}
+          termName={activeTerm.name}
+          centres={centres}
           onSuccess={handleRefresh}
         />
       )}
