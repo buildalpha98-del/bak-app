@@ -42,7 +42,7 @@ export function SharedPortalView({
 }: SharedPortalViewProps) {
   return (
     <div
-      className="min-h-screen bg-slate-50"
+      className={`min-h-screen bg-slate-50 ${centreBrandColour ? "portal-brand-scope" : ""}`}
       style={
         centreBrandColour
           ? ({ "--portal-brand": centreBrandColour } as React.CSSProperties)
