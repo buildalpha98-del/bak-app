@@ -50,8 +50,8 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
       <div className="animate-fade-up">
         <h1 className="text-2xl font-bold font-heading text-foreground">Programs</h1>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
-            <BookOpen className="h-6 w-6 text-[#0891B2]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-portal-600/10">
+            <BookOpen className="h-6 w-6 text-portal-600" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No programs yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -110,7 +110,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full rounded-2xl border-[#0891B2]/30 text-[#0891B2] hover:bg-[#0891B2]/10"
+                className="w-full rounded-2xl border-portal-600/30 text-portal-600 hover:bg-portal-600/10"
                 render={(props) => (
                   <Link
                     {...props}

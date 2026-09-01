@@ -813,6 +813,9 @@ function EditCentreDialog({
     centre.branding_mode
   );
   const [logoUrl, setLogoUrl] = useState(centre.logo_url);
+  const [brandColour, setBrandColour] = useState<string | null>(
+    centre.brand_colour
+  );
   const [logoUploading, setLogoUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
@@ -855,6 +858,7 @@ function EditCentreDialog({
       group_size: groupSize ? parseInt(groupSize, 10) : null,
       colour,
       branding_mode: brandingMode,
+      brand_colour: brandColour,
     };
 
     const { error: updateError } = await updateCentre(centre.id, payload);
@@ -956,10 +960,36 @@ function EditCentreDialog({
                 {logoUploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
               </Button>
             </div>
+            {brandingMode === "white_label" && (
+              <div className="flex items-center gap-3 pt-1">
+                <Label className="text-xs font-normal text-muted-foreground">
+                  Portal accent
+                </Label>
+                <input
+                  type="color"
+                  value={brandColour ?? "#0891B2"}
+                  onChange={(e) => setBrandColour(e.target.value)}
+                  className="h-8 w-12 cursor-pointer rounded border bg-transparent p-0.5"
+                  aria-label="Portal accent colour"
+                />
+                {brandColour && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBrandColour(null)}
+                  >
+                    Use default
+                  </Button>
+                )}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               White label swaps the Build Alpha Kids crest for this logo in the
-              centre&apos;s portal, shared links, and report PDFs. PNG, JPG,
-              SVG or WebP, max 2MB.
+              centre&apos;s portal, shared links, and report PDFs — and the
+              accent colour re-themes the portal&apos;s buttons, chips and
+              charts. Pick a dark-ish colour so white text stays readable.
+              PNG, JPG, SVG or WebP, max 2MB.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

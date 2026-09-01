@@ -45,7 +45,7 @@ function statusColour(status: string): string {
       return "bg-green-100 text-green-700";
     case "confirmed":
     case "published":
-      return "bg-cyan-100 text-cyan-700";
+      return "bg-portal-100 text-portal-700";
     case "pending_confirmation":
       return "bg-amber-100 text-amber-700";
     default:
@@ -142,7 +142,7 @@ function ProgramContentSection({ content }: { content: Record<string, unknown> }
               <ul className="space-y-0.5 text-foreground">
                 {data.objectives!.map((obj, i) => (
                   <li key={i} className="flex gap-1.5">
-                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
+                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-portal-400" />
                     {obj}
                   </li>
                 ))}
@@ -157,7 +157,7 @@ function ProgramContentSection({ content }: { content: Record<string, unknown> }
               <ul className="space-y-0.5 text-foreground">
                 {activities.map((act, i) => (
                   <li key={i} className="flex gap-1.5">
-                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-portal-400" />
                     {act}
                   </li>
                 ))}
@@ -191,12 +191,12 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
         return (
           <div
             key={week.weekNumber}
-            className={`overflow-hidden rounded-xl border ${current ? "border-teal-300 ring-1 ring-teal-200" : "border-border"}`}
+            className={`overflow-hidden rounded-xl border ${current ? "border-portal-300 ring-1 ring-portal-200" : "border-border"}`}
           >
             {/* Week header */}
             <button
               onClick={() => toggleWeek(week.weekNumber)}
-              className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${current ? "bg-teal-50 hover:bg-teal-100/70" : "bg-muted/30 hover:bg-muted/60"}`}
+              className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${current ? "bg-portal-50 hover:bg-portal-100/70" : "bg-muted/30 hover:bg-muted/60"}`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="font-semibold text-sm text-foreground">
@@ -206,7 +206,7 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
                   {formatWeekRange(week.weekStartDate)}
                 </span>
                 {current && (
-                  <Badge className="bg-teal-500 text-white text-xs">Current</Badge>
+                  <Badge className="bg-portal-500 text-white text-xs">Current</Badge>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">

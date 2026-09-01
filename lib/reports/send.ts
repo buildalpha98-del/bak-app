@@ -5,6 +5,7 @@ import { sendEmailWithAttachment } from "@/lib/email/send";
 import { reportDeliveryEmail } from "@/lib/reports/email-template";
 import { ReportPDF } from "@/lib/reports/pdf-template";
 import { getReportDetail, markReportSent } from "@/lib/reports/actions";
+import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
 
 // ============================================================
 // Send report as PDF via email
@@ -32,11 +33,15 @@ export async function sendReportEmail(
         branding: {
           mode: isWhiteLabel ? "white_label" : "bak_branded",
           logoUrl: report.centre_logo_url,
+          primaryColour: isWhiteLabel
+            ? (report.centre_brand_colour ?? undefined)
+            : undefined,
         },
         generatedDate: new Date().toLocaleDateString("en-AU", {
           day: "numeric",
           month: "long",
           year: "numeric",
+          timeZone: SYDNEY_TZ,
         }),
       })
     );

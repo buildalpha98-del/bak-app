@@ -146,6 +146,8 @@ export interface UpdateCentreData {
   /** Portal + report branding: white_label swaps the BAK crest for the
    *  centre's own logo (uploaded via uploadCentreLogo). */
   branding_mode?: BrandingMode;
+  /** White-label portal accent anchor (#RRGGBB) or null for default. */
+  brand_colour?: string | null;
 }
 
 export interface AddNoteData {

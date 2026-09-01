@@ -38,8 +38,8 @@ export default async function ImpactDashboardPage({
       label: "Sessions This Term",
       value: stats.sessionsThisTerm,
       icon: BarChart3,
-      iconBg: "bg-cyan-50",
-      iconColour: "text-cyan-600",
+      iconBg: "bg-portal-50",
+      iconColour: "text-portal-600",
       suffix: null,
       badge:
         sessionChange !== null ? (
@@ -95,8 +95,8 @@ export default async function ImpactDashboardPage({
       label: "All-Time Sessions",
       value: stats.totalSessionsAllTime,
       icon: TrendingUp,
-      iconBg: "bg-cyan-50",
-      iconColour: "text-cyan-600",
+      iconBg: "bg-portal-50",
+      iconColour: "text-portal-600",
       suffix: null,
       badge: null,
     },
@@ -114,8 +114,8 @@ export default async function ImpactDashboardPage({
         <h1 className="text-2xl font-bold font-heading text-foreground">Impact Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">{termName}</p>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-card p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
-            <BarChart3 className="h-6 w-6 text-[#0891B2]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-portal-600/10">
+            <BarChart3 className="h-6 w-6 text-portal-600" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-gray-900">No data yet</h3>
           <p className="mt-2 max-w-sm text-sm text-gray-500">
@@ -187,7 +187,7 @@ export default async function ImpactDashboardPage({
                     <p className="text-sm font-bold text-foreground">{cls.name}</p>
                     <Badge
                       variant="secondary"
-                      className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+                      className="bg-portal-50 text-portal-700 hover:bg-portal-50"
                     >
                       Year {cls.year_group}
                     </Badge>

@@ -32,8 +32,8 @@ const SECTIONS = [
     label: "Risk Assessments",
     emptyLabel: "risk assessments",
     icon: Shield,
-    iconClass: "text-teal-600",
-    headerClass: "text-teal-700",
+    iconClass: "text-portal-600",
+    headerClass: "text-portal-700",
   },
   {
     key: "policy",

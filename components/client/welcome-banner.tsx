@@ -50,17 +50,17 @@ export function WelcomeBanner({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-white p-5">
+    <div className="relative overflow-hidden rounded-2xl border border-portal-200 bg-gradient-to-br from-portal-50 to-white p-5">
       <button
         type="button"
         onClick={dismiss}
         aria-label="Dismiss welcome"
-        className="absolute right-3 top-3 rounded-lg p-2 text-cyan-700/60 transition hover:bg-cyan-100 hover:text-cyan-800"
+        className="absolute right-3 top-3 rounded-lg p-2 text-portal-700/60 transition hover:bg-portal-100 hover:text-portal-800"
       >
         <X className="h-4 w-4" />
       </button>
 
-      <p className="text-xs font-semibold uppercase tracking-widest text-cyan-700">
+      <p className="text-xs font-semibold uppercase tracking-widest text-portal-700">
         Welcome to your portal
       </p>
       <h2 className="mt-1 text-lg font-bold text-foreground">
@@ -72,7 +72,7 @@ export function WelcomeBanner({
           const Icon = s.icon;
           return (
             <div key={s.title} className="rounded-xl bg-card/70 p-3">
-              <Icon className="h-5 w-5 text-cyan-600" />
+              <Icon className="h-5 w-5 text-portal-600" />
               <p className="mt-1.5 text-sm font-semibold text-foreground">
                 {s.title}
               </p>
@@ -87,14 +87,14 @@ export function WelcomeBanner({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={`/client/${centreId}/schedule`}
-          className="rounded-lg bg-cyan-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-cyan-700"
+          className="rounded-lg bg-portal-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-portal-700"
         >
           See this week&apos;s sessions
         </Link>
         <button
           type="button"
           onClick={dismiss}
-          className="rounded-lg px-3.5 py-2 text-sm font-medium text-cyan-700 transition hover:bg-cyan-100"
+          className="rounded-lg px-3.5 py-2 text-sm font-medium text-portal-700 transition hover:bg-portal-100"
         >
           Got it, thanks
         </button>

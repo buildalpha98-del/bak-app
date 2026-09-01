@@ -89,6 +89,24 @@
     --sidebar-border: oklch(0.22 0.012 45);
     --sidebar-ring: oklch(0.65 0.19 42);
 
+    /* Client-portal accent scale (white-label, PR #36 follow-up).
+       One anchor var — --portal-brand — drives the whole scale via
+       color-mix, so a white-label centre re-themes the portal by
+       setting a single inline variable on the shell root. Defaults
+       reproduce the portal's original cyan (tailwind cyan-600 anchor).
+       Numbered like the tailwind shades they replaced, so a sweep of
+       cyan-N → portal-N stays reviewable. */
+    --portal-brand: #0891B2;
+    --portal-50: color-mix(in oklab, var(--portal-brand) 7%, white);
+    --portal-100: color-mix(in oklab, var(--portal-brand) 14%, white);
+    --portal-200: color-mix(in oklab, var(--portal-brand) 28%, white);
+    --portal-300: color-mix(in oklab, var(--portal-brand) 45%, white);
+    --portal-400: color-mix(in oklab, var(--portal-brand) 65%, white);
+    --portal-500: color-mix(in oklab, var(--portal-brand) 88%, white);
+    --portal-600: var(--portal-brand);
+    --portal-700: color-mix(in oklab, var(--portal-brand) 82%, black);
+    --portal-800: color-mix(in oklab, var(--portal-brand) 68%, black);
+
     /* Brand colour tokens (hex for SVGs, gradients, direct use) */
     --brand-orange: #E8712A;
     --brand-orange-light: #FFF3EB;
@@ -184,6 +202,15 @@
 @theme inline {
     --font-sans: var(--font-sans);
     --font-heading: var(--font-heading);
+    --color-portal-50: var(--portal-50);
+    --color-portal-100: var(--portal-100);
+    --color-portal-200: var(--portal-200);
+    --color-portal-300: var(--portal-300);
+    --color-portal-400: var(--portal-400);
+    --color-portal-500: var(--portal-500);
+    --color-portal-600: var(--portal-600);
+    --color-portal-700: var(--portal-700);
+    --color-portal-800: var(--portal-800);
     --font-display: "Narbonne", var(--font-heading), system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);

@@ -37,7 +37,7 @@ export default async function CurriculumPage({
       {/* Header */}
       <div className="space-y-1">
         <h1 className="flex items-center gap-2 text-2xl font-bold font-heading text-foreground">
-          <BookOpen className="h-6 w-6 text-teal-500" />
+          <BookOpen className="h-6 w-6 text-portal-500" />
           {pageTitle}
         </h1>
         {termName && (

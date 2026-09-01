@@ -21,7 +21,7 @@ export default async function SharedLinkPage({ params }: Props) {
           </p>
           <a
             href="/client-login"
-            className="text-cyan-600 hover:underline text-sm"
+            className="text-portal-600 hover:underline text-sm"
           >
             Sign in to your portal instead
           </a>
@@ -35,6 +35,7 @@ export default async function SharedLinkPage({ params }: Props) {
       centreId={data.centreId}
       centreName={data.centreName}
       centreLogoUrl={data.centreLogoUrl}
+      centreBrandColour={data.centreBrandColour}
       primaryUserName={data.primaryUserName}
       snapshot={data.snapshot}
     />

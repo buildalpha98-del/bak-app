@@ -19,6 +19,8 @@ export interface ClientUserWithCentre extends ClientUser {
    *  centre's own mark when mode is white_label and a logo is on file. */
   centre_branding_mode: "bak_branded" | "white_label";
   centre_logo_url: string | null;
+  /** Accent anchor (migration 084); portal re-themes when white_label. */
+  centre_brand_colour: string | null;
   /** Set by getCurrentClientUser(centreId) when the user has access to the requested centre. */
   is_authorised_for_current?: boolean;
 }
@@ -423,7 +425,7 @@ export async function getCurrentClientUser(
 
     const { data: centre } = await supabase
       .from("centres")
-      .select("name, type, branding_mode, logo_url")
+      .select("name, type, branding_mode, logo_url, brand_colour")
       .eq("id", activeCentreId)
       .maybeSingle();
 
@@ -436,6 +438,10 @@ export async function getCurrentClientUser(
         centre_branding_mode:
           centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
         centre_logo_url: centre?.logo_url ?? null,
+        centre_brand_colour:
+          ((centre as Record<string, unknown> | null)?.brand_colour as
+            | string
+            | null) ?? null,
         is_authorised_for_current: isAuthorised,
       } as ClientUserWithCentre,
       error: null,
@@ -896,6 +902,8 @@ async function validateSharedLink(
     centreName: string;
     /** Non-null only for white-label centres with a logo on file. */
     centreLogoUrl: string | null;
+    /** Non-null only for white-label centres with an accent set. */
+    centreBrandColour: string | null;
     primaryUserName: string;
   } | null;
   error: string | null;
@@ -910,7 +918,7 @@ async function validateSharedLink(
     const { data, error } = await supabase
       .from("shared_links")
       .select(
-        "centre_id, is_active, expires_at, created_by, centres!inner(name, branding_mode, logo_url)"
+        "centre_id, is_active, expires_at, created_by, centres!inner(name, branding_mode, logo_url, brand_colour)"
       )
       .eq("token", token)
       .single();
@@ -927,6 +935,7 @@ async function validateSharedLink(
       name: string;
       branding_mode: string | null;
       logo_url: string | null;
+      brand_colour: string | null;
     };
 
     // Get primary user name
@@ -942,6 +951,10 @@ async function validateSharedLink(
         centreName: centre.name,
         centreLogoUrl:
           centre.branding_mode === "white_label" ? (centre.logo_url ?? null) : null,
+        centreBrandColour:
+          centre.branding_mode === "white_label"
+            ? (centre.brand_colour ?? null)
+            : null,
         primaryUserName: creator?.name ?? "the centre administrator",
       },
       error: null,
@@ -961,6 +974,7 @@ export async function getSharedPortalView(token: string): Promise<{
         centreId: string;
         centreName: string;
         centreLogoUrl: string | null;
+        centreBrandColour: string | null;
         primaryUserName: string;
         snapshot: SharedPortalSnapshot;
       }

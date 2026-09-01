@@ -29,7 +29,7 @@ export default async function ClientReportsPage({
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#0891B2]/30 bg-[#0891B2]/5 px-3 py-2 text-sm font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/10"
+            className="inline-flex items-center gap-2 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar

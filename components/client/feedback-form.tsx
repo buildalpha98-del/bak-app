@@ -73,7 +73,7 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
       <div className="space-y-1">
         <p className="text-sm font-medium text-foreground">{formatDateNice(session.date)}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-50">
+          <Badge variant="secondary" className="bg-portal-50 text-portal-700 hover:bg-portal-50">
             {session.sport}
           </Badge>
           <span className="text-xs text-muted-foreground">Coach {session.coach_name}</span>
@@ -123,7 +123,7 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
           onChange={(e) => setComment(e.target.value)}
           placeholder="How was the session? Any feedback for our coach?"
           rows={3}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 resize-none"
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-portal-500 focus:ring-offset-1 resize-none"
         />
       </div>
 
@@ -131,7 +131,7 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
       <Button
         type="submit"
         disabled={rating === 0 || submitting}
-        className="w-full rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90 disabled:opacity-50"
+        className="w-full rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90 disabled:opacity-50"
       >
         {submitting ? "Saving…" : isEditing ? "Update Feedback" : "Submit Feedback"}
       </Button>

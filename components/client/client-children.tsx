@@ -81,7 +81,7 @@ export function ClientChildren({
                 onClick={() => setAgeFilter(group)}
                 className={
                   ageFilter === group
-                    ? "rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+                    ? "rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
                     : "rounded-2xl text-muted-foreground"
                 }
               >
@@ -95,8 +95,8 @@ export function ClientChildren({
       {/* Children list */}
       {filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center rounded-2xl p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0891B2]/10">
-            <Users className="h-6 w-6 text-[#0891B2]" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-portal-600/10">
+            <Users className="h-6 w-6 text-portal-600" />
           </div>
           <h3 className="mt-4 text-sm font-medium text-foreground">
             {children.length === 0
@@ -114,7 +114,7 @@ export function ClientChildren({
           {groupByClass(filtered).map((group) => (
             <section key={group.key}>
               <div className="mb-3 flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-cyan-600" />
+                <GraduationCap className="h-4 w-4 text-portal-600" />
                 <h2 className="text-sm font-semibold text-foreground">
                   {group.label}
                 </h2>
@@ -193,7 +193,7 @@ function ChildCard({
           </div>
           <Badge
             variant="secondary"
-            className="shrink-0 bg-cyan-50 text-cyan-700 hover:bg-cyan-50"
+            className="shrink-0 bg-portal-50 text-portal-700 hover:bg-portal-50"
           >
             {showClass && child.class_name ? child.class_name : `${child.age_group} yrs`}
           </Badge>

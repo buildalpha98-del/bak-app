@@ -173,14 +173,14 @@ export function ClientSettings({
       <Card className="mt-6 rounded-2xl transition-shadow hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4 text-[#0891B2]" />
+            <Link2 className="h-4 w-4 text-portal-600" />
             Shared Links
           </CardTitle>
           <Button
             onClick={handleCreate}
             disabled={isCreating}
             size="sm"
-            className="rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+            className="rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             {isCreating ? "Creating..." : "Create New Link"}
@@ -189,8 +189,8 @@ export function ClientSettings({
         <CardContent>
           {links.length === 0 ? (
             <div className="py-8 text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#0891B2]/10">
-                <Link2 className="h-5 w-5 text-[#0891B2]" />
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-portal-600/10">
+                <Link2 className="h-5 w-5 text-portal-600" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 No active shared links. Create one to share read-only portal access.
@@ -217,7 +217,7 @@ export function ClientSettings({
                           className={
                             isExpiringSoon
                               ? "border-amber-200 bg-amber-50 text-amber-700"
-                              : "border-[#0891B2]/30 bg-[#0891B2]/10 text-[#0891B2]"
+                              : "border-portal-600/30 bg-portal-600/10 text-portal-600"
                           }
                         >
                           {days > 0 ? `${days} day${days === 1 ? "" : "s"} left` : "Expires today"}
@@ -294,10 +294,10 @@ function LinkedCentresCard({
     <Card className="rounded-2xl transition-shadow hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Building2 className="h-4 w-4 text-cyan-600" />
+          <Building2 className="h-4 w-4 text-portal-600" />
           My linked centres
         </CardTitle>
-        <Badge variant="outline" className="border-cyan-200 bg-cyan-50 text-cyan-700">
+        <Badge variant="outline" className="border-portal-200 bg-portal-50 text-portal-700">
           {centres.length} {centres.length === 1 ? "centre" : "centres"}
         </Badge>
       </CardHeader>
@@ -310,7 +310,7 @@ function LinkedCentresCard({
                 key={c.id}
                 className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-xs font-semibold text-cyan-700">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-portal-50 text-xs font-semibold text-portal-700">
                   {c.name.charAt(0).toUpperCase()}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -365,7 +365,7 @@ function YourDetailsCard({ initialName }: { initialName: string }) {
     <Card className="rounded-2xl transition-shadow hover:shadow-md">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
-          <UserRound className="h-4 w-4 text-[#0891B2]" />
+          <UserRound className="h-4 w-4 text-portal-600" />
           Your details
         </CardTitle>
       </CardHeader>
@@ -380,7 +380,7 @@ function YourDetailsCard({ initialName }: { initialName: string }) {
           <Button
             onClick={handleSave}
             disabled={!dirty || isSaving}
-            className="min-h-[44px] rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+            className="min-h-[44px] rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
@@ -450,7 +450,7 @@ function TeamAccessCard({
     <Card className="rounded-2xl transition-shadow hover:shadow-md">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
-          <UsersRound className="h-4 w-4 text-[#0891B2]" />
+          <UsersRound className="h-4 w-4 text-portal-600" />
           Team access
         </CardTitle>
       </CardHeader>
@@ -461,7 +461,7 @@ function TeamAccessCard({
               key={c.id}
               className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-xs font-semibold text-cyan-700">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-portal-50 text-xs font-semibold text-portal-700">
                 {c.name.charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">
@@ -475,7 +475,7 @@ function TeamAccessCard({
               {c.is_primary ? (
                 <Badge
                   variant="outline"
-                  className="shrink-0 border-cyan-200 bg-cyan-50 text-cyan-700"
+                  className="shrink-0 border-portal-200 bg-portal-50 text-portal-700"
                 >
                   Primary
                 </Badge>
@@ -497,7 +497,7 @@ function TeamAccessCard({
 
         <div className="mt-4 rounded-xl border bg-muted/30 p-3">
           <p className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <Mail className="h-3.5 w-3.5 text-[#0891B2]" />
+            <Mail className="h-3.5 w-3.5 text-portal-600" />
             Invite a colleague
           </p>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -521,7 +521,7 @@ function TeamAccessCard({
               disabled={
                 isInviting || !inviteName.trim() || !inviteEmail.trim()
               }
-              className="min-h-[44px] shrink-0 rounded-2xl bg-[#0891B2] text-white hover:bg-[#0891B2]/90"
+              className="min-h-[44px] shrink-0 rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
             >
               {isInviting ? "Sending..." : "Send invite"}
             </Button>

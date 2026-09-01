@@ -33,7 +33,7 @@ export async function GET(
     .from("centre_reports")
     .select(
       `id, title, content_json, created_at,
-       centres!centre_reports_centre_id_fkey(name, branding_mode, logo_url),
+       centres!centre_reports_centre_id_fkey(name, branding_mode, logo_url, brand_colour),
        terms!centre_reports_term_id_fkey(name, start_date, end_date)`
     )
     .eq("id", reportId)
@@ -48,6 +48,7 @@ export async function GET(
     name?: string;
     branding_mode?: string | null;
     logo_url?: string | null;
+    brand_colour?: string | null;
   } | null;
   const centreName = centre?.name ?? "Your Centre";
   const termData = report.terms as { name?: string } | null;
@@ -88,6 +89,7 @@ export async function GET(
       branding: {
         mode: isWhiteLabel ? "white_label" : "bak_branded",
         logoUrl: centre?.logo_url,
+        primaryColour: isWhiteLabel ? (centre?.brand_colour ?? undefined) : undefined,
       },
       generatedDate: generatedAt,
     })

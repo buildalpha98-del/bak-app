@@ -26,9 +26,9 @@ export default async function StaffVerificationPage({
       </div>
 
       {/* Info banner */}
-      <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 flex items-start gap-3">
-        <Shield className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-teal-800">
+      <div className="rounded-xl border border-portal-200 bg-portal-50 p-4 flex items-start gap-3">
+        <Shield className="h-5 w-5 text-portal-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-portal-800">
           All Build Alpha Kids coaches hold verified Working With Children Checks and current First
           Aid certificates.
         </p>
