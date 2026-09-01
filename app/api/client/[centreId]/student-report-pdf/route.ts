@@ -6,6 +6,7 @@ import {
   type StudentReportData,
 } from "@/lib/reports/student-pdf-template";
 import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
+import { yearGroupLabel } from "@/lib/schools/year-groups";
 
 // Per-student report card. Everything is read through the caller's
 // cookie client, so RLS decides what a portal user can put in a PDF —
@@ -159,7 +160,7 @@ export async function GET(
     })
     .find((c) => c.centre_id === centreId);
   if (cls) {
-    className = `${cls.name} — Year ${cls.year_group}`;
+    className = `${cls.name} — ${yearGroupLabel(cls.year_group)}`;
     teacherName = cls.teacher_name;
   }
 

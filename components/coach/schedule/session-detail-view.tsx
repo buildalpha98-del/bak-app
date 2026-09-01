@@ -34,6 +34,7 @@ import { ShiftThread } from "@/components/coach/schedule/shift-thread";
 import { SwapRequestDialog } from "@/components/coach/schedule/swap-request-dialog";
 import { formatTime12 } from "@/lib/utils/roster";
 import { sportColour } from "@/lib/utils/sport-colours";
+import { yearGroupLabel } from "@/lib/schools/year-groups";
 import { confirmShift, declineShift } from "@/lib/sessions/shift-actions";
 import { startSession } from "@/lib/sessions/session-workflow-actions";
 import { cancelSessionAsCoach } from "@/lib/rerostering/actions";
@@ -236,7 +237,7 @@ export function SessionDetailView({
                       <span className="font-medium text-foreground">
                         {cls.name}
                       </span>{" "}
-                      · Year {cls.year_group}
+                      · {yearGroupLabel(cls.year_group)}
                       {cls.teacher_name ? ` · ${cls.teacher_name}` : ""}
                     </p>
                   ))}

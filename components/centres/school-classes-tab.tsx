@@ -30,12 +30,59 @@ import {
 } from "@/lib/schools/class-actions";
 import { YEAR_GROUP_OPTIONS, yearGroupSortKey } from "@/lib/schools/year-groups";
 import { ClassImportDialog } from "@/components/centres/class-import-dialog";
+import type { CentreType } from "@/lib/types/enums";
 
 interface SchoolClassesTabProps {
   centreId: string;
+  /** Schools get class/year/teacher vocabulary; childcare centres get
+   *  room/ages/educator over the exact same tables (rooms parity). */
+  centreType?: CentreType;
 }
 
-export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
+interface GroupVocab {
+  group: string;
+  Group: string;
+  member: string;
+  members: string;
+  leader: string;
+  yearBadge: (yearGroup: string) => string;
+  namePlaceholder: string;
+  yearPlaceholder: string;
+  yearAria: string;
+  yearOptions: readonly string[];
+}
+
+const SCHOOL_VOCAB: GroupVocab = {
+  group: "class",
+  Group: "Class",
+  member: "student",
+  members: "students",
+  leader: "Teacher",
+  yearBadge: (y) => `Year ${y}`,
+  namePlaceholder: 'Class name (e.g. "3B")',
+  yearPlaceholder: 'Year (e.g. "3" or "5/6")',
+  yearAria: "Year group",
+  yearOptions: YEAR_GROUP_OPTIONS,
+};
+
+const ROOM_VOCAB: GroupVocab = {
+  group: "room",
+  Group: "Room",
+  member: "child",
+  members: "children",
+  leader: "Educator",
+  yearBadge: (y) => `Ages ${y}`,
+  namePlaceholder: 'Room name (e.g. "Possums")',
+  yearPlaceholder: "Age band",
+  yearAria: "Age band",
+  yearOptions: ["3-5", "5-8", "8-12"],
+};
+
+export function SchoolClassesTab({
+  centreId,
+  centreType = "school",
+}: SchoolClassesTabProps) {
+  const vocab = centreType === "school" ? SCHOOL_VOCAB : ROOM_VOCAB;
   const [classes, setClasses] = useState<SchoolClassSummary[]>([]);
   const [roster, setRoster] = useState<ClassRosterChild[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,18 +121,23 @@ export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <ClassImportDialog centreId={centreId} onImported={load} />
-      </div>
-      <CreateClassCard centreId={centreId} onCreated={load} />
+      {centreType === "school" && (
+        <div className="flex justify-end">
+          <ClassImportDialog centreId={centreId} onImported={load} />
+        </div>
+      )}
+      <CreateClassCard centreId={centreId} onCreated={load} vocab={vocab} />
 
       {classes.length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-10 text-center">
           <GraduationCap className="h-8 w-8 text-muted-foreground" />
-          <h3 className="mt-3 text-sm font-medium text-foreground">No classes yet</h3>
+          <h3 className="mt-3 text-sm font-medium text-foreground">
+            No {vocab.group}s yet
+          </h3>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            Add the school&apos;s class list above — the portal roster, and later
-            per-class reporting and session targeting, hang off it.
+            Add the {centreType === "school" ? "school" : "centre"}&apos;s{" "}
+            {vocab.group} list above — the portal roster, per-{vocab.group}{" "}
+            reporting and session targeting hang off it.
           </p>
         </Card>
       ) : (
@@ -97,6 +149,7 @@ export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
               members={roster.filter((c) => c.class_id === cls.id)}
               unassigned={unassigned}
               onChanged={load}
+              vocab={vocab}
             />
           ))}
         </div>
@@ -104,8 +157,8 @@ export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
 
       {unassigned.length > 0 && classes.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          {unassigned.length} enrolled student{unassigned.length === 1 ? "" : "s"} not
-          in any class yet — assign them from a class card above.
+          {unassigned.length} enrolled {unassigned.length === 1 ? vocab.member : vocab.members} not
+          in any {vocab.group} yet — assign them from a {vocab.group} card above.
         </p>
       )}
     </div>
@@ -115,9 +168,11 @@ export function SchoolClassesTab({ centreId }: SchoolClassesTabProps) {
 function CreateClassCard({
   centreId,
   onCreated,
+  vocab,
 }: {
   centreId: string;
   onCreated: () => Promise<void>;
+  vocab: GroupVocab;
 }) {
   const currentYear = new Date().getFullYear();
   const [name, setName] = useState("");
@@ -138,7 +193,7 @@ function CreateClassCard({
         toast.error(error);
         return;
       }
-      toast.success(`Class ${name.trim()} added.`);
+      toast.success(`${vocab.Group} ${name.trim()} added.`);
       setName("");
       setYearGroup("");
       setTeacher("");
@@ -151,27 +206,27 @@ function CreateClassCard({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Plus className="h-4 w-4 text-primary" />
-          Add a class
+          Add a {vocab.group}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-2 sm:grid-cols-[1fr_1fr_6rem_1fr_auto]">
           <Input
-            placeholder='Class name (e.g. "3B")'
+            placeholder={vocab.namePlaceholder}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            aria-label="Class name"
+            aria-label={`${vocab.Group} name`}
           />
           <div className="flex items-center gap-1.5">
             <Input
-              placeholder='Year (e.g. "3" or "5/6")'
+              placeholder={vocab.yearPlaceholder}
               value={yearGroup}
               onChange={(e) => setYearGroup(e.target.value)}
-              aria-label="Year group"
+              aria-label={vocab.yearAria}
               list="year-group-options"
             />
             <datalist id="year-group-options">
-              {YEAR_GROUP_OPTIONS.map((y) => (
+              {vocab.yearOptions.map((y) => (
                 <option key={y} value={y} />
               ))}
             </datalist>
@@ -183,10 +238,10 @@ function CreateClassCard({
             aria-label="School year"
           />
           <Input
-            placeholder="Teacher (optional)"
+            placeholder={`${vocab.leader} (optional)`}
             value={teacher}
             onChange={(e) => setTeacher(e.target.value)}
-            aria-label="Class teacher"
+            aria-label={`${vocab.Group} ${vocab.leader.toLowerCase()}`}
           />
           <Button
             onClick={handleCreate}
@@ -205,11 +260,13 @@ function ClassCard({
   members,
   unassigned,
   onChanged,
+  vocab,
 }: {
   cls: SchoolClassSummary;
   members: ClassRosterChild[];
   unassigned: ClassRosterChild[];
   onChanged: () => Promise<void>;
+  vocab: GroupVocab;
 }) {
   const [assigning, setAssigning] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -231,7 +288,9 @@ function ClassCard({
         toast.error(error);
         return;
       }
-      toast.success(`${selected.size} student${selected.size === 1 ? "" : "s"} added to ${cls.name}.`);
+      toast.success(
+        `${selected.size} ${selected.size === 1 ? vocab.member : vocab.members} added to ${cls.name}.`
+      );
       setSelected(new Set());
       setAssigning(false);
       await onChanged();
@@ -250,14 +309,19 @@ function ClassCard({
   }
 
   function handleDelete() {
-    if (!window.confirm(`Delete class ${cls.name}? Students stay enrolled — only the class label is removed.`)) return;
+    if (
+      !window.confirm(
+        `Delete ${vocab.group} ${cls.name}? ${vocab.Group === "Class" ? "Students" : "Children"} stay enrolled — only the ${vocab.group} label is removed.`
+      )
+    )
+      return;
     startTransition(async () => {
       const { error } = await deleteSchoolClass(cls.id);
       if (error) {
         toast.error(error);
         return;
       }
-      toast.success(`Class ${cls.name} deleted.`);
+      toast.success(`${vocab.Group} ${cls.name} deleted.`);
       await onChanged();
     });
   }
@@ -269,12 +333,12 @@ function ClassCard({
           <CardTitle className="flex items-center gap-2 text-base">
             <GraduationCap className="h-4 w-4 text-primary" />
             {cls.name}
-            <Badge variant="secondary">Year {cls.year_group}</Badge>
+            <Badge variant="secondary">{vocab.yearBadge(cls.year_group)}</Badge>
             <Badge variant="outline">{cls.school_year}</Badge>
           </CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
             {cls.teacher_name ? `${cls.teacher_name} · ` : ""}
-            {members.length} student{members.length === 1 ? "" : "s"}
+            {members.length} {members.length === 1 ? vocab.member : vocab.members}
           </p>
         </div>
         <Button
@@ -309,15 +373,17 @@ function ClassCard({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">No students assigned yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No {vocab.members} assigned yet.
+          </p>
         )}
 
         {assigning ? (
           <div className="mt-3 rounded-lg border bg-muted/30 p-3">
             {unassigned.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Every enrolled student is already in a class. Remove one from its
-                class first to move it here.
+                Every enrolled {vocab.member} is already in a {vocab.group}.
+                Remove one from its {vocab.group} first to move it here.
               </p>
             ) : (
               <>
@@ -355,7 +421,7 @@ function ClassCard({
             onClick={() => setAssigning(true)}
           >
             <UserPlus className="h-3.5 w-3.5" />
-            Assign students
+            Assign {vocab.members}
           </Button>
         )}
       </CardContent>

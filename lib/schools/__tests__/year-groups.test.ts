@@ -30,6 +30,14 @@ describe("yearGroupToAgeBand", () => {
     // 3-4, but the input contract is year groups — the UI offers K-6.)
     expect(yearGroupToAgeBand("Year 2")).toBe("5-8");
   });
+
+  it("passes platform age bands through untouched (childcare rooms)", () => {
+    // A childcare room's group IS a band — "3-5" must not be read as
+    // "years 3 and 5" (which the K-6 parser would map to 8-12).
+    expect(yearGroupToAgeBand("3-5")).toBe("3-5");
+    expect(yearGroupToAgeBand("5-8")).toBe("5-8");
+    expect(yearGroupToAgeBand("8-12")).toBe("8-12");
+  });
 });
 
 describe("yearGroupSortKey", () => {

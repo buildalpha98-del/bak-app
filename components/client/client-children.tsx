@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "@/components/ui/app-link";
 import { Search, Users, CalendarCheck, Percent, GraduationCap } from "lucide-react";
-import { yearGroupSortKey } from "@/lib/schools/year-groups";
+import { yearGroupSortKey, yearGroupLabel } from "@/lib/schools/year-groups";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,9 @@ export function ClientChildren({
   const heading = isSchool ? "Students" : "Children";
   // Class grouping replaces the age filter once a school's class list
   // exists (migration 080) — year/class is how a school reads a roster.
-  const hasClasses = isSchool && children.some((c) => c.class_name !== null);
+  // Group-by keys off group existence, not centre type — childcare
+  // rooms (rooms parity) group the roster exactly like school classes.
+  const hasClasses = children.some((c) => c.class_name !== null);
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState<string>("All");
 
@@ -152,7 +154,7 @@ function groupByClass(children: ClientChild[]): {
     if (!groups.has(key)) {
       groups.set(key, {
         label: child.class_name
-          ? `${child.class_name} — Year ${child.year_group}`
+          ? `${child.class_name} — ${yearGroupLabel(child.year_group ?? "")}`
           : "No class assigned",
         yearGroup: child.year_group,
         children: [],
