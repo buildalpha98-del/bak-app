@@ -266,10 +266,22 @@ export async function completeParentRegistration(
       console.error("Referral code generation error:", refErr);
     }
 
-    // 5. If referred by someone, mark that referral as registered
+    // 5. If referred by someone, record + mark the referral. The
+    // pending record was never created anywhere (seam S9), so
+    // markReferralRegistered no-oped and no referral ever converted.
     if (data.referral_code) {
       try {
-        const { markReferralRegistered } = await import("@/lib/referrals/actions");
+        const { createReferralRecord, markReferralRegistered } = await import(
+          "@/lib/referrals/actions"
+        );
+        const { data: codeRow } = await createSupabaseAdmin()
+          .from("referral_codes")
+          .select("id")
+          .eq("code", data.referral_code.trim().toUpperCase())
+          .maybeSingle();
+        if (codeRow) {
+          await createReferralRecord(codeRow.id, user.email!, "parent");
+        }
         await markReferralRegistered(user.email!, parentProfile.id);
       } catch (refErr) {
         console.error("Referral registration error:", refErr);

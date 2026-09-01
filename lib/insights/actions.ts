@@ -73,11 +73,19 @@ export async function generateChildInsight(
     return { data: null, error: "Child not found" };
   }
 
-  // Call the generate API route
+  // Call the generate API route. The route reads the cookie-based
+  // Supabase client for auth — a bare server-to-server fetch carries
+  // no cookies and 401'd every on-demand generation (seam S10), so
+  // forward the caller's cookie header.
+  const { cookies } = await import("next/headers");
+  const cookieHeader = (await cookies())
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const response = await fetch(`${baseUrl}/api/insights/generate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookieHeader },
     body: JSON.stringify({ childId, termId, centreId }),
   });
 

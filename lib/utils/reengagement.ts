@@ -61,18 +61,28 @@ export async function detectDormantParents(): Promise<DormantParent[]> {
 
     for (const parent of allParents) {
       // Find their most recent confirmed/completed booking
-      const { data: lastBooking } = await supabase
+      // bookings has no date column — the date lives on the bookable
+      // session (seam S13: this query errored for every parent and the
+      // dormant-parent detector never fired once).
+      const { data: lastBookings } = await supabase
         .from("bookings")
-        .select("date")
+        .select("bookable_sessions!inner(date)")
         .eq("parent_id", parent.id)
         .in("status", ["confirmed", "completed"])
-        .order("date", { ascending: false })
-        .limit(1)
-        .single();
+        .order("date", {
+          ascending: false,
+          referencedTable: "bookable_sessions",
+        })
+        .limit(1);
+      const lastDate = (
+        lastBookings?.[0]?.bookable_sessions as unknown as
+          | { date: string }
+          | undefined
+      )?.date;
 
-      if (!lastBooking) continue;
+      if (!lastDate) continue;
 
-      const bookingDate = new Date(lastBooking.date);
+      const bookingDate = new Date(lastDate);
       const now = new Date();
       const daysSince = Math.floor(
         (now.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -96,7 +106,7 @@ export async function detectDormantParents(): Promise<DormantParent[]> {
         parentId: parent.id,
         parentName: `${parent.first_name} ${parent.last_name}`,
         email: parent.email,
-        lastBookingDate: lastBooking.date,
+        lastBookingDate: lastDate,
         daysSinceLastBooking: daysSince,
       });
     }
