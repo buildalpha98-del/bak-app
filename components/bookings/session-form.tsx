@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -125,6 +125,21 @@ export function BookableSessionForm({
     isoToDatetimeLocal(initialData?.booking_closes_at ?? null)
   );
 
+  // Roster link (seam S1): routes booked children onto the coach's
+  // attendance list. Optional but strongly encouraged for real events.
+  const [rosterSessionId, setRosterSessionId] = useState(
+    initialData?.session_id ?? ""
+  );
+  const [rosterOptions, setRosterOptions] = useState<
+    { id: string; label: string }[]
+  >([]);
+  useEffect(() => {
+    import("@/lib/bookings/admin-booking-actions").then(
+      ({ getRosterSessionsForLink }) =>
+        getRosterSessionsForLink().then(({ data }) => setRosterOptions(data))
+    );
+  }, []);
+
   const [error, setError] = useState<string | null>(null);
   const [internalSubmitting, setInternalSubmitting] = useState(false);
   const submitting = externalSubmitting ?? internalSubmitting;
@@ -138,6 +153,7 @@ export function BookableSessionForm({
     setInternalSubmitting(true);
 
     const input: BookableSessionInput = {
+      session_id: rosterSessionId || null,
       title: title.trim(),
       description: description.trim() || null,
       session_type: sessionType,
@@ -220,6 +236,32 @@ export function BookableSessionForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Roster session link — routes booked children onto the
+            coach's attendance list */}
+        <div className="sm:col-span-2">
+          <Label>Roster session</Label>
+          <Select
+            value={rosterSessionId}
+            onValueChange={(v) => setRosterSessionId(v ?? "")}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Not linked (booked children won't reach the coach's list)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Not linked</SelectItem>
+              {rosterOptions.map((o) => (
+                <SelectItem key={o.id} value={o.id}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Link the roster session this event runs as — booked children then
+            appear on the coach&apos;s attendance list automatically.
+          </p>
         </div>
 
         {/* Date */}

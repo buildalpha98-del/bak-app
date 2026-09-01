@@ -122,6 +122,11 @@ export default function BookingFlowPage() {
   const [referralCredits, setReferralCredits] = useState<{ creditCents: number; hasFreeSession: boolean; rewards: Array<{ id: string; reward_type: string; reward_value_cents: number | null; reward_description: string }> }>({ creditCents: 0, hasFreeSession: false, rewards: [] });
   const [referralCreditApplied, setReferralCreditApplied] = useState(false);
   const [freeSessionApplied, setFreeSessionApplied] = useState(false);
+  // Authoritative total from bookings.total_cents (seam S6): the server
+  // stamps discounts onto the booking and the payment route charges
+  // exactly this — the client numbers are display-only.
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [confirmingFree, setConfirmingFree] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -246,6 +251,7 @@ export default function BookingFlowPage() {
       });
       if (result.data) {
         setPendingBookingId(result.data.id);
+        setServerTotal(result.data.total_cents ?? null);
       }
     } catch {
       toast.error("Could not prepare your booking. Please try again.");
@@ -277,29 +283,72 @@ export default function BookingFlowPage() {
     }
   }
 
-  // Calculate adjusted total
+  // Display-only estimate; the server's figure (serverTotal) is what
+  // gets charged.
   const discountAmount = discountApplied ? discountApplied.valueCents : 0;
   const creditAmount = referralCreditApplied ? referralCredits.creditCents : 0;
   const adjustedTotal = Math.max(0, subtotal - discountAmount - creditAmount);
 
-  function handlePaymentSuccess(_paymentId: string) {
-    // Redeem discount code if used
-    if (discountApplied) {
-      import("@/lib/referrals/discount-actions")
-        .then(({ redeemDiscountCode }) => redeemDiscountCode(discountApplied.codeId))
-        .catch(() => toast.error("Discount code could not be redeemed. Please contact us."));
-    }
-    // Redeem referral credit if used
-    if (referralCreditApplied) {
-      const creditReward = referralCredits.rewards.find(
-        (r) => r.reward_type === "instant_discount" && r.reward_value_cents
+  // Stamp the current adjustments onto the booking server-side whenever
+  // they change; the response's total drives the charge (and the
+  // zero-dollar path).
+  useEffect(() => {
+    if (!pendingBookingId) return;
+    let cancelled = false;
+    (async () => {
+      const { applyBookingAdjustments } = await import(
+        "@/lib/bookings/booking-actions"
       );
-      if (creditReward) {
-        import("@/lib/referrals/actions")
-          .then(({ redeemReferralReward }) => redeemReferralReward(creditReward.id))
-          .catch(() => toast.error("Referral credit could not be redeemed. Please contact us."));
+      const freeReward = freeSessionApplied
+        ? referralCredits.rewards.find(
+            (r) => r.reward_type === "milestone_free_session"
+          )
+        : undefined;
+      const creditReward =
+        !freeReward && referralCreditApplied
+          ? referralCredits.rewards.find(
+              (r) => r.reward_type === "instant_discount" && r.reward_value_cents
+            )
+          : undefined;
+      const { data, error } = await applyBookingAdjustments(pendingBookingId, {
+        discountCode: discountApplied ? discountCode.trim() : null,
+        referralRewardId: freeReward?.id ?? creditReward?.id ?? null,
+      });
+      if (cancelled) return;
+      if (error || !data) {
+        toast.error(error ?? "Couldn't apply that — try again.");
+        setDiscountApplied(null);
+        setReferralCreditApplied(false);
+        setFreeSessionApplied(false);
+        return;
       }
+      setServerTotal(data.totalCents);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingBookingId, discountApplied, referralCreditApplied, freeSessionApplied]);
+
+  async function handleConfirmFreeBooking() {
+    if (!pendingBookingId) return;
+    setConfirmingFree(true);
+    const { confirmZeroDollarBooking } = await import(
+      "@/lib/bookings/booking-actions"
+    );
+    const { error } = await confirmZeroDollarBooking(pendingBookingId);
+    setConfirmingFree(false);
+    if (error) {
+      toast.error(error);
+      return;
     }
+    toast.success("Booking confirmed — no payment needed!");
+    setStep(4);
+  }
+
+  function handlePaymentSuccess(_paymentId: string) {
+    // Discount/credit redemption happens server-side inside
+    // confirmBookingPayment — nothing to fire from the browser.
     toast.success("Payment successful! Your booking is confirmed.");
     setStep(4);
   }
@@ -733,9 +782,26 @@ export default function BookingFlowPage() {
               <CreditCard className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-foreground">Pay with Card</h3>
             </div>
-            {pendingBookingId ? (
+            {pendingBookingId && serverTotal === 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Your discounts cover this booking in full — no card needed.
+                </p>
+                <Button
+                  onClick={handleConfirmFreeBooking}
+                  disabled={confirmingFree}
+                  className="w-full"
+                >
+                  {confirmingFree ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Confirm free booking"
+                  )}
+                </Button>
+              </div>
+            ) : pendingBookingId && serverTotal !== null ? (
               <SquarePayment
-                amountCents={freeSessionApplied ? 0 : adjustedTotal}
+                amountCents={serverTotal}
                 onPaymentSuccess={handlePaymentSuccess}
                 onPaymentError={handlePaymentError}
                 idempotencyKey={idempotencyKey}

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { updateSessionStatus } from "./actions";
 import { revalidatePath } from "next/cache";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
@@ -537,6 +538,55 @@ export async function getActiveSessionData(
         last_name: c.last_name,
         age_group: c.age_group,
       }));
+    }
+
+    // Seam S1 belt-and-braces: children on CONFIRMED parent bookings
+    // for this roster session join the list even if their enrolment
+    // link hasn't landed yet — a paid-up child must always be markable.
+    // Admin client: bookings/bookable_sessions carry no coach RLS, and
+    // the coach's ownership of this session was verified above.
+    try {
+      const bookingAdmin = createSupabaseAdmin();
+      const { data: bookable } = await bookingAdmin
+        .from("bookable_sessions")
+        .select("id")
+        .eq("session_id", sessionId)
+        .limit(1);
+      if (bookable && bookable.length > 0) {
+        const { data: confirmedBookings } = await bookingAdmin
+          .from("bookings")
+          .select("children_json")
+          .eq("bookable_session_id", bookable[0].id)
+          .eq("status", "confirmed");
+        const bookedIds = [
+          ...new Set(
+            (confirmedBookings ?? [])
+              .flatMap(
+                (b) => (b.children_json as { child_id?: string }[]) ?? []
+              )
+              .map((c) => c.child_id)
+              .filter((id): id is string => Boolean(id))
+          ),
+        ].filter((id) => !centreChildren.some((c) => c.id === id));
+        if (bookedIds.length > 0) {
+          const { data: bookedChildren } = await bookingAdmin
+            .from("children")
+            .select("id, first_name, last_name, age_group")
+            .in("id", bookedIds)
+            .eq("status", "active");
+          centreChildren = [
+            ...centreChildren,
+            ...(bookedChildren ?? []).map((c) => ({
+              id: c.id,
+              first_name: c.first_name,
+              last_name: c.last_name,
+              age_group: c.age_group,
+            })),
+          ].sort((a, b) => a.first_name.localeCompare(b.first_name));
+        }
+      }
+    } catch (bookErr) {
+      console.error("Booked-children union failed:", bookErr);
     }
 
     // Program (if linked)

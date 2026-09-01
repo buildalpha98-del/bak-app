@@ -148,6 +148,18 @@ export async function createBooking(
       return { data: null, error: "Session not found." };
     }
 
+    // Capacity guard (seam S8): the "Session full" gate was UI-only and
+    // bypassable by URL.
+    if (
+      session.max_capacity != null &&
+      session.current_bookings + input.children.length > session.max_capacity
+    ) {
+      return {
+        data: null,
+        error: "This session is full — join the waitlist instead.",
+      };
+    }
+
     const totalCents = session.price_cents * input.children.length;
 
     if (input.payment_type === "package_redemption") {
@@ -222,6 +234,10 @@ export async function createBooking(
         .update({ current_bookings: session.current_bookings + input.children.length })
         .eq("id", input.bookable_session_id);
 
+      // Seam S1: booked children must reach centre_children or the
+      // coach never sees them (see enrolBookedChildren).
+      await enrolBookedChildren(session, input.children);
+
       // Send booking confirmation email + notification (fire-and-forget)
       void sendBookingConfirmationNotifications(
         supabase,
@@ -262,6 +278,208 @@ export async function createBooking(
 // 4. Confirm booking payment
 // ============================================================
 
+/**
+ * Apply a discount code and/or a referral reward to a pending booking
+ * SERVER-SIDE (seam S6). The booking's total_cents becomes the single
+ * source of the charge amount — /api/payments/create rejects any
+ * client mismatch before charging. Redemption happens at confirmation,
+ * not here, so an abandoned checkout never burns the code.
+ */
+export async function applyBookingAdjustments(
+  bookingId: string,
+  input: { discountCode?: string | null; referralRewardId?: string | null }
+): Promise<{
+  data: { totalCents: number; discountCents: number } | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: "Not authenticated." };
+
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+    if (!parentProfile) return { data: null, error: "No parent profile." };
+
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("id, parent_id, status, children_json, bookable_sessions(price_cents)")
+      .eq("id", bookingId)
+      .maybeSingle();
+    if (!booking || booking.parent_id !== parentProfile.id) {
+      return { data: null, error: "Booking not found." };
+    }
+    if (booking.status !== "pending_payment") {
+      return { data: null, error: "This booking is no longer pending." };
+    }
+
+    const priceCents =
+      (booking.bookable_sessions as unknown as { price_cents: number } | null)
+        ?.price_cents ?? 0;
+    const childCount = (booking.children_json as unknown[]).length;
+    const subtotal = priceCents * childCount;
+
+    let discountCents = 0;
+    let discountCodeId: string | null = null;
+    let referralRewardId: string | null = null;
+
+    if (input.discountCode) {
+      const { validateDiscountCode } = await import(
+        "@/lib/referrals/discount-actions"
+      );
+      const result = await validateDiscountCode(input.discountCode.trim());
+      if (result.error || !result.data?.valid) {
+        return { data: null, error: result.error ?? "Invalid or expired discount code." };
+      }
+      discountCents += result.data.valueCents;
+      discountCodeId = result.data.codeId;
+    }
+
+    if (input.referralRewardId) {
+      const { data: reward } = await supabase
+        .from("referral_rewards")
+        .select("id, reward_type, reward_value_cents, status, parent_id")
+        .eq("id", input.referralRewardId)
+        .maybeSingle();
+      if (
+        !reward ||
+        reward.parent_id !== parentProfile.id ||
+        reward.status === "redeemed" ||
+        reward.status === "expired"
+      ) {
+        return { data: null, error: "That reward isn't available." };
+      }
+      // A milestone free session covers one child's price; credit
+      // rewards use their stored value.
+      discountCents +=
+        reward.reward_type === "milestone_free_session"
+          ? priceCents
+          : (reward.reward_value_cents ?? 0);
+      referralRewardId = reward.id;
+    }
+
+    discountCents = Math.min(discountCents, subtotal);
+    const totalCents = subtotal - discountCents;
+
+    const { error: updateError } = await supabase
+      .from("bookings")
+      .update({
+        total_cents: totalCents,
+        discount_cents: discountCents,
+        discount_code_id: discountCodeId,
+        referral_reward_id: referralRewardId,
+      })
+      .eq("id", bookingId)
+      .eq("status", "pending_payment");
+    if (updateError) return { data: null, error: updateError.message };
+
+    return { data: { totalCents, discountCents }, error: null };
+  } catch (err) {
+    console.error("applyBookingAdjustments error:", err);
+    return { data: null, error: "Failed to apply the discount." };
+  }
+}
+
+/**
+ * Confirm a booking whose (server-computed) total is zero — a full
+ * referral credit or a free-session milestone (seam S7). Records a $0
+ * payment row and runs the same confirmation chain as a card payment.
+ */
+export async function confirmZeroDollarBooking(
+  bookingId: string
+): Promise<{ error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { error: "Not authenticated." };
+
+    const { data: parentProfile } = await supabase
+      .from("parent_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+    if (!parentProfile) return { error: "No parent profile." };
+
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("id, parent_id, status, total_cents")
+      .eq("id", bookingId)
+      .maybeSingle();
+    if (!booking || booking.parent_id !== parentProfile.id) {
+      return { error: "Booking not found." };
+    }
+    if (booking.status !== "pending_payment") {
+      return { error: "This booking is no longer pending." };
+    }
+    if (booking.total_cents !== 0) {
+      return { error: "This booking still has an amount owing." };
+    }
+
+    const { data: paymentRecord, error: payErr } = await supabase
+      .from("payments")
+      .insert({
+        parent_id: parentProfile.id,
+        amount_cents: 0,
+        payment_type: "session_booking",
+        status: "completed",
+        booking_id: bookingId,
+      })
+      .select("id")
+      .single();
+    if (payErr || !paymentRecord) {
+      return { error: payErr?.message ?? "Failed to record the booking." };
+    }
+
+    return await confirmBookingPayment(bookingId, paymentRecord.id);
+  } catch (err) {
+    console.error("confirmZeroDollarBooking error:", err);
+    return { error: "Failed to confirm the booking." };
+  }
+}
+
+/**
+ * Seam S1: enrol booked children at the roster session's centre so
+ * they appear on the coach's attendance list and accrue ratings and
+ * insights. Only possible when the bookable session is linked to a
+ * roster session (session_id). Admin client — centre_children writes
+ * are staff-RLS'd and the caller has already verified ownership.
+ * Failures log; they must never fail the booking itself.
+ */
+async function enrolBookedChildren(
+  session: BookableSession,
+  children: BookingChildEntry[]
+): Promise<void> {
+  try {
+    const rosterSessionId = (session as unknown as Record<string, unknown>)
+      .session_id as string | null;
+    if (!rosterSessionId) return;
+    const admin = createSupabaseAdmin();
+    const { data: rosterSession } = await admin
+      .from("sessions")
+      .select("centre_id")
+      .eq("id", rosterSessionId)
+      .maybeSingle();
+    const childIds = children.map((c) => c.child_id).filter(Boolean);
+    if (!rosterSession?.centre_id || childIds.length === 0) return;
+    await admin.from("centre_children").upsert(
+      childIds.map((child_id) => ({
+        centre_id: rosterSession.centre_id,
+        child_id,
+      })),
+      { onConflict: "child_id,centre_id", ignoreDuplicates: true }
+    );
+  } catch (err) {
+    console.error("Booking→enrolment linking failed:", err);
+  }
+}
+
 export async function confirmBookingPayment(
   bookingId: string,
   paymentId: string
@@ -300,6 +518,29 @@ export async function confirmBookingPayment(
       .from("bookable_sessions")
       .update({ current_bookings: session.current_bookings + childCount })
       .eq("id", booking.bookable_session_id);
+
+    // Seam S1: booked children must reach centre_children or the coach
+    // never sees them (and they never accrue ratings or insights).
+    await enrolBookedChildren(session, booking.children_json as BookingChildEntry[]);
+
+    // Redeem the adjustments stamped on the booking (seam S6) — done
+    // here, server-side, at the moment payment actually succeeded —
+    // never in a fire-and-forget browser promise a closed tab loses.
+    const bookingRow = booking as Record<string, unknown>;
+    if (bookingRow.discount_code_id) {
+      const { redeemDiscountCode } = await import(
+        "@/lib/referrals/discount-actions"
+      );
+      void redeemDiscountCode(bookingRow.discount_code_id as string).catch(
+        console.error
+      );
+    }
+    if (bookingRow.referral_reward_id) {
+      const { redeemReferralReward } = await import("@/lib/referrals/actions");
+      void redeemReferralReward(bookingRow.referral_reward_id as string).catch(
+        console.error
+      );
+    }
 
     // Send booking confirmation email + notification (fire-and-forget)
     void sendBookingConfirmationNotifications(
