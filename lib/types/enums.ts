@@ -136,6 +136,7 @@ export type NotificationEventType =
   | "dm_received"
   | "shift_thread_message"
   | "centre_message_received"
+  | "session_change_requested"
   | "assessment_ready"
   | "assessment_reminder"
   | "rerostering_offer"
