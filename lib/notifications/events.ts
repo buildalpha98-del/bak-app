@@ -57,6 +57,9 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   // Centre director → staff message. Important (push + email) — the
   // client portal has no other path to reach ops, so this must land.
   centre_message_received: "important",
+  // Portal session-change request → ops. Important: it's a scheduling
+  // ask with a real-world deadline attached.
+  session_change_requested: "important",
 
   // Assessments
   assessment_ready: "important",

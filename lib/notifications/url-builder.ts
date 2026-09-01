@@ -37,6 +37,9 @@ export function getNotificationUrl(
       return `${base}/invoices`;
     case "feedback_rating":
       return `${base}/schedule/${entityId}`;
+    case "session_change":
+      // Portal change requests are resolved from the roster.
+      return `${base}/roster`;
     case "centre_message":
       // Staff-side inbox for client-portal messages — deep-link the thread.
       return `${base}/centre-messages?centre=${entityId}`;

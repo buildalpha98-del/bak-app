@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ClientSession } from "@/lib/client/portal-actions";
+import { SessionChangeRequestCard } from "@/components/client/session-change-request-card";
 
 interface ClientSessionDetailProps {
   session: ClientSession;
@@ -177,6 +178,11 @@ export function ClientSessionDetail({ session, centreId }: ClientSessionDetailPr
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Self-service change request — upcoming sessions only */}
+      {!["completed", "cancelled"].includes(session.status) && (
+        <SessionChangeRequestCard centreId={centreId} sessionId={session.id} />
       )}
     </div>
   );

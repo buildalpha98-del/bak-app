@@ -68,6 +68,11 @@ import {
   getClassOptionsForCentre,
   type ClassOption,
 } from "@/lib/schools/class-actions";
+import {
+  getChangeRequestsForSession,
+  resolveChangeRequest,
+  type PendingChangeRequest,
+} from "@/lib/sessions/change-request-actions";
 import type { ProgramListItem } from "@/lib/programs/actions";
 import type { SessionWithRelations } from "@/lib/sessions/actions";
 import type { SessionStatus } from "@/lib/types/enums";
@@ -172,6 +177,19 @@ export function SessionDetailSheet({
   // loaded. Self-gating: centres without groups return [] and the
   // section never renders.
   const [classOptions, setClassOptions] = useState<ClassOption[] | null>(null);
+
+  // Portal change requests (migration 086) — pending ones banner here.
+  const [changeRequests, setChangeRequests] = useState<PendingChangeRequest[]>([]);
+
+  useEffect(() => {
+    if (open && session?.id) {
+      getChangeRequestsForSession(session.id).then(({ data }) =>
+        setChangeRequests(data.filter((r) => r.status === "pending"))
+      );
+    } else {
+      setChangeRequests([]);
+    }
+  }, [open, session?.id]);
 
   useEffect(() => {
     if (open && session?.centre_id) {
@@ -297,6 +315,30 @@ export function SessionDetailSheet({
     );
     setRerosteringEvent(match ?? null);
     setStartingReroster(false);
+    onUpdate();
+  }
+
+  async function handleResolveChangeRequest(
+    requestId: string,
+    action: "approve" | "decline"
+  ) {
+    const note =
+      action === "decline"
+        ? (window.prompt("Add a short note for the centre (optional):") ?? undefined)
+        : undefined;
+    setSaving(true);
+    const { error } = await resolveChangeRequest(requestId, action, note);
+    setSaving(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    toast.success(
+      action === "approve"
+        ? "Request approved — the schedule has been updated."
+        : "Request declined — the centre has been notified."
+    );
+    setChangeRequests((prev) => prev.filter((r) => r.id !== requestId));
     onUpdate();
   }
 
@@ -493,6 +535,41 @@ export function SessionDetailSheet({
               </div>
             </div>
           )}
+
+          {/* Portal change requests — the centre asked for this change */}
+          {changeRequests.map((req) => (
+            <div
+              key={req.id}
+              className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3"
+            >
+              <p className="text-sm font-medium text-amber-800">
+                {req.requester_name ?? "The centre"} asked to{" "}
+                {req.request_type === "cancel"
+                  ? "cancel this session"
+                  : `move this session${req.requested_date ? ` to ${req.requested_date}` : ""}${req.requested_time ? ` at ${String(req.requested_time).slice(0, 5)}` : ""}`}
+              </p>
+              {req.reason && (
+                <p className="text-xs text-amber-700">&ldquo;{req.reason}&rdquo;</p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={saving}
+                  onClick={() => handleResolveChangeRequest(req.id, "approve")}
+                >
+                  {req.request_type === "cancel" ? "Approve & cancel" : "Approve & move"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => handleResolveChangeRequest(req.id, "decline")}
+                >
+                  Decline
+                </Button>
+              </div>
+            </div>
+          ))}
 
           {/* Details */}
           <div className="space-y-3">
