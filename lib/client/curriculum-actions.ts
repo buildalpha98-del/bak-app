@@ -2,6 +2,10 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireClientCentreAccess } from "@/lib/client/access";
+import {
+  ageBandToStageLabel,
+  stagesLabelForYearGroups,
+} from "@/lib/schools/year-groups";
 import Anthropic from "@anthropic-ai/sdk";
 import { AI_MODEL } from "@/lib/ai/model";
 
@@ -18,6 +22,11 @@ export interface WeeklyProgramEntry {
     program_content: Record<string, unknown> | null;
     outcomes: { framework: string; code: string; title: string; description: string }[];
     status: string;
+    /** NSW stage label. Exact from targeted classes; otherwise an
+     *  age-band range; null for childcare/unknown. */
+    stage: string | null;
+    /** Names of targeted classes ("3B", "3G") when the session is class-scoped. */
+    class_names: string[];
   }[];
 }
 
@@ -46,7 +55,7 @@ export async function getScopeAndSequence(
   const { data: sessions } = await supabase
     .from("sessions")
     .select(`
-      id, date, sport, duration_minutes, status, coach_id,
+      id, date, sport, duration_minutes, status, coach_id, school_class_ids,
       program_id, programs(content_json, skill_focus),
       profiles!sessions_coach_id_fkey(name)
     `)
@@ -54,6 +63,15 @@ export async function getScopeAndSequence(
     .eq("term_id", term.id)
     .not("status", "eq", "cancelled")
     .order("date", { ascending: true });
+
+  // Class lookup for stage labelling — one query for the whole term.
+  const { data: centreClasses } = await supabase
+    .from("school_classes")
+    .select("id, name, year_group")
+    .eq("centre_id", centreId);
+  const classById = new Map(
+    (centreClasses ?? []).map((c) => [c.id, { name: c.name, year_group: c.year_group }])
+  );
 
   // Group into weeks
   const weeks: WeeklyProgramEntry[] = [];
@@ -75,6 +93,18 @@ export async function getScopeAndSequence(
     const content = (session as any).programs?.content_json as Record<string, unknown> | null;
     const outcomes = content?.curriculumOutcomes as any[] ?? [];
 
+    // Stage: exact from targeted classes, else an age-band range from
+    // the programme, else null (childcare / unknown).
+    const targeted = ((session as any).school_class_ids as string[] | null ?? [])
+      .map((id) => classById.get(id))
+      .filter((c): c is { name: string; year_group: string } => !!c);
+    const stage =
+      targeted.length > 0
+        ? stagesLabelForYearGroups(targeted.map((c) => c.year_group))
+        : ageBandToStageLabel(
+            (content?.ageGroup ?? content?.age_group) as string | undefined
+          );
+
     week.sessions.push({
       id: session.id,
       date: session.date,
@@ -85,6 +115,8 @@ export async function getScopeAndSequence(
       program_content: content,
       outcomes,
       status: session.status,
+      stage,
+      class_names: targeted.map((c) => c.name),
     });
   }
 

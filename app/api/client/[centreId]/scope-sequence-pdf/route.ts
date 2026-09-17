@@ -115,6 +115,8 @@ export async function GET(
           coach_name: s.coach_name,
           duration_minutes: s.duration_minutes,
           program_title: s.program_title,
+          stage: s.stage,
+          class_names: s.class_names,
           outcomes: (s.outcomes ?? [])
             .filter((o) => o?.code)
             .map((o) => ({ code: o.code, title: o.title ?? "" })),

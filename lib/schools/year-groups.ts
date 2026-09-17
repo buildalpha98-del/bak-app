@@ -91,3 +91,28 @@ export function yearGroupToStage(yearGroup: string): NswStage | null {
   if (oldest <= 4) return "Stage 2";
   return "Stage 3";
 }
+
+/**
+ * Approximate stage label for a platform age band — the fallback when
+ * a session isn't targeted at specific classes. Bands straddle stage
+ * boundaries, so the label is a range, and "3-5" (pre-school) maps to
+ * none. Class-targeted sessions should use yearGroupToStage instead.
+ */
+export function ageBandToStageLabel(band: string | null | undefined): string | null {
+  switch ((band ?? "").trim()) {
+    case "5-8":
+      return "Early Stage 1 – Stage 1";
+    case "8-12":
+      return "Stage 2 – Stage 3";
+    default:
+      return null;
+  }
+}
+
+/** Combine class year groups into one stage label, syllabus order, deduped. */
+export function stagesLabelForYearGroups(yearGroups: string[]): string | null {
+  const stages = NSW_STAGES.filter((stage) =>
+    yearGroups.some((yg) => yearGroupToStage(yg) === stage)
+  );
+  return stages.length > 0 ? stages.join(", ") : null;
+}

@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { yearGroupToAgeBand, yearGroupSortKey } from "@/lib/schools/year-groups";
+import {
+  yearGroupToAgeBand,
+  yearGroupSortKey,
+  ageBandToStageLabel,
+  stagesLabelForYearGroups,
+} from "@/lib/schools/year-groups";
 
 describe("yearGroupToAgeBand", () => {
   it("maps K-2 to the junior band", () => {
@@ -50,5 +55,23 @@ describe("yearGroupSortKey", () => {
 
   it("pushes unparseable groups to the end", () => {
     expect(yearGroupSortKey("??")).toBe(99);
+  });
+});
+
+describe("ageBandToStageLabel", () => {
+  it("maps school bands to stage ranges and pre-school to none", () => {
+    expect(ageBandToStageLabel("8-12")).toBe("Stage 2 – Stage 3");
+    expect(ageBandToStageLabel("5-8")).toBe("Early Stage 1 – Stage 1");
+    expect(ageBandToStageLabel("3-5")).toBe(null);
+    expect(ageBandToStageLabel(null)).toBe(null);
+  });
+});
+
+describe("stagesLabelForYearGroups", () => {
+  it("dedupes and orders by syllabus stage", () => {
+    expect(stagesLabelForYearGroups(["4", "3"])).toBe("Stage 2");
+    expect(stagesLabelForYearGroups(["K", "5/6"])).toBe("Early Stage 1, Stage 3");
+    expect(stagesLabelForYearGroups(["3-5"])).toBe(null);
+    expect(stagesLabelForYearGroups([])).toBe(null);
   });
 });
