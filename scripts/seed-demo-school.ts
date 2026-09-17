@@ -1110,6 +1110,52 @@ const CLASSES: Array<{
   { name: "5/6M", year_group: "5/6", teacher_name: "Mr Malouf", studentIdxs: [3, 4, 5] },
 ];
 
+// The demo's Term 2 report was hand-seeded before per-class rollups
+// existed — top it up so the portal's By Class and By Stage (NSW
+// PDHPE) tables render. Idempotent: only writes when the section is
+// missing. Stats are consistent with the seeded classes.
+async function polishReportClassBreakdown(centreId: string) {
+  const { data: report } = await supabase
+    .from("centre_reports")
+    .select("id, content_json")
+    .eq("centre_id", centreId)
+    .eq("status", "sent")
+    .maybeSingle();
+  if (!report) return;
+  const content = (report.content_json ?? {}) as Record<string, unknown>;
+  if (Array.isArray(content.class_breakdown)) {
+    console.log("✓ Report already has class_breakdown");
+    return;
+  }
+  const { data: classes } = await supabase
+    .from("school_classes")
+    .select("id, name, year_group, teacher_name")
+    .eq("centre_id", centreId);
+  if (!classes || classes.length === 0) return;
+  const STATS: Record<string, { att: number; mark: number; delta: number }> = {
+    KM: { att: 94, mark: 3.4, delta: 0.4 },
+    "1G": { att: 91, mark: 3.6, delta: 0.5 },
+    "3B": { att: 95, mark: 3.9, delta: 0.7 },
+    "5/6M": { att: 89, mark: 4.1, delta: 0.6 },
+  };
+  const class_breakdown = classes.map((c) => ({
+    id: c.id,
+    name: c.name,
+    year_group: c.year_group,
+    teacher_name: c.teacher_name,
+    student_count: 3,
+    attendance_percentage: STATS[c.name]?.att ?? 90,
+    avg_mark: STATS[c.name]?.mark ?? 3.5,
+    mark_delta: STATS[c.name]?.delta ?? 0.5,
+  }));
+  const { error } = await supabase
+    .from("centre_reports")
+    .update({ content_json: { ...content, class_breakdown } })
+    .eq("id", report.id);
+  if (error) throw error;
+  console.log("+ Report topped up with class_breakdown (drives By Class + By Stage)");
+}
+
 async function seedClasses(centreId: string, studentIds: string[]) {
   const { count } = await supabase
     .from("school_classes")
@@ -1194,6 +1240,7 @@ async function main() {
   await seedReport(centreId, termIds, coachId);
   await seedInvoices(centreId);
   await seedClasses(centreId, studentIds);
+  await polishReportClassBreakdown(centreId);
   const programsBySport = await seedPrograms(coachId);
   await wireSessionsToCoachesAndPrograms(centreId, coachIds, programsBySport);
   await refreshSchedule(

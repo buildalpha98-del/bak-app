@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { Shield, Users } from "lucide-react";
+import { Download, Shield, Users } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getCentreCoaches } from "@/lib/client/staff-actions";
 import { StaffCard } from "@/components/client/staff-card";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function StaffVerificationPage({
   params,
@@ -19,6 +20,18 @@ export default async function StaffVerificationPage({
     redirect(`/client/${clientUser.centre_id}`);
 
   const coaches = await getCentreCoaches(centreId);
+
+  // Risk assessments + child-safety policies belong next to the WWCC
+  // cards — the compliance conversation happens on this page, not
+  // buried in Resources. Same visibility rules as the Resources page.
+  const supabase = await createSupabaseServerClient();
+  const { data: complianceDocs } = await supabase
+    .from("documents")
+    .select("id, title, file_url")
+    .eq("visibility", "all")
+    .in("category", ["risk_assessment", "policy"])
+    .order("category")
+    .order("title");
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -51,6 +64,31 @@ export default async function StaffVerificationPage({
           {coaches.map((coach) => (
             <StaffCard key={coach.id} coach={coach} />
           ))}
+        </div>
+      )}
+
+      {/* Policies & risk assessments — downloadable where the
+          compliance conversation actually happens. */}
+      {(complianceDocs ?? []).length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">
+            Policies &amp; risk assessments
+          </h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {complianceDocs!.map((doc) => (
+              <a
+                key={doc.id}
+                href={doc.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl border border-portal-200 bg-portal-50 px-3 py-2 text-sm font-medium text-portal-800 transition-colors hover:bg-portal-100"
+              >
+                <Download className="h-4 w-4 text-portal-600" />
+                {doc.title}
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </div>

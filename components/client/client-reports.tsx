@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ClientReport } from "@/lib/client/portal-actions";
 import type { ReportContentJson } from "@/lib/types/database";
+import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
 
 interface ClientReportsProps {
   reports: ClientReport[];
@@ -295,6 +296,83 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                               </tbody>
                             </table>
                           </div>
+
+                          {/* By stage — the PDHPE coordinator's view of
+                              the same numbers, derived on the fly. */}
+                          {(() => {
+                            const stages = stageSummaryFromClasses(
+                              content.class_breakdown
+                            );
+                            if (stages.length === 0) return null;
+                            return (
+                              <div className="mt-4">
+                                <h4 className="text-sm font-medium text-gray-700">
+                                  By Stage (NSW PDHPE)
+                                </h4>
+                                <div className="mt-2 overflow-x-auto">
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500">
+                                        <th className="py-1.5 pr-3 font-medium">Stage</th>
+                                        <th className="py-1.5 pr-3 text-right font-medium">
+                                          Students
+                                        </th>
+                                        <th className="py-1.5 pr-3 text-right font-medium">
+                                          Attendance
+                                        </th>
+                                        <th className="py-1.5 pr-3 text-right font-medium">
+                                          Avg mark
+                                        </th>
+                                        <th className="py-1.5 text-right font-medium">
+                                          Movement
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {stages.map((row) => (
+                                        <tr key={row.stage} className="border-b last:border-0">
+                                          <td className="py-1.5 pr-3 font-medium text-gray-900">
+                                            {row.stage}
+                                          </td>
+                                          <td className="py-1.5 pr-3 text-right text-gray-600">
+                                            {row.student_count}
+                                          </td>
+                                          <td className="py-1.5 pr-3 text-right text-gray-600">
+                                            {row.attendance_percentage != null
+                                              ? `${row.attendance_percentage}%`
+                                              : "—"}
+                                          </td>
+                                          <td className="py-1.5 pr-3 text-right text-gray-600">
+                                            {row.avg_mark != null
+                                              ? row.avg_mark.toFixed(1)
+                                              : "—"}
+                                          </td>
+                                          <td className="py-1.5 text-right">
+                                            {row.mark_delta != null ? (
+                                              <span
+                                                className={
+                                                  row.mark_delta > 0
+                                                    ? "text-green-600"
+                                                    : row.mark_delta < 0
+                                                      ? "text-red-600"
+                                                      : "text-gray-600"
+                                                }
+                                              >
+                                                {row.mark_delta > 0 ? "+" : ""}
+                                                {row.mark_delta.toFixed(1)}
+                                              </span>
+                                            ) : (
+                                              "—"
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
 

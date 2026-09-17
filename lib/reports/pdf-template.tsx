@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import type { ReportContentJson } from "@/lib/types/database";
+import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
 
 // ============================================================
 // Props
@@ -363,6 +364,59 @@ export function ReportPDF({
             </View>
           </>
         )}
+
+        {/* By stage — how a PDHPE coordinator reads the same numbers.
+            Derived from class_breakdown, so it appears for schools and
+            silently stays absent for childcare rooms. */}
+        {(() => {
+          const stages = stageSummaryFromClasses(content.class_breakdown);
+          if (stages.length === 0) return null;
+          return (
+            <>
+              <Text style={[styles.sectionTitle, { color: accent }]}>
+                By Stage (NSW PDHPE)
+              </Text>
+              <View style={styles.classTable}>
+                <View style={styles.classHeaderRow}>
+                  <Text style={[styles.classCellName, styles.classHeaderCell]}>
+                    Stage
+                  </Text>
+                  <Text style={[styles.classCell, styles.classHeaderCell]}>
+                    Students
+                  </Text>
+                  <Text style={[styles.classCell, styles.classHeaderCell]}>
+                    Attendance
+                  </Text>
+                  <Text style={[styles.classCell, styles.classHeaderCell]}>
+                    Avg Mark
+                  </Text>
+                  <Text style={[styles.classCell, styles.classHeaderCell]}>
+                    Movement
+                  </Text>
+                </View>
+                {stages.map((row) => (
+                  <View key={row.stage} style={styles.classRow}>
+                    <Text style={styles.classCellName}>{row.stage}</Text>
+                    <Text style={styles.classCell}>{row.student_count}</Text>
+                    <Text style={styles.classCell}>
+                      {row.attendance_percentage != null
+                        ? `${row.attendance_percentage}%`
+                        : "—"}
+                    </Text>
+                    <Text style={styles.classCell}>
+                      {row.avg_mark != null ? row.avg_mark.toFixed(1) : "—"}
+                    </Text>
+                    <Text style={styles.classCell}>
+                      {row.mark_delta != null
+                        ? `${row.mark_delta > 0 ? "+" : ""}${row.mark_delta.toFixed(1)}`
+                        : "—"}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          );
+        })()}
 
         {/* Highlights */}
         {content.highlights && content.highlights.length > 0 && (
