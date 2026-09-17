@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { BookOpen, CalendarDays } from "lucide-react";
+import { BookOpen, CalendarDays, Download } from "lucide-react";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getScopeAndSequence } from "@/lib/client/curriculum-actions";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -38,16 +38,30 @@ export default async function CurriculumPage({
   return (
     <div className="animate-fade-up space-y-6">
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="flex items-center gap-2 text-2xl font-bold font-heading text-foreground">
-          <BookOpen className="h-6 w-6 text-portal-500" />
-          {pageTitle}
-        </h1>
-        {termName && (
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CalendarDays className="h-4 w-4" />
-            {termName}
-          </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="flex items-center gap-2 text-2xl font-bold font-heading text-foreground">
+            <BookOpen className="h-6 w-6 text-portal-500" />
+            {pageTitle}
+          </h1>
+          {termName && (
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <CalendarDays className="h-4 w-4" />
+              {termName}
+            </p>
+          )}
+        </div>
+        {/* The written programme of record — full session plans and
+            outcome mapping as a filing-cabinet-ready PDF. */}
+        {weeks.length > 0 && (
+          <a
+            href={`/api/client/${centreId}/scope-sequence-pdf`}
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-portal-200 bg-portal-50 px-3 py-2 text-sm font-medium text-portal-800 transition-colors hover:bg-portal-100"
+          >
+            <Download className="h-4 w-4 text-portal-600" />
+            <span className="hidden sm:inline">Download {pageTitle} (PDF)</span>
+            <span className="sm:hidden">PDF</span>
+          </a>
         )}
       </div>
 
