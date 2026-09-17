@@ -99,7 +99,7 @@ export function ClientShell({
     <div
       // portal-brand-scope makes this element recompute the accent
       // scale from the inline --portal-brand (see globals.css).
-      className={`min-h-dvh bg-gray-50 ${brandStyle ? "portal-brand-scope" : ""}`}
+      className={`min-h-dvh portal-surface ${brandStyle ? "portal-brand-scope" : ""}`}
       style={brandStyle}
     >
       {/* Top bar */}

@@ -163,6 +163,29 @@
     --portal-800: color-mix(in oklab, var(--portal-brand) 68%, black);
 }
 
+/* Portal design language — the warmth from the 2026-09 pitch mock,
+   delivered at token level so every portal page inherits it without
+   component churn. .portal-surface sits UNCONDITIONALLY on the client
+   shell and shared-link roots (unlike .portal-brand-scope, which only
+   appears when a centre sets a brand colour): a warm cream canvas,
+   crisp white cards, and slightly stronger warm borders. Admin, ops,
+   coach and parent surfaces never carry the class and are untouched.
+   Dark mode keeps its own values — cream on dark would be a torch. */
+.portal-surface {
+    --portal-canvas: oklch(0.978 0.013 72);        /* warm cream */
+    --background: oklch(0.978 0.013 72);
+    --card: oklch(0.998 0.002 75);                  /* cards pop off the cream */
+    --border: oklch(0.885 0.02 68);                 /* warmer, a touch stronger */
+    background-color: var(--portal-canvas);
+}
+.dark .portal-surface {
+    --portal-canvas: oklch(0.145 0.014 45);
+    --background: oklch(0.145 0.014 45);
+    --card: oklch(0.19 0.014 45);
+    --border: oklch(1 0 0 / 10%);
+    background-color: var(--portal-canvas);
+}
+
 .dark {
     --background: oklch(0.145 0.014 45);
     --foreground: oklch(0.97 0.003 75);
