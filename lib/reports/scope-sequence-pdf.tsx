@@ -19,6 +19,9 @@ export interface ScopeSequencePdfData {
       coach_name: string;
       duration_minutes: number;
       program_title: string | null;
+      /** NSW stage label — exact from targeted classes, else band range. */
+      stage: string | null;
+      class_names: string[];
       outcomes: Array<{ code: string; title: string }>;
       objectives: string[];
       sections: Array<{
@@ -152,8 +155,16 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
                   {s.program_title ?? s.sport}
                 </Text>
                 <Text style={styles.sessionMeta}>
-                  {s.sport} · {s.date} · {s.duration_minutes} min · Coach{" "}
-                  {s.coach_name}
+                  {[
+                    s.sport,
+                    s.date,
+                    `${s.duration_minutes} min`,
+                    `Coach ${s.coach_name}`,
+                    s.stage,
+                    s.class_names.length > 0 ? s.class_names.join(", ") : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </Text>
 
                 {s.outcomes.length > 0 && (
