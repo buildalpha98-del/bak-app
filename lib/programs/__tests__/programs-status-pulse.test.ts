@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -16,6 +16,15 @@ import { getProgramsStatusPulse } from "../status-pulse-actions";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Every fixture date below is written relative to this instant. The
+  // original file only *documented* the date — the real calendar then
+  // walked the fixtures across the 60/90-day cut-offs and the suite
+  // started failing three months after it was written. Pin the clock.
+  vi.useFakeTimers({ now: new Date("2026-06-17T00:00:00Z"), toFake: ["Date"] });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 // ============================================================

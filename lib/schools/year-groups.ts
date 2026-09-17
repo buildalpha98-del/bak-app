@@ -57,3 +57,37 @@ export function yearGroupSortKey(yearGroup: string): number {
   const values = tokens.map((t) => (t === "K" ? 0 : Number(t))).filter(Number.isFinite);
   return values.length > 0 ? Math.min(...values) : 99;
 }
+
+// NSW PDHPE stages — how a school's PDHPE coordinator groups years:
+// K = Early Stage 1, 1-2 = Stage 1, 3-4 = Stage 2, 5-6 = Stage 3.
+export const NSW_STAGES = [
+  "Early Stage 1",
+  "Stage 1",
+  "Stage 2",
+  "Stage 3",
+] as const;
+export type NswStage = (typeof NSW_STAGES)[number];
+
+/**
+ * Map a class's year group to its NSW stage. Composites take the OLDER
+ * year's stage ("2/3" → Stage 2), matching the age-band rule. Childcare
+ * rooms store age bands ("3-5") — band-form input returns null so room
+ * data never masquerades as a syllabus stage. Unparseable → null.
+ */
+export function yearGroupToStage(yearGroup: string): NswStage | null {
+  const trimmed = yearGroup.trim();
+  if (/^\d+-\d+$/.test(trimmed)) return null; // age band, not a school year
+  const tokens = trimmed
+    .toUpperCase()
+    .split(/[^0-9K]+/)
+    .filter(Boolean);
+  const values = tokens
+    .map((t) => (t === "K" ? 0 : Number(t)))
+    .filter((n) => Number.isFinite(n) && n >= 0 && n <= 6);
+  if (values.length === 0) return null;
+  const oldest = Math.max(...values);
+  if (oldest === 0) return "Early Stage 1";
+  if (oldest <= 2) return "Stage 1";
+  if (oldest <= 4) return "Stage 2";
+  return "Stage 3";
+}

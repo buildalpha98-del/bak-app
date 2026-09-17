@@ -34,6 +34,16 @@ export interface ClientDashboardData {
     headcount: number | null;
     rating: number | null;
   }[];
+  /** Active term name — captions the week strip. Null between terms. */
+  termName: string | null;
+  /** The term at a glance: one entry per week that has a session. */
+  termWeeks: TermWeek[];
+}
+
+export interface TermWeek {
+  week: number;
+  sport: string | null;
+  status: "completed" | "current" | "upcoming";
 }
 
 export interface ClientSession {
@@ -176,7 +186,7 @@ export async function getClientDashboard(
     // Get active term
     const { data: activeTerm } = await supabase
       .from("terms")
-      .select("id")
+      .select("id, name, start_date")
       .eq("status", "active")
       .single();
 
@@ -276,6 +286,44 @@ export async function getClientDashboard(
 
     const coachProfile = nextSession?.profiles as unknown as { name: string } | null;
 
+    // Term at a glance — one chip per week that has a session. All
+    // date maths uses date strings parsed identically, so server and
+    // browser can never disagree (hydration rule).
+    const termWeeks: TermWeek[] = [];
+    if (activeTerm?.start_date) {
+      const { data: termSessions } = await supabase
+        .from("sessions")
+        .select("date, sport, status")
+        .eq("centre_id", centreId)
+        .eq("term_id", activeTerm.id)
+        .neq("status", "cancelled")
+        .order("date");
+
+      const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+      const start = new Date(activeTerm.start_date + "T00:00:00").getTime();
+      const todayIdx = Math.floor(
+        (new Date(today + "T00:00:00").getTime() - start) / WEEK_MS
+      );
+      const byWeek = new Map<number, { sports: string[]; }>();
+      for (const s of termSessions ?? []) {
+        const idx = Math.floor(
+          (new Date(s.date + "T00:00:00").getTime() - start) / WEEK_MS
+        );
+        if (idx < 0 || idx > 11) continue;
+        const entry = byWeek.get(idx) ?? { sports: [] };
+        if (!entry.sports.includes(s.sport)) entry.sports.push(s.sport);
+        byWeek.set(idx, entry);
+      }
+      for (const [idx, entry] of [...byWeek.entries()].sort((a, b) => a[0] - b[0])) {
+        termWeeks.push({
+          week: idx + 1,
+          sport: entry.sports[0] ?? null,
+          status:
+            idx === todayIdx ? "current" : idx < todayIdx ? "completed" : "upcoming",
+        });
+      }
+    }
+
     return {
       data: {
         centreName: centre?.name ?? "",
@@ -308,6 +356,8 @@ export async function getClientDashboard(
             rating: sessionRating,
           };
         }),
+        termName: activeTerm?.name ?? null,
+        termWeeks,
       },
       error: null,
     };

@@ -13,6 +13,7 @@ import {
   FileText,
   MessageSquare,
   BarChart3,
+  Check,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -218,6 +219,42 @@ export function ClientDashboard({
             <p className="mt-1 text-xs text-muted-foreground">
               Sessions will appear here once they are scheduled.
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Term at a glance — one chip per delivered/planned week. */}
+      {data.termWeeks.length > 0 && (
+        <Card className="rounded-2xl transition-shadow hover:shadow-md">
+          <CardContent className="p-4">
+            <div className="mb-2.5 flex items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold text-foreground">
+                Term at a glance
+              </p>
+              {data.termName && (
+                <span className="text-xs text-muted-foreground">{data.termName}</span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {data.termWeeks.map((w) => (
+                <span
+                  key={w.week}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                    w.status === "current"
+                      ? "border-portal-600 bg-portal-600 text-white"
+                      : w.status === "completed"
+                        ? "border-portal-200 bg-portal-50 text-portal-800"
+                        : "border-dashed text-muted-foreground"
+                  }`}
+                >
+                  W{w.week}
+                  {w.sport ? ` ${w.sport}` : ""}
+                  {w.status === "completed" && <Check className="h-3 w-3" />}
+                  {w.status === "current" && <span aria-hidden>·</span>}
+                  {w.status === "current" && "this week"}
+                </span>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
