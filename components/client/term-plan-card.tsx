@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, CheckCircle2, Trash2, PenLine } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle2, Trash2, PenLine, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import Link from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { SUBJECTS, subjectOf } from "@/lib/curriculum/subjects";
 import { yearGroupLabel } from "@/lib/schools/year-groups";
 import { setTermPlanStatus, deleteTermPlan, type SchoolTermPlan, type TermPlanTerm } from "@/lib/client/term-plan-actions";
 import type { TermPlanJson } from "@/lib/curriculum/term-plan";
+import { TermPlanEditor } from "@/components/client/term-plan-editor";
 
 /** The units of a plan, each week linking into the lesson generator. */
 export function TermPlanUnits({
@@ -99,6 +100,7 @@ export function TermPlanCard({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [, startTransition] = useTransition();
 
   function approve(next: "draft" | "approved") {
@@ -147,11 +149,32 @@ export function TermPlanCard({
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </span>
       </button>
-      {open && (
+      {open && editing && (
+        <div className="px-4 pb-4">
+          <TermPlanEditor
+            centreId={centreId}
+            planId={plan.id}
+            initial={plan.plan}
+            wasApproved={plan.status === "approved"}
+            weekCount={term?.weekCount ?? plan.plan.weekCount}
+            strandOptions={subjectOf(plan.subject).strandOptions}
+            outcomeOptions={plan.outcome_options}
+            onDone={() => {
+              setEditing(false);
+              router.refresh();
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        </div>
+      )}
+      {open && !editing && (
         <div className="space-y-4 px-4 pb-4">
           {plan.plan.rationale && <p className="text-sm text-muted-foreground">{plan.plan.rationale}</p>}
           <TermPlanUnits plan={plan.plan} centreId={centreId} classId={plan.class_id} subject={plan.subject} term={term} />
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="min-h-[40px]">
+              <Pencil className="mr-1.5 h-4 w-4" /> Edit plan
+            </Button>
             {canApprove && plan.status !== "approved" && (
               <Button size="sm" onClick={() => approve("approved")} className="min-h-[40px]">
                 <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve

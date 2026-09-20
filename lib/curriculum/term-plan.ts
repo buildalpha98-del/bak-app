@@ -1,6 +1,9 @@
 import type { CurriculumOutcome } from "@/lib/ai/types";
 import type { YearBand } from "./frameworks";
 import { validateOutcomes } from "./knowledge-base";
+import { structuralIssues, type TermPlanIssue } from "./term-plan-checks";
+
+export type { TermPlanIssue } from "./term-plan-checks";
 
 /**
  * A term plan (migration 096): the Scope & Sequence a class follows for
@@ -33,11 +36,6 @@ export interface TermPlanJson {
   rationale: string;
   weekCount: number;
   units: TermPlanUnit[];
-}
-
-export interface TermPlanIssue {
-  code: "no_units" | "week_gap" | "week_overlap" | "week_out_of_range" | "no_outcomes";
-  detail: string;
 }
 
 /**
@@ -105,32 +103,10 @@ export function normaliseTermPlan(
     if (iq.length) unit.inquiryQuestions = iq;
     const assessment = String(x.assessment ?? "").trim();
     if (assessment) unit.assessment = assessment;
-    if (unit.outcomes.length === 0) issues.push({ code: "no_outcomes", detail: `"${unit.title}" has no recognised outcomes.` });
     units.push(unit);
   }
   units.sort((a, b) => (a.weeks[0] ?? 99) - (b.weeks[0] ?? 99));
-
-  if (units.length === 0) issues.push({ code: "no_units", detail: "The plan has no units." });
-  // Units may run side by side when their strands differ (PDHPE's PDH
-  // and PE units share a term); within one strand a week belongs to one
-  // unit. Every week must belong to at least one unit.
-  const seen = new Map<string, string>();
-  const covered = new Set<number>();
-  for (const u of units) {
-    for (const w of u.weeks) {
-      if (w > weekCount) {
-        issues.push({ code: "week_out_of_range", detail: `"${u.title}" runs past week ${weekCount}.` });
-        continue;
-      }
-      const key = `${u.strand.toLowerCase()}#${w}`;
-      if (seen.has(key)) issues.push({ code: "week_overlap", detail: `Week ${w} is in both "${seen.get(key)}" and "${u.title}".` });
-      else seen.set(key, u.title);
-      covered.add(w);
-    }
-  }
-  const missing: number[] = [];
-  for (let w = 1; w <= weekCount; w++) if (!covered.has(w)) missing.push(w);
-  if (missing.length && units.length) issues.push({ code: "week_gap", detail: `No unit covers week${missing.length > 1 ? "s" : ""} ${missing.join(", ")}.` });
+  issues.push(...structuralIssues(units, weekCount));
 
   const plan: TermPlanJson = {
     title: String(r.title ?? "").trim() || `${opts.bandLabel} term plan`,

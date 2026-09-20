@@ -52,13 +52,24 @@ withdraw for the primary contact; delete), each week linking into the lesson
 generator prefilled with subject, class, term week and the week's focus. The
 Scope & Sequence PDF opens with a "Term overview" table per plan.
 
+**Editing in place** (added the same day on Jayden's instruction).
+`TermPlanEditor` on the plan card: title, rationale, and per unit the
+title, strand, from/to weeks, description, inquiry questions, assessment and
+each week's focus; outcomes are picked from the band's syllabus list
+(`outcome_options` on `SchoolTermPlan`), so a code cannot be typed wrong.
+Structural problems (`lib/curriculum/term-plan-checks.ts`, shared with the
+normaliser and safe for the client bundle) show live and disable Save.
+`updateTermPlan` re-runs the full normalisation server-side, refuses a plan
+with issues or unknown codes, and returns an approved plan to draft so the
+principal approves the new version. Teachers can edit only their classes'
+plans. Seam: `scripts/.rehearsal-p19-edit-plan.mjs`.
+
 ## Not in scope
 
 - Victorian sample plans: none are published; NSW structure is used and the
   prompt says so.
 - Secondary English/Maths samples (Stage 4–5): the Department publishes K–6
   only; the generator falls back to the Stage 3 sample.
-- Editing a plan in place after saving; regenerate and save again instead.
 - Auto-writing every week's lesson from a plan in one click (the "Write
   lesson" link is per week).
 

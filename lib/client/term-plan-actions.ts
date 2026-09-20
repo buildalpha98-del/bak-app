@@ -10,8 +10,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { isSubjectKey } from "@/lib/curriculum/subjects";
-import { isTermPlanJson, type TermPlanJson } from "@/lib/curriculum/term-plan";
+import { isTermPlanJson, normaliseTermPlan, type TermPlanJson } from "@/lib/curriculum/term-plan";
 import { termWeeks } from "@/lib/schools/term-weeks";
+import { frameworkOf, bandLabelForYearGroup, type YearBand } from "@/lib/curriculum/frameworks";
+import { outcomesFor } from "@/lib/curriculum/knowledge-base";
+import { yearGroupToStage } from "@/lib/schools/year-groups";
 
 export interface SchoolTermPlan {
   id: string;
@@ -25,6 +28,8 @@ export interface SchoolTermPlan {
   plan: TermPlanJson;
   author_name: string | null;
   updated_at: string;
+  /** The band's outcomes under the school's framework — the editor's picker. */
+  outcome_options: Array<{ code: string; statement: string }>;
 }
 
 export interface TermPlanTerm {
@@ -91,12 +96,18 @@ export async function getTermPlans(
       for (const a of authors ?? []) authorName.set(a.id, a.name);
     }
 
+    const framework = frameworkOf(clientUser.centre_framework);
     const plans: SchoolTermPlan[] = [];
     for (const p of data ?? []) {
       if (clientUser.class_ids.length > 0 && !clientUser.class_ids.includes(p.school_class_id)) continue;
       if (!isTermPlanJson(p.content_json)) continue;
       const cls = p.school_classes as unknown as { name: string; year_group: string };
+      const band = yearGroupToStage(cls.year_group);
+      const outcome_options = band && isSubjectKey(p.subject)
+        ? outcomesFor({ framework, subject: p.subject, bands: [band] }).map((o) => ({ code: o.code, statement: o.statement }))
+        : [];
       plans.push({
+        outcome_options,
         id: p.id,
         class_id: p.school_class_id,
         class_name: cls.name,
@@ -174,6 +185,80 @@ export async function saveTermPlan(
   } catch (err) {
     console.error("saveTermPlan error:", err);
     return { data: null, error: "Failed to save the term plan." };
+  }
+}
+
+/**
+ * A teacher's in-place edit of a saved plan. The edited plan is put
+ * through the same normalisation as a fresh draft (codes validated
+ * against the knowledge base, weeks checked); a plan with issues is
+ * refused. Any edit returns an approved plan to draft — the principal
+ * approves the new version.
+ */
+export async function updateTermPlan(
+  centreId: string,
+  planId: string,
+  plan: TermPlanJson
+): Promise<{ data: { status: "draft" } | null; error: string | null; issues?: string[] }> {
+  try {
+    const clientUser = await requirePortalUser(centreId);
+    if (!clientUser) return { data: null, error: "Not authorised." };
+    const supabase = await createSupabaseServerClient();
+    const { data: row } = await supabase
+      .from("term_plans")
+      .select("id, school_class_id, subject, term_id, status, school_classes!inner(year_group)")
+      .eq("id", planId)
+      .eq("centre_id", centreId)
+      .maybeSingle();
+    if (!row) return { data: null, error: "Plan not found." };
+    if (clientUser.class_ids.length > 0 && !clientUser.class_ids.includes(row.school_class_id)) {
+      return { data: null, error: "That class is not one of yours." };
+    }
+    const term = await getPlanningTerm(row.term_id);
+    if (!term) return { data: null, error: "The plan's term no longer exists." };
+    const yearGroup = (row.school_classes as unknown as { year_group: string }).year_group;
+    const band = yearGroupToStage(yearGroup);
+    if (!band) return { data: null, error: "That class has no year group." };
+    const framework = frameworkOf(clientUser.centre_framework);
+    const bands: YearBand[] = [band];
+    const { plan: clean, issues, unknownCodes } = normaliseTermPlan(plan, {
+      subject: row.subject,
+      bandLabel: bandLabelForYearGroup(framework, yearGroup) ?? band,
+      bands,
+      weekCount: term.weekCount,
+    });
+    if (issues.length > 0) {
+      return { data: null, error: "The plan still has gaps — fix them before saving.", issues: issues.map((i) => i.detail) };
+    }
+    if (unknownCodes.length > 0) {
+      return { data: null, error: `These codes are not in the syllabus for ${clean.bandLabel}: ${unknownCodes.join(", ")}.` };
+    }
+
+    const admin = createSupabaseAdmin();
+    const { error } = await admin
+      .from("term_plans")
+      .update({
+        title: clean.title,
+        content_json: clean as unknown as Record<string, unknown>,
+        status: "draft",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", planId)
+      .eq("centre_id", centreId);
+    if (error) throw error;
+
+    await admin.from("activity_log").insert({
+      user_id: null,
+      action: "term_plan_edited",
+      entity_type: "term_plan",
+      entity_id: planId,
+      metadata: { centre_id: centreId, client_user_id: clientUser.id, was_approved: row.status === "approved" },
+    });
+    revalidatePath(`/client/${centreId}/curriculum`);
+    return { data: { status: "draft" }, error: null };
+  } catch (err) {
+    console.error("updateTermPlan error:", err);
+    return { data: null, error: "Failed to save your changes." };
   }
 }
 
