@@ -309,7 +309,7 @@ export function ClientShell({
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
 
       <IosInstallPrompt />
