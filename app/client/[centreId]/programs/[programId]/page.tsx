@@ -8,6 +8,9 @@ import { getSchoolLesson } from "@/lib/client/lesson-actions";
 import { getSchoolQuizzes } from "@/lib/client/quiz-actions";
 import { QuizBuilder } from "@/components/client/quiz-builder";
 import { SchoolQuizzes } from "@/components/client/school-quizzes";
+import { LessonWeekPicker } from "@/components/client/lesson-week-picker";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { termWeeks } from "@/lib/schools/term-weeks";
 import { subjectOf } from "@/lib/curriculum/subjects";
 
 export default async function ClientProgramDetailPage({
@@ -29,7 +32,11 @@ export default async function ClientProgramDetailPage({
     // lessons (migration 091).
     const { data: lesson } = await getSchoolLesson(centreId, programId);
     if (!lesson) redirect(`/client/${centreId}/programs`);
-    const { data: quizzes } = await getSchoolQuizzes(centreId, lesson.id);
+    const supabase = await createSupabaseServerClient();
+    const [{ data: quizzes }, { data: term }] = await Promise.all([
+      getSchoolQuizzes(centreId, lesson.id),
+      supabase.from("terms").select("name, start_date, end_date").eq("status", "active").limit(1).maybeSingle(),
+    ]);
     return (
       <div className="animate-fade-up space-y-4">
         <Link
@@ -48,12 +55,23 @@ export default async function ClientProgramDetailPage({
               {lesson.author_name ? ` · written by ${lesson.author_name}` : ""}
             </p>
           </div>
-          <a
-            href={`/api/client/${centreId}/lesson-pdf?programId=${lesson.id}`}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 hover:bg-portal-600/10"
-          >
-            <Download className="h-4 w-4" /> Lesson plan PDF
-          </a>
+          <div className="flex flex-wrap gap-2">
+            {term && (
+              <LessonWeekPicker
+                centreId={centreId}
+                programId={lesson.id}
+                termName={term.name}
+                weeks={termWeeks(term.start_date, term.end_date)}
+                plannedFor={lesson.planned_for}
+              />
+            )}
+            <a
+              href={`/api/client/${centreId}/lesson-pdf?programId=${lesson.id}`}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 hover:bg-portal-600/10"
+            >
+              <Download className="h-4 w-4" /> Lesson plan PDF
+            </a>
+          </div>
         </div>
         <ProgramView content={lesson.content_json} />
         <QuizBuilder centreId={centreId} programId={lesson.id} lessonTitle={lesson.title} />

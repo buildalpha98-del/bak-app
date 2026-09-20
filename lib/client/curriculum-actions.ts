@@ -8,14 +8,23 @@ import {
 } from "@/lib/schools/year-groups";
 import Anthropic from "@anthropic-ai/sdk";
 import { AI_MODEL } from "@/lib/ai/model";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { yearGroupToStage } from "@/lib/schools/year-groups";
+import { weekNumberFor } from "@/lib/schools/term-weeks";
 
 export interface WeeklyProgramEntry {
   weekNumber: number;
   weekStartDate: string;
   sessions: {
     id: string;
+    /** A coaching session from the roster, or a teacher's own lesson
+     *  placed on the week (migration 093). */
+    kind: "session" | "lesson";
+    /** Migration 089 subject key ("pdhpe" for every roster session). */
+    subject: string;
     date: string;
     sport: string;
+    /** Coach name for sessions; the teacher who wrote a lesson. */
     coach_name: string;
     duration_minutes: number;
     program_title: string | null;
@@ -107,6 +116,8 @@ export async function getScopeAndSequence(
 
     week.sessions.push({
       id: session.id,
+      kind: "session",
+      subject: (content?.subject as string) ?? "pdhpe",
       date: session.date,
       sport: session.sport,
       coach_name: (session as any).profiles?.name ?? "TBC",
@@ -118,6 +129,53 @@ export async function getScopeAndSequence(
       stage,
       class_names: targeted.map((c) => c.name),
     });
+  }
+
+  // The school's own lessons placed on a week (migration 093). Read
+  // through the cookie client (RLS: own school); author names through
+  // the admin client because clients can't read other client_users.
+  const { data: lessons } = await supabase
+    .from("programs")
+    .select("id, subject, sport, duration_minutes, content_json, planned_for, school_class_id, created_by_client_user_id")
+    .eq("centre_id", centreId)
+    .not("planned_for", "is", null)
+    .gte("planned_for", term.start_date)
+    .lte("planned_for", term.end_date)
+    .order("planned_for", { ascending: true });
+  const authorIds = Array.from(new Set((lessons ?? []).map((l) => l.created_by_client_user_id).filter(Boolean))) as string[];
+  const { data: authors } = authorIds.length
+    ? await createSupabaseAdmin().from("client_users").select("id, name").in("id", authorIds)
+    : { data: [] as Array<{ id: string; name: string }> };
+  const authorName = new Map((authors ?? []).map((a) => [a.id, a.name]));
+
+  for (const lesson of lessons ?? []) {
+    const weekNum = weekNumberFor(term.start_date, term.end_date, lesson.planned_for as string);
+    if (weekNum === null) continue;
+    let week = weeks.find((w) => w.weekNumber === weekNum);
+    if (!week) {
+      const weekStart = new Date(termStart);
+      weekStart.setDate(termStart.getDate() + (weekNum - 1) * 7);
+      week = { weekNumber: weekNum, weekStartDate: weekStart.toISOString().slice(0, 10), sessions: [] };
+      weeks.push(week);
+    }
+    const content = lesson.content_json as Record<string, unknown> | null;
+    const cls = lesson.school_class_id ? classById.get(lesson.school_class_id) : undefined;
+    week.sessions.push({
+      id: lesson.id,
+      kind: "lesson",
+      subject: lesson.subject ?? "pdhpe",
+      date: lesson.planned_for as string,
+      sport: lesson.sport,
+      coach_name: (lesson.created_by_client_user_id && authorName.get(lesson.created_by_client_user_id)) || "Class teacher",
+      duration_minutes: lesson.duration_minutes,
+      program_title: ((content?.title as string) ?? lesson.sport) || null,
+      program_content: content,
+      outcomes: ((content?.curriculumOutcomes as any[]) ?? []),
+      status: "planned",
+      stage: cls ? yearGroupToStage(cls.year_group) : ageBandToStageLabel((content?.ageGroup ?? content?.age_group) as string | undefined),
+      class_names: cls ? [cls.name] : [],
+    });
+    week.sessions.sort((a, b) => a.date.localeCompare(b.date) || (a.kind === b.kind ? 0 : a.kind === "session" ? -1 : 1));
   }
 
   weeks.sort((a, b) => a.weekNumber - b.weekNumber);
