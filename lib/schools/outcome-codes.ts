@@ -52,7 +52,21 @@ export function normaliseOutcomes(
   const forStage = ofSubject.filter((o) =>
     o.code.toUpperCase().startsWith(subject.stagePrefixes[stage])
   );
-  return sortCodes(forStage.length > 0 ? forStage : ofSubject);
+  if (forStage.length > 0) return sortCodes(forStage);
+  // Nothing written for this stage (older programmes only listed up to
+  // Stage 2): show the nearest stage that has codes rather than every
+  // stage at once — a Year 6 card should never read PDe-1.
+  const order: NswStage[] = ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3"];
+  const idx = order.indexOf(stage);
+  const byDistance = order
+    .map((s, i) => ({ s, d: Math.abs(i - idx) }))
+    .filter((x) => x.s !== stage)
+    .sort((a, b) => a.d - b.d || (b.s > a.s ? 1 : -1));
+  for (const { s } of byDistance) {
+    const near = ofSubject.filter((o) => o.code.toUpperCase().startsWith(subject.stagePrefixes[s]));
+    if (near.length > 0) return sortCodes(near);
+  }
+  return sortCodes(ofSubject);
 }
 
 /** Split a mixed outcome list by subject, keyed by subject key. */

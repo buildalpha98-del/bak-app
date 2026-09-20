@@ -4,7 +4,7 @@
 // tick or cross each answer; the score fills in; save per student or
 // all at once. Print the student copy and answer key from here.
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Printer, X } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,17 @@ export function QuizMarking({ centreId, sheet }: { centreId: string; sheet: Quiz
   const [dirty, setDirty] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
+
+  // Leaving mid-save would drop the rows still in flight.
+  useEffect(() => {
+    if (saving.size === 0 && dirty.size === 0) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [saving.size, dirty.size]);
 
   function setMark(childId: string, qid: string, value: boolean | null) {
     setRows((prev) =>
@@ -61,8 +72,10 @@ export function QuizMarking({ centreId, sheet }: { centreId: string; sheet: Quiz
 
   function saveAll() {
     startTransition(async () => {
-      let ok = 0;
-      for (const r of rows.filter((r) => dirty.has(r.child.id))) if (await saveRow(r)) ok++;
+      // In parallel: sequential saves took ~1s each on production, and
+      // leaving the page mid-way silently dropped the rest.
+      const outcomes = await Promise.all(rows.filter((r) => dirty.has(r.child.id)).map((r) => saveRow(r)));
+      const ok = outcomes.filter(Boolean).length;
       if (ok > 0) toast.success(`${ok} ${ok === 1 ? "student" : "students"} marked.`);
       router.refresh();
     });

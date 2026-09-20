@@ -97,11 +97,11 @@ Use the Early Years Learning Framework (EYLF) V2.0 outcomes:
 Most sports sessions will align with Outcome 3 (wellbeing/physical), Outcome 1 (identity/confidence), and Outcome 4 (learning dispositions). Select 2-4 specific sub-outcomes that genuinely apply.
 
 ### For ages 5-8 and 8-12 (Schools):
-Use NSW PDHPE syllabus outcomes. Select 2-3 that apply:
-- PDe-1 / PD1-6 / PD2-6: Movement skill and performance
-- PDe-3 / PD1-7 / PD2-7: Active lifestyle and fitness
-- PDe-6 / PD1-9 / PD2-9: Safe practices
-- PDe-2 / PD1-3 / PD2-3: Interpersonal relationships / teamwork
+Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6; the 8-12 band spans Stage 2 AND Stage 3):
+- PDe-1 / PD1-6 / PD2-6 / PD3-4: Movement skill and performance
+- PDe-3 / PD1-7 / PD2-7 / PD3-5: Active lifestyle and fitness
+- PDe-6 / PD1-9 / PD2-9 / PD3-9: Safe practices
+- PDe-2 / PD1-3 / PD2-3 / PD3-3: Interpersonal relationships / teamwork
 
 ### Reflection Prompt
 Also generate a "reflectionPrompt" field: a 2-3 sentence paragraph that an educator could use as a starting point for their daily reflection or learning journal entry about this session. Write it in first person as if the educator is reflecting. Reference specific activities from the session and the curriculum outcomes addressed.
