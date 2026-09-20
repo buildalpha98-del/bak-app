@@ -37,7 +37,7 @@ export async function getClientAssessmentTasks(
 
     const { data: templates } = await supabase
       .from("assessment_templates")
-      .select("id, sport, age_group, skills_json, centre_id")
+      .select("id, subject, sport, age_group, skills_json, centre_id")
       .eq("term_id", activeTerm.id)
       .or(`centre_id.is.null,centre_id.eq.${centreId}`);
     if (!templates || templates.length === 0) return { data: [], error: null };
@@ -111,6 +111,7 @@ export async function getClientAssessmentTasks(
       });
       const base = {
         template_id: template.id,
+        subject: template.subject ?? "pdhpe",
         sport: template.sport,
         age_group: template.age_group as AgeGroup,
         skills: template.skills_json as AssessmentSkill[],
@@ -153,7 +154,7 @@ export async function getClientAssessmentTasks(
 
 export interface ClassAssessmentGrid {
   class: { id: string; name: string; year_group: string; teacher_name: string | null };
-  template: { id: string; sport: string; age_group: string; skills: AssessmentSkill[] };
+  template: { id: string; subject: string; sport: string; age_group: string; skills: AssessmentSkill[] };
   term: { id: string; name: string };
   rows: GridRow[];
 }
@@ -187,7 +188,7 @@ export async function getClassAssessmentGrid(
         .maybeSingle(),
       supabase
         .from("assessment_templates")
-        .select("id, sport, age_group, skills_json, centre_id, term_id")
+        .select("id, subject, sport, age_group, skills_json, centre_id, term_id")
         .eq("id", templateId)
         .maybeSingle(),
       supabase.from("terms").select("id, name").eq("status", "active").limit(1).maybeSingle(),
@@ -233,6 +234,7 @@ export async function getClassAssessmentGrid(
         class: { id: cls.id, name: cls.name, year_group: cls.year_group, teacher_name: cls.teacher_name },
         template: {
           id: template.id,
+          subject: template.subject ?? "pdhpe",
           sport: template.sport,
           age_group: template.age_group,
           skills: template.skills_json as AssessmentSkill[],

@@ -11,7 +11,8 @@ import {
   yearGroupToStage,
   type NswStage,
 } from "@/lib/schools/year-groups";
-import { normaliseOutcomes } from "@/lib/schools/outcome-codes";
+import { normaliseOutcomes, groupOutcomesBySubject } from "@/lib/schools/outcome-codes";
+import { subjectOf, outcomesHeading } from "@/lib/curriculum/subjects";
 
 // Per-student report card. Everything is read through the caller's
 // cookie client, so RLS decides what a portal user can put in a PDF —
@@ -73,7 +74,7 @@ export async function GET(
   const { data: ratings } = await supabase
     .from("skill_ratings")
     .select(
-      "term_id, ratings_json, assessed_at, notes, client_user_id, terms!inner(name, start_date, end_date), assessment_templates!inner(sport, centre_id)"
+      "term_id, ratings_json, assessed_at, notes, client_user_id, terms!inner(name, start_date, end_date), assessment_templates!inner(sport, centre_id, subject)"
     )
     .eq("child_id", childId)
     .order("assessed_at", { ascending: false });
@@ -108,8 +109,9 @@ export async function GET(
   const assessments: StudentReportData["assessments"] = scoped
     .filter((r) => r.term_id === reportTermId)
     .map((r) => {
-      const tpl = r.assessment_templates as unknown as { sport: string };
+      const tpl = r.assessment_templates as unknown as { sport: string; subject?: string | null };
       return {
+        subject: subjectOf(tpl.subject).key,
         sport: tpl.sport,
         assessedAt: fmtDate(r.assessed_at as string),
         // A teacher's note is written for the report card; a coach's
@@ -124,7 +126,7 @@ export async function GET(
         ),
       };
     })
-    .sort((a, b) => a.sport.localeCompare(b.sport));
+    .sort((a, b) => a.subject.localeCompare(b.subject) || a.sport.localeCompare(b.sport));
 
   // Attendance across the report term's completed sessions.
   const { data: termSessions } = await supabase
@@ -254,7 +256,15 @@ export async function GET(
     assessments,
     insight,
     coachComments,
-    outcomes: normaliseOutcomes(rawOutcomes, stage),
+    // One outcomes section per subject present in the attended
+    // programmes (migration 089); PDHPE-only students see one section.
+    outcomeSections: Array.from(groupOutcomesBySubject(rawOutcomes).entries())
+      .map(([subject, list]) => ({
+        heading: outcomesHeading(subject),
+        outcomes: normaliseOutcomes(list, stage, subject),
+      }))
+      .filter((s) => s.outcomes.length > 0)
+      .sort((a, b) => a.heading.localeCompare(b.heading)),
     branding: {
       mode: centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
       logoUrl: centre?.logo_url,

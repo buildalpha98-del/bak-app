@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
+import { subjectOf } from "@/lib/curriculum/subjects";
 
 // ============================================================
 // Per-student term report — the report card a school hands to
@@ -20,6 +21,8 @@ export interface StudentReportData {
   attendance: { attended: number; total: number } | null;
   /** Per sport: skills with this term's mark and, when known, last term's. */
   assessments: Array<{
+    /** Migration 089 subject key; "pdhpe" for every pre-089 row. */
+    subject: string;
     sport: string;
     assessedAt: string; // pre-formatted
     skills: Array<{ name: string; mark: number; previousMark: number | null }>;
@@ -33,7 +36,8 @@ export interface StudentReportData {
     recommendations: string[];
   } | null;
   coachComments: Array<{ text: string; coach: string | null; context: string }>;
-  outcomes: Array<{ code: string; title: string }>;
+  /** One section per subject, e.g. "NSW PDHPE Outcomes Addressed". */
+  outcomeSections: Array<{ heading: string; outcomes: Array<{ code: string; title: string }> }>;
   branding: { mode: "bak_branded" | "white_label"; logoUrl?: string | null };
   generatedDate: string;
 }
@@ -162,7 +166,11 @@ export function StudentReportPDF(data: StudentReportData) {
           </View>
           <View>
             <Text style={styles.meta}>{data.schoolName}</Text>
-            <Text style={styles.meta}>Sport &amp; Movement Report</Text>
+            <Text style={styles.meta}>
+              {data.assessments.every((a) => a.subject === "pdhpe")
+                ? "Sport & Movement Report"
+                : "Progress Report"}
+            </Text>
             <Text style={styles.meta}>{data.termName}</Text>
           </View>
         </View>
@@ -189,7 +197,11 @@ export function StudentReportPDF(data: StudentReportData) {
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statValue}>{data.assessments.length}</Text>
-                <Text style={styles.statLabel}>Sports formally assessed</Text>
+                <Text style={styles.statLabel}>
+                  {data.assessments.every((a) => a.subject === "pdhpe")
+                    ? "Sports formally assessed"
+                    : "Areas formally assessed"}
+                </Text>
               </View>
             </View>
           </>
@@ -200,8 +212,9 @@ export function StudentReportPDF(data: StudentReportData) {
           <>
             <Text style={styles.sectionTitle}>Skills &amp; Achievement</Text>
             {data.assessments.map((a) => (
-              <View key={a.sport} wrap={false}>
+              <View key={`${a.subject}-${a.sport}`} wrap={false}>
                 <Text style={styles.sportHeader}>
+                  {a.subject !== "pdhpe" ? `${subjectOf(a.subject).label} — ` : ""}
                   {a.sport}
                   <Text style={{ color: GREY, fontFamily: "Helvetica" }}>
                     {"   "}assessed {a.assessedAt}
@@ -304,17 +317,17 @@ export function StudentReportPDF(data: StudentReportData) {
 
         {/* Curriculum coverage — kept together so a lone outcome never
             orphans onto its own page */}
-        {data.outcomes.length > 0 && (
-          <View wrap={false}>
-            <Text style={styles.sectionTitle}>NSW PDHPE Outcomes Addressed</Text>
-            {data.outcomes.map((o) => (
+        {data.outcomeSections.map((section) => (
+          <View key={section.heading} wrap={false}>
+            <Text style={styles.sectionTitle}>{section.heading}</Text>
+            {section.outcomes.map((o) => (
               <View key={o.code} style={styles.outcomeRow}>
                 <Text style={styles.outcomeCode}>{o.code}</Text>
                 <Text style={styles.outcomeTitle}>{o.title}</Text>
               </View>
             ))}
           </View>
-        )}
+        ))}
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
