@@ -4,6 +4,7 @@ import { getChildDetail } from "@/lib/client/portal-actions";
 import { ChildDetailView } from "@/components/client/child-detail-view";
 import { getReportCardRelease } from "@/lib/client/report-card-actions";
 import { canOpenReportCard } from "@/lib/client/report-card-release";
+import { getReportCardComment } from "@/lib/client/report-card-comment-actions";
 
 export default async function ChildDetailPage({
   params,
@@ -19,9 +20,10 @@ export default async function ChildDetailPage({
   if (clientUser.is_authorised_for_current === false)
     redirect(`/client/${clientUser.centre_id}`);
 
-  const [{ data, error }, { data: release }] = await Promise.all([
+  const [{ data, error }, { data: release }, commentRes] = await Promise.all([
     getChildDetail(childId, centreId),
     getReportCardRelease(centreId),
+    clientUser.centre_type === "school" ? getReportCardComment(centreId, childId) : Promise.resolve({ data: null, canEdit: false, error: null }),
   ]);
 
   if (error || !data) {
@@ -35,6 +37,7 @@ export default async function ChildDetailPage({
       centreId={centreId}
       isSchool={isSchool}
       frameworkKey={clientUser.centre_framework}
+      reportCardComment={commentRes.data ? { comment: commentRes.data, canEdit: commentRes.canEdit } : null}
       reportCardAccess={
         canOpenReportCard({ isSchool, isPrimary: clientUser.is_primary, release })
           ? { open: true }

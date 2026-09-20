@@ -29,6 +29,10 @@ export interface StudentReportData {
     /** Written by the class teacher in the portal (migration 088). */
     teacherComment?: string | null;
   }>;
+  /** The class teacher's word on the term (migration 097). */
+  teacherComment?: string | null;
+  nextSteps?: string | null;
+  commentAuthor?: string | null;
   /** Teacher-marked knowledge checks this term (migration 092). */
   quizResults?: Array<{ title: string; subject: string; score: number; total: number }>;
   insight: {
@@ -259,6 +263,22 @@ export function StudentReportPDF(data: StudentReportData) {
               last term&apos;s.
             </Text>
           </>
+        )}
+
+        {/* Teacher's comment and next steps (migration 097) — what a
+            family reads first on a school report. */}
+        {(data.teacherComment || data.nextSteps) && (
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>Teacher&apos;s Comment</Text>
+            {data.teacherComment && <Text style={styles.bodyText}>{data.teacherComment}</Text>}
+            {data.nextSteps && (
+              <View style={{ marginTop: 4 }}>
+                <Text style={[styles.bodyText, { fontFamily: "Helvetica-Bold" }]}>Next steps</Text>
+                <Text style={styles.bodyText}>{data.nextSteps}</Text>
+              </View>
+            )}
+            {data.commentAuthor && <Text style={styles.commentMeta}>{data.commentAuthor}, class teacher</Text>}
+          </View>
         )}
 
         {/* Knowledge checks */}

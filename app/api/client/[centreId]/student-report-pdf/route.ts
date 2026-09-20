@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import {
@@ -286,8 +287,27 @@ export async function GET(
       return { title: q.title, subject: q.subject, score: r.score, total: r.total };
     });
 
+  // The class teacher's general comment and next steps (migration 097).
+  const { data: commentRow } = await supabase
+    .from("report_card_comments")
+    .select("general_comment, next_steps, author_client_user_id")
+    .eq("centre_id", centreId)
+    .eq("child_id", childId)
+    .eq("term_id", reportTermId)
+    .maybeSingle();
+  // The author's name: portal RLS exposes only the caller's own
+  // client_users row, so read the name with the admin client.
+  let commentAuthor: string | null = null;
+  if (commentRow?.author_client_user_id) {
+    const { data: author } = await createSupabaseAdmin().from("client_users").select("name").eq("id", commentRow.author_client_user_id).maybeSingle();
+    commentAuthor = author?.name ?? null;
+  }
+
   const data: StudentReportData = {
     studentName: `${child.first_name} ${child.last_name}`,
+    teacherComment: commentRow?.general_comment?.trim() || null,
+    nextSteps: commentRow?.next_steps?.trim() || null,
+    commentAuthor,
     className,
     teacherName,
     schoolName: centre?.name ?? "Your school",

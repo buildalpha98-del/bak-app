@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { subjectOf } from "@/lib/curriculum/subjects";
 import { quizBand } from "@/lib/quizzes/quiz-model";
 import type { FrameworkKey } from "@/lib/curriculum/frameworks";
+import { ReportCardCommentForm } from "@/components/client/report-card-comment-form";
+import type { ReportCardComment } from "@/lib/client/report-card-comment-actions";
 import Link from "@/components/ui/app-link";
 import {
   ArrowLeft,
@@ -33,6 +35,8 @@ interface ChildDetailViewProps {
   isSchool?: boolean;
   /** The school's curriculum (migration 095): names the quiz scale words. */
   frameworkKey?: FrameworkKey;
+  /** The class teacher's report-card comment for the active term (097). */
+  reportCardComment?: { comment: ReportCardComment; canEdit: boolean } | null;
   /** Report-card sign-off (migration 090): teachers and colleagues wait
    *  for the principal's release; the button explains instead of 403ing. */
   reportCardAccess?: { open: true } | { open: false; termName: string };
@@ -79,6 +83,7 @@ export function ChildDetailView({
   isSchool = false,
   reportCardAccess = { open: true },
   frameworkKey,
+  reportCardComment = null,
 }: ChildDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("attendance");
 
@@ -275,6 +280,11 @@ export function ChildDetailView({
       )}
       {activeTab === "assessments" && (
         <>
+          {isSchool && reportCardComment && (
+            <div className="mb-4">
+              <ReportCardCommentForm centreId={centreId} childId={child.id} comment={reportCardComment.comment} canEdit={reportCardComment.canEdit} />
+            </div>
+          )}
           <AssessmentsTab terms={assessmentsByTerm} />
           {child.quizResults && child.quizResults.length > 0 && (
             <div className="mt-4 rounded-2xl border bg-card p-4">
