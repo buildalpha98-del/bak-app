@@ -355,6 +355,25 @@ export async function markAttendance(params: {
         console.error("markAttendance upsert error:", error);
         return { success: false, error: error.message };
       }
+
+      // The client portal, term report, class rollups and Impact page all
+      // read session_attendances (migration 017); `attendance` above is
+      // the launch-era table only this dashboard writes. Without this
+      // mirror a school never sees the roll its coach marked.
+      const { error: mirrorError } = await supabase
+        .from("session_attendances")
+        .upsert(
+          params.attendanceRecords.map((r) => ({
+            session_id: params.sessionId,
+            child_id: r.childId,
+            present: r.status === "present",
+          })),
+          { onConflict: "session_id,child_id" }
+        );
+      if (mirrorError) {
+        console.error("markAttendance session_attendances mirror error:", mirrorError);
+        return { success: false, error: mirrorError.message };
+      }
     }
 
     // Handle walk-ins: insert attendance with walk_in status and parent info

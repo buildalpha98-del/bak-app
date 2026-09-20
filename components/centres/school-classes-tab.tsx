@@ -41,6 +41,7 @@ interface SchoolClassesTabProps {
 
 interface GroupVocab {
   group: string;
+  groups: string;
   Group: string;
   member: string;
   members: string;
@@ -54,6 +55,7 @@ interface GroupVocab {
 
 const SCHOOL_VOCAB: GroupVocab = {
   group: "class",
+  groups: "classes",
   Group: "Class",
   member: "student",
   members: "students",
@@ -67,6 +69,7 @@ const SCHOOL_VOCAB: GroupVocab = {
 
 const ROOM_VOCAB: GroupVocab = {
   group: "room",
+  groups: "rooms",
   Group: "Room",
   member: "child",
   members: "children",
@@ -132,7 +135,7 @@ export function SchoolClassesTab({
         <Card className="flex flex-col items-center justify-center p-10 text-center">
           <GraduationCap className="h-8 w-8 text-muted-foreground" />
           <h3 className="mt-3 text-sm font-medium text-foreground">
-            No {vocab.group}s yet
+            No {vocab.groups} yet
           </h3>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
             Add the {centreType === "school" ? "school" : "centre"}&apos;s{" "}

@@ -6,7 +6,12 @@ import {
   type StudentReportData,
 } from "@/lib/reports/student-pdf-template";
 import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
-import { yearGroupLabel } from "@/lib/schools/year-groups";
+import {
+  yearGroupLabel,
+  yearGroupToStage,
+  type NswStage,
+} from "@/lib/schools/year-groups";
+import { normaliseOutcomes } from "@/lib/schools/outcome-codes";
 
 // Per-student report card. Everything is read through the caller's
 // cookie client, so RLS decides what a portal user can put in a PDF —
@@ -146,6 +151,7 @@ export async function GET(
   // Class + teacher (schools; null for childcare).
   let className: string | null = null;
   let teacherName: string | null = null;
+  let stage: NswStage | null = null;
   const { data: membership } = await supabase
     .from("school_class_children")
     .select("school_classes!inner(name, year_group, teacher_name, centre_id)")
@@ -162,6 +168,7 @@ export async function GET(
   if (cls) {
     className = `${cls.name} — ${yearGroupLabel(cls.year_group)}`;
     teacherName = cls.teacher_name;
+    stage = yearGroupToStage(cls.year_group);
   }
 
   // Latest development insight (report term first, else most recent).
@@ -221,7 +228,7 @@ export async function GET(
         .map((s) => s.program_id as string)
     )
   );
-  const outcomes = new Map<string, string>();
+  const rawOutcomes: Array<{ code?: string; title?: string }> = [];
   if (programIds.length > 0) {
     const { data: programs } = await supabase
       .from("programs")
@@ -230,9 +237,7 @@ export async function GET(
     for (const p of programs ?? []) {
       const list = ((p.content_json as Record<string, unknown>)?.curriculumOutcomes ??
         []) as Array<{ code?: string; title?: string }>;
-      for (const o of list) {
-        if (o.code && !outcomes.has(o.code)) outcomes.set(o.code, o.title ?? "");
-      }
+      rawOutcomes.push(...list);
     }
   }
 
@@ -246,9 +251,7 @@ export async function GET(
     assessments,
     insight,
     coachComments,
-    outcomes: Array.from(outcomes.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([code, title]) => ({ code, title })),
+    outcomes: normaliseOutcomes(rawOutcomes, stage),
     branding: {
       mode: centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
       logoUrl: centre?.logo_url,
