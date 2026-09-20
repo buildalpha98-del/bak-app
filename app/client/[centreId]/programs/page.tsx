@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientPrograms } from "@/lib/client/portal-actions";
 import { ClientPrograms } from "@/components/client/client-programs";
+import { getSchoolLessons } from "@/lib/client/lesson-actions";
+import { SchoolLessons } from "@/components/client/school-lessons";
 
 export default async function ClientProgramsPage({
   params,
@@ -17,7 +19,11 @@ export default async function ClientProgramsPage({
   if (clientUser.is_authorised_for_current === false)
     redirect(`/client/${clientUser.centre_id}`);
 
-  const { data, error } = await getClientPrograms(centreId);
+  const isSchool = clientUser.centre_type === "school";
+  const [{ data, error }, lessonsRes] = await Promise.all([
+    getClientPrograms(centreId),
+    isSchool ? getSchoolLessons(centreId) : Promise.resolve({ data: [], error: null }),
+  ]);
 
   if (error) {
     return (
@@ -30,5 +36,10 @@ export default async function ClientProgramsPage({
     );
   }
 
-  return <ClientPrograms programs={data} centreId={centreId} />;
+  return (
+    <div className="space-y-10">
+      {isSchool && <SchoolLessons centreId={centreId} lessons={lessonsRes.data} />}
+      <ClientPrograms programs={data} centreId={centreId} />
+    </div>
+  );
 }
