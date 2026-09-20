@@ -10,6 +10,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { scopeClasses, isClassScoped, canRateChild } from "@/lib/client/assessment-scope";
+import { buildGridRows, type GridRow, type GridRatingRow } from "@/lib/client/assessment-grid";
 import type { CoachAssessmentTask } from "@/lib/assessments/actions";
 import type { AssessmentSkill, SkillRatingEntry } from "@/lib/types/database";
 import type { AgeGroup } from "@/lib/types/enums";
@@ -147,6 +148,103 @@ export async function getClientAssessmentTasks(
   } catch (err) {
     console.error("getClientAssessmentTasks error:", err);
     return { data: [], error: "Failed to load assessments." };
+  }
+}
+
+export interface ClassAssessmentGrid {
+  class: { id: string; name: string; year_group: string; teacher_name: string | null };
+  template: { id: string; sport: string; age_group: string; skills: AssessmentSkill[] };
+  term: { id: string; name: string };
+  rows: GridRow[];
+}
+
+/**
+ * Students × skills for one class and one template this term. The
+ * grid is how a teacher fills in a whole class in minutes; the
+ * one-by-one flow stays for phones.
+ */
+export async function getClassAssessmentGrid(
+  centreId: string,
+  classId: string,
+  templateId: string
+): Promise<{ data: ClassAssessmentGrid | null; error: string | null }> {
+  try {
+    const { data: clientUser, error: cuError } = await getCurrentClientUser(centreId);
+    if (cuError || !clientUser || clientUser.is_authorised_for_current === false) {
+      return { data: null, error: "Not authorised." };
+    }
+    if (isClassScoped(clientUser.class_ids) && !clientUser.class_ids.includes(classId)) {
+      return { data: null, error: "This class is not one of yours." };
+    }
+    const supabase = await createSupabaseServerClient();
+
+    const [{ data: cls }, { data: template }, { data: activeTerm }] = await Promise.all([
+      supabase
+        .from("school_classes")
+        .select("id, name, year_group, teacher_name, centre_id")
+        .eq("id", classId)
+        .eq("centre_id", centreId)
+        .maybeSingle(),
+      supabase
+        .from("assessment_templates")
+        .select("id, sport, age_group, skills_json, centre_id, term_id")
+        .eq("id", templateId)
+        .maybeSingle(),
+      supabase.from("terms").select("id, name").eq("status", "active").limit(1).maybeSingle(),
+    ]);
+    if (!cls) return { data: null, error: "Class not found." };
+    if (!template || (template.centre_id && template.centre_id !== centreId)) {
+      return { data: null, error: "Assessment not found." };
+    }
+    if (!activeTerm || template.term_id !== activeTerm.id) {
+      return { data: null, error: "This assessment is not for the current term." };
+    }
+
+    const { data: members } = await supabase
+      .from("school_class_children")
+      .select("child_id")
+      .eq("class_id", classId)
+      .is("ended_at", null);
+    const memberIds = (members ?? []).map((m) => m.child_id);
+    const { data: students } = memberIds.length
+      ? await supabase
+          .from("children")
+          .select("id, first_name, last_name, age_group")
+          .in("id", memberIds)
+          .eq("age_group", template.age_group)
+          .eq("status", "active")
+          .order("first_name")
+      : { data: [] as Array<{ id: string; first_name: string; last_name: string; age_group: string }> };
+
+    const { data: ratings } = students && students.length
+      ? await supabase
+          .from("skill_ratings")
+          .select("child_id, coach_id, client_user_id, ratings_json, notes")
+          .eq("assessment_template_id", templateId)
+          .eq("term_id", activeTerm.id)
+          .in(
+            "child_id",
+            students.map((s) => s.id)
+          )
+      : { data: [] as GridRatingRow[] };
+
+    return {
+      data: {
+        class: { id: cls.id, name: cls.name, year_group: cls.year_group, teacher_name: cls.teacher_name },
+        template: {
+          id: template.id,
+          sport: template.sport,
+          age_group: template.age_group,
+          skills: template.skills_json as AssessmentSkill[],
+        },
+        term: activeTerm,
+        rows: buildGridRows(students ?? [], (ratings ?? []) as GridRatingRow[], clientUser.id),
+      },
+      error: null,
+    };
+  } catch (err) {
+    console.error("getClassAssessmentGrid error:", err);
+    return { data: null, error: "Failed to load the class grid." };
   }
 }
 
