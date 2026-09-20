@@ -104,6 +104,18 @@ export interface ChildDetail {
   insights: ChildInsightSummary[];
   /** Coach observations explicitly shared with the centre (migration 079). */
   observations: SharedObservation[];
+  /** Teacher-marked knowledge checks (migration 092). */
+  quizResults: ChildQuizResult[];
+}
+
+export interface ChildQuizResult {
+  quiz_id: string;
+  title: string;
+  subject: string;
+  focus: string;
+  score: number;
+  total: number;
+  marked_at: string;
 }
 
 export interface SharedObservation {
@@ -799,6 +811,19 @@ export async function getChildDetail(
       };
     });
 
+    // Knowledge checks marked by the school's teachers (RLS: own centre).
+    const { data: quizRows } = await supabase
+      .from("quiz_results")
+      .select("quiz_id, score, total, marked_at, quizzes!inner(title, subject, focus, centre_id)")
+      .eq("child_id", childId)
+      .order("marked_at", { ascending: false });
+    const quizResults: ChildQuizResult[] = (quizRows ?? [])
+      .filter((r) => (r.quizzes as unknown as { centre_id: string }).centre_id === centreId)
+      .map((r) => {
+        const q = r.quizzes as unknown as { title: string; subject: string; focus: string };
+        return { quiz_id: r.quiz_id, title: q.title, subject: q.subject, focus: q.focus, score: r.score, total: r.total, marked_at: r.marked_at };
+      });
+
     return {
       data: {
         id: child.id,
@@ -810,6 +835,7 @@ export async function getChildDetail(
         assessments,
         insights,
         observations,
+        quizResults,
       },
       error: null,
     };

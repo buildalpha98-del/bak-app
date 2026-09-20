@@ -5,6 +5,9 @@ import { ProgramView } from "@/components/programs/program-view";
 import Link from "@/components/ui/app-link";
 import { ArrowLeft, Download } from "lucide-react";
 import { getSchoolLesson } from "@/lib/client/lesson-actions";
+import { getSchoolQuizzes } from "@/lib/client/quiz-actions";
+import { QuizBuilder } from "@/components/client/quiz-builder";
+import { SchoolQuizzes } from "@/components/client/school-quizzes";
 import { subjectOf } from "@/lib/curriculum/subjects";
 
 export default async function ClientProgramDetailPage({
@@ -26,6 +29,7 @@ export default async function ClientProgramDetailPage({
     // lessons (migration 091).
     const { data: lesson } = await getSchoolLesson(centreId, programId);
     if (!lesson) redirect(`/client/${centreId}/programs`);
+    const { data: quizzes } = await getSchoolQuizzes(centreId, lesson.id);
     return (
       <div className="animate-fade-up space-y-4">
         <Link
@@ -52,6 +56,8 @@ export default async function ClientProgramDetailPage({
           </a>
         </div>
         <ProgramView content={lesson.content_json} />
+        <QuizBuilder centreId={centreId} programId={lesson.id} lessonTitle={lesson.title} />
+        {quizzes.length > 0 && <SchoolQuizzes centreId={centreId} quizzes={quizzes} />}
       </div>
     );
   }
