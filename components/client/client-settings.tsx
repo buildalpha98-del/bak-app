@@ -29,6 +29,7 @@ import {
   getCentreColleagues,
 } from "@/lib/client/actions";
 import type { ClientUserCentre, PortalColleague } from "@/lib/client/actions";
+import { describeTeamRole, type TeamClass } from "@/lib/client/portal-team";
 
 interface SharedLink {
   id: string;
@@ -50,6 +51,9 @@ interface ClientSettingsProps {
   currentUserName?: string;
   /** Portal users at this centre — primary contacts manage the list. */
   colleagues?: PortalColleague[];
+  /** Schools can invite class teachers scoped to their classes (088). */
+  isSchool?: boolean;
+  schoolClasses?: TeamClass[];
 }
 
 function formatDate(dateStr: string): string {
@@ -80,6 +84,8 @@ export function ClientSettings({
   linkedCentres = [],
   currentUserName = "",
   colleagues: initialColleagues = [],
+  isSchool = false,
+  schoolClasses = [],
 }: ClientSettingsProps) {
   const [links, setLinks] = useState(initialLinks);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -161,7 +167,12 @@ export function ClientSettings({
 
       {/* Team access — primary contacts invite and remove colleagues. */}
       <div className="mt-6">
-        <TeamAccessCard centreId={centreId} initialColleagues={initialColleagues} />
+        <TeamAccessCard
+          centreId={centreId}
+          initialColleagues={initialColleagues}
+          isSchool={isSchool}
+          schoolClasses={schoolClasses}
+        />
       </div>
 
       {/* Your linked centres — visible whenever the user has any centre access. */}
@@ -401,18 +412,37 @@ function YourDetailsCard({ initialName }: { initialName: string }) {
 function TeamAccessCard({
   centreId,
   initialColleagues,
+  isSchool,
+  schoolClasses,
 }: {
   centreId: string;
   initialColleagues: PortalColleague[];
+  isSchool: boolean;
+  schoolClasses: TeamClass[];
 }) {
   const [colleagues, setColleagues] = useState(initialColleagues);
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"colleague" | "teacher">("colleague");
+  const [inviteClassIds, setInviteClassIds] = useState<string[]>([]);
   const [isInviting, startInviteTransition] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const canInviteTeachers = isSchool && schoolClasses.length > 0;
 
   function refresh() {
     getCentreColleagues(centreId).then(({ data }) => setColleagues(data));
+  }
+
+  function toggleClass(id: string) {
+    setInviteClassIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id];
+      // A lone class with a known teacher fills the name in.
+      if (!inviteName.trim() && next.length === 1) {
+        const cls = schoolClasses.find((c) => c.id === next[0]);
+        if (cls?.teacher_name) setInviteName(cls.teacher_name);
+      }
+      return next;
+    });
   }
 
   function handleInvite() {
@@ -420,7 +450,8 @@ function TeamAccessCard({
       const { error } = await invitePortalColleague(
         centreId,
         inviteName,
-        inviteEmail
+        inviteEmail,
+        inviteRole === "teacher" ? { role: "teacher", classIds: inviteClassIds } : undefined
       );
       if (error) {
         toast.error(error);
@@ -429,6 +460,7 @@ function TeamAccessCard({
       toast.success(`Invite sent to ${inviteEmail.trim()}.`);
       setInviteName("");
       setInviteEmail("");
+      setInviteClassIds([]);
       refresh();
     });
   }
@@ -472,6 +504,11 @@ function TeamAccessCard({
                   {c.email}
                 </span>
               </span>
+              {c.role === "teacher" && !c.is_primary && (
+                <Badge variant="outline" className="shrink-0 max-w-[12rem] truncate">
+                  {describeTeamRole(c, schoolClasses)}
+                </Badge>
+              )}
               {c.is_primary ? (
                 <Badge
                   variant="outline"
@@ -498,8 +535,58 @@ function TeamAccessCard({
         <div className="mt-4 rounded-xl border bg-muted/30 p-3">
           <p className="flex items-center gap-1.5 text-xs font-medium text-foreground">
             <Mail className="h-3.5 w-3.5 text-portal-600" />
-            Invite a colleague
+            {canInviteTeachers ? "Invite a colleague or class teacher" : "Invite a colleague"}
           </p>
+          {canInviteTeachers && (
+            <div className="mt-2 space-y-2">
+              <div className="flex gap-2" role="radiogroup" aria-label="Access type">
+                {(
+                  [
+                    ["colleague", "Colleague — sees everything"],
+                    ["teacher", "Class teacher — rates their classes"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={inviteRole === value}
+                    onClick={() => setInviteRole(value)}
+                    className={`min-h-[44px] rounded-xl border px-3 text-sm ${
+                      inviteRole === value
+                        ? "border-portal-600 bg-portal-50 text-portal-800"
+                        : "border-input bg-card text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {inviteRole === "teacher" && (
+                <div className="flex flex-wrap gap-1.5" aria-label="Classes">
+                  {schoolClasses.map((cls) => {
+                    const on = inviteClassIds.includes(cls.id);
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => toggleClass(cls.id)}
+                        className={`min-h-[36px] rounded-full border px-3 text-xs font-medium ${
+                          on
+                            ? "border-portal-600 bg-portal-600 text-white"
+                            : "border-input bg-card text-foreground"
+                        }`}
+                      >
+                        {cls.name}
+                        {cls.teacher_name ? ` · ${cls.teacher_name}` : ""}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder="Their name"
@@ -519,7 +606,10 @@ function TeamAccessCard({
             <Button
               onClick={handleInvite}
               disabled={
-                isInviting || !inviteName.trim() || !inviteEmail.trim()
+                isInviting ||
+                !inviteName.trim() ||
+                !inviteEmail.trim() ||
+                (inviteRole === "teacher" && inviteClassIds.length === 0)
               }
               className="min-h-[44px] shrink-0 rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
             >
@@ -527,8 +617,9 @@ function TeamAccessCard({
             </Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            They'll get a sign-in link by email with the same view of the
-            portal as you, minus these settings.
+            {inviteRole === "teacher"
+              ? "They'll get a sign-in link by email and an Assessments page for their classes — marks go straight onto report cards."
+              : "They'll get a sign-in link by email with the same view of the portal as you, minus these settings."}
           </p>
         </div>
       </CardContent>

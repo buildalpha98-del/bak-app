@@ -6,6 +6,8 @@ import { sendEmail } from "@/lib/email/send";
 import { clientInvitationEmail } from "@/lib/client/email-templates";
 import { getBaseUrl, getAuthCallbackUrl } from "@/lib/utils/base-url";
 import type { ClientUser, SharedLink } from "@/lib/types/database";
+import { validClassIds, type TeamClass } from "@/lib/client/portal-team";
+import { yearGroupSortKey } from "@/lib/schools/year-groups";
 
 // ============================================================
 // Types
@@ -1084,6 +1086,10 @@ export interface PortalColleague {
   name: string;
   email: string;
   is_primary: boolean;
+  /** "primary" | "teacher" (migration 088). */
+  role: string;
+  /** Teacher class scope; empty = every class. */
+  class_ids: string[];
   last_login: string | null;
   created_at: string;
 }
@@ -1156,6 +1162,31 @@ export async function updateOwnClientDetails(
   }
 }
 
+/** The school's current-year classes, through the cookie client (RLS). */
+export async function getPortalSchoolClasses(
+  centreId: string
+): Promise<{ data: TeamClass[]; error: string | null }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("school_classes")
+      .select("id, name, year_group, school_year, teacher_name")
+      .eq("centre_id", centreId);
+    if (error) return { data: [], error: error.message };
+    const latestYear = data && data.length ? Math.max(...data.map((c) => c.school_year)) : null;
+    return {
+      data: (data ?? [])
+        .filter((c) => c.school_year === latestYear)
+        .map((c) => ({ id: c.id, name: c.name, year_group: c.year_group, teacher_name: c.teacher_name }))
+        .sort((a, b) => yearGroupSortKey(a.year_group) - yearGroupSortKey(b.year_group) || a.name.localeCompare(b.name)),
+      error: null,
+    };
+  } catch (err) {
+    console.error("getPortalSchoolClasses error:", err);
+    return { data: [], error: "Failed to load classes." };
+  }
+}
+
 export async function getCentreColleagues(
   centreId: string
 ): Promise<{ data: PortalColleague[]; error: string | null }> {
@@ -1174,12 +1205,12 @@ export async function getCentreColleagues(
     const [{ data: direct, error }, { data: joined }] = await Promise.all([
       adminClient
         .from("client_users")
-        .select("id, name, email, is_primary, last_login, created_at")
+        .select("id, name, email, is_primary, role, class_ids, last_login, created_at")
         .eq("centre_id", centreId),
       adminClient
         .from("client_user_centres")
         .select(
-          "client_users!inner(id, name, email, is_primary, last_login, created_at)"
+          "client_users!inner(id, name, email, is_primary, role, class_ids, last_login, created_at)"
         )
         .eq("centre_id", centreId),
     ]);
@@ -1209,7 +1240,12 @@ export async function getCentreColleagues(
 export async function invitePortalColleague(
   centreId: string,
   name: string,
-  email: string
+  email: string,
+  options?: {
+    /** "teacher" scopes the invite to classIds (migration 088). */
+    role?: "teacher";
+    classIds?: string[];
+  }
 ): Promise<{ error: string | null }> {
   try {
     const trimmedName = name.trim();
@@ -1224,11 +1260,24 @@ export async function invitePortalColleague(
       return { error: "Only the primary contact can invite colleagues." };
     }
 
+    // A teacher's classes must be this school's — the ids come from the
+    // client and are otherwise unchecked.
+    let classIds: string[] = [];
+    if (options?.role === "teacher") {
+      const { data: classes } = await getPortalSchoolClasses(centreId);
+      classIds = validClassIds(options.classIds ?? [], classes);
+      if (classIds.length === 0) {
+        return { error: "Pick at least one class for the teacher." };
+      }
+    }
+
     const { error } = await provisionPortalUser({
       centreId,
       email: trimmedEmail,
       name: trimmedName,
       isPrimary: false,
+      role: options?.role,
+      classIds,
     });
     if (error) return { error };
 
@@ -1237,10 +1286,10 @@ export async function invitePortalColleague(
     const adminClient = createSupabaseAdmin();
     await adminClient.from("activity_log").insert({
       user_id: cu.user_id,
-      action: "portal_colleague_invited",
+      action: options?.role === "teacher" ? "portal_teacher_invited" : "portal_colleague_invited",
       entity_type: "client_user",
       entity_id: cu.id,
-      metadata: { centre_id: centreId, invited_email: trimmedEmail },
+      metadata: { centre_id: centreId, invited_email: trimmedEmail, class_ids: classIds },
     });
 
     return { error: null };
