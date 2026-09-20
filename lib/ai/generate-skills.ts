@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AssessmentSkill } from "@/lib/types/database";
 import { AI_MODEL } from "@/lib/ai/model";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
 
 // ============================================================
 // Claude API Skill Framework Generator (server-only)
@@ -21,26 +22,32 @@ const OUTPUT_SCHEMA = `Return ONLY a JSON array with no markdown or code fences:
 
 // One prompt per subject (migration 089). The output schema lives in the
 // system prompt because that is what the model actually follows.
-function systemPrompt(subject: SubjectDef): string {
+function systemPrompt(subject: SubjectDef, framework: FrameworkDef): string {
+  const L = framework.bandLabels;
+  const bands = {
+    junior: `${L["Early Stage 1"]} / ${L["Stage 1"]}`,
+    middle: `${L["Stage 2"]} / ${L["Stage 3"]}`,
+    senior: `${L["Stage 4"]} / ${L["Stage 5"]}`,
+  };
   if (subject.key === "english") {
-    return `You are a NSW primary English specialist. Generate 5-8 measurable skills a class teacher can assess for the specified English focus area and age group, aligned to the NSW English K-6 syllabus. Each skill should be observable in classroom work and rateable on a 1-5 scale.
+    return `You are a ${framework.persona(subject)}. Generate 5-8 measurable skills a class teacher can assess for the specified English focus area and age group, aligned to the ${framework.documentName(subject)}. Each skill should be observable in classroom work and rateable on a 1-5 scale.
 
 Age group guidance:
 - 3-5 years: early literacy — oral language, listening, letter and sound awareness, engagement with books
-- 5-8 years: Early Stage 1 / Stage 1 — phonics, decoding, sight words, sentence writing, retelling
-- 8-12 years: Stage 2 / Stage 3 — fluency, comprehension strategies, text structure, purposeful writing, vocabulary
-- 12-16 years: Stage 4 / Stage 5 — analysing and composing texts across forms, language features and their effects, sustained argument and evidence
+- 5-8 years: ${bands.junior} — phonics, decoding, sight words, sentence writing, retelling
+- 8-12 years: ${bands.middle} — fluency, comprehension strategies, text structure, purposeful writing, vocabulary
+- 12-16 years: ${bands.senior} — analysing and composing texts across forms, language features and their effects, sustained argument and evidence
 
 ${OUTPUT_SCHEMA}`;
   }
   if (subject.key === "mathematics") {
-    return `You are a NSW primary Mathematics specialist. Generate 5-8 measurable skills a class teacher can assess for the specified Mathematics strand and age group, aligned to the NSW Mathematics K-6 syllabus. Each skill should be observable in classroom work and rateable on a 1-5 scale.
+    return `You are a ${framework.persona(subject)}. Generate 5-8 measurable skills a class teacher can assess for the specified Mathematics strand and age group, aligned to the ${framework.documentName(subject)}. Each skill should be observable in classroom work and rateable on a 1-5 scale.
 
 Age group guidance:
 - 3-5 years: early numeracy — counting, subitising, comparing, shapes, patterns
-- 5-8 years: Early Stage 1 / Stage 1 — number to 100, addition and subtraction strategies, measurement with informal units, 2D/3D shapes
-- 8-12 years: Stage 2 / Stage 3 — multiplication and division, fractions and decimals, formal units, data and chance, reasoning
-- 12-16 years: Stage 4 / Stage 5 — integers, ratio and rates, algebra and linear relationships, geometry proofs, statistics and probability
+- 5-8 years: ${bands.junior} — number to 100, addition and subtraction strategies, measurement with informal units, 2D/3D shapes
+- 8-12 years: ${bands.middle} — multiplication and division, fractions and decimals, formal units, data and chance, reasoning
+- 12-16 years: ${bands.senior} — integers, ratio and rates, algebra and linear relationships, geometry proofs, statistics and probability
 
 ${OUTPUT_SCHEMA}`;
   }
@@ -105,7 +112,8 @@ function validateSkills(skills: AssessmentSkill[]): AssessmentSkill[] {
 export async function generateSkills(
   sport: string,
   ageGroup: string,
-  subject: SubjectDef = SUBJECTS.pdhpe
+  subject: SubjectDef = SUBJECTS.pdhpe,
+  framework: FrameworkDef = FRAMEWORKS.nsw
 ): Promise<AssessmentSkill[]> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error(
@@ -116,7 +124,7 @@ export async function generateSkills(
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 4000,
-    system: systemPrompt(subject),
+    system: systemPrompt(subject, framework),
     messages: [
       {
         role: "user",

@@ -3,13 +3,15 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireClientCentreAccess } from "@/lib/client/access";
 import {
-  ageBandToStageLabel,
-  stagesLabelForYearGroups,
-} from "@/lib/schools/year-groups";
+  ageBandToBandLabel,
+  bandLabelForYearGroup,
+  bandsLabelForYearGroups,
+  frameworkOf,
+  type FrameworkKey,
+} from "@/lib/curriculum/frameworks";
 import Anthropic from "@anthropic-ai/sdk";
 import { AI_MODEL } from "@/lib/ai/model";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { yearGroupToStage } from "@/lib/schools/year-groups";
 import { weekNumberFor } from "@/lib/schools/term-weeks";
 
 export interface WeeklyProgramEntry {
@@ -31,8 +33,9 @@ export interface WeeklyProgramEntry {
     program_content: Record<string, unknown> | null;
     outcomes: { framework: string; code: string; title: string; description: string }[];
     status: string;
-    /** NSW stage label. Exact from targeted classes; otherwise an
-     *  age-band range; null for childcare/unknown. */
+    /** Band label in the school's framework ("Stage 2" / "Levels 3–4").
+     *  Exact from targeted classes; otherwise an age-band range; null
+     *  for childcare/unknown. */
     stage: string | null;
     /** Names of targeted classes ("3B", "3G") when the session is class-scoped. */
     class_names: string[];
@@ -42,11 +45,11 @@ export interface WeeklyProgramEntry {
 export async function getScopeAndSequence(
   centreId: string,
   termId?: string
-): Promise<{ termName: string; weeks: WeeklyProgramEntry[] }> {
+): Promise<{ termName: string; weeks: WeeklyProgramEntry[]; frameworkKey: FrameworkKey }> {
   // Server actions are public HTTP endpoints — verify the caller is
   // actually allowed to see this centre before touching data.
   const access = await requireClientCentreAccess(centreId);
-  if (!access.authorised) return { termName: "Not authorised", weeks: [] };
+  if (!access.authorised) return { termName: "Not authorised", weeks: [], frameworkKey: "nsw" };
 
   const supabase = await createSupabaseServerClient();
 
@@ -57,8 +60,12 @@ export async function getScopeAndSequence(
   } else {
     termQuery = termQuery.eq("status", "active");
   }
-  const { data: term } = await termQuery.single();
-  if (!term) return { termName: "No active term", weeks: [] };
+  const [{ data: term }, { data: centreRow }] = await Promise.all([
+    termQuery.single(),
+    supabase.from("centres").select("curriculum_framework").eq("id", centreId).maybeSingle(),
+  ]);
+  const framework = frameworkOf(centreRow?.curriculum_framework);
+  if (!term) return { termName: "No active term", weeks: [], frameworkKey: framework.key };
 
   // Get sessions with programs and coaches
   const { data: sessions } = await supabase
@@ -109,8 +116,9 @@ export async function getScopeAndSequence(
       .filter((c): c is { name: string; year_group: string } => !!c);
     const stage =
       targeted.length > 0
-        ? stagesLabelForYearGroups(targeted.map((c) => c.year_group))
-        : ageBandToStageLabel(
+        ? bandsLabelForYearGroups(framework, targeted.map((c) => c.year_group))
+        : ageBandToBandLabel(
+            framework,
             (content?.ageGroup ?? content?.age_group) as string | undefined
           );
 
@@ -172,14 +180,14 @@ export async function getScopeAndSequence(
       program_content: content,
       outcomes: ((content?.curriculumOutcomes as any[]) ?? []),
       status: "planned",
-      stage: cls ? yearGroupToStage(cls.year_group) : ageBandToStageLabel((content?.ageGroup ?? content?.age_group) as string | undefined),
+      stage: cls ? bandLabelForYearGroup(framework, cls.year_group) : ageBandToBandLabel(framework, (content?.ageGroup ?? content?.age_group) as string | undefined),
       class_names: cls ? [cls.name] : [],
     });
     week.sessions.sort((a, b) => a.date.localeCompare(b.date) || (a.kind === b.kind ? 0 : a.kind === "session" ? -1 : 1));
   }
 
   weeks.sort((a, b) => a.weekNumber - b.weekNumber);
-  return { termName: term.name, weeks };
+  return { termName: term.name, weeks, frameworkKey: framework.key };
 }
 
 export async function generateSessionReflection(
@@ -212,7 +220,13 @@ export async function generateSessionReflection(
   if (existingReflection) return existingReflection;
 
   // Otherwise generate one now
-  const framework = centreType === "childcare_centre" ? "EYLF" : "PDHPE";
+  const { data: centreRow } = await supabase
+    .from("centres")
+    .select("curriculum_framework")
+    .eq("id", session.centre_id)
+    .maybeSingle();
+  const framework =
+    centreType === "childcare_centre" ? "EYLF" : frameworkOf(centreRow?.curriculum_framework).label;
   const outcomesText = outcomes.length > 0
     ? outcomes.map((o: any) => `${o.code}: ${o.title}`).join("\n")
     : `General ${framework} physical development outcomes`;

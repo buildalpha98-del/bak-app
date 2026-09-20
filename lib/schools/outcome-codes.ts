@@ -1,5 +1,12 @@
 import type { NswStage } from "./year-groups";
-import { SUBJECTS, subjectForCode, type SubjectDef } from "@/lib/curriculum/subjects";
+import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import {
+  FRAMEWORKS,
+  codeInBand,
+  frameworkForCode,
+  subjectForCode,
+  type FrameworkDef,
+} from "@/lib/curriculum/frameworks";
 
 /**
  * Programme `curriculumOutcomes` codes arrive as the AI wrote them —
@@ -22,17 +29,21 @@ export function splitOutcomeCode(code: string): string[] {
 
 /**
  * Flatten, dedupe and — for a school student whose class maps to a
- * stage — keep only that stage's outcomes for the subject. A Year 4
- * child has no use for the Early Stage 1 line of a multi-band programme,
- * and EYLF (pre-school framework) codes never belong on a school report.
- * If the stage filter would empty the list (programme written for
- * another band), fall back to every code of the subject so the section
- * is never blank for a child who attended mapped sessions.
+ * band — keep only that band's outcomes for the subject under the
+ * school's framework. A Year 4 child has no use for the Early Stage 1
+ * line of a multi-band programme, and EYLF (pre-school framework) codes
+ * never belong on a school report. If the band filter would empty the
+ * list (programme written for another band), fall back to the nearest
+ * band, then to every code of the subject so the section is never blank
+ * for a child who attended mapped sessions. Codes written against the
+ * other framework (a programme generated before the school was flipped)
+ * are kept when nothing of this framework exists, rather than vanishing.
  */
 export function normaliseOutcomes(
   raw: Array<{ code?: string | null; title?: string | null }>,
   stage: NswStage | null,
-  subject: SubjectDef = SUBJECTS.pdhpe
+  subject: SubjectDef = SUBJECTS.pdhpe,
+  framework: FrameworkDef = FRAMEWORKS.nsw
 ): OutcomeEntry[] {
   const seen = new Map<string, string>();
   for (const o of raw) {
@@ -48,14 +59,16 @@ export function normaliseOutcomes(
   }));
   if (!stage) return sortCodes(all);
 
-  const ofSubject = all.filter((o) => o.code.toUpperCase().startsWith(subject.codeFamily));
-  const forStage = ofSubject.filter((o) =>
-    o.code.toUpperCase().startsWith(subject.stagePrefixes[stage])
+  const anyOfSubject = all.filter((o) => subjectForCode(o.code)?.key === subject.key);
+  const ofFramework = anyOfSubject.filter(
+    (o) => frameworkForCode(o.code)?.key === framework.key
   );
+  const ofSubject = ofFramework.length > 0 ? ofFramework : anyOfSubject;
+  const forStage = ofSubject.filter((o) => codeInBand(framework, subject, stage, o.code));
   if (forStage.length > 0) return sortCodes(forStage);
-  // Nothing written for this stage (older programmes only listed up to
-  // Stage 2): show the nearest stage that has codes rather than every
-  // stage at once — a Year 6 card should never read PDe-1.
+  // Nothing written for this band (older programmes only listed up to
+  // Stage 2): show the nearest band that has codes rather than every
+  // band at once — a Year 6 card should never read PDe-1.
   const order: NswStage[] = ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"];
   const idx = order.indexOf(stage);
   const byDistance = order
@@ -63,7 +76,7 @@ export function normaliseOutcomes(
     .filter((x) => x.s !== stage)
     .sort((a, b) => a.d - b.d || (b.s > a.s ? 1 : -1));
   for (const { s } of byDistance) {
-    const near = ofSubject.filter((o) => o.code.toUpperCase().startsWith(subject.stagePrefixes[s]));
+    const near = ofSubject.filter((o) => codeInBand(framework, subject, s, o.code));
     if (near.length > 0) return sortCodes(near);
   }
   return sortCodes(ofSubject);

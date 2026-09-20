@@ -9,6 +9,7 @@ import {
 } from "@react-pdf/renderer";
 import type { ReportContentJson } from "@/lib/types/database";
 import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
+import { bandSummaryHeading, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 
 // ============================================================
 // Props
@@ -25,6 +26,8 @@ export interface ReportPDFProps {
     primaryColour?: string;
   };
   generatedDate: string;
+  /** The school's curriculum (migration 095): names the rollup bands. */
+  frameworkKey?: FrameworkKey;
 }
 
 // ============================================================
@@ -212,7 +215,9 @@ export function ReportPDF({
   content,
   branding,
   generatedDate,
+  frameworkKey,
 }: ReportPDFProps) {
+  const framework = frameworkOf(frameworkKey);
   const accent = getAccentColour(branding);
   const isWhiteLabel = branding.mode === "white_label";
   const brandName = isWhiteLabel ? centreName : "Build Alpha Kids";
@@ -374,12 +379,12 @@ export function ReportPDF({
           return (
             <>
               <Text style={[styles.sectionTitle, { color: accent }]}>
-                By Stage (NSW PDHPE)
+                {bandSummaryHeading(framework)}
               </Text>
               <View style={styles.classTable}>
                 <View style={styles.classHeaderRow}>
                   <Text style={[styles.classCellName, styles.classHeaderCell]}>
-                    Stage
+                    {framework.bandNoun}
                   </Text>
                   <Text style={[styles.classCell, styles.classHeaderCell]}>
                     Students
@@ -396,7 +401,7 @@ export function ReportPDF({
                 </View>
                 {stages.map((row) => (
                   <View key={row.stage} style={styles.classRow}>
-                    <Text style={styles.classCellName}>{row.stage}</Text>
+                    <Text style={styles.classCellName}>{framework.bandLabels[row.stage]}</Text>
                     <Text style={styles.classCell}>{row.student_count}</Text>
                     <Text style={styles.classCell}>
                       {row.attendance_percentage != null

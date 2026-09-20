@@ -1,6 +1,17 @@
 // School year-group helpers (migration 080). A year_group is free text
 // entered by admins — "K", "3", or a composite like "5/6" — so parsing
-// is defensive throughout.
+// is defensive throughout. Victorian schools write the first year as
+// "F", "P" or "Prep" (migration 095); all of those parse as year 0.
+
+/** Tokenise a year group into year numbers (K/F/P/Prep/Foundation → 0). */
+function yearTokens(yearGroup: string): number[] {
+  return yearGroup
+    .toUpperCase()
+    .split(/[^0-9A-Z]+/)
+    .filter(Boolean)
+    .map((t) => (/^(K|F|P|PREP|FOUNDATION|KINDY|KINDERGARTEN)$/.test(t) ? 0 : Number(t)))
+    .filter((n) => Number.isFinite(n));
+}
 
 export const YEAR_GROUP_OPTIONS = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
 
@@ -26,39 +37,35 @@ export function yearGroupToAgeBand(
   if ((AGE_BANDS as readonly string[]).includes(trimmed)) {
     return trimmed as (typeof AGE_BANDS)[number];
   }
-  const tokens = trimmed
-    .toUpperCase()
-    .split(/[^0-9K]+/)
-    .filter(Boolean);
-  if (tokens.length === 0) return "8-12";
-  const years = tokens.map(Number).filter((n) => Number.isFinite(n));
+  const years = yearTokens(trimmed);
+  if (years.length === 0) return "8-12";
   if (years.some((n) => n >= 7)) return "12-16";
   return years.some((n) => n >= 3) ? "8-12" : "5-8";
 }
 
 /**
  * Human label for a group's year value: school years read "Year 3",
- * childcare rooms (which store an age band) read "Ages 3-5".
+ * childcare rooms (which store an age band) read "Ages 3-5", and a
+ * Victorian first year ("F" / "Prep") reads "Prep".
  */
 export function yearGroupLabel(yearGroup: string): string {
-  return /^\d+-\d+$/.test(yearGroup.trim())
-    ? `Ages ${yearGroup.trim()}`
-    : `Year ${yearGroup}`;
+  const trimmed = yearGroup.trim();
+  if (/^\d+-\d+$/.test(trimmed)) return `Ages ${trimmed}`;
+  if (/^(F|P|PREP|FOUNDATION)$/i.test(trimmed)) return "Prep";
+  return `Year ${yearGroup}`;
 }
 
 /** Sort key so K sorts before 1 and composites sort by their youngest year. */
 export function yearGroupSortKey(yearGroup: string): number {
-  const tokens = yearGroup
-    .toUpperCase()
-    .split(/[^0-9K]+/)
-    .filter(Boolean);
-  const values = tokens.map((t) => (t === "K" ? 0 : Number(t))).filter(Number.isFinite);
+  const values = yearTokens(yearGroup);
   return values.length > 0 ? Math.min(...values) : 99;
 }
 
-// NSW syllabus stages — how a school groups years: K = Early Stage 1,
-// 1-2 = Stage 1, 3-4 = Stage 2, 5-6 = Stage 3, 7-8 = Stage 4,
-// 9-10 = Stage 5 (migration 094 added the secondary years).
+// Canonical year bands — how both NSW and Victoria group school years:
+// K/Prep, 1-2, 3-4, 5-6, 7-8, 9-10 (migration 094 added the secondary
+// years). The ids are the NSW stage names because that is where the
+// platform started; lib/curriculum/frameworks.ts labels them per state
+// ("Stage 2" / "Levels 3–4"). Never print an id — print its label.
 export const NSW_STAGES = [
   "Early Stage 1",
   "Stage 1",
@@ -78,13 +85,7 @@ export type NswStage = (typeof NSW_STAGES)[number];
 export function yearGroupToStage(yearGroup: string): NswStage | null {
   const trimmed = yearGroup.trim();
   if (/^\d+-\d+$/.test(trimmed)) return null; // age band, not a school year
-  const tokens = trimmed
-    .toUpperCase()
-    .split(/[^0-9K]+/)
-    .filter(Boolean);
-  const values = tokens
-    .map((t) => (t === "K" ? 0 : Number(t)))
-    .filter((n) => Number.isFinite(n) && n >= 0 && n <= 10);
+  const values = yearTokens(trimmed).filter((n) => n >= 0 && n <= 10);
   if (values.length === 0) return null;
   const oldest = Math.max(...values);
   if (oldest === 0) return "Early Stage 1";
@@ -95,29 +96,5 @@ export function yearGroupToStage(yearGroup: string): NswStage | null {
   return "Stage 5";
 }
 
-/**
- * Approximate stage label for a platform age band — the fallback when
- * a session isn't targeted at specific classes. Bands straddle stage
- * boundaries, so the label is a range, and "3-5" (pre-school) maps to
- * none. Class-targeted sessions should use yearGroupToStage instead.
- */
-export function ageBandToStageLabel(band: string | null | undefined): string | null {
-  switch ((band ?? "").trim()) {
-    case "5-8":
-      return "Early Stage 1 – Stage 1";
-    case "8-12":
-      return "Stage 2 – Stage 3";
-    case "12-16":
-      return "Stage 4 – Stage 5";
-    default:
-      return null;
-  }
-}
-
-/** Combine class year groups into one stage label, syllabus order, deduped. */
-export function stagesLabelForYearGroups(yearGroups: string[]): string | null {
-  const stages = NSW_STAGES.filter((stage) =>
-    yearGroups.some((yg) => yearGroupToStage(yg) === stage)
-  );
-  return stages.length > 0 ? stages.join(", ") : null;
-}
+// Band *labels* (Stage 2 / Levels 3–4, band ranges for an age band) live
+// in lib/curriculum/frameworks.ts — they depend on the school's state.

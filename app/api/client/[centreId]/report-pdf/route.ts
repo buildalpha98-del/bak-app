@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ReportPDF } from "@/lib/reports/pdf-template";
@@ -33,7 +34,7 @@ export async function GET(
     .from("centre_reports")
     .select(
       `id, title, content_json, created_at,
-       centres!centre_reports_centre_id_fkey(name, branding_mode, logo_url, brand_colour),
+       centres!centre_reports_centre_id_fkey(name, branding_mode, logo_url, brand_colour, curriculum_framework),
        terms!centre_reports_term_id_fkey(name, start_date, end_date)`
     )
     .eq("id", reportId)
@@ -49,6 +50,7 @@ export async function GET(
     branding_mode?: string | null;
     logo_url?: string | null;
     brand_colour?: string | null;
+    curriculum_framework?: string | null;
   } | null;
   const centreName = centre?.name ?? "Your Centre";
   const termData = report.terms as { name?: string } | null;
@@ -83,6 +85,7 @@ export async function GET(
   const buffer = await renderToBuffer(
     ReportPDF({
       title: (report.title as string | null) ?? `${centreName} — ${termName} Report`,
+      frameworkKey: frameworkOf(centre?.curriculum_framework).key,
       centreName,
       termName,
       content,

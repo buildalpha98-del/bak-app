@@ -3,6 +3,7 @@ import type { ProgramContentJson } from "./types";
 import { buildProgramPrompt, type BuildProgramPromptInput } from "./program-prompt";
 import { AI_MODEL } from "@/lib/ai/model";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
 
 export type GenerateProgramInput = BuildProgramPromptInput;
 
@@ -29,7 +30,7 @@ function getAnthropic(): Anthropic {
 // editor, PDFs, Scope & Sequence and the coach app need no second shape.
 // Only the headings differ (lib/curriculum/subjects.ts programSections).
 
-const LESSON_SYSTEM_PROMPT = (subject: SubjectDef) => `You are an experienced NSW primary ${subject.label} teacher and curriculum designer working for Build Alpha Kids, which supports schools in Sydney with curriculum programmes.
+const LESSON_SYSTEM_PROMPT = (subject: SubjectDef, framework: FrameworkDef) => `You are an experienced ${framework.persona(subject)} and curriculum designer working for Build Alpha Kids, which supports Australian schools with curriculum programmes.
 
 Your task is to generate a structured ${subject.label} lesson plan as a single JSON object. The JSON uses the field names of our sports-session schema; fill them with lesson content as follows:
 - "warmUp" = the HOOK / tuning-in activity that opens the lesson
@@ -41,12 +42,12 @@ Your task is to generate a structured ${subject.label} lesson plan as a single J
 
 ## Age-Appropriate Guidance
 - 3-5 years: play-based, oral, short bursts (3-5 min), concrete materials, lots of modelling
-- 5-8 years (Early Stage 1 / Stage 1): explicit modelling, guided practice with concrete materials, 5-8 minute activities, simple success criteria
-- 8-12 years (Stage 2 / Stage 3): strategies named and practised, independent application, 8-12 minute activities, reasoning and reflection
-- 12-16 years (Stage 4 / Stage 5, Years 7-10): subject-specific vocabulary and abstraction, sustained independent and collaborative tasks, explicit success criteria, justification and evaluation
+- 5-8 years (${framework.bandLabels["Early Stage 1"]} / ${framework.bandLabels["Stage 1"]}): explicit modelling, guided practice with concrete materials, 5-8 minute activities, simple success criteria
+- 8-12 years (${framework.bandLabels["Stage 2"]} / ${framework.bandLabels["Stage 3"]}): strategies named and practised, independent application, 8-12 minute activities, reasoning and reflection
+- 12-16 years (${framework.bandLabels["Stage 4"]} / ${framework.bandLabels["Stage 5"]}, Years 7-10): subject-specific vocabulary and abstraction, sustained independent and collaborative tasks, explicit success criteria, justification and evaluation
 
 ## Curriculum Alignment
-Use NSW ${subject.fullName} syllabus outcomes with real outcome codes for the band (${Object.values(subject.stagePrefixes).join(", ")}…). For ages 3-5 use EYLF V2.0 outcomes instead. Select 2-3 that genuinely apply. Set "framework" to "${subject.key}" (or "eylf").
+${framework.alignmentGuidance(subject)} For ages 3-5 use EYLF V2.0 outcomes instead. Select 2-3 that genuinely apply. Set "framework" to "${subject.key}" (or "eylf").
 
 ## Reflection Prompt
 Also generate a "reflectionPrompt": 2-3 sentences in first person that the teacher could use for their planning notes, referencing specific activities and the outcomes addressed.
@@ -55,7 +56,15 @@ Also generate a "reflectionPrompt": 2-3 sentences in first person that the teach
 Only use resources from the "available resources" list provided.
 `;
 
-const sportSystemPrompt = () => `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools in Sydney.
+const NSW_PDHPE_ROWS = `Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6, Stage 4 = Years 7-8, Stage 5 = Years 9-10; the 8-12 band spans Stage 2 AND Stage 3, the 12-16 band spans Stage 4 AND Stage 5):
+- PDe-1 / PD1-6 / PD2-6 / PD3-4 / PD4-4 / PD5-4: Movement skill and performance
+- PDe-3 / PD1-7 / PD2-7 / PD3-5 / PD4-5 / PD5-5: Active lifestyle and fitness
+- PDe-6 / PD1-9 / PD2-9 / PD3-9 / PD4-9 / PD5-9: Safe practices
+- PDe-2 / PD1-3 / PD2-3 / PD3-3 / PD4-3 / PD5-3: Interpersonal relationships / teamwork`;
+
+const VIC_HPE_ROWS = `${FRAMEWORKS.vic.alignmentGuidance(SUBJECTS.pdhpe)} Select 2-3 that apply, and ALWAYS include the code for every band the age group covers (the 5-8 band spans Foundation AND Levels 1-2, the 8-12 band spans Levels 3-4 AND Levels 5-6, the 12-16 band spans Levels 7-8 AND Levels 9-10). Most sessions align with the Movement and Physical Activity strand (VC2HP…M…: fundamental movement skills, movement sequences, game play and tactics, fitness and physical activity) plus one Personal, Social and Community Health description (VC2HP…P…: cooperation, fair play, safety). Set "framework" to "pdhpe".`;
+
+const sportSystemPrompt = (framework: FrameworkDef) => `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools.
 
 Your task is to generate a structured coaching session plan as a single JSON object. Follow these rules strictly:
 
@@ -103,12 +112,8 @@ Use the Early Years Learning Framework (EYLF) V2.0 outcomes:
 
 Most sports sessions will align with Outcome 3 (wellbeing/physical), Outcome 1 (identity/confidence), and Outcome 4 (learning dispositions). Select 2-4 specific sub-outcomes that genuinely apply.
 
-### For ages 5-8 and 8-12 (Schools):
-Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6, Stage 4 = Years 7-8, Stage 5 = Years 9-10; the 8-12 band spans Stage 2 AND Stage 3, the 12-16 band spans Stage 4 AND Stage 5):
-- PDe-1 / PD1-6 / PD2-6 / PD3-4 / PD4-4 / PD5-4: Movement skill and performance
-- PDe-3 / PD1-7 / PD2-7 / PD3-5 / PD4-5 / PD5-5: Active lifestyle and fitness
-- PDe-6 / PD1-9 / PD2-9 / PD3-9 / PD4-9 / PD5-9: Safe practices
-- PDe-2 / PD1-3 / PD2-3 / PD3-3 / PD4-3 / PD5-3: Interpersonal relationships / teamwork
+### For ages 5-8, 8-12 and 12-16 (Schools — ${framework.fullLabel}):
+${framework.key === "vic" ? VIC_HPE_ROWS : NSW_PDHPE_ROWS}
 
 ### Reflection Prompt
 Also generate a "reflectionPrompt" field: a 2-3 sentence paragraph that an educator could use as a starting point for their daily reflection or learning journal entry about this session. Write it in first person as if the educator is reflecting. Reference specific activities from the session and the curriculum outcomes addressed.
@@ -225,13 +230,14 @@ export async function generateProgram(
   }
 
   const subject = request.subject ?? SUBJECTS.pdhpe;
+  const framework = request.framework ?? FRAMEWORKS.nsw;
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 8000,
     system:
       subject.key === "pdhpe"
-        ? sportSystemPrompt()
-        : `${LESSON_SYSTEM_PROMPT(subject)}\n${OUTPUT_FORMAT}`,
+        ? sportSystemPrompt(framework)
+        : `${LESSON_SYSTEM_PROMPT(subject, framework)}\n${OUTPUT_FORMAT}`,
     messages: [
       {
         role: "user",

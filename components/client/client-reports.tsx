@@ -17,10 +17,13 @@ import { Badge } from "@/components/ui/badge";
 import type { ClientReport } from "@/lib/client/portal-actions";
 import type { ReportContentJson } from "@/lib/types/database";
 import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
+import { bandSummaryHeading, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 
 interface ClientReportsProps {
   reports: ClientReport[];
   centreId: string;
+  /** The school's curriculum (migration 095): names the rollup bands. */
+  frameworkKey?: FrameworkKey;
 }
 
 function formatDate(dateStr: string): string {
@@ -58,7 +61,8 @@ function statusBadge(status: string) {
   }
 }
 
-export function ClientReports({ reports, centreId }: ClientReportsProps) {
+export function ClientReports({ reports, centreId, frameworkKey }: ClientReportsProps) {
+  const framework = frameworkOf(frameworkKey);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (reports.length === 0) {
@@ -307,13 +311,13 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                             return (
                               <div className="mt-4">
                                 <h4 className="text-sm font-medium text-gray-700">
-                                  By Stage (NSW PDHPE)
+                                  {bandSummaryHeading(framework)}
                                 </h4>
                                 <div className="mt-2 overflow-x-auto">
                                   <table className="w-full text-sm">
                                     <thead>
                                       <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500">
-                                        <th className="py-1.5 pr-3 font-medium">Stage</th>
+                                        <th className="py-1.5 pr-3 font-medium">{framework.bandNoun}</th>
                                         <th className="py-1.5 pr-3 text-right font-medium">
                                           Students
                                         </th>
@@ -332,7 +336,7 @@ export function ClientReports({ reports, centreId }: ClientReportsProps) {
                                       {stages.map((row) => (
                                         <tr key={row.stage} className="border-b last:border-0">
                                           <td className="py-1.5 pr-3 font-medium text-gray-900">
-                                            {row.stage}
+                                            {framework.bandLabels[row.stage]}
                                           </td>
                                           <td className="py-1.5 pr-3 text-right text-gray-600">
                                             {row.student_count}

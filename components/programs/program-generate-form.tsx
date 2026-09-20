@@ -191,6 +191,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
       const baseBody = {
         subject,
+        centreId: centreId && centreId !== "none" ? centreId : null,
         sport,
         ageGroups,
         durationMinutes,
@@ -374,7 +375,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
         {isLesson
-          ? `Use AI to create a structured ${subjectDef.label} lesson plan mapped to the NSW syllabus.`
+          ? `Use AI to create a structured ${subjectDef.label} lesson plan mapped to the selected school's curriculum (NSW syllabus or Victorian Curriculum).`
           : "Use AI to create a structured coaching session plan."}
       </p>
 

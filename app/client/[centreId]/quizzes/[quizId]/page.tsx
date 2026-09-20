@@ -36,7 +36,7 @@ export default async function QuizPage({
           {subjectOf(sheet.quiz.subject).label} · {sheet.quiz.focus} · ages {sheet.quiz.age_band}
         </p>
       </div>
-      <QuizMarking centreId={centreId} sheet={sheet} />
+      <QuizMarking centreId={centreId} sheet={sheet} frameworkKey={clientUser.centre_framework} />
     </div>
   );
 }

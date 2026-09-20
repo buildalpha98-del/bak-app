@@ -2,9 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   yearGroupToAgeBand,
   yearGroupSortKey,
-  ageBandToStageLabel,
-  stagesLabelForYearGroups,
   yearGroupToStage,
+  yearGroupLabel,
 } from "@/lib/schools/year-groups";
 
 describe("yearGroupToAgeBand", () => {
@@ -65,22 +64,22 @@ describe("yearGroupSortKey", () => {
   });
 });
 
-describe("ageBandToStageLabel", () => {
-  it("maps school bands to stage ranges and pre-school to none", () => {
-    expect(ageBandToStageLabel("8-12")).toBe("Stage 2 – Stage 3");
-    expect(ageBandToStageLabel("12-16")).toBe("Stage 4 – Stage 5");
-    expect(ageBandToStageLabel("5-8")).toBe("Early Stage 1 – Stage 1");
-    expect(ageBandToStageLabel("3-5")).toBe(null);
-    expect(ageBandToStageLabel(null)).toBe(null);
+describe("Victorian first year (migration 095)", () => {
+  it("parses F / P / Prep / Foundation as year 0", () => {
+    expect(yearGroupToStage("F")).toBe("Early Stage 1");
+    expect(yearGroupToStage("Prep")).toBe("Early Stage 1");
+    expect(yearGroupToStage("Foundation")).toBe("Early Stage 1");
+    expect(yearGroupToStage("P/1")).toBe("Stage 1");
+    expect(yearGroupToAgeBand("Prep")).toBe("5-8");
+    expect(yearGroupSortKey("Prep")).toBe(0);
   });
-});
 
-describe("stagesLabelForYearGroups", () => {
-  it("dedupes and orders by syllabus stage", () => {
-    expect(stagesLabelForYearGroups(["4", "3"])).toBe("Stage 2");
-    expect(stagesLabelForYearGroups(["K", "5/6"])).toBe("Early Stage 1, Stage 3");
-    expect(stagesLabelForYearGroups(["3-5"])).toBe(null);
-    expect(stagesLabelForYearGroups([])).toBe(null);
+  it("labels it Prep, and leaves other groups alone", () => {
+    expect(yearGroupLabel("Prep")).toBe("Prep");
+    expect(yearGroupLabel("F")).toBe("Prep");
+    expect(yearGroupLabel("K")).toBe("Year K");
+    expect(yearGroupLabel("3")).toBe("Year 3");
+    expect(yearGroupLabel("3-5")).toBe("Ages 3-5");
   });
 });
 

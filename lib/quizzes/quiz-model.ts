@@ -1,6 +1,8 @@
 // Pure quiz shapes and scoring (migration 092). No I/O, so the rules a
 // teacher's marks depend on are testable without a database.
 
+import { frameworkOf, quizBandFor, type FrameworkKey } from "@/lib/curriculum/frameworks";
+
 export type QuizQuestionType = "multiple_choice" | "short_answer";
 
 export interface QuizQuestion {
@@ -35,13 +37,9 @@ export function isFullyMarked(questions: QuizQuestion[], marks: QuizMarks): bool
   return questions.every((q) => typeof marks[q.id] === "boolean");
 }
 
-/** NSW-style word for a percentage, matching the report card's scale. */
-export function quizBand(percent: number): string {
-  if (percent >= 90) return "Outstanding";
-  if (percent >= 75) return "High";
-  if (percent >= 50) return "Sound";
-  if (percent >= 25) return "Basic";
-  return "Limited";
+/** Word for a percentage on the school's scale, matching the report card. */
+export function quizBand(percent: number, frameworkKey?: FrameworkKey): string {
+  return quizBandFor(frameworkOf(frameworkKey), percent);
 }
 
 /**

@@ -12,8 +12,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { saveQuizResult, type QuizMarkingSheet, type QuizStudentRow } from "@/lib/client/quiz-actions";
 import { scoreQuiz, isFullyMarked, quizBand, type QuizMarks } from "@/lib/quizzes/quiz-model";
+import type { FrameworkKey } from "@/lib/curriculum/frameworks";
 
-export function QuizMarking({ centreId, sheet }: { centreId: string; sheet: QuizMarkingSheet }) {
+export function QuizMarking({
+  centreId,
+  sheet,
+  frameworkKey,
+}: {
+  centreId: string;
+  sheet: QuizMarkingSheet;
+  /** The school's curriculum (migration 095): names the scale words. */
+  frameworkKey?: FrameworkKey;
+}) {
   const router = useRouter();
   const { quiz } = sheet;
   const [rows, setRows] = useState<QuizStudentRow[]>(sheet.rows);
@@ -90,7 +100,7 @@ export function QuizMarking({ centreId, sheet }: { centreId: string; sheet: Quiz
         <div>
           <p className="text-sm text-muted-foreground">
             {quiz.questions.length} questions · {marked} of {rows.length} students marked
-            {avg !== null ? ` · class average ${avg}% (${quizBand(avg)})` : ""}
+            {avg !== null ? ` · class average ${avg}% (${quizBand(avg, frameworkKey)})` : ""}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -190,7 +200,7 @@ export function QuizMarking({ centreId, sheet }: { centreId: string; sheet: Quiz
                         {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
                       </Button>
                     ) : row.score !== null ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">{quizBand(Math.round((row.score / quiz.questions.length) * 100))}</Badge>
+                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">{quizBand(Math.round((row.score / quiz.questions.length) * 100), frameworkKey)}</Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">Not yet</span>
                     )}

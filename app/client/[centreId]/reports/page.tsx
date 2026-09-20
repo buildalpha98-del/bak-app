@@ -67,7 +67,7 @@ export default async function ClientReportsPage({
           },
         ]}
       />
-      <ClientReports reports={data} centreId={centreId} />
+      <ClientReports reports={data} centreId={centreId} frameworkKey={clientUser.centre_framework} />
     </div>
   );
 }

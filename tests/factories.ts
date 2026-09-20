@@ -116,6 +116,7 @@ export function createMockCentre(overrides: Partial<Centre> = {}): Centre {
     logo_url: null,
     branding_mode: "bak_branded",
     brand_colour: null,
+    curriculum_framework: "nsw",
     health_score: 75,
     health_status: "green",
     health_score_updated_at: new Date().toISOString(),

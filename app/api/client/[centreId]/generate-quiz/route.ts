@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateQuiz } from "@/lib/ai/generate-quiz";
@@ -68,7 +69,7 @@ export async function POST(
     if (!focus) return NextResponse.json({ error: `Pick a ${subject.strandLabel.toLowerCase()}.` }, { status: 400 });
     if (!BANDS.includes(ageBand)) return NextResponse.json({ error: "Pick a class." }, { status: 400 });
 
-    const cacheKey = hashRequestKey("quiz", { programId, subject: subject.key, focus, ageBand });
+    const cacheKey = hashRequestKey("quiz", { framework: clientUser.centre_framework, programId, subject: subject.key, focus, ageBand });
     const cached = getCached<unknown>(cacheKey);
     if (cached) return NextResponse.json({ data: cached, cached: true });
 
@@ -77,7 +78,7 @@ export async function POST(
       return NextResponse.json({ error: `Daily quiz limit reached (${DAILY_LIMIT}/day).` }, { status: 429 });
     }
     rateLimitMap.set(clientUser.id, Date.now());
-    const quiz = await generateQuiz({ subject, focus, ageBand, lesson });
+    const quiz = await generateQuiz({ subject, framework: frameworkOf(clientUser.centre_framework), focus, ageBand, lesson });
     const data = { ...quiz, subject: subject.key, focus, ageBand, programId };
     setCached(cacheKey, data);
     return NextResponse.json({ data });

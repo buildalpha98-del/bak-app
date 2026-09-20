@@ -1,5 +1,6 @@
 import React from "react";
 import { subjectOf } from "@/lib/curriculum/subjects";
+import { frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
 // The Scope & Sequence, fully written out — the document a PDHPE
@@ -11,6 +12,8 @@ import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/render
 export interface ScopeSequencePdfData {
   centreName: string;
   isSchool: boolean;
+  /** The school's curriculum (migration 095); framing text follows. */
+  frameworkKey?: FrameworkKey;
   /** Subject keys present in the term (migration 093); framing text follows. */
   subjects?: string[];
   termName: string;
@@ -24,7 +27,7 @@ export interface ScopeSequencePdfData {
       coach_name: string;
       duration_minutes: number;
       program_title: string | null;
-      /** NSW stage label — exact from targeted classes, else band range. */
+      /** Band label in the school's framework — exact from targeted classes, else band range. */
       stage: string | null;
       class_names: string[];
       outcomes: Array<{ code: string; title: string }>;
@@ -43,10 +46,21 @@ export interface ScopeSequencePdfData {
   generatedDate: string;
 }
 
-function syllabusList(keys: string[]): string {
-  const labels = keys.map((k) => subjectOf(k).label);
+function syllabusList(keys: string[], frameworkKey?: FrameworkKey): string {
+  const fw = frameworkOf(frameworkKey);
+  const labels = keys.map((k) => fw.subjectLabel(subjectOf(k)));
   if (labels.length <= 1) return labels[0] ?? "PDHPE";
   return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+}
+
+/** "NSW PDHPE and English syllabus outcomes" / "Victorian Curriculum F–10
+ *  Health and Physical Education content descriptions". */
+function framingFor(frameworkKey: FrameworkKey | undefined, keys: string[]): string {
+  const fw = frameworkOf(frameworkKey);
+  const subjects = syllabusList(keys, frameworkKey);
+  return fw.key === "vic"
+    ? `Victorian Curriculum F–10 ${subjects} ${fw.outcomeNoun}s`
+    : `NSW ${subjects} syllabus ${fw.outcomeNoun}s`;
 }
 
 const BAK_ORANGE = "#E8712A";
@@ -152,7 +166,7 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
         </View>
         <Text style={styles.framing}>
           {data.isSchool
-            ? `Every session and lesson below is mapped to NSW ${syllabusList(data.subjects ?? ["pdhpe"])} syllabus outcomes before delivery. This document is the written programme of record for the term — plans in full, suitable for programming files and curriculum audit.`
+            ? `Every session and lesson below is mapped to ${framingFor(data.frameworkKey, data.subjects ?? ["pdhpe"])} before delivery. This document is the written programme of record for the term — plans in full, suitable for programming files and curriculum audit.`
             : "Every session below is mapped to EYLF outcomes. This document is the written programme of record for the term, with session plans in full."}
         </Text>
 

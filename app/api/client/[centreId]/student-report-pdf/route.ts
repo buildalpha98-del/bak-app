@@ -15,7 +15,8 @@ import { normaliseOutcomes, groupOutcomesBySubject } from "@/lib/schools/outcome
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { isTermReleased } from "@/lib/client/report-card-actions";
 import { canOpenReportCard } from "@/lib/client/report-card-release";
-import { subjectOf, outcomesHeading } from "@/lib/curriculum/subjects";
+import { subjectOf } from "@/lib/curriculum/subjects";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 
 // Per-student report card. Everything is read through the caller's
 // cookie client, so RLS decides what a portal user can put in a PDF —
@@ -67,9 +68,10 @@ export async function GET(
 
   const { data: centre } = await supabase
     .from("centres")
-    .select("name, branding_mode, logo_url")
+    .select("name, branding_mode, logo_url, curriculum_framework")
     .eq("id", centreId)
     .maybeSingle();
+  const framework = frameworkOf(centre?.curriculum_framework);
 
   // The report covers the term of the child's most recent assessment
   // (falling back to the latest term with completed sessions), and
@@ -298,11 +300,12 @@ export async function GET(
     // programmes (migration 089); PDHPE-only students see one section.
     outcomeSections: Array.from(groupOutcomesBySubject(rawOutcomes).entries())
       .map(([subject, list]) => ({
-        heading: outcomesHeading(subject),
-        outcomes: normaliseOutcomes(list, stage, subject),
+        heading: framework.outcomesHeading(subject),
+        outcomes: normaliseOutcomes(list, stage, subject, framework),
       }))
       .filter((s) => s.outcomes.length > 0)
       .sort((a, b) => a.heading.localeCompare(b.heading)),
+    frameworkKey: framework.key,
     branding: {
       mode: centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
       logoUrl: centre?.logo_url,

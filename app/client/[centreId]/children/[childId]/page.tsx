@@ -34,6 +34,7 @@ export default async function ChildDetailPage({
       child={data}
       centreId={centreId}
       isSchool={isSchool}
+      frameworkKey={clientUser.centre_framework}
       reportCardAccess={
         canOpenReportCard({ isSchool, isPrimary: clientUser.is_primary, release })
           ? { open: true }

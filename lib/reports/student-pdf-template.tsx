@@ -1,17 +1,16 @@
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import { subjectOf } from "@/lib/curriculum/subjects";
-import { quizBand } from "@/lib/quizzes/quiz-model";
 
 // ============================================================
 // Per-student term report — the report card a school hands to
 // families. Rendered by /api/client/[centreId]/student-report-pdf.
-// Marks use the NSW five-point achievement scale so the document
+// Marks use the school's framework scale (NSW: Outstanding … Limited;
+// Victoria: Well above … Well below the expected level) so the document
 // reads like the school reports principals already know.
 // ============================================================
 
-import { MARK_SCALE } from "@/lib/assessments/mark-scale";
-export { MARK_SCALE };
+import { frameworkOf, quizBandFor, type FrameworkKey } from "@/lib/curriculum/frameworks";
 
 export interface StudentReportData {
   studentName: string;
@@ -41,6 +40,8 @@ export interface StudentReportData {
   coachComments: Array<{ text: string; coach: string | null; context: string }>;
   /** One section per subject, e.g. "NSW PDHPE Outcomes Addressed". */
   outcomeSections: Array<{ heading: string; outcomes: Array<{ code: string; title: string }> }>;
+  /** The school's curriculum (migration 095) — sets the mark-scale words. */
+  frameworkKey?: FrameworkKey;
   branding: { mode: "bak_branded" | "white_label"; logoUrl?: string | null };
   generatedDate: string;
 }
@@ -145,6 +146,7 @@ function Pips({ mark }: { mark: number }) {
 }
 
 export function StudentReportPDF(data: StudentReportData) {
+  const framework = frameworkOf(data.frameworkKey);
   const isWhiteLabel = data.branding.mode === "white_label";
   const brandName = isWhiteLabel ? data.schoolName : "Build Alpha Kids";
 
@@ -230,7 +232,7 @@ export function StudentReportPDF(data: StudentReportData) {
                     <View key={s.name} style={styles.skillRow}>
                       <Text style={styles.skillName}>{s.name}</Text>
                       <Pips mark={s.mark} />
-                      <Text style={styles.markWord}>{MARK_SCALE[s.mark] ?? s.mark}</Text>
+                      <Text style={styles.markWord}>{framework.markScale[s.mark] ?? s.mark}</Text>
                       <Text style={delta && delta > 0 ? styles.deltaUp : styles.delta}>
                         {/* plain words — arrows aren't in the PDF's WinAnsi font set */}
                         {delta == null
@@ -253,9 +255,8 @@ export function StudentReportPDF(data: StudentReportData) {
               </View>
             ))}
             <Text style={styles.legend}>
-              Achievement scale: Outstanding (5) · High (4) · Sound (3) · Basic (2) ·
-              Limited (1). Movement compares this term&apos;s assessment with last
-              term&apos;s.
+              {framework.markScaleNote}. Movement compares this term&apos;s assessment with
+              last term&apos;s.
             </Text>
           </>
         )}
@@ -275,7 +276,7 @@ export function StudentReportPDF(data: StudentReportData) {
                   <Text style={styles.markWord}>
                     {q.score} / {q.total}
                   </Text>
-                  <Text style={styles.delta}>{quizBand(pct)}</Text>
+                  <Text style={styles.delta}>{quizBandFor(framework, pct)}</Text>
                 </View>
               );
             })}

@@ -10,11 +10,18 @@
  */
 
 import { SPORTS } from "@/lib/types/enums";
+import { FRAMEWORKS, bandsLabelForYearGroups, type FrameworkDef } from "@/lib/curriculum/frameworks";
+import { yearGroupLabel } from "@/lib/schools/year-groups";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 
 export interface BuildProgramPromptInput {
   /** Defaults to PDHPE (a coaching session); English/Maths make a lesson. */
   subject?: SubjectDef;
+  /** The school's curriculum (migration 095). Defaults to NSW. */
+  framework?: FrameworkDef;
+  /** Class year group(s) when known ("3", "5/6") — lets the prompt name
+   *  the exact stage/level instead of the whole age band. */
+  yearGroups?: string[];
   sport: string;
   ageGroups: string[]; // validated upstream; expected non-empty + valid AgeBand strings
   durationMinutes: number;
@@ -72,6 +79,13 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
     ? `\n\nSkill focus: ${input.skillFocus}.`
     : "";
 
+  const framework = input.framework ?? FRAMEWORKS.nsw;
+  const yearGroups = (input.yearGroups ?? []).filter((y) => y.trim());
+  const bandsLabel = yearGroups.length > 0 ? bandsLabelForYearGroups(framework, yearGroups) : null;
+  const levelSection = bandsLabel
+    ? `\n\nThe class is ${yearGroups.map((y) => yearGroupLabel(y)).join(" / ")} (${bandsLabel}). Use ${framework.label} codes for exactly ${bandsLabel} — not the neighbouring ${framework.bandNoun.toLowerCase()}s.`
+    : "";
+
   const centreSection = input.centreContext
     ? `\n\nCentre: ${input.centreContext.centreName}.\nRecently delivered at this centre (avoid repeating titles + skill focus):\n${input.centreContext.recentPrograms
         .map((p) => `- ${p.title}${p.skillFocus ? ` (${p.skillFocus})` : ""}`)
@@ -107,7 +121,7 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
 
 ${ageSection}
 
-${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${unknownSportSection}${centreSection}${progressionSection}
+${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }

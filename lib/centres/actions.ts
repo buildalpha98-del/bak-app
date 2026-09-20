@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import { CENTRE_COLOURS } from "@/lib/utils/centre-colours";
+import type { FrameworkKey } from "@/lib/curriculum/frameworks";
 import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 import type {
   CentreType,
@@ -121,6 +122,8 @@ export interface CreateCentreData {
   contract_status?: ContractStatus;
   /** P4 roster colour (#RRGGBB). Omitted → auto-assigned on insert. */
   colour?: string;
+  /** Schools: nsw | vic (migration 095). Omitted → nsw. */
+  curriculum_framework?: FrameworkKey;
   initial_note?: {
     category: CentreNoteCategory;
     content: string;
@@ -148,6 +151,8 @@ export interface UpdateCentreData {
   branding_mode?: BrandingMode;
   /** White-label portal accent anchor (#RRGGBB) or null for default. */
   brand_colour?: string | null;
+  /** Schools: nsw | vic (migration 095). */
+  curriculum_framework?: FrameworkKey;
 }
 
 export interface AddNoteData {
@@ -483,6 +488,7 @@ export async function createCentre(
         colour:
           centreFields.colour ??
           CENTRE_COLOURS[Math.floor(Math.random() * CENTRE_COLOURS.length)],
+        curriculum_framework: centreFields.curriculum_framework ?? "nsw",
       })
       .select()
       .single();
