@@ -9,13 +9,8 @@ import { subjectOf } from "@/lib/curriculum/subjects";
 // reads like the school reports principals already know.
 // ============================================================
 
-export const MARK_SCALE: Record<number, string> = {
-  5: "Outstanding",
-  4: "High",
-  3: "Sound",
-  2: "Basic",
-  1: "Limited",
-};
+import { MARK_SCALE } from "@/lib/assessments/mark-scale";
+export { MARK_SCALE };
 
 export interface StudentReportData {
   studentName: string;

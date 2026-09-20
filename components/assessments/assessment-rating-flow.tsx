@@ -71,6 +71,10 @@ interface AssessmentRatingFlowProps {
   emptyMessage?: string;
   /** Where the task list shows a centre name; a school portal already knows. */
   showCentreName?: boolean;
+  /** Open straight into this task; leaving it calls onExit instead of
+   *  showing the built-in task list (the portal has its own). */
+  initialTaskIndex?: number;
+  onExit?: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -236,8 +240,12 @@ export function AssessmentRatingFlow({
   noun = "children",
   emptyMessage = "No assessment tasks assigned to you at the moment.",
   showCentreName = true,
+  initialTaskIndex,
+  onExit,
 }: AssessmentRatingFlowProps) {
-  const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
+  const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(
+    initialTaskIndex ?? null
+  );
   const [childIndex, setChildIndex] = useState(0);
   const [ratingsMap, setRatingsMap] = useState<
     Record<string, RatingFlowEntry[]>
@@ -350,20 +358,22 @@ export function AssessmentRatingFlow({
     }
   };
 
+  const leaveTask = () => {
+    setShowCompletion(false);
+    if (onExit) onExit();
+    else setSelectedTaskIndex(null);
+  };
+
   const handleSaveAndExit = async () => {
     const ratings = currentChild ? getCurrentRatings(currentChild.id) : [];
     if (currentChild && ratings.length > 0) {
       const saved = await saveCurrentChild();
       if (!saved) return;
     }
-    setSelectedTaskIndex(null);
-    setShowCompletion(false);
+    leaveTask();
   };
 
-  const handleReturnToList = () => {
-    setSelectedTaskIndex(null);
-    setShowCompletion(false);
-  };
+  const handleReturnToList = leaveTask;
 
   /* ---- Task List Mode ---- */
 
