@@ -12,6 +12,9 @@ import {
   type NswStage,
 } from "@/lib/schools/year-groups";
 import { normaliseOutcomes, groupOutcomesBySubject } from "@/lib/schools/outcome-codes";
+import { getCurrentClientUser } from "@/lib/client/actions";
+import { isTermReleased } from "@/lib/client/report-card-actions";
+import { canOpenReportCard } from "@/lib/client/report-card-release";
 import { subjectOf, outcomesHeading } from "@/lib/curriculum/subjects";
 
 // Per-student report card. Everything is read through the caller's
@@ -93,6 +96,26 @@ export async function GET(
   type TermInfo = { name: string; start_date: string; end_date: string };
   const reportTermId = scoped[0].term_id as string;
   const reportTerm = scoped[0].terms as unknown as TermInfo;
+
+  // Sign-off gate (migration 090): at a school, teachers and colleagues
+  // open a card only once the primary contact has released the term.
+  // Staff have no client_users row and are never gated.
+  const { data: portalUser } = await getCurrentClientUser(centreId);
+  if (
+    portalUser &&
+    !canOpenReportCard({
+      isSchool: portalUser.centre_type === "school",
+      isPrimary: portalUser.is_primary,
+      release: (await isTermReleased(centreId, reportTermId))
+        ? { due_date: null, released_at: "released" }
+        : null,
+    })
+  ) {
+    return NextResponse.json(
+      { error: `${reportTerm.name} report cards haven't been released yet.` },
+      { status: 403 }
+    );
+  }
   const previousTermIds = Array.from(
     new Set(scoped.filter((r) => r.term_id !== reportTermId).map((r) => r.term_id))
   );

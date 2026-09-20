@@ -1098,7 +1098,7 @@ export interface PortalColleague {
 // access for the given centre. Every self-service action below gates
 // through this — server actions are directly callable, so the check
 // cannot live only in the UI.
-async function getCallerClientUser(centreId: string): Promise<{
+export async function getCallerClientUser(centreId: string): Promise<{
   cu: ClientUser | null;
   isAuthorised: boolean;
 }> {
