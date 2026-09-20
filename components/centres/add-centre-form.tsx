@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { createCentre } from "@/lib/centres/actions";
 import type { CentreType, PricingModel, ContractStatus, CentreNoteCategory } from "@/lib/types/enums";
+import { FRAMEWORK_KEYS, FRAMEWORKS, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { SPORTS } from "@/lib/types/enums";
 
 interface AddCentreFormProps {
@@ -45,6 +46,9 @@ export function AddCentreForm({ basePath }: AddCentreFormProps) {
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactRole, setContactRole] = useState("");
+
+  // Curriculum framework (schools only, migration 095)
+  const [framework, setFramework] = useState<FrameworkKey>("nsw");
 
   // Commercial
   const [pricingModel, setPricingModel] = useState<PricingModel>("centre_funded");
@@ -78,6 +82,7 @@ export function AddCentreForm({ basePath }: AddCentreFormProps) {
     const { data, error: createError } = await createCentre({
       name: name.trim(),
       type,
+      curriculum_framework: type === "school" ? framework : "nsw",
       address: address.trim() || undefined,
       primary_contact_name: contactName.trim() || undefined,
       primary_contact_phone: contactPhone.trim() || undefined,
@@ -166,6 +171,27 @@ export function AddCentreForm({ basePath }: AddCentreFormProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {type === "school" && (
+              <div className="space-y-2">
+                <Label htmlFor="framework">Curriculum framework</Label>
+                <Select value={framework} onValueChange={(v) => setFramework(v as FrameworkKey)}>
+                  <SelectTrigger id="framework" aria-label="Curriculum framework">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FRAMEWORK_KEYS.map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {FRAMEWORKS[k].fullLabel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Sets the stage or level names, outcome codes and report-card scale the school sees.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>

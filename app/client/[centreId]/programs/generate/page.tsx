@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { Sparkles } from "lucide-react";
 import { getCurrentClientUser, getPortalSchoolClasses } from "@/lib/client/actions";
 import { scopeClasses } from "@/lib/client/assessment-scope";
@@ -28,6 +29,7 @@ export default async function GenerateLessonPage({
     getPortalSchoolClasses(centreId),
     supabase.from("terms").select("name, start_date, end_date").eq("status", "active").limit(1).maybeSingle(),
   ]);
+  const framework = frameworkOf(clientUser.centre_framework);
   const weeks = term ? termWeeks(term.start_date, term.end_date) : [];
   const defaultWeekStart = term ? weekStartFor(term.start_date, term.end_date, sydneyTodayIso()) : null;
 
@@ -36,7 +38,7 @@ export default async function GenerateLessonPage({
       <div>
         <h1 className="text-2xl font-bold font-heading text-foreground">Generate a lesson</h1>
         <p className="text-muted-foreground mt-1">
-          A NSW-syllabus English or Mathematics lesson for your class, written in about a minute.
+          An English or Mathematics lesson for your class, aligned to the {framework.label}, written in about a minute.
           Review it, then save it to your school&apos;s library.
         </p>
       </div>
@@ -45,13 +47,14 @@ export default async function GenerateLessonPage({
         <Sparkles className="h-5 w-5 text-portal-600 flex-shrink-0 mt-0.5" />
         <p className="text-sm text-portal-800">
           Every lesson has a hook, explicit teaching with guided practice, an independent task with
-          success criteria, and a reflection — each mapped to NSW outcome codes. You can regenerate
+          success criteria, and a reflection — each mapped to {framework.label} {framework.outcomeNoun} codes. You can regenerate
           until it fits, and download the saved plan as a PDF.
         </p>
       </div>
 
       <LessonGenerateForm
         centreId={centreId}
+        frameworkKey={framework.key}
         classes={scopeClasses(classes, clientUser.class_ids)}
         termName={term?.name ?? null}
         termWeeks={weeks}

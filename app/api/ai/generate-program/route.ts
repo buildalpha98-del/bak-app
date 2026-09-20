@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateProgram } from "@/lib/ai/generate-program";
 import { validateAgeBands } from "@/lib/utils/programs/age-bands";
@@ -63,6 +64,17 @@ export async function POST(request: Request) {
 
     // Subject (migration 089): PDHPE unless told otherwise.
     const subject = subjectOf(typeof body.subject === "string" ? body.subject : null);
+
+    // Framework (migration 095): the selected centre's, else NSW.
+    let framework = frameworkOf(null);
+    if (typeof body.centreId === "string" && body.centreId && body.centreId !== "none") {
+      const { data: centre } = await supabase
+        .from("centres")
+        .select("curriculum_framework")
+        .eq("id", body.centreId)
+        .maybeSingle();
+      framework = frameworkOf(centre?.curriculum_framework);
+    }
 
     // Sport: accept any non-empty string up to 64 chars (custom sports supported)
     const sport = typeof body.sport === "string" ? body.sport.trim() : "";
@@ -199,6 +211,7 @@ export async function POST(request: Request) {
     // programs at a centre change over time and we want fresh output
     // when context shifts. Cache is global (not per-user).
     const cacheParams = {
+      framework: framework.key,
       subject: subject.key,
       sport,
       ageGroups: [...ageGroups].sort(),
@@ -236,6 +249,7 @@ export async function POST(request: Request) {
 
     const programContent = await generateProgram({
       subject,
+      framework,
       sport,
       ageGroups,
       durationMinutes: body.durationMinutes as number,

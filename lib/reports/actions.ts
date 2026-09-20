@@ -32,6 +32,8 @@ export interface ReportDetail extends CentreReport {
   centre_branding_mode: string;
   centre_brand_colour: string | null;
   centre_contact_email: string | null;
+  /** nsw | vic (migration 095). */
+  centre_framework: string | null;
   term_name: string;
 }
 
@@ -306,7 +308,7 @@ export async function getReportDetail(
       .select(
         `
         *,
-        centres!inner(name, logo_url, branding_mode, brand_colour, primary_contact_email),
+        centres!inner(name, logo_url, branding_mode, brand_colour, primary_contact_email, curriculum_framework),
         terms!inner(name)
       `
       )
@@ -323,6 +325,7 @@ export async function getReportDetail(
       branding_mode: string;
       brand_colour: string | null;
       primary_contact_email: string | null;
+      curriculum_framework: string | null;
     };
     const term = data.terms as unknown as { name: string };
 
@@ -345,6 +348,7 @@ export async function getReportDetail(
       centre_branding_mode: centre.branding_mode,
       centre_brand_colour: centre.brand_colour,
       centre_contact_email: centre.primary_contact_email,
+      centre_framework: centre.curriculum_framework ?? null,
       term_name: term.name,
     };
 

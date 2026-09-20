@@ -80,6 +80,7 @@ import {
 import { updateCentre, addCentreNote, archiveCentre } from "@/lib/centres/actions";
 import { centreColour } from "@/lib/utils/centre-colours";
 import { CentreColourPicker } from "./centre-colour-picker";
+import { FRAMEWORK_KEYS, FRAMEWORKS, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { EntityFeedbackTab } from "@/components/feedback/entity-feedback-tab";
 import { CentreChildrenTab } from "@/components/centres/centre-children-tab";
 import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
@@ -813,6 +814,9 @@ function EditCentreDialog({
   const [brandingMode, setBrandingMode] = useState<BrandingMode>(
     centre.branding_mode
   );
+  const [framework, setFramework] = useState<FrameworkKey>(
+    centre.curriculum_framework ?? "nsw"
+  );
   const [logoUrl, setLogoUrl] = useState(centre.logo_url);
   const [brandColour, setBrandColour] = useState<string | null>(
     centre.brand_colour
@@ -860,6 +864,7 @@ function EditCentreDialog({
       colour,
       branding_mode: brandingMode,
       brand_colour: brandColour,
+      curriculum_framework: framework,
     };
 
     const { error: updateError } = await updateCentre(centre.id, payload);
@@ -909,6 +914,27 @@ function EditCentreDialog({
             <Label>Address</Label>
             <Input value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
+          {type === "school" && (
+            <div className="space-y-2">
+              <Label>Curriculum framework</Label>
+              <Select value={framework} onValueChange={(v) => setFramework(v as FrameworkKey)}>
+                <SelectTrigger aria-label="Curriculum framework">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FRAMEWORK_KEYS.map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {FRAMEWORKS[k].fullLabel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Stage or level names, outcome codes, the report-card scale and the AI&apos;s
+                curriculum alignment all follow this.
+              </p>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Roster colour</Label>
             <CentreColourPicker value={colour} onChange={setColour} />

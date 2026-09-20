@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { programSectionsFor } from "@/lib/curriculum/subjects";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -102,13 +103,14 @@ export async function GET(
 
   const { data: centre } = await supabase
     .from("centres")
-    .select("name, type, branding_mode, logo_url")
+    .select("name, type, branding_mode, logo_url, curriculum_framework")
     .eq("id", centreId)
     .maybeSingle();
 
   const data: ScopeSequencePdfData = {
     centreName: centre?.name ?? "Your centre",
     isSchool: centre?.type === "school",
+    frameworkKey: frameworkOf(centre?.curriculum_framework).key,
     subjects: Array.from(new Set(weeks.flatMap((w) => w.sessions.map((s) => s.subject ?? "pdhpe")))),
     termName,
     weeks: weeks.map((w) => ({

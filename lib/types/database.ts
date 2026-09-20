@@ -180,6 +180,8 @@ export interface Centre {
   churn_risk: boolean;
   profile_checklist_complete: boolean;
   converted_from_lead_id: string | null;
+  /** Which curriculum a school reports against (migration 095). */
+  curriculum_framework: import("@/lib/curriculum/frameworks").FrameworkKey;
 }
 
 // ========================

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { normaliseOutcomes, splitOutcomeCode, groupOutcomesBySubject } from "../outcome-codes";
 import { SUBJECTS } from "@/lib/curriculum/subjects";
+import { FRAMEWORKS } from "@/lib/curriculum/frameworks";
 
 describe("splitOutcomeCode", () => {
   it("splits bundled codes with or without spaces", () => {
@@ -60,7 +61,39 @@ describe("normaliseOutcomes", () => {
     expect(normaliseOutcomes(mixed, "Stage 1", SUBJECTS.mathematics).map((o) => o.code)).toEqual(["MA1-RN-01"]);
   });
 
-  it("groups a mixed list by subject", () => {
+  it("filters Victorian codes by level band and prefers the school's framework", () => {
+    const vic = [
+      { code: "VC2E3LA01", title: "Level 3 language" },
+      { code: "VC2E4LY02", title: "Level 4 literacy" },
+      { code: "VC2E10LA01", title: "Level 10 language" },
+      { code: "EN2-RECOM-01", title: "NSW Stage 2 comprehension" },
+      { code: "VC2M3N01", title: "Level 3 number" },
+    ];
+    // Levels 3–4 band: both level codes, never Level 10 (digit boundary),
+    // and the NSW code is set aside because VIC codes exist.
+    expect(normaliseOutcomes(vic, "Stage 2", SUBJECTS.english, FRAMEWORKS.vic).map((o) => o.code)).toEqual([
+      "VC2E3LA01",
+      "VC2E4LY02",
+    ]);
+    expect(normaliseOutcomes(vic, "Stage 5", SUBJECTS.english, FRAMEWORKS.vic).map((o) => o.code)).toEqual([
+      "VC2E10LA01",
+    ]);
+    expect(normaliseOutcomes(vic, "Stage 2", SUBJECTS.mathematics, FRAMEWORKS.vic).map((o) => o.code)).toEqual([
+      "VC2M3N01",
+    ]);
+  });
+
+  it("keeps the other framework's codes when the school has none of its own", () => {
+    // A Victorian school whose programmes pre-date the flip: NSW codes
+    // still print (nearest band) rather than the section going blank.
+    const old = [{ code: "PD2-4 / PD3-4", title: "Movement" }];
+    expect(normaliseOutcomes(old, "Stage 2", SUBJECTS.pdhpe, FRAMEWORKS.vic).map((o) => o.code)).toEqual(["PD2-4", "PD3-4"]);
+  });
+
+  it("groups a mixed list by subject, across frameworks", () => {
+    const vicGroups = groupOutcomesBySubject([{ code: "VC2HP4M01 / VC2E3LA01", title: "x" }]);
+    expect([...vicGroups.keys()].map((s) => s.key).sort()).toEqual(["english", "pdhpe"]);
+
     const groups = groupOutcomesBySubject([
       { code: "PD2-4 / EN2-RECOM-01", title: "x" },
       { code: "MA2-RN-01", title: "y" },

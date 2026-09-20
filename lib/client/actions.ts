@@ -8,6 +8,7 @@ import { getBaseUrl, getAuthCallbackUrl } from "@/lib/utils/base-url";
 import type { ClientUser, SharedLink } from "@/lib/types/database";
 import { validClassIds, type TeamClass } from "@/lib/client/portal-team";
 import { yearGroupSortKey } from "@/lib/schools/year-groups";
+import { frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 
 // ============================================================
 // Types
@@ -23,6 +24,8 @@ export interface ClientUserWithCentre extends ClientUser {
   centre_logo_url: string | null;
   /** Accent anchor (migration 084); portal re-themes when white_label. */
   centre_brand_colour: string | null;
+  /** Curriculum the school reports against (migration 095): nsw | vic. */
+  centre_framework: FrameworkKey;
   /** Set by getCurrentClientUser(centreId) when the user has access to the requested centre. */
   is_authorised_for_current?: boolean;
 }
@@ -517,7 +520,7 @@ export async function getCurrentClientUser(
 
     const { data: centre } = await supabase
       .from("centres")
-      .select("name, type, branding_mode, logo_url, brand_colour")
+      .select("name, type, branding_mode, logo_url, brand_colour, curriculum_framework")
       .eq("id", activeCentreId)
       .maybeSingle();
 
@@ -530,6 +533,9 @@ export async function getCurrentClientUser(
         centre_branding_mode:
           centre?.branding_mode === "white_label" ? "white_label" : "bak_branded",
         centre_logo_url: centre?.logo_url ?? null,
+        centre_framework: frameworkOf(
+          (centre as Record<string, unknown> | null)?.curriculum_framework as string | undefined
+        ).key,
         centre_brand_colour:
           ((centre as Record<string, unknown> | null)?.brand_colour as
             | string

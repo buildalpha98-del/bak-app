@@ -1,6 +1,7 @@
 "use server";
 
 import { renderToBuffer } from "@react-pdf/renderer";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { sendEmailWithAttachment } from "@/lib/email/send";
 import { reportDeliveryEmail } from "@/lib/reports/email-template";
 import { ReportPDF } from "@/lib/reports/pdf-template";
@@ -27,6 +28,7 @@ export async function sendReportEmail(
     const pdfBuffer = await renderToBuffer(
       ReportPDF({
         title: report.title,
+        frameworkKey: frameworkOf(report.centre_framework).key,
         centreName: report.centre_name,
         termName: report.term_name,
         content: report.content_json,

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { subjectOf } from "@/lib/curriculum/subjects";
 import { quizBand } from "@/lib/quizzes/quiz-model";
+import type { FrameworkKey } from "@/lib/curriculum/frameworks";
 import Link from "@/components/ui/app-link";
 import {
   ArrowLeft,
@@ -30,6 +31,8 @@ interface ChildDetailViewProps {
   centreId: string;
   /** Schools see "Students" vocabulary; childcare centres see "Children". */
   isSchool?: boolean;
+  /** The school's curriculum (migration 095): names the quiz scale words. */
+  frameworkKey?: FrameworkKey;
   /** Report-card sign-off (migration 090): teachers and colleagues wait
    *  for the principal's release; the button explains instead of 403ing. */
   reportCardAccess?: { open: true } | { open: false; termName: string };
@@ -75,6 +78,7 @@ export function ChildDetailView({
   centreId,
   isSchool = false,
   reportCardAccess = { open: true },
+  frameworkKey,
 }: ChildDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("attendance");
 
@@ -287,7 +291,7 @@ export function ChildDetailView({
                     <span className="shrink-0 tabular-nums font-medium">
                       {q.score} / {q.total}
                       <span className="ml-1 text-xs text-muted-foreground">
-                        {quizBand(Math.round((q.score / Math.max(q.total, 1)) * 100))}
+                        {quizBand(Math.round((q.score / Math.max(q.total, 1)) * 100), frameworkKey)}
                       </span>
                     </span>
                   </li>

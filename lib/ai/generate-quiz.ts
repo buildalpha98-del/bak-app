@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { AI_MODEL } from "@/lib/ai/model";
 import type { SubjectDef } from "@/lib/curriculum/subjects";
+import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
 import { normaliseQuestions, type QuizQuestion } from "@/lib/quizzes/quiz-model";
 
 // ============================================================
@@ -28,11 +29,11 @@ const OUTPUT_SCHEMA = `Return ONLY a JSON object with no markdown or code fences
   ]
 }`;
 
-function systemPrompt(subject: SubjectDef): string {
+function systemPrompt(subject: SubjectDef, framework: FrameworkDef): string {
   const who =
     subject.key === "pdhpe"
       ? "children's sport and physical education teacher"
-      : `NSW primary ${subject.label} teacher`;
+      : framework.persona(subject);
   return `You are an experienced ${who} in Australia writing a short knowledge check for a class. Write 8 questions: 6 multiple choice (4 options, one clearly correct, plausible distractors) and 2 short answer (with a model answer a teacher can mark against). Match the age band exactly — vocabulary, sentence length and number ranges a child of that age reads independently. Order from easiest to hardest. Each question names the skill it checks. Use Australian English.
 
 Age band guidance:
@@ -46,6 +47,8 @@ ${OUTPUT_SCHEMA}`;
 
 export interface GenerateQuizInput {
   subject: SubjectDef;
+  /** The school's curriculum (migration 095). Defaults to NSW. */
+  framework?: FrameworkDef;
   focus: string;
   ageBand: string;
   /** When attached to a lesson: what it taught, so the questions match. */
@@ -93,7 +96,7 @@ export async function generateQuiz(input: GenerateQuizInput): Promise<{ title: s
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 3000,
-    system: systemPrompt(input.subject),
+    system: systemPrompt(input.subject, input.framework ?? FRAMEWORKS.nsw),
     messages: [
       {
         role: "user",

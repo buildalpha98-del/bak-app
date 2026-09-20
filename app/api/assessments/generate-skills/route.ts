@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateSkills } from "@/lib/ai/generate-skills";
 import { subjectOf } from "@/lib/curriculum/subjects";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
 import {
   checkDailyLimit,
   getCached,
@@ -60,12 +61,24 @@ export async function POST(request: Request) {
 
     // 4. Parse and validate body
     const body = await request.json();
-    const { sport, ageGroup, subject: subjectKey } = body as {
+    const { sport, ageGroup, subject: subjectKey, centreId } = body as {
       sport: string;
       ageGroup: string;
       subject?: string;
+      /** School the template is scoped to (migration 095): sets the framework. */
+      centreId?: string | null;
     };
     const subject = subjectOf(subjectKey);
+    let frameworkKey = "nsw";
+    if (typeof centreId === "string" && centreId) {
+      const { data: centre } = await supabase
+        .from("centres")
+        .select("curriculum_framework")
+        .eq("id", centreId)
+        .maybeSingle();
+      frameworkKey = frameworkOf(centre?.curriculum_framework).key;
+    }
+    const framework = frameworkOf(frameworkKey);
 
     if (!sport || !subject.strandOptions.includes(sport)) {
       return NextResponse.json(
@@ -94,7 +107,7 @@ export async function POST(request: Request) {
     // Claude output for 24h. Lets a user reopen the dialog without
     // re-spending the AI tokens. Cache key is global (not per-user)
     // because the output doesn't depend on who's asking.
-    const cacheKey = hashRequestKey("skills", { subject: subject.key, sport, ageGroup });
+    const cacheKey = hashRequestKey("skills", { framework: framework.key, subject: subject.key, sport, ageGroup });
     const cached = getCached<unknown>(cacheKey);
     if (cached) {
       return NextResponse.json({
@@ -118,7 +131,7 @@ export async function POST(request: Request) {
 
     // 8. Generate skills via Claude
     rateLimitMap.set(user.id, Date.now());
-    const skills = await generateSkills(sport, ageGroup, subject);
+    const skills = await generateSkills(sport, ageGroup, subject, framework);
     setCached(cacheKey, skills);
 
     return NextResponse.json({

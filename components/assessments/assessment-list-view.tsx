@@ -1060,7 +1060,7 @@ function CreateAssessmentDialog({
       const res = await fetch("/api/assessments/generate-skills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, sport, ageGroup }),
+        body: JSON.stringify({ subject, sport, ageGroup, centreId: centreId || null }),
       });
 
       if (!res.ok) {

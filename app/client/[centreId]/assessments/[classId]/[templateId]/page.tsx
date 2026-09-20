@@ -32,5 +32,5 @@ export default async function ClassAssessmentGridPage({
     );
   }
 
-  return <ClassAssessmentGrid centreId={centreId} grid={grid} />;
+  return <ClassAssessmentGrid centreId={centreId} grid={grid} frameworkKey={clientUser.centre_framework} />;
 }

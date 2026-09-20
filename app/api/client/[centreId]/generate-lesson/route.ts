@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { frameworkOf } from "@/lib/curriculum/frameworks";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { generateProgram } from "@/lib/ai/generate-program";
 import { validateLessonInput } from "@/lib/client/lesson-input";
@@ -46,6 +48,8 @@ export async function POST(
     const input = parsed.value;
 
     const cacheKey = hashRequestKey("lesson", {
+      framework: clientUser.centre_framework,
+      classId: input.classId,
       subject: input.subject.key,
       focus: input.focus,
       ageBand: input.ageBand,
@@ -66,8 +70,23 @@ export async function POST(
     }
 
     rateLimitMap.set(clientUser.id, Date.now());
+    // The class's year group lets the prompt name the exact stage/level
+    // rather than the whole band (a Year 3 lesson gets Level 3 codes).
+    let yearGroups: string[] = [];
+    if (input.classId) {
+      const supabase = await createSupabaseServerClient();
+      const { data: cls } = await supabase
+        .from("school_classes")
+        .select("year_group")
+        .eq("id", input.classId)
+        .eq("centre_id", centreId)
+        .maybeSingle();
+      if (cls?.year_group) yearGroups = [cls.year_group];
+    }
     const content = await generateProgram({
       subject: input.subject,
+      framework: frameworkOf(clientUser.centre_framework),
+      yearGroups,
       sport: input.focus,
       ageGroups: [input.ageBand],
       durationMinutes: input.durationMinutes,

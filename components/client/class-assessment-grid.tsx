@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { saveClientChildRating, type ClassAssessmentGrid } from "@/lib/client/assessment-actions";
 import { countAssessed, type GridRow } from "@/lib/client/assessment-grid";
-import { MARK_SCALE } from "@/lib/assessments/mark-scale";
+import { frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { subjectOf } from "@/lib/curriculum/subjects";
 
 const MARKS = [1, 2, 3, 4, 5] as const;
@@ -22,10 +22,14 @@ const MARKS = [1, 2, 3, 4, 5] as const;
 export function ClassAssessmentGrid({
   centreId,
   grid,
+  frameworkKey,
 }: {
   centreId: string;
   grid: ClassAssessmentGrid;
+  /** The school's curriculum (migration 095): names the mark scale. */
+  frameworkKey?: FrameworkKey;
 }) {
+  const markScale = frameworkOf(frameworkKey).markScale;
   const router = useRouter();
   const [rows, setRows] = useState<GridRow[]>(grid.rows);
   const [dirty, setDirty] = useState<Set<string>>(new Set());
@@ -140,7 +144,7 @@ export function ClassAssessmentGrid({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Scale: {MARKS.map((m) => `${m} ${MARK_SCALE[m]}`).join(" · ")}. Hover a skill for its
+        Scale: {MARKS.map((m) => `${m} ${markScale[m]}`).join(" · ")}. Hover a skill for its
         descriptor. Rows rated by your coach are locked.
       </p>
 

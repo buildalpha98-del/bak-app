@@ -17,6 +17,7 @@ import { ProgramView } from "@/components/programs/program-view";
 import { SUBJECTS, type SubjectKey } from "@/lib/curriculum/subjects";
 import { LESSON_SUBJECT_KEYS, LESSON_DURATIONS } from "@/lib/client/lesson-input";
 import { yearGroupToAgeBand, yearGroupLabel } from "@/lib/schools/year-groups";
+import { bandLabelForYearGroup, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { saveSchoolLesson } from "@/lib/client/lesson-actions";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import type { TeamClass } from "@/lib/client/portal-team";
@@ -31,12 +32,15 @@ function fmtWeek(iso: string): string {
 
 export function LessonGenerateForm({
   centreId,
+  frameworkKey,
   classes,
   termName,
   termWeeks,
   defaultWeekStart,
 }: {
   centreId: string;
+  /** The school's curriculum (migration 095): names the band under the class. */
+  frameworkKey?: FrameworkKey;
   classes: TeamClass[];
   /** Weeks of the active term for the Scope & Sequence placement (093). */
   termName: string | null;
@@ -58,6 +62,7 @@ export function LessonGenerateForm({
 
   const cls = classes.find((c) => c.id === classId) ?? null;
   const ageBand = cls ? yearGroupToAgeBand(cls.year_group) : null;
+  const bandLabel = cls ? bandLabelForYearGroup(frameworkOf(frameworkKey), cls.year_group) : null;
   const canGenerate = !!focus && !!cls && resources.length > 0 && status !== "generating";
 
   function changeSubject(next: SubjectKey) {
@@ -201,7 +206,9 @@ export function LessonGenerateForm({
           </div>
         )}
         {ageBand && (
-          <p className="text-xs text-muted-foreground">Pitched at the {ageBand} age band.</p>
+          <p className="text-xs text-muted-foreground">
+            Pitched at the {ageBand} age band{bandLabel ? ` (${bandLabel})` : ""}.
+          </p>
         )}
       </div>
 
