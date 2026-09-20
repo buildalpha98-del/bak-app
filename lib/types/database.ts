@@ -894,6 +894,9 @@ export interface ReportContentJson {
     avg_mark: number | null;
     mark_delta: number | null;
   }>;
+  /** School term report by subject and stage (September 2026); absent
+   *  for childcare centres and for reports generated before it existed. */
+  school?: import("@/lib/reports/school-report-model").SchoolReportContent;
   photos?: string[];
 }
 

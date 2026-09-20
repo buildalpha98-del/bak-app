@@ -8,6 +8,8 @@ import { getClientStatusPulse } from "@/lib/client/status-pulse-actions";
 import { getCalendarToken } from "@/lib/calendar/actions";
 import { ClientDashboard } from "@/components/client/client-dashboard";
 import { WelcomeBanner } from "@/components/client/welcome-banner";
+import { SchoolDashboard } from "@/components/client/school-dashboard";
+import { getSchoolDashboard } from "@/lib/client/school-dashboard-actions";
 
 export default async function ClientDashboardPage({
   params,
@@ -23,6 +25,16 @@ export default async function ClientDashboardPage({
   // default one rather than 404 / login.
   if (clientUser.is_authorised_for_current === false) {
     redirect(`/client/${clientUser.centre_id}`);
+  }
+
+  // Schools land on their own dashboard: term plans, assessments and
+  // report cards, this week's lessons and sessions (September 2026).
+  if (clientUser.centre_type === "school") {
+    const { data: school, error: schoolError } = await getSchoolDashboard(centreId);
+    if (school && !schoolError) {
+      const first = (clientUser.name ?? "").split(" ")[0] || "there";
+      return <SchoolDashboard data={school} centreId={centreId} firstName={first} />;
+    }
   }
 
   const [{ data, error }, pulse, { token: calToken }, centresSummaryRes] =

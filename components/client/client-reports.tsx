@@ -18,6 +18,7 @@ import type { ClientReport } from "@/lib/client/portal-actions";
 import type { ReportContentJson } from "@/lib/types/database";
 import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
 import { bandSummaryHeading, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
+import { SchoolReportSection } from "@/components/client/school-report-section";
 
 interface ClientReportsProps {
   reports: ClientReport[];
@@ -113,6 +114,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
           const isExpanded = expandedId === report.id;
           const content = report.content_json as Record<string, string | number | string[] | null> & {
             class_breakdown?: ReportContentJson["class_breakdown"];
+            school?: ReportContentJson["school"];
           };
 
           return (
@@ -173,8 +175,11 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
                       </div>
                     )}
 
+                    {/* School term report: by subject and stage (Sept 2026). */}
+                    {content.school && <SchoolReportSection school={content.school} />}
+
                     {/* Sessions delivered */}
-                    {content.sessions_delivered != null && (
+                    {!content.school && content.sessions_delivered != null && (
                       <div className="flex items-start gap-3 rounded-lg bg-card p-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-portal-50">
                           <BarChart3 className="h-4 w-4 text-portal-600" />
@@ -191,7 +196,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
                     )}
 
                     {/* Average rating */}
-                    {content.average_rating != null && (
+                    {!content.school && content.average_rating != null && (
                       <div className="flex items-start gap-3 rounded-lg bg-card p-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-50">
                           <Star className="h-4 w-4 text-amber-500" />
@@ -208,7 +213,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
                     )}
 
                     {/* Sports covered */}
-                    {Array.isArray(content.sports_covered) &&
+                    {!content.school && Array.isArray(content.sports_covered) &&
                       content.sports_covered.length > 0 && (
                         <div className="sm:col-span-2">
                           <h4 className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
