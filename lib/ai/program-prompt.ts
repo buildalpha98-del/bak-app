@@ -10,8 +10,11 @@
  */
 
 import { SPORTS } from "@/lib/types/enums";
+import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 
 export interface BuildProgramPromptInput {
+  /** Defaults to PDHPE (a coaching session); English/Maths make a lesson. */
+  subject?: SubjectDef;
   sport: string;
   ageGroups: string[]; // validated upstream; expected non-empty + valid AgeBand strings
   durationMinutes: number;
@@ -49,7 +52,9 @@ const PRESET_SPORTS_LOWER = new Set<string>(SPORTS.map((s) => s.toLowerCase()));
 export function buildProgramPrompt(input: BuildProgramPromptInput): string {
   const ages = input.ageGroups;
   const isMulti = ages.length > 1;
-  const isUnknownSport = !PRESET_SPORTS_LOWER.has(input.sport.toLowerCase());
+  const subject = input.subject ?? SUBJECTS.pdhpe;
+  const isLesson = subject.key !== "pdhpe";
+  const isUnknownSport = !isLesson && !PRESET_SPORTS_LOWER.has(input.sport.toLowerCase());
 
   const ageSection = isMulti
     ? `This programme will be delivered to a mixed-age group spanning the following bands: ${ages.join(", ")}.
@@ -93,11 +98,16 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
       }\nTitle the session so the progression is visible (e.g. a consistent theme with this week's focus).`
     : "";
 
-  return `You are designing a ${input.durationMinutes}-minute coaching session for ${input.sport}.
+  const opening = isLesson
+    ? `You are designing a ${input.durationMinutes}-minute ${subject.label} lesson on the ${subject.strandLabel.toLowerCase()} "${input.sport}".`
+    : `You are designing a ${input.durationMinutes}-minute coaching session for ${input.sport}.`;
+  const kitLabel = isLesson ? "Available resources" : "Available equipment";
+
+  return `${opening}
 
 ${ageSection}
 
-Available equipment: ${input.availableEquipment.join(", ")}.${skillFocusSection}${unknownSportSection}${centreSection}${progressionSection}
+${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${unknownSportSection}${centreSection}${progressionSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }

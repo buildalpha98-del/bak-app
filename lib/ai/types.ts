@@ -71,7 +71,7 @@ export interface CoolDownSection {
 
 /** A single curriculum outcome aligned to the session */
 export interface CurriculumOutcome {
-  framework: "eylf" | "pdhpe";
+  framework: "eylf" | "pdhpe" | "english" | "mathematics";
   code: string;
   title: string;
   description: string;
@@ -80,6 +80,8 @@ export interface CurriculumOutcome {
 /** Full structured programme content as returned by Claude */
 export interface ProgramContentJson {
   title: string;
+  /** Migration 089 subject key; absent means PDHPE (every pre-089 plan). */
+  subject?: string;
   sport: string;
   ageGroup: string;
   duration: number;

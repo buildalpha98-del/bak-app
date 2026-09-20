@@ -1,6 +1,7 @@
 import React from "react";
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { ProgramContentJson, SkillDrill } from "@/lib/ai/types";
+import { subjectOf } from "@/lib/curriculum/subjects";
 
 // ============================================================
 // Program session-plan PDF
@@ -74,17 +75,17 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
-function Tip({ text }: { text?: string }) {
+function Tip({ text, label = "Coaching tip" }: { text?: string; label?: string }) {
   if (!text) return null;
   return (
     <Text style={s.tip}>
-      <Text style={s.tipLabel}>Coaching tip: </Text>
+      <Text style={s.tipLabel}>{label}: </Text>
       {text}
     </Text>
   );
 }
 
-function Drill({ drill }: { drill: SkillDrill }) {
+function Drill({ drill, tipLabel }: { drill: SkillDrill; tipLabel: string }) {
   return (
     <View style={s.block} wrap={false}>
       <Text style={s.itemName}>
@@ -98,7 +99,7 @@ function Drill({ drill }: { drill: SkillDrill }) {
             Ages {band}: {note}
           </Text>
         ))}
-      <Tip text={drill.coachingTips} />
+      <Tip text={drill.coachingTips} label={tipLabel} />
     </View>
   );
 }
@@ -111,11 +112,15 @@ export interface ProgramPdfProps {
 
 export function ProgramPdf({ content, ageGroups, generatedOn }: ProgramPdfProps) {
   const bands = ageGroups.length > 0 ? ageGroups.join(", ") : content.ageGroup;
+  const subject = subjectOf(content.subject);
+  const labels = subject.programSections;
   return (
     <Document title={content.title} author="Build Alpha Kids">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
-          <Text style={s.brand}>Build Alpha Kids — Session Plan</Text>
+          <Text style={s.brand}>
+            Build Alpha Kids — {subject.key === "pdhpe" ? "Session Plan" : `${subject.label} Lesson Plan`}
+          </Text>
           <Text style={s.title}>{content.title}</Text>
           <Text style={s.meta}>
             {content.sport} · Ages {bands} · {content.duration} minutes
@@ -128,35 +133,35 @@ export function ProgramPdf({ content, ageGroups, generatedOn }: ProgramPdfProps)
             <Bullets items={content.objectives ?? []} />
           </View>
           <View style={s.col}>
-            <Text style={s.h2}>Equipment</Text>
+            <Text style={s.h2}>{labels.equipment}</Text>
             <Bullets items={content.equipmentNeeded ?? []} />
           </View>
         </View>
 
         {content.warmUp && (
           <View style={s.block}>
-            <Text style={s.h2}>Warm-up</Text>
+            <Text style={s.h2}>{labels.warmUp}</Text>
             <Text style={s.itemName}>
               {content.warmUp.name}{" "}
               <Text style={s.duration}>· {content.warmUp.duration} min</Text>
             </Text>
             <Text style={s.body}>{content.warmUp.description}</Text>
-            <Tip text={content.warmUp.coachingTips} />
+            <Tip text={content.warmUp.coachingTips} label={labels.tip} />
           </View>
         )}
 
         {content.skillDevelopment?.length > 0 && (
           <View style={s.block}>
-            <Text style={s.h2}>Skill development</Text>
+            <Text style={s.h2}>{labels.skillDevelopment}</Text>
             {content.skillDevelopment.map((d, i) => (
-              <Drill key={i} drill={d} />
+              <Drill key={i} drill={d} tipLabel={labels.tip} />
             ))}
           </View>
         )}
 
         {content.modifiedGame && (
           <View style={s.block} wrap={false}>
-            <Text style={s.h2}>Modified game</Text>
+            <Text style={s.h2}>{labels.modifiedGame}</Text>
             <Text style={s.itemName}>
               {content.modifiedGame.name}{" "}
               <Text style={s.duration}>· {content.modifiedGame.duration} min</Text>
@@ -173,13 +178,13 @@ export function ProgramPdf({ content, ageGroups, generatedOn }: ProgramPdfProps)
                 <Bullets items={content.modifiedGame.variations} />
               </>
             )}
-            <Tip text={content.modifiedGame.coachingTips} />
+            <Tip text={content.modifiedGame.coachingTips} label={labels.tip} />
           </View>
         )}
 
         {content.coolDown && (
           <View style={s.block} wrap={false}>
-            <Text style={s.h2}>Cool-down</Text>
+            <Text style={s.h2}>{labels.coolDown}</Text>
             <Text style={s.itemName}>
               {content.coolDown.name}{" "}
               <Text style={s.duration}>· {content.coolDown.duration} min</Text>

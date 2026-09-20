@@ -25,6 +25,7 @@ import {
   addCustomEquipment,
 } from "@/lib/programs/custom-taxonomy-actions";
 import { type AgeBand } from "@/lib/utils/programs/age-bands";
+import { SUBJECTS, SUBJECT_KEYS, type SubjectKey } from "@/lib/curriculum/subjects";
 import {
   checkProgrammeDuplicate,
   getCentreEquipment,
@@ -57,6 +58,11 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   const router = useRouter();
 
   // Form fields
+  // Subject (migration 089): PDHPE is a coaching session with equipment;
+  // English/Maths are lessons on a focus area / strand with resources.
+  const [subject, setSubject] = useState<SubjectKey>("pdhpe");
+  const subjectDef = SUBJECTS[subject];
+  const isLesson = subject !== "pdhpe";
   const [sport, setSport] = useState<string>("");
   const [ageGroups, setAgeGroups] = useState<AgeBand[]>([]);
   const [durationMinutes, setDurationMinutes] = useState<SessionDuration | 0>(0);
@@ -144,10 +150,18 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
     };
   }, [sport, ageGroups]);
 
-  // Equipment list to display
-  const equipmentItems = centreId && centreId !== "none"
-    ? [...new Set([...STANDARD_EQUIPMENT, ...centreEquipmentItems])]
-    : [...STANDARD_EQUIPMENT];
+  // Equipment list to display — lessons pick from the subject's resources.
+  const equipmentItems = isLesson
+    ? [...subjectDef.resourceOptions]
+    : centreId && centreId !== "none"
+      ? [...new Set([...STANDARD_EQUIPMENT, ...centreEquipmentItems])]
+      : [...STANDARD_EQUIPMENT];
+
+  function changeSubject(next: SubjectKey) {
+    setSubject(next);
+    setSport("");
+    setSelectedEquipment(next === "pdhpe" ? [...STANDARD_EQUIPMENT] : [...SUBJECTS[next].resourceOptions]);
+  }
 
   // Rate limit cooldown
   const startCooldown = useCallback(() => {
@@ -176,6 +190,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         : undefined;
 
       const baseBody = {
+        subject,
         sport,
         ageGroups,
         durationMinutes,
@@ -275,6 +290,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         for (let i = 0; i < plans.length; i++) {
           const plan = plans[i];
           const { data: saved, error: saveError } = await saveProgram({
+            subject,
             sport: sport as string,
             ageGroups,
             durationMinutes: durationMinutes as number,
@@ -300,6 +316,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
       }
 
       const { data: saved, error: saveError } = await saveProgram({
+        subject,
         sport: sport as string,
         ageGroups,
         durationMinutes: durationMinutes as number,
@@ -356,7 +373,9 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         Generate Programme
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Use AI to create a structured coaching session plan.
+        {isLesson
+          ? `Use AI to create a structured ${subjectDef.label} lesson plan mapped to the NSW syllabus.`
+          : "Use AI to create a structured coaching session plan."}
       </p>
 
       {/* Error display */}
@@ -383,10 +402,42 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
         <div className="mt-6 space-y-6">
           <Card>
             <CardContent className="pt-6 space-y-4">
-              {/* Sport */}
+              {/* Subject (migration 089) */}
               <div>
-                <Label>Sport *</Label>
-                <SportCombobox value={sport} onChange={setSport} />
+                <Label htmlFor="subject">Subject</Label>
+                <Select value={subject} onValueChange={(v) => changeSubject((v as SubjectKey) ?? "pdhpe")}>
+                  <SelectTrigger id="subject">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBJECT_KEYS.map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {SUBJECTS[k].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sport / focus area / strand */}
+              <div>
+                <Label>{subjectDef.strandLabel} *</Label>
+                {isLesson ? (
+                  <Select value={sport} onValueChange={(v) => setSport(v ?? "")}>
+                    <SelectTrigger aria-label={subjectDef.strandLabel}>
+                      <SelectValue placeholder={`Select ${subjectDef.strandLabel.toLowerCase()}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjectDef.strandOptions.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <SportCombobox value={sport} onChange={setSport} />
+                )}
               </div>
 
               {/* Age Group */}
@@ -397,7 +448,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
               {/* Duration */}
               <div>
-                <Label htmlFor="duration">Session duration *</Label>
+                <Label htmlFor="duration">{isLesson ? "Lesson" : "Session"} duration *</Label>
                 <Select
                   value={durationMinutes ? String(durationMinutes) : ""}
                   onValueChange={(v) =>
@@ -446,12 +497,18 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
 
               {/* Skill Focus */}
               <div>
-                <Label htmlFor="skill-focus">Skill focus (optional)</Label>
+                <Label htmlFor="skill-focus">{isLesson ? "Learning focus" : "Skill focus"} (optional)</Label>
                 <Input
                   id="skill-focus"
                   value={skillFocus}
                   onChange={(e) => setSkillFocus(e.target.value)}
-                  placeholder="e.g. ball handling, teamwork, balance"
+                  placeholder={
+                    subject === "english"
+                      ? "e.g. inferring from picture books, paragraph structure"
+                      : subject === "mathematics"
+                        ? "e.g. bridging to ten, comparing fractions"
+                        : "e.g. ball handling, teamwork, balance"
+                  }
                 />
               </div>
 
@@ -500,8 +557,8 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
           {/* Equipment Picker */}
           <Card>
             <CardHeader>
-              <Label>Available equipment *</Label>
-              {centreId && centreId !== "none" && centreEquipmentItems.length > 0 && (
+              <Label>{isLesson ? "Available resources" : "Available equipment"} *</Label>
+              {!isLesson && centreId && centreId !== "none" && centreEquipmentItems.length > 0 && (
                 <p className="text-xs text-muted-foreground">
                   Includes equipment stored at this centre.
                 </p>
@@ -577,7 +634,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Generate Programme
+                {isLesson ? `Generate ${subjectDef.label} Lesson` : "Generate Programme"}
               </>
             )}
           </Button>

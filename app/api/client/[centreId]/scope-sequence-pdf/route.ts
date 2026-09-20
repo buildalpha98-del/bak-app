@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { programSectionsFor } from "@/lib/curriculum/subjects";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getScopeAndSequence } from "@/lib/client/curriculum-actions";
@@ -49,20 +50,21 @@ function programSections(content: Record<string, unknown> | null): SectionOut[] 
     });
   };
 
-  push("Warm-up", content.warmUp ?? content.warm_up);
+  const labels = programSectionsFor(typeof content.subject === "string" ? content.subject : null);
+  push(labels.warmUp, content.warmUp ?? content.warm_up);
   const drills = (content.skillDevelopment ??
     content.skill_development ??
     content.drills) as unknown;
   if (Array.isArray(drills)) {
     drills.forEach((d, i) =>
-      push(`Skill development ${i + 1}`, d, ["progressions"])
+      push(`${labels.skillItem} ${i + 1}`, d, ["progressions"])
     );
   }
-  push("Modified game", content.modifiedGame ?? content.modified_game ?? content.game, [
+  push(labels.modifiedGame, content.modifiedGame ?? content.modified_game ?? content.game, [
     "rules",
     "variations",
   ]);
-  push("Cool-down", content.coolDown ?? content.cool_down);
+  push(labels.coolDown, content.coolDown ?? content.cool_down);
   return out;
 }
 

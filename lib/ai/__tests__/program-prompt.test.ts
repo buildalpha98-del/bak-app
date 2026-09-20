@@ -71,3 +71,20 @@ describe("buildProgramPrompt", () => {
     expect(p).toContain("Soccer Basics");
   });
 });
+
+describe("buildProgramPrompt — subjects (migration 089)", () => {
+  it("frames an English lesson on a focus area with resources, not a coaching session", async () => {
+    const { SUBJECTS } = await import("@/lib/curriculum/subjects");
+    const out = buildProgramPrompt({
+      subject: SUBJECTS.english,
+      sport: "Reading comprehension",
+      ageGroups: ["5-8"],
+      durationMinutes: 45,
+      availableEquipment: ["Whiteboard", "Decodable readers"],
+    });
+    expect(out).toContain('45-minute English lesson on the focus area "Reading comprehension"');
+    expect(out).toContain("Available resources: Whiteboard, Decodable readers");
+    expect(out).not.toContain("coaching session");
+    expect(out).not.toContain("not a preset sport");
+  });
+});

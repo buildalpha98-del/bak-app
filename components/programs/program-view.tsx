@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Clock, Target, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { programSectionsFor, subjectOf } from "@/lib/curriculum/subjects";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,6 +30,7 @@ interface ProgramViewProps {
 function normalise(raw: Record<string, unknown>): Partial<ProgramContentJson> {
   return {
     title: (raw.title as string) ?? undefined,
+    subject: (raw.subject as string) ?? undefined,
     sport: (raw.sport as string) ?? undefined,
     ageGroup: (raw.ageGroup ?? raw.age_group) as string | undefined,
     duration: (raw.duration ?? raw.duration_minutes) as number | undefined,
@@ -94,11 +96,11 @@ function SectionHeader({
   return <div className="py-1">{content}</div>;
 }
 
-function CoachingTip({ text }: { text: string }) {
+function CoachingTip({ text, label = "Coaching tip" }: { text: string; label?: string }) {
   if (!text) return null;
   return (
     <div className="mt-2 rounded-lg bg-[var(--brand-orange-light)] px-3 py-2">
-      <p className="text-xs font-medium text-primary">Coaching tip</p>
+      <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-xs text-foreground">{text}</p>
     </div>
   );
@@ -124,17 +126,17 @@ function BulletList({ items, className }: { items: string[]; className?: string 
 // Section renderers
 // ============================================================
 
-function WarmUpContent({ section }: { section: WarmUpSection }) {
+function WarmUpContent({ section, tipLabel }: { section: WarmUpSection; tipLabel: string }) {
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-foreground">{section.name}</p>
       <p className="text-sm text-foreground whitespace-pre-wrap">{section.description}</p>
-      <CoachingTip text={section.coachingTips} />
+      <CoachingTip text={section.coachingTips} label={tipLabel} />
     </div>
   );
 }
 
-function SkillDevelopmentContent({ drills }: { drills: SkillDrill[] }) {
+function SkillDevelopmentContent({ drills, tipLabel }: { drills: SkillDrill[]; tipLabel: string }) {
   return (
     <div className="space-y-4">
       {drills.map((drill, i) => (
@@ -162,14 +164,14 @@ function SkillDevelopmentContent({ drills }: { drills: SkillDrill[] }) {
               ))}
             </div>
           )}
-          <CoachingTip text={drill.coachingTips} />
+          <CoachingTip text={drill.coachingTips} label={tipLabel} />
         </div>
       ))}
     </div>
   );
 }
 
-function ModifiedGameContent({ section }: { section: ModifiedGameSection }) {
+function ModifiedGameContent({ section, tipLabel }: { section: ModifiedGameSection; tipLabel: string }) {
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-foreground">{section.name}</p>
@@ -186,7 +188,7 @@ function ModifiedGameContent({ section }: { section: ModifiedGameSection }) {
           <BulletList items={section.variations} />
         </div>
       )}
-      <CoachingTip text={section.coachingTips} />
+      <CoachingTip text={section.coachingTips} label={tipLabel} />
     </div>
   );
 }
@@ -229,6 +231,7 @@ export function ProgramView({
     );
   }
 
+  const labels = programSectionsFor(data.subject);
   const sections: {
     key: string;
     title: string;
@@ -239,9 +242,9 @@ export function ProgramView({
   if (data.warmUp) {
     sections.push({
       key: "warmUp",
-      title: "Warm Up",
+      title: labels.warmUp,
       duration: data.warmUp.duration,
-      render: () => <WarmUpContent section={data.warmUp!} />,
+      render: () => <WarmUpContent section={data.warmUp!} tipLabel={labels.tip} />,
     });
   }
 
@@ -252,25 +255,25 @@ export function ProgramView({
     );
     sections.push({
       key: "skillDevelopment",
-      title: "Skill Development",
+      title: labels.skillDevelopment,
       duration: totalDrill || undefined,
-      render: () => <SkillDevelopmentContent drills={data.skillDevelopment!} />,
+      render: () => <SkillDevelopmentContent drills={data.skillDevelopment!} tipLabel={labels.tip} />,
     });
   }
 
   if (data.modifiedGame) {
     sections.push({
       key: "modifiedGame",
-      title: "Modified Game",
+      title: labels.modifiedGame,
       duration: data.modifiedGame.duration,
-      render: () => <ModifiedGameContent section={data.modifiedGame!} />,
+      render: () => <ModifiedGameContent section={data.modifiedGame!} tipLabel={labels.tip} />,
     });
   }
 
   if (data.coolDown) {
     sections.push({
       key: "coolDown",
-      title: "Cool Down",
+      title: labels.coolDown,
       duration: data.coolDown.duration,
       render: () => <CoolDownContent section={data.coolDown!} />,
     });
@@ -283,6 +286,11 @@ export function ProgramView({
         <div>
           <h3 className="text-lg font-semibold text-foreground">{data.title}</h3>
           <div className="mt-1 flex flex-wrap items-center gap-2">
+            {data.subject && data.subject !== "pdhpe" && (
+              <Badge variant="outline" className="text-xs">
+                {subjectOf(data.subject).label}
+              </Badge>
+            )}
             {data.sport && (
               <Badge variant="outline" className="text-xs">
                 {data.sport}
@@ -317,7 +325,7 @@ export function ProgramView({
           <div className="flex items-center gap-1.5 mb-1">
             <Package className="h-3.5 w-3.5 text-primary" />
             <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
-              Equipment Needed
+              {labels.equipment} needed
             </h4>
           </div>
           <div className="flex flex-wrap gap-1.5">
