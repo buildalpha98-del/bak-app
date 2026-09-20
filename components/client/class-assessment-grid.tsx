@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { saveClientChildRating, type ClassAssessmentGrid } from "@/lib/client/assessment-actions";
 import { countAssessed, type GridRow } from "@/lib/client/assessment-grid";
 import { MARK_SCALE } from "@/lib/assessments/mark-scale";
+import { subjectOf } from "@/lib/curriculum/subjects";
 
 const MARKS = [1, 2, 3, 4, 5] as const;
 
@@ -110,7 +111,8 @@ export function ClassAssessmentGrid({
             <ArrowLeft className="h-4 w-4" /> All classes
           </Link>
           <h1 className="mt-1 text-2xl font-bold font-heading text-foreground">
-            {grid.class.name} — {grid.template.sport}
+            {grid.class.name} — {grid.template.subject !== "pdhpe" ? `${subjectOf(grid.template.subject).label}: ` : ""}
+            {grid.template.sport}
           </h1>
           <p className="text-muted-foreground mt-1">
             {grid.term.name} · {grid.template.age_group} yrs ·{" "}
