@@ -351,7 +351,10 @@ export function CentreDetailView({
           quiet uppercase subheaders, all inside one TabsList so the
           shared underline-active state still works. */}
       <Tabs defaultValue="overview">
-        <TabsList variant="line" className="flex-wrap gap-x-1 gap-y-2">
+        <TabsList
+          variant="line"
+          className="group-data-horizontal/tabs:h-auto flex-wrap gap-x-1 gap-y-2"
+        >
           <GroupLabel>Engagement</GroupLabel>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sessions">
