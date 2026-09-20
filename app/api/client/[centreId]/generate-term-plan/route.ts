@@ -8,6 +8,11 @@ import { SUBJECTS, isSubjectKey } from "@/lib/curriculum/subjects";
 import { yearGroupToStage } from "@/lib/schools/year-groups";
 import { checkDailyLimit, getCached, setCached, hashRequestKey } from "@/lib/ai/cache-and-limit";
 
+// A full programme or term plan can take a couple of minutes to write;
+// Vercel's default function budget is shorter than that. The lesson
+// generation on production once ran past three minutes.
+export const maxDuration = 180;
+
 // Draft a class's term plan (migration 096). Schools only; a class
 // teacher may plan only their own classes. One real generation per
 // class × subject × term × steer is cached for the day.

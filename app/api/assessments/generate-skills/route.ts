@@ -3,6 +3,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateSkills } from "@/lib/ai/generate-skills";
 import { subjectOf } from "@/lib/curriculum/subjects";
 import { frameworkOf } from "@/lib/curriculum/frameworks";
+
+// A full programme or term plan can take a couple of minutes to write;
+// Vercel's default function budget is shorter than that. The lesson
+// generation on production once ran past three minutes.
+export const maxDuration = 180;
 import {
   checkDailyLimit,
   getCached,

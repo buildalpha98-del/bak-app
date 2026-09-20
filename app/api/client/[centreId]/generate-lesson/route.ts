@@ -4,6 +4,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { generateProgram } from "@/lib/ai/generate-program";
 import { validateLessonInput } from "@/lib/client/lesson-input";
+
+// A full programme or term plan can take a couple of minutes to write;
+// Vercel's default function budget is shorter than that. The lesson
+// generation on production once ran past three minutes.
+export const maxDuration = 180;
 import {
   checkDailyLimit,
   getCached,

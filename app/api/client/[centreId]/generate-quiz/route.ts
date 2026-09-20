@@ -6,6 +6,11 @@ import { generateQuiz } from "@/lib/ai/generate-quiz";
 import { subjectOf, isSubjectKey } from "@/lib/curriculum/subjects";
 import { checkDailyLimit, getCached, setCached, hashRequestKey } from "@/lib/ai/cache-and-limit";
 
+// A full programme or term plan can take a couple of minutes to write;
+// Vercel's default function budget is shorter than that. The lesson
+// generation on production once ran past three minutes.
+export const maxDuration = 180;
+
 // A quiz for a lesson (programId) or for a focus area + band (migration
 // 092). Portal-authenticated, own daily cap.
 

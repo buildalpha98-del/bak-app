@@ -210,6 +210,134 @@ export function SessionDetailView({
         </CardContent>
       </Card>
 
+      {/* ========== Programme ========== */}
+      <Card>
+        <CardContent className="space-y-2 p-4">
+          <div className="flex items-center gap-2">
+            <FileText className="size-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium text-foreground">Programme</h3>
+          </div>
+
+          {program ? (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <span>{program.sport}</span>
+                  {(program.age_groups?.length ? program.age_groups.join(", ") : program.age_group) && (
+                    <>
+                      <span>·</span>
+                      <span>Ages {program.age_groups?.length ? program.age_groups.join(", ") : program.age_group}</span>
+                    </>
+                  )}
+                  {program.skill_focus && (
+                    <>
+                      <span>·</span>
+                      <span>{program.skill_focus}</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {program.duration_minutes} min programme · v{program.version_number}
+                </p>
+              </div>
+              <CoachProgramContent
+                programId={program.id}
+                sessionId={session.id}
+                sessionStatus={session.status}
+                hideEylf={session.centre_type === "school"}
+              />
+              {session.status !== "completed" &&
+                session.status !== "cancelled" && (
+                  <CoachProgramPicker
+                    sessionId={session.id}
+                    sport={session.sport}
+                    currentProgramId={program.id}
+                  />
+                )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                No programme assigned to this session yet.
+              </p>
+              {session.status !== "completed" &&
+                session.status !== "cancelled" && (
+                  <CoachProgramPicker
+                    sessionId={session.id}
+                    sport={session.sport}
+                    currentProgramId={null}
+                  />
+                )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ========== Equipment ========== */}
+      <Card>
+        <CardContent className="space-y-2 p-4">
+          <div className="flex items-center gap-2">
+            <Package className="size-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium text-foreground">Equipment</h3>
+          </div>
+
+          {equipmentKit ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-foreground">{equipmentKit.name}</p>
+                <Badge variant="outline" className="text-[10px]">
+                  {equipmentKit.condition}
+                </Badge>
+              </div>
+
+              {equipmentItems.length > 0 && (
+                <div className="rounded-md border">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b bg-muted/30">
+                        <th className="px-2 py-1.5 text-left font-medium text-muted-foreground">
+                          Item
+                        </th>
+                        <th className="px-2 py-1.5 text-center font-medium text-muted-foreground">
+                          Qty
+                        </th>
+                        <th className="px-2 py-1.5 text-right font-medium text-muted-foreground">
+                          Condition
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {equipmentItems.map((item) => (
+                        <tr key={item.id} className="border-b last:border-0">
+                          <td className="px-2 py-1.5 text-foreground">
+                            {item.item_type}
+                          </td>
+                          <td className="px-2 py-1.5 text-center text-muted-foreground">
+                            {item.quantity}
+                          </td>
+                          <td className="px-2 py-1.5 text-right">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px]"
+                            >
+                              {item.condition}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              No equipment kit assigned to this session.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* ========== Centre ========== */}
       <Card>
         <CardContent className="space-y-3 p-4">
@@ -307,133 +435,6 @@ export function SessionDetailView({
                 </div>
               )}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ========== Programme ========== */}
-      <Card>
-        <CardContent className="space-y-2 p-4">
-          <div className="flex items-center gap-2">
-            <FileText className="size-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-foreground">Programme</h3>
-          </div>
-
-          {program ? (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span>{program.sport}</span>
-                  {program.age_group && (
-                    <>
-                      <span>·</span>
-                      <span>{program.age_group}</span>
-                    </>
-                  )}
-                  {program.skill_focus && (
-                    <>
-                      <span>·</span>
-                      <span>{program.skill_focus}</span>
-                    </>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {program.duration_minutes} min programme · v{program.version_number}
-                </p>
-              </div>
-              <CoachProgramContent
-                programId={program.id}
-                sessionId={session.id}
-                sessionStatus={session.status}
-              />
-              {session.status !== "completed" &&
-                session.status !== "cancelled" && (
-                  <CoachProgramPicker
-                    sessionId={session.id}
-                    sport={session.sport}
-                    currentProgramId={program.id}
-                  />
-                )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                No programme assigned to this session yet.
-              </p>
-              {session.status !== "completed" &&
-                session.status !== "cancelled" && (
-                  <CoachProgramPicker
-                    sessionId={session.id}
-                    sport={session.sport}
-                    currentProgramId={null}
-                  />
-                )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ========== Equipment ========== */}
-      <Card>
-        <CardContent className="space-y-2 p-4">
-          <div className="flex items-center gap-2">
-            <Package className="size-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-foreground">Equipment</h3>
-          </div>
-
-          {equipmentKit ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-foreground">{equipmentKit.name}</p>
-                <Badge variant="outline" className="text-[10px]">
-                  {equipmentKit.condition}
-                </Badge>
-              </div>
-
-              {equipmentItems.length > 0 && (
-                <div className="rounded-md border">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b bg-muted/30">
-                        <th className="px-2 py-1.5 text-left font-medium text-muted-foreground">
-                          Item
-                        </th>
-                        <th className="px-2 py-1.5 text-center font-medium text-muted-foreground">
-                          Qty
-                        </th>
-                        <th className="px-2 py-1.5 text-right font-medium text-muted-foreground">
-                          Condition
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {equipmentItems.map((item) => (
-                        <tr key={item.id} className="border-b last:border-0">
-                          <td className="px-2 py-1.5 text-foreground">
-                            {item.item_type}
-                          </td>
-                          <td className="px-2 py-1.5 text-center text-muted-foreground">
-                            {item.quantity}
-                          </td>
-                          <td className="px-2 py-1.5 text-right">
-                            <Badge
-                              variant="outline"
-                              className="text-[10px]"
-                            >
-                              {item.condition}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              No equipment kit assigned to this session.
-            </p>
           )}
         </CardContent>
       </Card>
@@ -674,12 +675,18 @@ function CoachProgramContent({
   programId,
   sessionId,
   sessionStatus,
+  hideEylf = false,
 }: {
   programId: string;
   sessionId: string;
   sessionStatus: string;
+  /** School sessions: the EYLF (pre-school) lines of a multi-band
+   *  programme mean nothing to a teacher; show the syllabus codes only. */
+  hideEylf?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  // Plan first: a coach on the field opens this screen for the plan, so
+  // it is expanded by default.
+  const [expanded, setExpanded] = useState(true);
   const [content, setContent] = useState<ProgramContentJson | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -688,12 +695,17 @@ function CoachProgramContent({
       setLoading(true);
       getProgramById(programId).then(({ data }) => {
         if (data) {
-          setContent(data.content_json as unknown as ProgramContentJson);
+          const raw = data.content_json as unknown as ProgramContentJson;
+          setContent(
+            hideEylf && Array.isArray(raw.curriculumOutcomes)
+              ? { ...raw, curriculumOutcomes: raw.curriculumOutcomes.filter((o) => !/^eylf/i.test(String(o.code ?? "")) && o.framework !== "eylf") }
+              : raw
+          );
         }
         setLoading(false);
       });
     }
-  }, [expanded, content, programId]);
+  }, [expanded, content, programId, hideEylf]);
 
   return (
     <div>
