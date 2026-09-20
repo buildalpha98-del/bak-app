@@ -1,0 +1,1450 @@
+{
+ "framework": "nsw",
+ "subject": "mathematics",
+ "syllabus": "NSW Mathematics K–10 Syllabus (2022)",
+ "source": "NESA digital curriculum (curriculum.nsw.edu.au), fetched 2026-09-21",
+ "validFrom": null,
+ "validTo": null,
+ "outcomes": [
+  {
+   "code": "MA1-2DS-01",
+   "statement": "recognises, describes and represents shapes including quadrilaterals and other common polygons",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-2DS-02",
+   "statement": "measures and compares areas using uniform informal units in rows and columns",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-3DS-01",
+   "statement": "recognises, describes and represents familiar three-dimensional objects",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-3DS-02",
+   "statement": "measures, records, compares and estimates internal volumes (capacities) and volumes using uniform informal units",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-CHAN-01",
+   "statement": "recognises and describes the element of chance in everyday events",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-CSQ-01",
+   "statement": "uses number bonds and the relationship between addition and subtraction to solve problems involving partitioning",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-DATA-01",
+   "statement": "gathers and organises data, displays data in lists, tables and picture graphs",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-DATA-02",
+   "statement": "reasons about representations of data to describe and interpret the results",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-FG-01",
+   "statement": "uses the structure of equal groups to solve multiplication problems, and shares or groups to solve division problems",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-GM-01",
+   "statement": "represents and describes the positions of objects in familiar locations",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-GM-02",
+   "statement": "measures, records, compares and estimates lengths and distances using uniform informal units, as well as metres and centimetres",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-GM-03",
+   "statement": "creates and recognises halves, quarters and eighths as part measures of a whole length",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-NSM-01",
+   "statement": "measures, records, compares and estimates the masses of objects using uniform informal units",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-NSM-02",
+   "statement": "describes, compares and orders durations of events, and reads half- and quarter-hour time",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-RWN-01",
+   "statement": "applies an understanding of place value and the role of zero to read, write and order two- and three-digit numbers",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA1-RWN-02",
+   "statement": "reasons about representations of whole numbers to 1000, partitioning numbers to use and record quantity values",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA2-2DS-01",
+   "statement": "compares two-dimensional shapes and describes their features",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-2DS-02",
+   "statement": "performs transformations by combining and splitting two-dimensional shapes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-2DS-03",
+   "statement": "estimates, measures and compares areas using square centimetres and square metres",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-3DS-01",
+   "statement": "makes and sketches models and nets of three-dimensional objects including prisms and pyramids",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-3DS-02",
+   "statement": "estimates, measures and compares capacities (internal volumes) using litres, millilitres and volumes using cubic centimetres",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-AR-01",
+   "statement": "selects and uses mental and written strategies for addition and subtraction involving 2- and 3-digit numbers",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-AR-02",
+   "statement": "completes number sentences involving addition and subtraction by finding missing values",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-CHAN-01",
+   "statement": "records and compares the results of chance experiments",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-DATA-01",
+   "statement": "collects discrete data and constructs graphs using a given scale",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-DATA-02",
+   "statement": "interprets data in tables, dot plots and column graphs",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-GM-01",
+   "statement": "uses grid maps and directional language to locate positions and follow routes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-GM-02",
+   "statement": "measures and estimates lengths in metres, centimetres and millimetres",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-GM-03",
+   "statement": "identifies angles and classifies them by comparing to a right angle",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-MR-01",
+   "statement": "represents and uses the structure of multiplicative relations to 10 × 10 to solve problems",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-MR-02",
+   "statement": "completes number sentences involving multiplication and division by finding missing values",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-NSM-01",
+   "statement": "estimates, measures and compares the masses of objects using kilograms and grams",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-NSM-02",
+   "statement": "represents and interprets analog and digital time in hours, minutes and seconds",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-PF-01",
+   "statement": "represents and compares halves, quarters, thirds and fifths as lengths on a number line and their related fractions formed by halving (eighths, sixths and tenths)",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-RN-01",
+   "statement": "applies an understanding of place value and the role of zero to represent numbers to at least tens of thousands",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA2-RN-02",
+   "statement": "represents and compares decimals up to 2 decimal places using place value",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "MA3-2DS-01",
+   "statement": "investigates and classifies two-dimensional shapes, including triangles and quadrilaterals based on their properties",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-2DS-02",
+   "statement": "selects and uses the appropriate unit to calculate areas, including areas of rectangles",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-2DS-03",
+   "statement": "combines, splits and rearranges shapes to determine the area of parallelograms and triangles",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-3DS-01",
+   "statement": "visualises, sketches and constructs three-dimensional objects, including prisms and pyramids, making connections to two-dimensional representations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-3DS-02",
+   "statement": "selects and uses the appropriate unit to estimate, measure and calculate volumes and capacities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-AR-01",
+   "statement": "selects and applies appropriate strategies to solve addition and subtraction problems",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-CHAN-01",
+   "statement": "conducts chance experiments and quantifies the probability",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-DATA-01",
+   "statement": "constructs graphs using many-to-one scales",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-DATA-02",
+   "statement": "interprets data displays, including timelines and line graphs",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-GM-01",
+   "statement": "locates and describes points on a coordinate plane",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-GM-02",
+   "statement": "selects and uses the appropriate unit and device to measure lengths and distances including perimeters",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-GM-03",
+   "statement": "measures and constructs angles, and identifies the relationships between angles on a straight line and angles at a point",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-MR-01",
+   "statement": "selects and applies appropriate strategies to solve multiplication and division problems",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-MR-02",
+   "statement": "constructs and completes number sentences involving multiplicative relations, applying the order of operations to calculations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-NSM-01",
+   "statement": "selects and uses the appropriate unit and device to measure the masses of objects",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-NSM-02",
+   "statement": "measures and compares duration, using 12- and 24-hour time and am and pm notation",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-RN-01",
+   "statement": "applies an understanding of place value and the role of zero to represent the properties of numbers",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-RN-02",
+   "statement": "compares and orders decimals up to 3 decimal places",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-RN-03",
+   "statement": "determines percentages of quantities, and finds equivalent fractions and decimals for benchmark percentage values",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-RQF-01",
+   "statement": "compares and orders fractions with denominators of 2, 3, 4, 5, 6, 8 and 10",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA3-RQF-02",
+   "statement": "",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "MA4-ALG-C-01",
+   "statement": "generalises number properties to operate with algebraic expressions including expansion and factorisation",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-ANG-C-01",
+   "statement": "applies angle relationships to solve problems, including those related to transversals on sets of parallel lines",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-ARE-C-01",
+   "statement": "applies knowledge of area and composite area involving triangles, quadrilaterals and circles to solve problems",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-DAT-C-01",
+   "statement": "classifies and displays data using a variety of graphical representations",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-DAT-C-02",
+   "statement": "analyses simple datasets using measures of centre, range and shape of the data",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-EQU-C-01",
+   "statement": "",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-FRC-C-01",
+   "statement": "represents and operates with fractions, decimals and percentages to solve problems",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-GEO-C-01",
+   "statement": "identifies and applies the properties of triangles and quadrilaterals to solve problems",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-IND-C-01",
+   "statement": "operates with primes and roots, positive-integer and zero indices involving numerical bases and establishes the relevant index laws",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-INT-C-01",
+   "statement": "compares, orders and calculates with integers to solve problems",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-LEN-C-01",
+   "statement": "applies knowledge of the perimeter of plane shapes and the circumference of circles to solve problems",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-LIN-C-01",
+   "statement": "creates and displays number patterns and finds graphical solutions to problems involving linear relationships",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-PRO-C-01",
+   "statement": "solves problems involving the probabilities of simple chance experiments",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-PYT-C-01",
+   "statement": "applies Pythagoras’ theorem to solve problems in various contexts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-RAT-C-01",
+   "statement": "solves problems involving ratios and rates, and analyses distance–time graphs",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA4-VOL-C-01",
+   "statement": "applies knowledge of volume and capacity to solve problems involving right prisms and cylinders",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "MA5-ALG-C-01",
+   "statement": "simplifies algebraic fractions with numerical denominators and expands algebraic expressions",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-ALG-P-01",
+   "statement": "simplifies algebraic fractions involving indices, and expands and factorises algebraic expressions (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-ALG-P-02",
+   "statement": "selects and applies appropriate algebraic techniques to operate with algebraic fractions, and expands, factorises and simplifies algebraic expressions (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-ARE-C-01",
+   "statement": "solves problems involving the surface area of right prisms and practical problems involving the area of composite shapes and solids",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-ARE-P-01",
+   "statement": "applies knowledge of the surface area of right pyramids and cones, spheres and composite solids to solve problems (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-CIR-P-01",
+   "statement": "applies deductive reasoning to prove circle theorems and solve related problems (Path: Ext)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-DAT-C-01",
+   "statement": "compares and analyses datasets using summary statistics and graphical representations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-DAT-C-02",
+   "statement": "displays and interprets datasets involving bivariate data",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-DAT-P-01",
+   "statement": "plans, conducts and reviews a statistical inquiry into a question of interest (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-EQU-C-01",
+   "statement": "solves linear equations of up to 3 steps, limited to one algebraic fraction",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-EQU-P-01",
+   "statement": "",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-EQU-P-02",
+   "statement": "solves linear equations of more than 3 steps, monic and non-monic quadratic equations, and linear simultaneous equations (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-FIN-C-01",
+   "statement": "solves financial problems involving simple interest, earning money and spending money",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-FIN-C-02",
+   "statement": "solves financial problems involving compound interest and depreciation",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-FNC-P-01",
+   "statement": "uses function notation to describe and graph functions of one variable and graphs inequalities in one and 2 variables (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-GEO-C-01",
+   "statement": "identifies and applies the properties of similar figures and scale drawings to solve problems",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-GEO-P-01",
+   "statement": "establishes conditions for congruent triangles and similar triangles and solves problems relating to properties of similar figures and plane shapes (Path: Ext)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-GEO-P-02",
+   "statement": "constructs proofs involving congruent triangles and similar triangles and proves properties of plane shapes (Path: Ext)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-IND-C-01",
+   "statement": "simplifies algebraic expressions involving positive-integer and zero indices, and establishes the meaning of negative indices for numerical bases",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-IND-P-01",
+   "statement": "applies the index laws to operate with algebraic expressions involving negative-integer indices (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-IND-P-02",
+   "statement": "describes and performs operations with surds and fractional indices (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-LIN-C-01",
+   "statement": "determines the midpoint, gradient and length of an interval, and graphs linear relationships, with and without digital tools",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-LIN-C-02",
+   "statement": "graphs and interprets linear relationships using the gradient/slope-intercept form",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-LIN-P-01",
+   "statement": "describes and applies transformations, the midpoint, gradient/slope and distance formulas, and equations of lines to solve problems (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-LOG-P-01",
+   "statement": "establishes and applies the laws of logarithms to solve problems (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-MAG-C-01",
+   "statement": "solves measurement problems by using scientific notation to represent numbers and rounding to a given number of significant figures",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-NET-P-01",
+   "statement": "solves problems involving the characteristics of graphs/networks, planar graphs and Eulerian trails and circuits (Path: Stn)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-NLI-C-01",
+   "statement": "identifies connections between algebraic and graphical representations of quadratic and exponential relationships in various contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-NLI-C-02",
+   "statement": "identifies and compares features of parabolas and exponential curves in various contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-NLI-P-01",
+   "statement": "interprets and compares non-linear relationships and their transformations, both algebraically and graphically (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-POL-P-01",
+   "statement": "defines, operates with and graphs polynomials and applies the factor and remainder theorems to solve problems (Path: Adv, Ext)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-PRO-C-01",
+   "statement": "solves problems involving probabilities in multistage chance experiments and simulations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-PRO-P-01",
+   "statement": "solves problems involving Venn diagrams, 2-way tables and conditional probability (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-RAT-P-01",
+   "statement": "identifies and solves problems involving direct and inverse variation and their graphical representations (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-RAT-P-02",
+   "statement": "analyses and constructs graphs relating to rates of change (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-TRG-C-01",
+   "statement": "applies trigonometric ratios to solve right-angled triangle problems",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-TRG-C-02",
+   "statement": "applies trigonometry to solve problems, including bearings and angles of elevation and depression",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-TRG-P-01",
+   "statement": "applies Pythagoras’ theorem and trigonometry to solve 3-dimensional problems and applies the sine, cosine and area rules to solve 2-dimensional problems, including bearings (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-TRG-P-02",
+   "statement": "establishes and applies the properties of trigonometric functions and finds solutions to trigonometric equations (Path: Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-VOL-C-01",
+   "statement": "solves problems involving the volume of composite solids consisting of right prisms and cylinders",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MA5-VOL-P-01",
+   "statement": "applies knowledge of the volume of right pyramids, cones and spheres to solve problems involving related composite solids (Path: Stn, Adv)",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "MAE-2DS-01",
+   "statement": "sorts, describes, names and makes two-dimensional shapes, including triangles, circles, squares and rectangles",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-2DS-02",
+   "statement": "describes and compares areas of similar shapes",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-3DS-01",
+   "statement": "manipulates, describes and sorts three-dimensional objects",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-3DS-02",
+   "statement": "describes and compares volumes",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-CSQ-01",
+   "statement": "reasons about number relations to model addition and subtraction by combining and separating, and comparing collections",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-CSQ-02",
+   "statement": "represents the relations between the parts that form the whole, with numbers up to 10",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-DATA-01",
+   "statement": "contributes to collecting data and interprets data displays made from objects",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-FG-01",
+   "statement": "recognises, describes and continues repeating patterns",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-FG-02",
+   "statement": "forms equal groups by sharing and counting collections of objects",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-GM-01",
+   "statement": "describes position and gives and follows simple directions",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-GM-02",
+   "statement": "describes and compares lengths",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-GM-03",
+   "statement": "identifies half the length and the halfway point",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-NSM-01",
+   "statement": "describes and compares the masses of objects",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-NSM-02",
+   "statement": "sequences events and reads hour time on clocks",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-RWN-01",
+   "statement": "demonstrates an understanding of how whole numbers indicate quantity",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAE-RWN-02",
+   "statement": "reads numerals and represents whole numbers to at least 20",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "MAO-WM-01",
+   "statement": "develops understanding and fluency in mathematics through exploring and connecting mathematical concepts, choosing and applying mathematical techniques to solve problems, and communicating their thinking and reasoning coherently and clearly",
+   "bands": [
+    "Early Stage 1",
+    "Stage 5",
+    "Stage 1",
+    "Stage 2",
+    "Stage 3",
+    "Stage 4"
+   ],
+   "years": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "overarching": true
+  }
+ ]
+}

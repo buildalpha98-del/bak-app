@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { ProgramContentJson } from "./types";
-import { buildProgramPrompt, type BuildProgramPromptInput } from "./program-prompt";
+import { buildProgramPrompt, kbBandsFor, type BuildProgramPromptInput } from "./program-prompt";
+import { validateOutcomes } from "@/lib/curriculum/knowledge-base";
 import { AI_MODEL } from "@/lib/ai/model";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
@@ -262,5 +263,21 @@ export async function generateProgram(
 
   const content = parseResponse(textBlock.text);
   content.subject = subject.key;
+
+  // Knowledge-base check: every code must exist and sit in the band;
+  // the official statement replaces the model's title. If the model
+  // returned nothing usable, keep its list rather than ship a blank
+  // section — the report card's nearest-band fallback still applies.
+  const bands = kbBandsFor(request);
+  if (bands.length > 0) {
+    const check = validateOutcomes(content.curriculumOutcomes, { bands });
+    if (check.kept.length > 0) content.curriculumOutcomes = check.kept;
+    if (process.env.NODE_ENV !== "production" && (check.unknown.length || check.offBand.length)) {
+      console.warn("generateProgram: outcomes rejected by the knowledge base", {
+        unknown: check.unknown,
+        offBand: check.offBand,
+      });
+    }
+  }
   return content;
 }

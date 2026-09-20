@@ -10,8 +10,9 @@
  */
 
 import { SPORTS } from "@/lib/types/enums";
-import { FRAMEWORKS, bandsLabelForYearGroups, type FrameworkDef } from "@/lib/curriculum/frameworks";
-import { yearGroupLabel } from "@/lib/schools/year-groups";
+import { FRAMEWORKS, bandsLabelForYearGroups, type FrameworkDef, type YearBand } from "@/lib/curriculum/frameworks";
+import { yearGroupLabel, yearGroupToStage } from "@/lib/schools/year-groups";
+import { bandsForAgeBand, promptOutcomeList, syllabusNameFor } from "@/lib/curriculum/knowledge-base";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 
 export interface BuildProgramPromptInput {
@@ -56,6 +57,20 @@ export interface BuildProgramPromptInput {
 
 const PRESET_SPORTS_LOWER = new Set<string>(SPORTS.map((s) => s.toLowerCase()));
 
+/**
+ * The canonical bands a request covers: the class's exact year groups
+ * when known, else every band its age bands span. Empty for 3-5 (EYLF)
+ * and for childcare rooms. Shared by the prompt (which list to show) and
+ * the post-generation check (which codes are allowed).
+ */
+export function kbBandsFor(input: Pick<BuildProgramPromptInput, "ageGroups" | "yearGroups">): YearBand[] {
+  const fromYears = (input.yearGroups ?? [])
+    .map((y) => yearGroupToStage(y))
+    .filter((b): b is YearBand => b !== null);
+  const bands = fromYears.length > 0 ? fromYears : input.ageGroups.flatMap((a) => bandsForAgeBand(a));
+  return Array.from(new Set(bands));
+}
+
 export function buildProgramPrompt(input: BuildProgramPromptInput): string {
   const ages = input.ageGroups;
   const isMulti = ages.length > 1;
@@ -84,6 +99,14 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
   const bandsLabel = yearGroups.length > 0 ? bandsLabelForYearGroups(framework, yearGroups) : null;
   const levelSection = bandsLabel
     ? `\n\nThe class is ${yearGroups.map((y) => yearGroupLabel(y)).join(" / ")} (${bandsLabel}). Use ${framework.label} codes for exactly ${bandsLabel} — not the neighbouring ${framework.bandNoun.toLowerCase()}s.`
+    : "";
+
+  // Curriculum knowledge base: the real outcomes for the band, so the
+  // model chooses rather than recalls. Validated again after generation.
+  const kbBands = kbBandsFor(input);
+  const kbList = kbBands.length > 0 ? promptOutcomeList(framework, subject, kbBands) : "";
+  const outcomeSection = kbList
+    ? `\n\n## Curriculum ${framework.outcomeNoun}s — choose ONLY from this list\nSelect 2-3 ${framework.outcomeNoun}s from the ${syllabusNameFor(framework, subject) ?? framework.fullLabel} that this ${subject.programSections.session} genuinely addresses. Copy each code EXACTLY as written (one code per entry — never bundle, alter or invent codes) and use the official statement as the "title".\n${kbList}`
     : "";
 
   const centreSection = input.centreContext
@@ -121,7 +144,7 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
 
 ${ageSection}
 
-${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}
+${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}${outcomeSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }

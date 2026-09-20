@@ -48,7 +48,10 @@ describe("buildProgramPrompt", () => {
 
   it("does NOT add the unknown-sport fallback for preset sports", () => {
     const p = buildProgramPrompt(input({ sport: "Soccer" }));
-    expect(p).not.toMatch(/unfamiliar/i);
+    // The knowledge-base outcome list can legitimately contain the word
+    // "unfamiliar" (PD outcomes mention unfamiliar contexts); assert on
+    // the fallback sentence itself.
+    expect(p).not.toMatch(/is not a preset sport/i);
   });
 
   it("includes skill focus when provided", () => {

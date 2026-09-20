@@ -26,7 +26,7 @@ describe("framework registry (migration 095)", () => {
         for (const key of SUBJECT_KEYS) {
           const prefixes = f.bandPrefixes[key][band];
           expect(prefixes.length).toBeGreaterThan(0);
-          for (const p of prefixes) expect(p.startsWith(f.codeFamily[key])).toBe(true);
+          for (const p of prefixes) expect(f.codeFamilies[key].some((fam) => p.startsWith(fam))).toBe(true);
         }
       }
       for (const m of [1, 2, 3, 4, 5]) expect(f.markScale[m]).toBeTruthy();
@@ -76,8 +76,10 @@ describe("codeInBand", () => {
     expect(codeInBand(FRAMEWORKS.vic, SUBJECTS.mathematics, "Early Stage 1", "VC2MFN01")).toBe(true);
   });
 
-  it("NSW stages unchanged", () => {
+  it("NSW stages unchanged, and the 2024 PDHPE family sits in the same bands", () => {
     expect(codeInBand(FRAMEWORKS.nsw, SUBJECTS.pdhpe, "Stage 2", "PD2-4")).toBe(true);
+    expect(codeInBand(FRAMEWORKS.nsw, SUBJECTS.pdhpe, "Stage 3", "PH3-MSP-01")).toBe(true);
+    expect(codeInBand(FRAMEWORKS.nsw, SUBJECTS.pdhpe, "Early Stage 1", "PHE-MSP-01")).toBe(true);
     expect(codeInBand(FRAMEWORKS.nsw, SUBJECTS.pdhpe, "Stage 2", "PD3-4")).toBe(false);
   });
 });
@@ -91,6 +93,7 @@ describe("subjectForCode / frameworkForCode", () => {
     expect(subjectForCode("VC2HP4M01")?.key).toBe("pdhpe");
     expect(subjectForCode("VC2E3LA01")?.key).toBe("english");
     expect(subjectForCode("VC2M4N02")?.key).toBe("mathematics");
+    expect(subjectForCode("PH3-MSP-01")?.key).toBe("pdhpe"); // 2024 PDHPE syllabus
     expect(subjectForCode("EYLF 1.1")).toBeNull();
   });
 

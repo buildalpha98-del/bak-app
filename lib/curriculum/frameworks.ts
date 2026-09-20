@@ -40,8 +40,9 @@ export interface FrameworkDef {
   foundationLabel: string;
   /** The word for a curriculum item: "outcome" / "content description". */
   outcomeNoun: string;
-  /** Upper-case prefix every code of a subject starts with, e.g. "PD" / "VC2HP". */
-  codeFamily: Record<SubjectKey, string>;
+  /** Upper-case prefixes a subject's codes start with, e.g. ["PD", "PH"]
+   *  (NSW PDHPE: the 2018 syllabus and the 2024 one from 2027) / ["VC2HP"]. */
+  codeFamilies: Record<SubjectKey, readonly string[]>;
   /**
    * Code prefixes that belong to a band for a subject. NSW has one per
    * stage ("PD2-"); the Victorian Curriculum's English and Mathematics
@@ -83,14 +84,14 @@ const VIC_BAND_LABELS: Record<YearBand, string> = {
   "Stage 5": "Levels 9–10",
 };
 
-function nswPrefixes(family: string): Record<YearBand, readonly string[]> {
+function nswPrefixes(...families: string[]): Record<YearBand, readonly string[]> {
   return {
-    "Early Stage 1": [`${family}E-`],
-    "Stage 1": [`${family}1-`],
-    "Stage 2": [`${family}2-`],
-    "Stage 3": [`${family}3-`],
-    "Stage 4": [`${family}4-`],
-    "Stage 5": [`${family}5-`],
+    "Early Stage 1": families.map((f) => `${f}E-`),
+    "Stage 1": families.map((f) => `${f}1-`),
+    "Stage 2": families.map((f) => `${f}2-`),
+    "Stage 3": families.map((f) => `${f}3-`),
+    "Stage 4": families.map((f) => `${f}4-`),
+    "Stage 5": families.map((f) => `${f}5-`),
   };
 }
 
@@ -142,9 +143,9 @@ export const FRAMEWORKS: Record<FrameworkKey, FrameworkDef> = {
     bandLabels: NSW_BAND_LABELS,
     foundationLabel: "Kindergarten",
     outcomeNoun: "outcome",
-    codeFamily: { pdhpe: "PD", english: "EN", mathematics: "MA" },
+    codeFamilies: { pdhpe: ["PD", "PH"], english: ["EN"], mathematics: ["MA"] },
     bandPrefixes: {
-      pdhpe: nswPrefixes("PD"),
+      pdhpe: nswPrefixes("PD", "PH"),
       english: nswPrefixes("EN"),
       mathematics: nswPrefixes("MA"),
     },
@@ -175,7 +176,7 @@ export const FRAMEWORKS: Record<FrameworkKey, FrameworkDef> = {
     bandLabels: VIC_BAND_LABELS,
     foundationLabel: "Foundation (Prep)",
     outcomeNoun: "content description",
-    codeFamily: { pdhpe: "VC2HP", english: "VC2E", mathematics: "VC2M" },
+    codeFamilies: { pdhpe: ["VC2HP"], english: ["VC2E"], mathematics: ["VC2M"] },
     bandPrefixes: {
       pdhpe: VIC_HPE_PREFIXES,
       english: vicLevelPrefixes("VC2E"),
@@ -196,7 +197,7 @@ export const FRAMEWORKS: Record<FrameworkKey, FrameworkDef> = {
     alignmentGuidance: (s) =>
       s.key === "pdhpe"
         ? "Use Victorian Curriculum F–10 v2.0 Health and Physical Education content descriptions with their real codes. HPE is banded: VC2HPF… = Foundation, VC2HP2… = Levels 1–2, VC2HP4… = Levels 3–4, VC2HP6… = Levels 5–6, VC2HP8… = Levels 7–8, VC2HP10… = Levels 9–10; the strand letter follows the band (M = Movement and Physical Activity, P = Personal, Social and Community Health), e.g. VC2HP4M01. Include a code for every band the age group covers."
-        : `Use Victorian Curriculum F–10 v2.0 ${s.label} content descriptions with their real codes. ${s.label} is per level: ${FRAMEWORKS.vic.codeFamily[s.key]}F… = Foundation, ${FRAMEWORKS.vic.codeFamily[s.key]}1… = Level 1 … ${FRAMEWORKS.vic.codeFamily[s.key]}10… = Level 10 (e.g. ${
+        : `Use Victorian Curriculum F–10 v2.0 ${s.label} content descriptions with their real codes. ${s.label} is per level: ${FRAMEWORKS.vic.codeFamilies[s.key][0]}F… = Foundation, ${FRAMEWORKS.vic.codeFamilies[s.key][0]}1… = Level 1 … ${FRAMEWORKS.vic.codeFamilies[s.key][0]}10… = Level 10 (e.g. ${
             s.key === "english" ? "VC2E3LA01, VC2E4LY02" : "VC2M3N01, VC2M4M02"
           }). Include a code for every level the age group covers.`,
   },
@@ -235,7 +236,7 @@ export function subjectForCode(code: string): SubjectDef | null {
   const families: Array<{ family: string; subject: SubjectKey }> = [];
   for (const fw of FRAMEWORK_KEYS) {
     for (const key of SUBJECT_KEYS) {
-      families.push({ family: FRAMEWORKS[fw].codeFamily[key], subject: key });
+      for (const family of FRAMEWORKS[fw].codeFamilies[key]) families.push({ family, subject: key });
     }
   }
   families.sort((a, b) => b.family.length - a.family.length);
@@ -248,7 +249,7 @@ export function frameworkForCode(code: string): FrameworkDef | null {
   const upper = code.toUpperCase();
   if (upper.startsWith("VC2")) return FRAMEWORKS.vic;
   for (const key of SUBJECT_KEYS) {
-    if (upper.startsWith(FRAMEWORKS.nsw.codeFamily[key])) return FRAMEWORKS.nsw;
+    if (FRAMEWORKS.nsw.codeFamilies[key].some((f) => upper.startsWith(f))) return FRAMEWORKS.nsw;
   }
   return null;
 }

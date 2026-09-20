@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { AI_MODEL } from "@/lib/ai/model";
 import type { SubjectDef } from "@/lib/curriculum/subjects";
 import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
+import { bandsForAgeBand, promptOutcomeList } from "@/lib/curriculum/knowledge-base";
 import { normaliseQuestions, type QuizQuestion } from "@/lib/quizzes/quiz-model";
 
 // ============================================================
@@ -93,14 +94,20 @@ export async function generateQuiz(input: GenerateQuizInput): Promise<{ title: s
   const lessonSection = input.lesson
     ? `\n\nThe quiz follows this lesson — test what it taught, nothing outside it:\nTitle: ${input.lesson.title}\nObjectives:\n${input.lesson.objectives.map((o) => `- ${o}`).join("\n")}\nActivities: ${input.lesson.activities.join("; ")}`
     : "";
+  const framework = input.framework ?? FRAMEWORKS.nsw;
+  const bands = bandsForAgeBand(input.ageBand);
+  const list = bands.length > 0 ? promptOutcomeList(framework, input.subject, bands, { max: 30 }) : "";
+  const outcomeSection = list
+    ? `\n\nThe ${framework.outcomeNoun}s for this band are below; each question's "skill" should name the code it checks:\n${list}`
+    : "";
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 3000,
-    system: systemPrompt(input.subject, input.framework ?? FRAMEWORKS.nsw),
+    system: systemPrompt(input.subject, framework),
     messages: [
       {
         role: "user",
-        content: `Write a knowledge check for ${input.subject.label} — ${input.subject.strandLabel.toLowerCase()}: ${input.focus} — for the ${input.ageBand} age band.${lessonSection}`,
+        content: `Write a knowledge check for ${input.subject.label} — ${input.subject.strandLabel.toLowerCase()}: ${input.focus} — for the ${input.ageBand} age band.${lessonSection}${outcomeSection}`,
       },
     ],
   });
