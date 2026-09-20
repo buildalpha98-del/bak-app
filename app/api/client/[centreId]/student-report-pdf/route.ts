@@ -269,6 +269,20 @@ export async function GET(
     }
   }
 
+  // Knowledge checks marked by the school this term (migration 092).
+  const { data: quizRows } = await supabase
+    .from("quiz_results")
+    .select("score, total, marked_at, quizzes!inner(title, subject, centre_id)")
+    .eq("child_id", childId)
+    .eq("term_id", reportTermId)
+    .order("marked_at", { ascending: true });
+  const quizResults = (quizRows ?? [])
+    .filter((r) => (r.quizzes as unknown as { centre_id: string }).centre_id === centreId)
+    .map((r) => {
+      const q = r.quizzes as unknown as { title: string; subject: string };
+      return { title: q.title, subject: q.subject, score: r.score, total: r.total };
+    });
+
   const data: StudentReportData = {
     studentName: `${child.first_name} ${child.last_name}`,
     className,
@@ -277,6 +291,7 @@ export async function GET(
     termName: reportTerm.name,
     attendance,
     assessments,
+    quizResults,
     insight,
     coachComments,
     // One outcomes section per subject present in the attended

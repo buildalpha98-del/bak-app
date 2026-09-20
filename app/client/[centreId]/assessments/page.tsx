@@ -6,6 +6,8 @@ import { isClassScoped } from "@/lib/client/assessment-scope";
 import { ClientAssessmentsView } from "@/components/client/client-assessments-view";
 import { getReportCardRelease } from "@/lib/client/report-card-actions";
 import { ReportCardReleaseCard } from "@/components/client/report-card-release-card";
+import { getSchoolQuizzes } from "@/lib/client/quiz-actions";
+import { SchoolQuizzes } from "@/components/client/school-quizzes";
 
 // Teachers (and the school's contacts) complete the term's skill
 // assessments here — the same flow the coaches use, same table, so the
@@ -24,9 +26,10 @@ export default async function ClientAssessmentsPage({
     redirect(`/client/${clientUser.centre_id}`);
   if (clientUser.centre_type !== "school") redirect(`/client/${centreId}`);
 
-  const [{ data: tasks, error }, { data: release }] = await Promise.all([
+  const [{ data: tasks, error }, { data: release }, { data: quizzes }] = await Promise.all([
     getClientAssessmentTasks(centreId),
     getReportCardRelease(centreId),
+    getSchoolQuizzes(centreId),
   ]);
   const scoped = isClassScoped(clientUser.class_ids);
   // Distinct students with any rating this term, across every task.
@@ -69,6 +72,8 @@ export default async function ClientAssessmentsPage({
       ) : (
         <ClientAssessmentsView centreId={centreId} tasks={tasks} scopedToClasses={scoped} />
       )}
+
+      <SchoolQuizzes centreId={centreId} quizzes={quizzes} />
     </div>
   );
 }

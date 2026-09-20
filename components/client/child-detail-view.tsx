@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { subjectOf } from "@/lib/curriculum/subjects";
+import { quizBand } from "@/lib/quizzes/quiz-model";
 import Link from "@/components/ui/app-link";
 import {
   ArrowLeft,
@@ -268,7 +270,32 @@ export function ChildDetailView({
         <AttendanceTab records={child.attendanceHistory} />
       )}
       {activeTab === "assessments" && (
-        <AssessmentsTab terms={assessmentsByTerm} />
+        <>
+          <AssessmentsTab terms={assessmentsByTerm} />
+          {child.quizResults && child.quizResults.length > 0 && (
+            <div className="mt-4 rounded-2xl border bg-card p-4">
+              <h3 className="text-sm font-semibold text-foreground">Knowledge checks</h3>
+              <ul className="mt-2 divide-y">
+                {child.quizResults.map((q) => (
+                  <li key={q.quiz_id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{q.title}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {subjectOf(q.subject).label} · {q.focus} · {formatDate(q.marked_at)}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums font-medium">
+                      {q.score} / {q.total}
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        {quizBand(Math.round((q.score / Math.max(q.total, 1)) * 100))}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
       {activeTab === "progression" && (
         <ProgressionTab data={progressionData} />

@@ -1,6 +1,7 @@
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import { subjectOf } from "@/lib/curriculum/subjects";
+import { quizBand } from "@/lib/quizzes/quiz-model";
 
 // ============================================================
 // Per-student term report — the report card a school hands to
@@ -29,6 +30,8 @@ export interface StudentReportData {
     /** Written by the class teacher in the portal (migration 088). */
     teacherComment?: string | null;
   }>;
+  /** Teacher-marked knowledge checks this term (migration 092). */
+  quizResults?: Array<{ title: string; subject: string; score: number; total: number }>;
   insight: {
     summary: string | null;
     strengths: string[];
@@ -255,6 +258,28 @@ export function StudentReportPDF(data: StudentReportData) {
               term&apos;s.
             </Text>
           </>
+        )}
+
+        {/* Knowledge checks */}
+        {data.quizResults && data.quizResults.length > 0 && (
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>Knowledge Checks</Text>
+            {data.quizResults.map((q, i) => {
+              const pct = Math.round((q.score / Math.max(q.total, 1)) * 100);
+              return (
+                <View key={i} style={styles.skillRow}>
+                  <Text style={styles.skillName}>
+                    {q.title}
+                    {q.subject !== "pdhpe" ? `  (${subjectOf(q.subject).label})` : ""}
+                  </Text>
+                  <Text style={styles.markWord}>
+                    {q.score} / {q.total}
+                  </Text>
+                  <Text style={styles.delta}>{quizBand(pct)}</Text>
+                </View>
+              );
+            })}
+          </View>
         )}
 
         {/* Development summary */}
