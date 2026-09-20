@@ -95,14 +95,25 @@ describe("calculateAgeGroup", () => {
       expect(calculateAgeGroup(dob)).toBe("8-12");
     });
 
-    it("returns 8-12 for a 12-year-old", () => {
-      const dob = new Date("2013-07-01");
+    it("returns 8-12 for an 11-year-old", () => {
+      const dob = new Date();
+      dob.setFullYear(dob.getFullYear() - 11);
+      dob.setDate(dob.getDate() - 1);
       expect(calculateAgeGroup(dob)).toBe("8-12");
     });
+  });
 
-    it("returns 8-12 for older children (15+)", () => {
+  // ---- Group "12-16" (Years 7–10, migration 094) ----
+
+  describe("age group 12-16", () => {
+    it("returns 12-16 for a 12-year-old", () => {
+      const dob = new Date("2013-07-01");
+      expect(calculateAgeGroup(dob)).toBe("12-16");
+    });
+
+    it("returns 12-16 for older students (15+)", () => {
       const dob = new Date("2010-01-01");
-      expect(calculateAgeGroup(dob)).toBe("8-12");
+      expect(calculateAgeGroup(dob)).toBe("12-16");
     });
   });
 

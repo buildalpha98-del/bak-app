@@ -14,7 +14,7 @@ import {
   type CoverageCell,
 } from "@/lib/programs/actions";
 
-const BANDS = ["3-5", "5-8", "8-12"] as const;
+const BANDS = ["3-5", "5-8", "8-12", "12-16"] as const;
 
 export function LibraryCoverage() {
   const [open, setOpen] = useState(false);

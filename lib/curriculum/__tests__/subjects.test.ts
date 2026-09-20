@@ -13,7 +13,7 @@ describe("subject registry", () => {
     for (const key of SUBJECT_KEYS) {
       const s = SUBJECTS[key];
       expect(Object.keys(s.stagePrefixes).sort()).toEqual(
-        ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3"].sort()
+        ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"].sort()
       );
       for (const p of Object.values(s.stagePrefixes)) expect(p.startsWith(s.codeFamily)).toBe(true);
       expect(s.strandOptions.length).toBeGreaterThan(0);

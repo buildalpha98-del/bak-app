@@ -968,7 +968,7 @@ export async function importChildren(
     if (!user) return { data: null, error: "Not authenticated." };
 
     const result: ImportResult = { created: 0, skipped: 0, errors: [] };
-    const validAgeGroups = ["3-5", "5-8", "8-12"];
+    const validAgeGroups = ["3-5", "5-8", "8-12", "12-16"];
     const validGenders = ["male", "female", "other", "prefer_not_to_say"];
 
     // Get existing children at this centre for duplicate detection
@@ -1004,7 +1004,7 @@ export async function importChildren(
 
       if (!row.age_group || !validAgeGroups.includes(row.age_group)) {
         result.errors.push(
-          `Row ${rowNum}: Invalid age group "${row.age_group}". Must be 3-5, 5-8, or 8-12.`
+          `Row ${rowNum}: Invalid age group "${row.age_group}". Must be 3-5, 5-8, 8-12 or 12-16.`
         );
         continue;
       }

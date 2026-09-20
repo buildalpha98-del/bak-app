@@ -43,6 +43,7 @@ Your task is to generate a structured ${subject.label} lesson plan as a single J
 - 3-5 years: play-based, oral, short bursts (3-5 min), concrete materials, lots of modelling
 - 5-8 years (Early Stage 1 / Stage 1): explicit modelling, guided practice with concrete materials, 5-8 minute activities, simple success criteria
 - 8-12 years (Stage 2 / Stage 3): strategies named and practised, independent application, 8-12 minute activities, reasoning and reflection
+- 12-16 years (Stage 4 / Stage 5, Years 7-10): subject-specific vocabulary and abstraction, sustained independent and collaborative tasks, explicit success criteria, justification and evaluation
 
 ## Curriculum Alignment
 Use NSW ${subject.fullName} syllabus outcomes with real outcome codes for the band (${Object.values(subject.stagePrefixes).join(", ")}…). For ages 3-5 use EYLF V2.0 outcomes instead. Select 2-3 that genuinely apply. Set "framework" to "${subject.key}" (or "eylf").
@@ -82,6 +83,12 @@ Your task is to generate a structured coaching session plan as a single JSON obj
 - Longer attention spans — 8–12 minute activities
 - Introduce basic strategy and decision-making
 
+### Ages 12–16 (Secondary, Years 7–10)
+- Sport-specific technique under pressure, game sense and tactical problem solving
+- Full-rules or small-sided competitive formats with officiating and leadership roles
+- Fitness components named and trained (aerobic, strength, agility) with student-designed variations
+- 10–15 minute activities; students coach, referee and reflect
+
 ## Curriculum Alignment
 
 Based on the age group, include relevant curriculum outcomes:
@@ -97,11 +104,11 @@ Use the Early Years Learning Framework (EYLF) V2.0 outcomes:
 Most sports sessions will align with Outcome 3 (wellbeing/physical), Outcome 1 (identity/confidence), and Outcome 4 (learning dispositions). Select 2-4 specific sub-outcomes that genuinely apply.
 
 ### For ages 5-8 and 8-12 (Schools):
-Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6; the 8-12 band spans Stage 2 AND Stage 3):
-- PDe-1 / PD1-6 / PD2-6 / PD3-4: Movement skill and performance
-- PDe-3 / PD1-7 / PD2-7 / PD3-5: Active lifestyle and fitness
-- PDe-6 / PD1-9 / PD2-9 / PD3-9: Safe practices
-- PDe-2 / PD1-3 / PD2-3 / PD3-3: Interpersonal relationships / teamwork
+Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6, Stage 4 = Years 7-8, Stage 5 = Years 9-10; the 8-12 band spans Stage 2 AND Stage 3, the 12-16 band spans Stage 4 AND Stage 5):
+- PDe-1 / PD1-6 / PD2-6 / PD3-4 / PD4-4 / PD5-4: Movement skill and performance
+- PDe-3 / PD1-7 / PD2-7 / PD3-5 / PD4-5 / PD5-5: Active lifestyle and fitness
+- PDe-6 / PD1-9 / PD2-9 / PD3-9 / PD4-9 / PD5-9: Safe practices
+- PDe-2 / PD1-3 / PD2-3 / PD3-3 / PD4-3 / PD5-3: Interpersonal relationships / teamwork
 
 ### Reflection Prompt
 Also generate a "reflectionPrompt" field: a 2-3 sentence paragraph that an educator could use as a starting point for their daily reflection or learning journal entry about this session. Write it in first person as if the educator is reflecting. Reference specific activities from the session and the curriculum outcomes addressed.
@@ -134,7 +141,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation, no code fenc
       "description": "string — step-by-step instructions",
       "progressions": ["string array — 2-3 ways to make it harder/easier"],
       "coachingTips": "string — what to look for, common mistakes",
-      "scaffolds": { "3-5": "string — 1-2 lines on adjusting this drill for this band", "5-8": "string", "8-12": "string" }
+      "scaffolds": { "3-5": "string — 1-2 lines on adjusting this drill for this band", "5-8": "string", "8-12": "string", "12-16": "string" }
     }
   ],
 

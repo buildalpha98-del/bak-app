@@ -5,7 +5,7 @@ import { SUBJECTS, isSubjectKey, type SubjectDef } from "@/lib/curriculum/subjec
 
 export const LESSON_SUBJECT_KEYS = ["english", "mathematics"] as const;
 export const LESSON_DURATIONS = [30, 45, 60] as const;
-export const LESSON_AGE_BANDS = ["3-5", "5-8", "8-12"] as const;
+export const LESSON_AGE_BANDS = ["3-5", "5-8", "8-12", "12-16"] as const;
 
 export interface LessonInput {
   subject: SubjectDef;

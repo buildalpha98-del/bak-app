@@ -8,18 +8,20 @@
  * 3–5  → Early Childhood
  * 5–8  → Junior
  * 8–12 → Senior
+ * 12–16 → Secondary (Years 7–10, NSW Stage 4–5; migration 094)
  *
  * Adapted from the P2 spec at:
  * docs/superpowers/specs/2026-05-07-roster-and-programs-redesign-design.md
  */
 
-export const AGE_BANDS = ["3-5", "5-8", "8-12"] as const;
+export const AGE_BANDS = ["3-5", "5-8", "8-12", "12-16"] as const;
 export type AgeBand = (typeof AGE_BANDS)[number];
 
 export const AGE_BAND_LABELS: Record<AgeBand, string> = {
   "3-5": "3–5 years (Early Childhood)",
   "5-8": "5–8 years (Junior)",
   "8-12": "8–12 years (Senior)",
+  "12-16": "12–16 years (Secondary)",
 };
 
 export function isValidAgeBand(value: string): value is AgeBand {

@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (!["3-5", "5-8", "8-12"].includes(ageGroup)) {
+    if (!["3-5", "5-8", "8-12", "12-16"].includes(ageGroup)) {
       return NextResponse.json(
         { error: "Invalid age group." },
         { status: 400 }

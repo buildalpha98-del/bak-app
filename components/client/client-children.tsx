@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ClientChild } from "@/lib/client/portal-actions";
 
-const AGE_GROUPS = ["All", "3-5", "5-8", "8-12"] as const;
+const AGE_GROUPS = ["All", "3-5", "5-8", "8-12", "12-16"] as const;
 
 interface ClientChildrenProps {
   children: ClientChild[];

@@ -11,7 +11,7 @@ import { checkDailyLimit, getCached, setCached, hashRequestKey } from "@/lib/ai/
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 10_000;
 const DAILY_LIMIT = 10;
-const BANDS = ["3-5", "5-8", "8-12"];
+const BANDS = ["3-5", "5-8", "8-12", "12-16"];
 
 export async function POST(
   request: Request,

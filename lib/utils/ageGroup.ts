@@ -2,7 +2,7 @@ import type { AgeGroup } from "@/lib/types/enums";
 
 /**
  * Calculate age group from date of birth.
- * Age groups: 3-5, 5-8, 8-12
+ * Age groups: 3-5, 5-8, 8-12, 12-16
  */
 export function calculateAgeGroup(dob: Date): AgeGroup {
   const today = new Date();
@@ -12,6 +12,7 @@ export function calculateAgeGroup(dob: Date): AgeGroup {
     age--;
   }
 
+  if (age >= 12) return "12-16";
   if (age >= 8) return "8-12";
   if (age >= 5) return "5-8";
   return "3-5";

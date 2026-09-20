@@ -460,6 +460,7 @@ export function ActiveSessionView({ data }: ActiveSessionViewProps) {
                           <SelectItem value="3-5">3–5 years</SelectItem>
                           <SelectItem value="5-8">5–8 years</SelectItem>
                           <SelectItem value="8-12">8–12 years</SelectItem>
+                          <SelectItem value="12-16">12–16 years</SelectItem>
                         </SelectContent>
                       </Select>
                       <div className="flex gap-2">

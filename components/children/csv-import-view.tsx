@@ -42,9 +42,9 @@ interface CsvImportViewProps {
   basePath: string;
 }
 
-type AgeGroup = "3-5" | "5-8" | "8-12";
+type AgeGroup = "3-5" | "5-8" | "8-12" | "12-16";
 
-const VALID_AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12"];
+const VALID_AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12", "12-16"];
 
 interface ParsedRow extends ImportChildRow {
   _rowIndex: number;
@@ -162,7 +162,7 @@ function parseCsv(text: string): { rows: ParsedRow[]; unmappedHeaders: string[] 
     if (!row.age_group) {
       errors.push("Missing age group (add an Age Group or Date of Birth column)");
     } else if (!VALID_AGE_GROUPS.includes(row.age_group as AgeGroup)) {
-      errors.push(`Invalid age group "${row.age_group}" — must be 3-5, 5-8, or 8-12`);
+      errors.push(`Invalid age group "${row.age_group}" — must be 3-5, 5-8, 8-12 or 12-16`);
     }
 
     rows.push({

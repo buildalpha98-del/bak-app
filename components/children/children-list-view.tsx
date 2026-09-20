@@ -127,7 +127,7 @@ interface ChildrenListViewProps {
   regions?: RegionOption[];
 }
 
-const AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12"];
+const AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12", "12-16"];
 const GENDERS: { value: Gender; label: string }[] = [
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },

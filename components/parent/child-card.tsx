@@ -13,6 +13,7 @@ const AGE_GROUP_COLORS: Record<string, string> = {
   "3-5": "bg-green-100 text-green-700",
   "5-8": "bg-blue-100 text-blue-700",
   "8-12": "bg-purple-100 text-purple-700",
+  "12-16": "bg-slate-100 text-slate-700",
 };
 
 export function ChildCard({ child }: ChildCardProps) {

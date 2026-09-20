@@ -29,6 +29,7 @@ Age group guidance:
 - 3-5 years: early literacy — oral language, listening, letter and sound awareness, engagement with books
 - 5-8 years: Early Stage 1 / Stage 1 — phonics, decoding, sight words, sentence writing, retelling
 - 8-12 years: Stage 2 / Stage 3 — fluency, comprehension strategies, text structure, purposeful writing, vocabulary
+- 12-16 years: Stage 4 / Stage 5 — analysing and composing texts across forms, language features and their effects, sustained argument and evidence
 
 ${OUTPUT_SCHEMA}`;
   }
@@ -39,6 +40,7 @@ Age group guidance:
 - 3-5 years: early numeracy — counting, subitising, comparing, shapes, patterns
 - 5-8 years: Early Stage 1 / Stage 1 — number to 100, addition and subtraction strategies, measurement with informal units, 2D/3D shapes
 - 8-12 years: Stage 2 / Stage 3 — multiplication and division, fractions and decimals, formal units, data and chance, reasoning
+- 12-16 years: Stage 4 / Stage 5 — integers, ratio and rates, algebra and linear relationships, geometry proofs, statistics and probability
 
 ${OUTPUT_SCHEMA}`;
   }
@@ -48,6 +50,7 @@ Age group guidance:
 - 3-5 years: gross motor skills, participation, listening, basic movement
 - 5-8 years: fundamental movement skills, basic sport skills, cooperation, rule following
 - 8-12 years: sport-specific techniques, tactical awareness, teamwork, sportsmanship
+- 12-16 years: technique under pressure, game sense and tactics, fitness components, officiating and leadership
 
 ${OUTPUT_SCHEMA}`;
 }
