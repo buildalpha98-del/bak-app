@@ -286,6 +286,15 @@ past `npm test`; that's the signal it belongs at this tier.
   076/077's seam) and deletes it via the service role in `finally`.
 - Needs the Supabase + Anthropic keys; the config reads `.env.production.local`
   and lets `.env.local` win where it defines a var.
+- `e2e/teacher-seam.spec.ts` (Sept 2026) pins the school-portal teacher seam
+  (migrations 088/090/091): it provisions a throwaway class teacher on a real
+  school plus one probe assessment template, then checks class-scoped
+  Assessments, a grid save through the real server action, RLS refusing a
+  teacher's rewrite of a coach's rating, the report-card release gate, and
+  the lesson generator's class scoping — and deletes everything in
+  `afterAll`. It skips (never fails) on a school that has already released
+  the term. Run with `E2E_PORT=3180` locally; port 3100 is held by the
+  desktop app's helper.
 
 ## Sports List
 
