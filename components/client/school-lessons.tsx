@@ -57,6 +57,7 @@ export function SchoolLessons({
                 {l.focus} · {l.duration_minutes} min
                 {l.class_name ? ` · ${l.class_name}` : l.age_group ? ` · ages ${l.age_group}` : ""}
                 {l.author_name ? ` · ${l.author_name}` : ""} · {fmtDate(l.created_at)}
+                {l.planned_for ? ` · on the Scope & Sequence, week of ${fmtDate(`${l.planned_for}T12:00:00Z`)}` : ""}
               </p>
               <div className="mt-3 flex gap-2">
                 <Link

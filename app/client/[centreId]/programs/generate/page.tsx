@@ -3,6 +3,9 @@ import { Sparkles } from "lucide-react";
 import { getCurrentClientUser, getPortalSchoolClasses } from "@/lib/client/actions";
 import { scopeClasses } from "@/lib/client/assessment-scope";
 import { LessonGenerateForm } from "@/components/client/lesson-generate-form";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { termWeeks, weekStartFor } from "@/lib/schools/term-weeks";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 // Teachers write an English / Mathematics lesson with AI (migration
 // 091) — schools only; a class teacher sees their own classes.
@@ -20,7 +23,13 @@ export default async function GenerateLessonPage({
     redirect(`/client/${clientUser.centre_id}`);
   if (clientUser.centre_type !== "school") redirect(`/client/${centreId}/programs`);
 
-  const { data: classes } = await getPortalSchoolClasses(centreId);
+  const supabase = await createSupabaseServerClient();
+  const [{ data: classes }, { data: term }] = await Promise.all([
+    getPortalSchoolClasses(centreId),
+    supabase.from("terms").select("name, start_date, end_date").eq("status", "active").limit(1).maybeSingle(),
+  ]);
+  const weeks = term ? termWeeks(term.start_date, term.end_date) : [];
+  const defaultWeekStart = term ? weekStartFor(term.start_date, term.end_date, sydneyTodayIso()) : null;
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -41,7 +50,13 @@ export default async function GenerateLessonPage({
         </p>
       </div>
 
-      <LessonGenerateForm centreId={centreId} classes={scopeClasses(classes, clientUser.class_ids)} />
+      <LessonGenerateForm
+        centreId={centreId}
+        classes={scopeClasses(classes, clientUser.class_ids)}
+        termName={term?.name ?? null}
+        termWeeks={weeks}
+        defaultWeekStart={defaultWeekStart}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { programSectionsFor } from "@/lib/curriculum/subjects";
+import { programSectionsFor, subjectOf, SUBJECTS, SUBJECT_KEYS, type SubjectKey } from "@/lib/curriculum/subjects";
 import { ChevronDown, ChevronRight, Clock, User, CalendarDays, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,6 +105,15 @@ interface ProgramContentData {
   coolDown?: { name?: string };
 }
 
+function weekCountLabel(entries: Array<{ kind?: string }>): string {
+  const sessions = entries.filter((e) => e.kind !== "lesson").length;
+  const lessons = entries.length - sessions;
+  const parts: string[] = [];
+  if (sessions > 0) parts.push(`${sessions} session${sessions !== 1 ? "s" : ""}`);
+  if (lessons > 0) parts.push(`${lessons} lesson${lessons !== 1 ? "s" : ""}`);
+  return parts.join(" · ") || "Nothing planned";
+}
+
 function ProgramContentSection({ content }: { content: Record<string, unknown> }) {
   const [open, setOpen] = useState(false);
   const data = content as ProgramContentData;
@@ -173,6 +182,11 @@ function ProgramContentSection({ content }: { content: Record<string, unknown> }
 }
 
 export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps) {
+  // Subject filter (migration 093): only shown once the term holds more
+  // than PDHPE. "All" keeps the document whole.
+  const subjectsPresent = Array.from(new Set(weeks.flatMap((w) => w.sessions.map((s) => s.subject ?? "pdhpe"))));
+  const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  const matchesSubject = (s: { subject?: string }) => subjectFilter === "all" || (s.subject ?? "pdhpe") === subjectFilter;
   const initialOpen = weeks.reduce<Record<number, boolean>>((acc, week) => {
     acc[week.weekNumber] = isCurrentWeek(week.weekStartDate);
     return acc;
@@ -186,7 +200,25 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
 
   return (
     <div className="space-y-3">
-      {weeks.map((week) => {
+      {subjectsPresent.length > 1 && (
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Subject">
+          {["all", ...SUBJECT_KEYS.filter((k) => subjectsPresent.includes(k))].map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={subjectFilter === k}
+              onClick={() => setSubjectFilter(k)}
+              className={`min-h-[40px] rounded-full border px-3 text-sm ${
+                subjectFilter === k ? "border-portal-600 bg-portal-600 text-white" : "border-input bg-card text-foreground"
+              }`}
+            >
+              {k === "all" ? "All subjects" : SUBJECTS[k as SubjectKey].label}
+            </button>
+          ))}
+        </div>
+      )}
+      {weeks.filter((w) => w.sessions.some(matchesSubject)).map((week) => {
         const isOpen = !!openWeeks[week.weekNumber];
         const current = isCurrentWeek(week.weekStartDate);
 
@@ -213,7 +245,7 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Badge variant="secondary" className="text-xs">
-                  {week.sessions.length} session{week.sessions.length !== 1 ? "s" : ""}
+                  {weekCountLabel(week.sessions)}
                 </Badge>
                 {isOpen ? (
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -226,14 +258,17 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
             {/* Sessions */}
             {isOpen && (
               <div className="divide-y divide-border">
-                {week.sessions.map((session) => (
+                {week.sessions.filter(matchesSubject).map((session) => (
                   <div key={session.id} className="bg-background p-4 space-y-3">
                     {/* Top row: date, sport, status */}
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="flex items-center gap-1 text-sm font-medium text-foreground">
                         <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                        {formatDateNice(session.date)}
+                        {session.kind === "lesson" ? `Week of ${formatDateNice(session.date)}` : formatDateNice(session.date)}
                       </span>
+                      {session.subject !== "pdhpe" && (
+                        <Badge variant="outline" className="text-xs">{subjectOf(session.subject).label}</Badge>
+                      )}
                       <Badge
                         variant="secondary"
                         className={sportColour(session.sport)}
@@ -242,9 +277,9 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
                       </Badge>
                       <Badge
                         variant="secondary"
-                        className={statusColour(session.status)}
+                        className={session.kind === "lesson" ? "bg-violet-50 text-violet-700 border-violet-200" : statusColour(session.status)}
                       >
-                        {statusLabel(session.status)}
+                        {session.kind === "lesson" ? "Teacher lesson" : statusLabel(session.status)}
                       </Badge>
                     </div>
 
@@ -259,8 +294,11 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
                     <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <User className="h-3.5 w-3.5" />
-                        Coach {session.coach_name.split(" ")[0]}
+                        {session.kind === "lesson" ? session.coach_name : `Coach ${session.coach_name.split(" ")[0]}`}
                       </span>
+                      {session.class_names.length > 0 && (
+                        <span>{session.class_names.join(", ")}</span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
                         {session.duration_minutes} min

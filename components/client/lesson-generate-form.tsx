@@ -20,15 +20,28 @@ import { yearGroupToAgeBand, yearGroupLabel } from "@/lib/schools/year-groups";
 import { saveSchoolLesson } from "@/lib/client/lesson-actions";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import type { TeamClass } from "@/lib/client/portal-team";
+import type { TermWeek } from "@/lib/schools/term-weeks";
+import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
 
 type Status = "idle" | "generating" | "preview" | "saving";
+
+function fmtWeek(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: SYDNEY_TZ });
+}
 
 export function LessonGenerateForm({
   centreId,
   classes,
+  termName,
+  termWeeks,
+  defaultWeekStart,
 }: {
   centreId: string;
   classes: TeamClass[];
+  /** Weeks of the active term for the Scope & Sequence placement (093). */
+  termName: string | null;
+  termWeeks: TermWeek[];
+  defaultWeekStart: string | null;
 }) {
   const router = useRouter();
   const [subject, setSubject] = useState<(typeof LESSON_SUBJECT_KEYS)[number]>("english");
@@ -38,6 +51,7 @@ export function LessonGenerateForm({
   const [duration, setDuration] = useState<number>(45);
   const [learningFocus, setLearningFocus] = useState("");
   const [resources, setResources] = useState<string[]>([...subjectDef.resourceOptions]);
+  const [plannedFor, setPlannedFor] = useState<string>(defaultWeekStart ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [content, setContent] = useState<ProgramContentJson | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +111,7 @@ export function LessonGenerateForm({
       resources,
       classId: classId || null,
       content,
+      plannedFor: plannedFor || null,
     });
     if (saveError || !data) {
       toast.error(saveError ?? "Failed to save the lesson.");
@@ -212,6 +227,23 @@ export function LessonGenerateForm({
           />
         </div>
       </div>
+
+      {termWeeks.length > 0 && (
+        <div className="space-y-1.5">
+          <Label>Teach in ({termName})</Label>
+          <div className="flex flex-wrap gap-1.5" aria-label="Scope & Sequence week">
+            <button type="button" aria-pressed={plannedFor === ""} onClick={() => setPlannedFor("")} className={chip(plannedFor === "")}>
+              Not scheduled
+            </button>
+            {termWeeks.map((w) => (
+              <button key={w.weekStart} type="button" aria-pressed={plannedFor === w.weekStart} onClick={() => setPlannedFor(w.weekStart)} className={chip(plannedFor === w.weekStart)}>
+                Wk {w.weekNumber} · {fmtWeek(w.weekStart)}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">Puts the lesson on the school&apos;s Scope &amp; Sequence for that week.</p>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label>Resources on hand</Label>

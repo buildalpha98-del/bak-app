@@ -19,6 +19,8 @@ interface SectionOut {
   description: string;
   bullets: string[];
   tip: string | null;
+  /** "Coaching tip" for sessions, "Teaching tip" for lessons (089). */
+  tipLabel: string;
 }
 
 function asStr(v: unknown): string {
@@ -47,6 +49,7 @@ function programSections(content: Record<string, unknown> | null): SectionOut[] 
       description: asStr(sec.description),
       bullets: bulletKeys.flatMap((k) => asStrArr(sec[k])),
       tip: asStr(sec.coachingTips ?? sec.coaching_tips) || null,
+      tipLabel: labels.tip,
     });
   };
 
@@ -81,8 +84,15 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  const termId = new URL(request.url).searchParams.get("termId") ?? undefined;
-  const { termName, weeks } = await getScopeAndSequence(centreId, termId);
+  const url = new URL(request.url);
+  const termId = url.searchParams.get("termId") ?? undefined;
+  const subjectFilter = url.searchParams.get("subject");
+  const { termName, weeks: allWeeks } = await getScopeAndSequence(centreId, termId);
+  const weeks = subjectFilter
+    ? allWeeks
+        .map((w) => ({ ...w, sessions: w.sessions.filter((s) => (s.subject ?? "pdhpe") === subjectFilter) }))
+        .filter((w) => w.sessions.length > 0)
+    : allWeeks;
   if (weeks.length === 0) {
     return NextResponse.json(
       { error: "No programme data for the current term yet" },
@@ -99,6 +109,7 @@ export async function GET(
   const data: ScopeSequencePdfData = {
     centreName: centre?.name ?? "Your centre",
     isSchool: centre?.type === "school",
+    subjects: Array.from(new Set(weeks.flatMap((w) => w.sessions.map((s) => s.subject ?? "pdhpe")))),
     termName,
     weeks: weeks.map((w) => ({
       weekNumber: w.weekNumber,
@@ -113,6 +124,8 @@ export async function GET(
             month: "short",
             timeZone: SYDNEY_TZ,
           }),
+          kind: s.kind,
+          subject: s.subject,
           sport: s.sport,
           coach_name: s.coach_name,
           duration_minutes: s.duration_minutes,

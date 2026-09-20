@@ -1,4 +1,5 @@
 import React from "react";
+import { subjectOf } from "@/lib/curriculum/subjects";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
 // The Scope & Sequence, fully written out — the document a PDHPE
@@ -10,11 +11,15 @@ import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/render
 export interface ScopeSequencePdfData {
   centreName: string;
   isSchool: boolean;
+  /** Subject keys present in the term (migration 093); framing text follows. */
+  subjects?: string[];
   termName: string;
   weeks: Array<{
     weekNumber: number;
     sessions: Array<{
       date: string; // pre-formatted
+      kind?: "session" | "lesson";
+      subject?: string;
       sport: string;
       coach_name: string;
       duration_minutes: number;
@@ -30,11 +35,18 @@ export interface ScopeSequencePdfData {
         description: string;
         bullets: string[]; // progressions / rules / variations
         tip: string | null;
+        tipLabel?: string;
       }>;
     }>;
   }>;
   branding: { mode: "bak_branded" | "white_label"; logoUrl?: string | null };
   generatedDate: string;
+}
+
+function syllabusList(keys: string[]): string {
+  const labels = keys.map((k) => subjectOf(k).label);
+  if (labels.length <= 1) return labels[0] ?? "PDHPE";
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 }
 
 const BAK_ORANGE = "#E8712A";
@@ -140,7 +152,7 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
         </View>
         <Text style={styles.framing}>
           {data.isSchool
-            ? "Every session below is mapped to NSW PDHPE syllabus outcomes before delivery. This document is the written programme of record for the term — session plans in full, suitable for programming files and curriculum audit."
+            ? `Every session and lesson below is mapped to NSW ${syllabusList(data.subjects ?? ["pdhpe"])} syllabus outcomes before delivery. This document is the written programme of record for the term — plans in full, suitable for programming files and curriculum audit.`
             : "Every session below is mapped to EYLF outcomes. This document is the written programme of record for the term, with session plans in full."}
         </Text>
 
@@ -156,10 +168,10 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
                 </Text>
                 <Text style={styles.sessionMeta}>
                   {[
-                    s.sport,
+                    s.subject && s.subject !== "pdhpe" ? `${subjectOf(s.subject).label} · ${s.sport}` : s.sport,
                     s.date,
                     `${s.duration_minutes} min`,
-                    `Coach ${s.coach_name}`,
+                    s.kind === "lesson" ? `Teacher ${s.coach_name}` : `Coach ${s.coach_name}`,
                     s.stage,
                     s.class_names.length > 0 ? s.class_names.join(", ") : null,
                   ]
@@ -208,7 +220,7 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
                       </View>
                     ))}
                     {sec.tip ? (
-                      <Text style={styles.tip}>Coaching tip: {sec.tip}</Text>
+                      <Text style={styles.tip}>{sec.tipLabel ?? "Coaching tip"}: {sec.tip}</Text>
                     ) : null}
                   </View>
                 ))}

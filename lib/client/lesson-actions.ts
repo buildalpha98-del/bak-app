@@ -25,6 +25,8 @@ export interface SchoolLesson {
   author_name: string | null;
   created_at: string;
   content_json: Record<string, unknown>;
+  /** Term week start the lesson is placed on (migration 093), or null. */
+  planned_for: string | null;
 }
 
 export async function getSchoolLessons(
@@ -35,7 +37,7 @@ export async function getSchoolLessons(
     const { data, error } = await supabase
       .from("programs")
       .select(
-        "id, subject, sport, age_group, duration_minutes, skill_focus, content_json, created_at, school_class_id, created_by_client_user_id"
+        "id, subject, sport, age_group, duration_minutes, skill_focus, content_json, created_at, school_class_id, created_by_client_user_id, planned_for"
       )
       .eq("centre_id", centreId)
       .order("created_at", { ascending: false });
@@ -71,6 +73,7 @@ export async function getSchoolLessons(
         author_name: p.created_by_client_user_id ? authorName.get(p.created_by_client_user_id) ?? null : null,
         created_at: p.created_at,
         content_json: p.content_json as Record<string, unknown>,
+        planned_for: p.planned_for ?? null,
       })),
       error: null,
     };
@@ -100,6 +103,8 @@ export async function saveSchoolLesson(
     resources: string[];
     classId: string | null;
     content: ProgramContentJson;
+    /** Term week start to place it on the Scope & Sequence (093). */
+    plannedFor?: string | null;
   }
 ): Promise<{ data: { id: string } | null; error: string | null }> {
   try {
@@ -144,6 +149,7 @@ export async function saveSchoolLesson(
         created_by_client_user_id: clientUser.id,
         centre_id: centreId,
         school_class_id: input.classId,
+        planned_for: input.plannedFor && /^\d{4}-\d{2}-\d{2}$/.test(input.plannedFor) ? input.plannedFor : null,
         version_number: 1,
         parent_version_id: null,
       })
@@ -163,5 +169,35 @@ export async function saveSchoolLesson(
   } catch (err) {
     console.error("saveSchoolLesson error:", err);
     return { data: null, error: "Failed to save the lesson." };
+  }
+}
+
+/** Place a school lesson on a term week of the Scope & Sequence, or take it off. */
+export async function setLessonWeek(
+  centreId: string,
+  programId: string,
+  plannedFor: string | null
+): Promise<{ error: string | null }> {
+  try {
+    const { data: clientUser, error: cuError } = await getCurrentClientUser(centreId);
+    if (cuError || !clientUser || clientUser.is_authorised_for_current === false) {
+      return { error: "Not authorised." };
+    }
+    if (plannedFor && !/^\d{4}-\d{2}-\d{2}$/.test(plannedFor)) return { error: "Pick a week." };
+    const supabase = await createSupabaseServerClient();
+    const { data: lesson } = await supabase
+      .from("programs")
+      .select("id")
+      .eq("id", programId)
+      .eq("centre_id", centreId)
+      .maybeSingle();
+    if (!lesson) return { error: "Lesson not found." };
+    const admin = createSupabaseAdmin();
+    const { error } = await admin.from("programs").update({ planned_for: plannedFor }).eq("id", programId);
+    if (error) throw error;
+    return { error: null };
+  } catch (err) {
+    console.error("setLessonWeek error:", err);
+    return { error: "Failed to update the lesson's week." };
   }
 }
