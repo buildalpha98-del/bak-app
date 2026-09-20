@@ -33,6 +33,7 @@ function fmtWeek(iso: string): string {
 export function LessonGenerateForm({
   centreId,
   frameworkKey,
+  initial,
   classes,
   termName,
   termWeeks,
@@ -41,6 +42,8 @@ export function LessonGenerateForm({
   centreId: string;
   /** The school's curriculum (migration 095): names the band under the class. */
   frameworkKey?: FrameworkKey;
+  /** Prefill from a term plan's week (migration 096) — validated here. */
+  initial?: { subject?: string; focus?: string; classId?: string; plannedFor?: string; learningFocus?: string };
   classes: TeamClass[];
   /** Weeks of the active term for the Scope & Sequence placement (093). */
   termName: string | null;
@@ -48,14 +51,27 @@ export function LessonGenerateForm({
   defaultWeekStart: string | null;
 }) {
   const router = useRouter();
-  const [subject, setSubject] = useState<(typeof LESSON_SUBJECT_KEYS)[number]>("english");
+  const initialSubject = (LESSON_SUBJECT_KEYS as readonly string[]).includes(initial?.subject ?? "")
+    ? (initial!.subject as (typeof LESSON_SUBJECT_KEYS)[number])
+    : "english";
+  const [subject, setSubject] = useState<(typeof LESSON_SUBJECT_KEYS)[number]>(initialSubject);
   const subjectDef = SUBJECTS[subject];
-  const [focus, setFocus] = useState("");
-  const [classId, setClassId] = useState(classes.length === 1 ? classes[0].id : "");
+  const [focus, setFocus] = useState(
+    initial?.focus && SUBJECTS[initialSubject].strandOptions.includes(initial.focus) ? initial.focus : ""
+  );
+  const [classId, setClassId] = useState(
+    initial?.classId && classes.some((c) => c.id === initial.classId)
+      ? initial.classId
+      : classes.length === 1 ? classes[0].id : ""
+  );
   const [duration, setDuration] = useState<number>(45);
-  const [learningFocus, setLearningFocus] = useState("");
+  const [learningFocus, setLearningFocus] = useState((initial?.learningFocus ?? "").slice(0, 200));
   const [resources, setResources] = useState<string[]>([...subjectDef.resourceOptions]);
-  const [plannedFor, setPlannedFor] = useState<string>(defaultWeekStart ?? "");
+  const [plannedFor, setPlannedFor] = useState<string>(
+    initial?.plannedFor && termWeeks.some((w) => w.weekStart === initial.plannedFor)
+      ? initial.plannedFor
+      : defaultWeekStart ?? ""
+  );
   const [status, setStatus] = useState<Status>("idle");
   const [content, setContent] = useState<ProgramContentJson | null>(null);
   const [error, setError] = useState<string | null>(null);

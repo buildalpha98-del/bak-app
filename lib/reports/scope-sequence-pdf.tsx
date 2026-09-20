@@ -16,6 +16,16 @@ export interface ScopeSequencePdfData {
   frameworkKey?: FrameworkKey;
   /** Subject keys present in the term (migration 093); framing text follows. */
   subjects?: string[];
+  /** Term plans (migration 096): the programme of record per class × subject. */
+  termPlans?: Array<{
+    className: string;
+    yearGroup: string;
+    subject: string;
+    title: string;
+    status: "draft" | "approved";
+    rationale: string;
+    units: Array<{ title: string; strand: string; weeks: string; outcomes: string[]; assessment: string | null }>;
+  }>;
   termName: string;
   weeks: Array<{
     weekNumber: number;
@@ -77,6 +87,15 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 10.5, color: GREY, marginTop: 2 },
   meta: { fontSize: 9, color: GREY, textAlign: "right" },
   framing: { fontSize: 9, color: GREY, marginTop: 8, lineHeight: 1.4 },
+  planTitle: { fontSize: 13, fontFamily: "Helvetica-Bold", marginTop: 14, marginBottom: 2 },
+  planMeta: { fontSize: 9, color: GREY, marginBottom: 4 },
+  planRow: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: "#DDDDDD", paddingVertical: 3 },
+  planHead: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#999999", paddingVertical: 3 },
+  planCellWeeks: { width: "14%", fontSize: 8.5 },
+  planCellUnit: { width: "44%", fontSize: 8.5, paddingRight: 4 },
+  planCellOutcomes: { width: "22%", fontSize: 8, paddingRight: 4 },
+  planCellAssess: { width: "20%", fontSize: 8 },
+  planHeadText: { fontFamily: "Helvetica-Bold" },
   weekTitle: {
     fontSize: 12,
     fontFamily: "Helvetica-Bold",
@@ -169,6 +188,34 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
             ? `Every session and lesson below is mapped to ${framingFor(data.frameworkKey, data.subjects ?? ["pdhpe"])} before delivery. This document is the written programme of record for the term — plans in full, suitable for programming files and curriculum audit.`
             : "Every session below is mapped to EYLF outcomes. This document is the written programme of record for the term, with session plans in full."}
         </Text>
+
+        {/* Term overview — the plans lead the document (096). */}
+        {(data.termPlans ?? []).map((p, pi) => (
+          <View key={pi} wrap={false}>
+            <Text style={styles.planTitle}>Term overview — {p.className} · {subjectOf(p.subject).label}</Text>
+            <Text style={styles.planMeta}>
+              {p.title} · {p.status === "approved" ? "Approved" : "Draft"}
+              {p.rationale ? ` · ${p.rationale}` : ""}
+            </Text>
+            <View style={styles.planHead}>
+              <Text style={[styles.planCellWeeks, styles.planHeadText]}>Weeks</Text>
+              <Text style={[styles.planCellUnit, styles.planHeadText]}>Unit</Text>
+              <Text style={[styles.planCellOutcomes, styles.planHeadText]}>Outcomes</Text>
+              <Text style={[styles.planCellAssess, styles.planHeadText]}>Assessment</Text>
+            </View>
+            {p.units.map((u, ui) => (
+              <View key={ui} style={styles.planRow}>
+                <Text style={styles.planCellWeeks}>{u.weeks}</Text>
+                <Text style={styles.planCellUnit}>
+                  {u.title}
+                  {u.strand ? ` (${u.strand})` : ""}
+                </Text>
+                <Text style={styles.planCellOutcomes}>{u.outcomes.join(", ")}</Text>
+                <Text style={styles.planCellAssess}>{u.assessment ?? "—"}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
 
         {data.weeks.map((week) => (
           <View key={week.weekNumber}>

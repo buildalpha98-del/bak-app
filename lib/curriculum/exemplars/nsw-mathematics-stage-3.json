@@ -1,0 +1,769 @@
+{
+ "framework": "nsw",
+ "subject": "mathematics",
+ "syllabus": "NSW Mathematics K–10 Syllabus (2022)",
+ "band": "Stage 3",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — maths-s3.xlsx",
+ "variants": [
+  {
+   "label": "Year A",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Unit 1",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Determine products and factors"
+       ]
+      },
+      {
+       "title": "Unit 2",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-AR-01"
+       ],
+       "focusAreas": [
+        "Additive relations A"
+       ],
+       "contentGroups": [
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems"
+       ]
+      },
+      {
+       "title": "Unit 3",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Use metres and kilometres for length and distances",
+        "Length: Connect decimal representations to the metric system",
+        "2D shapes: Classify two-dimensional shapes and describe their properties",
+        "2D shapes: Dissect two-dimensional shapes and rearrange them using translations, reflections and rotations",
+        "Time: Compare 12- and 24-hour time systems and convert between them"
+       ]
+      },
+      {
+       "title": "Unit 4",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RQF-01"
+       ],
+       "focusAreas": [
+        "Representing quantity fractions A"
+       ],
+       "contentGroups": [
+        "Recognise the role of the number 1 as representing the whole",
+        "Compare common fractions with related denominators"
+       ]
+      },
+      {
+       "title": "Unit 5",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02",
+        "MA3-DATA-01",
+        "MA3-DATA-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Whole numbers: Locate and represent integers on a number line",
+        "Collect categorical and discrete numerical data by observation or survey",
+        "Interpret and compare a range of data displays"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Unit 6",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems",
+        "Length: Connect decimal representations to the metric system"
+       ]
+      },
+      {
+       "title": "Unit 7",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Determine products and factors"
+       ]
+      },
+      {
+       "title": "Unit 8",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-01",
+        "MA3-CHAN-01"
+       ],
+       "focusAreas": [
+        "Geometric measure A",
+        "Chance A"
+       ],
+       "contentGroups": [
+        "Position: Explore the Cartesian coordinate system",
+        "Position: Use the 4 quadrants of the coordinate plane",
+        "List outcomes of chance experiments involving equally likely outcomes and represent probabilities",
+        "Compare observed frequencies of outcomes with expected results"
+       ]
+      },
+      {
+       "title": "Unit 9",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-02",
+        "MA3-3DS-01",
+        "MA3-3DS-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Three-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Recognise that the place value system can be extended beyond hundredths",
+        "3D objects: Compare, describe and name prisms and pyramids",
+        "3D objects: Construct prisms and pyramids"
+       ]
+      },
+      {
+       "title": "Unit 10",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Estimate, measure and compare angles using degrees",
+        "Time: Compare 12- and 24-hour time systems and convert between them"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Unit 11",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Whole numbers: Locate and represent integers on a number line",
+        "Determine products and factors"
+       ]
+      },
+      {
+       "title": "Unit 12",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01",
+        "MA3-2DS-01",
+        "MA3-2DS-02"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Use partitioning and place value to multiply 2-, 3- and 4-digit numbers by one-digit numbers",
+        "2D shapes: Classify two-dimensional shapes and describe their properties"
+       ]
+      },
+      {
+       "title": "Unit 13",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Use partitioning and place value to multiply 2-, 3- and 4-digit numbers by one-digit numbers"
+       ]
+      },
+      {
+       "title": "Unit 14",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Use metres and kilometres for length and distances",
+        "Length: Connect decimal representations to the metric system",
+        "Mass: Choose appropriate units of measurement for mass"
+       ]
+      },
+      {
+       "title": "Unit 15",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Apply place value to partition, regroup and rename numbers to 1 billion",
+        "Decimals and percentages: Make connections between benchmark fractions, decimals and percentages",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Unit 16",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-03"
+       ],
+       "focusAreas": [
+        "Represents numbers B"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Make connections between benchmark fractions, decimals and percentages",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems",
+        "Compare and order common unit fractions",
+        "Compare common fractions with related denominators"
+       ]
+      },
+      {
+       "title": "Unit 17",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01",
+        "MA3-MR-02",
+        "MA3-GM-02"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Determine products and factors",
+        "Select and apply strategies to solve problems involving multiplication and division with whole numbers",
+        "Length: Measure lengths to find perimeters",
+        "Area: Calculate the areas of rectangles using familiar metric units",
+        "Area: Find the area of composite figures",
+        "Volume: Use cubic metres for measurement of volume"
+       ]
+      },
+      {
+       "title": "Unit 18",
+       "strand": "Statistics and probability",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-DATA-01",
+        "MA3-DATA-02"
+       ],
+       "focusAreas": [
+        "Data A"
+       ],
+       "contentGroups": [
+        "Collect categorical and discrete numerical data by observation or survey",
+        "Interpret and compare a range of data displays",
+        "List outcomes of chance experiments involving equally likely outcomes and represent probabilities",
+        "Compare observed frequencies of outcomes with expected results"
+       ]
+      },
+      {
+       "title": "Unit 19",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Estimate, measure and compare angles using degrees",
+        "2D shapes: Classify two-dimensional shapes and describe their properties",
+        "Time: Solve problems involving duration, using 12- and 24-hour time"
+       ]
+      },
+      {
+       "title": "Unit 20",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-03"
+       ],
+       "focusAreas": [
+        "Represents numbers B"
+       ],
+       "contentGroups": [
+        "Whole numbers: Locate and represent integers on a number line",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Select and apply mental and written strategies to multiply 2- and 3-digit numbers by 2-digit numbers",
+        "Use equivalent number sentences involving multiplication and division to find unknown quantities",
+        "Position: Explore the Cartesian coordinate system",
+        "Back to the top"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year B",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Unit 21",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Applies known strategies to add and subtract decimals",
+        "Use partitioning and place value to multiply 2-, 3- and 4-digit numbers by one-digit numbers"
+       ]
+      },
+      {
+       "title": "Unit 22",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Recognise that the place value system can be extended beyond hundredths",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems"
+       ]
+      },
+      {
+       "title": "Unit 23",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Use metres and kilometres for length and distances",
+        "Length: Connect decimal representations to the metric system",
+        "Area: Calculate the areas of rectangles using familiar metric units",
+        "Time: Compare 12- and 24-hour time systems and convert between them",
+        "Time: Solve problems involving duration, using 12- and 24-hour time"
+       ]
+      },
+      {
+       "title": "Unit 24",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-AR-01"
+       ],
+       "focusAreas": [
+        "Additive relations A"
+       ],
+       "contentGroups": [
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Recognise the role of the number 1 as representing the whole",
+        "Recognise that a fraction can represent a division"
+       ]
+      },
+      {
+       "title": "Unit 25",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02",
+        "MA3-DATA-01",
+        "MA3-DATA-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Whole numbers: Locate and represent integers on a number line",
+        "Collect categorical and discrete numerical data by observation or survey",
+        "Interpret and compare a range of data displays"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Unit 26",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Recognise, represent and order numbers in the millions",
+        "Whole numbers: Locate and represent integers on a number line",
+        "Applies known strategies to add and subtract decimals",
+        "Length: Connect decimal representations to the metric system",
+        "Mass: Connect decimal representations to the metric system"
+       ]
+      },
+      {
+       "title": "Unit 27",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Select and apply mental and written strategies to multiply 2- and 3-digit numbers by 2-digit numbers",
+        "Select and apply strategies to solve problems involving multiplication and division with whole numbers",
+        "Recognise that a fraction can represent a division"
+       ]
+      },
+      {
+       "title": "Unit 28",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-01",
+        "MA3-CHAN-01"
+       ],
+       "focusAreas": [
+        "Geometric measure A",
+        "Chance A"
+       ],
+       "contentGroups": [
+        "Position: Explore the Cartesian coordinate system",
+        "Position: Use the 4 quadrants of the coordinate plane",
+        "List outcomes of chance experiments involving equally likely outcomes and represent probabilities",
+        "Compare observed frequencies of outcomes with expected results"
+       ]
+      },
+      {
+       "title": "Unit 29",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-02",
+        "MA3-3DS-01",
+        "MA3-3DS-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Three-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Recognise that the place value system can be extended beyond hundredths",
+        "3D objects: Compare, describe and name prisms and pyramids",
+        "3D objects: Construct prisms and pyramids"
+       ]
+      },
+      {
+       "title": "Unit 30",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Estimate, measure and compare angles using degrees",
+        "Angles: Investigate angles on a straight line and angles at a point",
+        "Time: Compare 12- and 24-hour time systems and convert between them",
+        "Time: Solve problems involving duration, using 12- and 24-hour time"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Unit 31",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-01",
+        "MA3-RN-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Apply place value to partition, regroup and rename numbers to 1 billion",
+        "Decimals and percentages: Make connections between benchmark fractions, decimals and percentages",
+        "Select and apply mental and written strategies to multiply 2- and 3-digit numbers by 2-digit numbers",
+        "Multiply and divide decimals by powers of 10"
+       ]
+      },
+      {
+       "title": "Unit 32",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01",
+        "MA3-2DS-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Determine products and factors",
+        "2D shapes: Classify two-dimensional shapes and describe their properties",
+        "2D shapes: Dissect two-dimensional shapes and rearrange them using translations, reflections and rotations"
+       ]
+      },
+      {
+       "title": "Unit 33",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01",
+        "MA3-MR-02"
+       ],
+       "focusAreas": [
+        "Multiplicative relations B"
+       ],
+       "contentGroups": [
+        "Select and apply strategies to solve problems involving multiplication and division with whole numbers"
+       ]
+      },
+      {
+       "title": "Unit 34",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Use metres and kilometres for length and distances",
+        "Length: Connect decimal representations to the metric system",
+        "Mass: Choose appropriate units of measurement for mass",
+        "Mass: Convert between common metric units of mass"
+       ]
+      },
+      {
+       "title": "Unit 35",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-02",
+        "MA3-NSM-02"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Non-spatial measure B"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Recognise that the place value system can be extended beyond hundredths",
+        "Decimals and percentages: Make connections between benchmark fractions, decimals and percentages",
+        "Apply efficient mental and written strategies to solve addition and subtraction problems",
+        "Choose and use efficient strategies to solve addition and subtraction problems",
+        "Time: Solve problems involving duration, using 12- and 24-hour time"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Unit 36",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-03",
+        "MA3-CHAN-01"
+       ],
+       "focusAreas": [
+        "Represents numbers B",
+        "Chance B"
+       ],
+       "contentGroups": [
+        "Decimals and Percentages: Make connections between benchmark fractions, decimals and percentages",
+        "Recognise the role of the number 1 as representing the whole",
+        "Compare common fractions with related denominators",
+        "Create random generators and describe probabilities using fractions"
+       ]
+      },
+      {
+       "title": "Unit 37",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-MR-01",
+        "MA3-2DS-02"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Determine products and factors",
+        "Select and apply strategies to solve problems involving multiplication and division with whole numbers",
+        "Length: Measure lengths to find perimeters",
+        "Area: Calculate the areas of rectangles using familiar metric units",
+        "2D shapes: Dissect two-dimensional shapes and rearrange them using translations, reflections and rotations",
+        "Volume: Recognise the multiplicative structure for finding volume"
+       ]
+      },
+      {
+       "title": "Unit 38",
+       "strand": "Statistics and probability",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-DATA-01",
+        "MA3-DATA-02"
+       ],
+       "focusAreas": [
+        "Data A"
+       ],
+       "contentGroups": [
+        "Collect categorical and discrete numerical data by observation or survey",
+        "Interpret and compare a range of data displays",
+        "Compare observed frequencies of outcomes with expected results"
+       ]
+      },
+      {
+       "title": "Unit 39",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Estimate, measure and compare angles using degrees",
+        "Angles: Investigate angles on a straight line and angles at a point",
+        "2D shapes: Dissect two-dimensional shapes and rearrange them using translations, reflections and rotations",
+        "Time: Solve problems involving duration, using 12- and 24-hour time"
+       ]
+      },
+      {
+       "title": "Unit 40",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA3-RN-02",
+        "MA3-GM-01"
+       ],
+       "focusAreas": [
+        "Represents numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Decimals and percentages: Compare, order and represent decimals",
+        "Whole numbers: Locate and represent integers on a number line",
+        "Choose and use efficient strategies to solve addition and subtraction problems",
+        "Multiply and divide decimals by powers of 10",
+        "Position: Explore the Cartesian coordinate system",
+        "Position: Use the 4 quadrants of the coordinate plane",
+        "Back to the top"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

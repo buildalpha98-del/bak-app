@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getTermPlans } from "@/lib/client/term-plan-actions";
 import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { programSectionsFor } from "@/lib/curriculum/subjects";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -88,7 +89,10 @@ export async function GET(
   const url = new URL(request.url);
   const termId = url.searchParams.get("termId") ?? undefined;
   const subjectFilter = url.searchParams.get("subject");
-  const { termName, weeks: allWeeks } = await getScopeAndSequence(centreId, termId);
+  const [{ termName, weeks: allWeeks }, termPlans] = await Promise.all([
+    getScopeAndSequence(centreId, termId),
+    getTermPlans(centreId, termId),
+  ]);
   const weeks = subjectFilter
     ? allWeeks
         .map((w) => ({ ...w, sessions: w.sessions.filter((s) => (s.subject ?? "pdhpe") === subjectFilter) }))
@@ -111,6 +115,25 @@ export async function GET(
     centreName: centre?.name ?? "Your centre",
     isSchool: centre?.type === "school",
     frameworkKey: frameworkOf(centre?.curriculum_framework).key,
+    // Term plans (096) lead the document: the programme of record per
+    // class × subject, before the week-by-week detail.
+    termPlans: termPlans.plans
+      .filter((p) => !subjectFilter || p.subject === subjectFilter)
+      .map((p) => ({
+        className: p.class_name,
+        yearGroup: p.year_group,
+        subject: p.subject,
+        title: p.title,
+        status: p.status,
+        rationale: p.plan.rationale,
+        units: p.plan.units.map((u) => ({
+          title: u.title,
+          strand: u.strand,
+          weeks: u.weeks.length > 1 ? `Weeks ${u.weeks[0]}–${u.weeks[u.weeks.length - 1]}` : `Week ${u.weeks[0] ?? ""}`,
+          outcomes: u.outcomes.map((o) => o.code),
+          assessment: u.assessment ?? null,
+        })),
+      })),
     subjects: Array.from(new Set(weeks.flatMap((w) => w.sessions.map((s) => s.subject ?? "pdhpe")))),
     termName,
     weeks: weeks.map((w) => ({

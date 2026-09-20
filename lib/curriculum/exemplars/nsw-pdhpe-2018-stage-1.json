@@ -1,0 +1,383 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–10 Syllabus (2018)",
+ "validTo": "2026-12-31",
+ "band": "Stage 1",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-s1-stage-based-1-sample-scope-and-sequence.docx",
+ "variants": [
+  {
+   "label": "Even year",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "What makes each of us unique?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore their own identity while developing caring and respectful relationships with their peers. They explore different groups they belong to and identify the qualities and characteristics that make them similar and different to others.",
+       "inquiryQuestions": [
+        "How does my uniqueness shape who I am?",
+        "How can we be inclusive and respectful?",
+        "How can I act to help make my environments healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-1",
+        "PD1-2",
+        "PD1-3",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "What skills do I need to move during physical activity?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students perform and demonstrate a variety of movement skills, engaging in a range of activities. They develop an understanding of movement concepts and explore the health benefits of physical activity",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can I act to make my environments healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-8",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "How can we be safe and active in the playground?",
+       "strand": "10 weeks /",
+       "weeks": "",
+       "description": "Students are provided with opportunities to describe and practise ways to include others, demonstrate safety and work cooperatively in the playground. They identify rules and fair play while participating in physical activities.",
+       "inquiryQuestions": [
+        "How can we be inclusive and respectful?",
+        "How can we participate safely and fairly during physical activity?",
+        "How can I act to help make my environments healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-2",
+        "PD1-3",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      },
+      {
+       "title": "How can I use my skills to solve movement challenges?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students develop a variety of movement skills and explore ways to apply them to solve movement challenges and be successful in games.",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can we move and improve our involvement in physical activity?",
+        "How can we participate safely and fairly during physical activity? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-5",
+        "PD1-8",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "How I do feel about growing and changing?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students describe changes that occur as they grow older. They learn how to identify their own and others’ feelings and emotions in different situations. Students explore contextual factors that may influence developing and maintaining respectful relationships with other people.",
+       "inquiryQuestions": [
+        "How do we grow and change overtime?",
+        "How can we be inclusive and respectful?",
+        "How does my uniqueness shape who I am?",
+        "What influences my decisions and actions to be healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-1",
+        "PD1-3",
+        "PD1-9",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How can I play co-operatively?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students are provided with opportunities to learn how to play co-operatively through games. They explore actions that make school a safe place whilst learning to communicate when challenges arise during physical activity.",
+       "inquiryQuestions": [
+        "How can we move and improve our involvement in physical activity?",
+        "How can we participate safely and fairly during physical activity?",
+        "How can I act to help make my environments healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-5",
+        "PD1-7",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "How can I stay healthy, safe and well?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students develop their knowledge and understanding to lead healthy, safe and active lifestyles at home and in their community. They explore ways to make positive decisions about their health, safety and wellbeing.",
+       "inquiryQuestions": [
+        "How can I act to help make my environments healthy, safe and active?",
+        "How can I be responsible for my own, and others’ health, safety and wellbeing? /"
+       ],
+       "outcomes": [
+        "PD1-2",
+        "PD1-6",
+        "PD1-7",
+        "PD1-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Drug education",
+        "Road safety",
+        "|"
+       ]
+      },
+      {
+       "title": "How can we move to music?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students explore rhythmic and expressive movement through various movement activities. They demonstrate changes to movement in response to music. Students discuss how the type and tempo of the music changed their movement.",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can we move and improve our involvement in physical activity?",
+        "How can we participate safely and fairly during physical activity? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-5",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Odd year",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "How can we include others?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students demonstrate ways to be inclusive whilst participating in different group activities and games. They identify and use their strengths to cooperate and communicate positively with others to make them feel they belong.",
+       "inquiryQuestions": [
+        "How can we be inclusive and respectful?",
+        "How can I act to help make my environment healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-1",
+        "PD1-3",
+        "PD1-7",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "Why is it important to keep moving?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students explore actions that enhance their own and others’ health and wellbeing and participation in physical activity. They investigate the effect physical activity has on their body, what makes an activity enjoyable and how to communicate with peers to ensure all activities are inclusive.",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can we participate safely and fairly during physical activity?",
+        "How can I act to help make my environment healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-7",
+        "PD1-10",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "What influences me to make positive decisions?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore contextual factors such as family, community, peers and the media and how they impact their decisions about their health.",
+       "inquiryQuestions": [
+        "How can I be responsible for my own, and others’ health and wellbeing?",
+        "How can I act to help make my environment healthy, safe and active?",
+        "What influences my decisions and actions to help be healthy, safe and physically active? /"
+       ],
+       "outcomes": [
+        "PD1-6",
+        "PD1-7",
+        "PD1-9"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      },
+      {
+       "title": "How can we learn about other cultures through movement?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students learn about and participate in culturally diverse physical activities including Aboriginal and Torres Strait Islander games.",
+       "inquiryQuestions": [
+        "How can we participate safely and fairly during physical activity?",
+        "How can I act to help make my environments healthy, safe and active?",
+        "How can we be inclusive and respectful? /"
+       ],
+       "outcomes": [
+        "PD1-3",
+        "PD1-4",
+        "PD1-8",
+        "PD1-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Why is it important to live a healthy, active, lifestyle?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students develop their knowledge, understandings and skills to empower them to make healthy and safe choices. They explore their local environment to identify and engage with physical activity in a way that is enjoyable and easily accessible.",
+       "inquiryQuestions": [
+        "How can I act to help make my environment healthy, safe and active?",
+        "What influences my decisions and actions to be healthy, safe and physically active? /"
+       ],
+       "outcomes": [
+        "PD1-6",
+        "PD1-7",
+        "PD1-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Road Safety",
+        "Drug Education",
+        "|"
+       ]
+      },
+      {
+       "title": "What are invasion games?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students learn to apply a variety of movement skills to develop their understanding of the basic concepts of invasion games. They explore simple tactics and how to work as a team.",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can we move and improve our involvement in physical activity?",
+        "How can I act to help make my environments healthy, safe and active? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-5",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "How can I stay safe and who can I ask for help?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students recognise safe environments and practice strategies to promote their safety. They explore ways to keep themselves safe and develop help seeking strategies.",
+       "inquiryQuestions": [
+        "How can I be responsible for my own, and others’ health and wellbeing?",
+        "How can I act to help make my environment healthy, safe and active?",
+        "What influences my decisions and actions to be healthy, safe and physically active? /"
+       ],
+       "outcomes": [
+        "PD1-2",
+        "PD1-6",
+        "PD1-7",
+        "PD1-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Drug education",
+        "Road safety",
+        "|"
+       ]
+      },
+      {
+       "title": "What games can we create?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students create games that apply a variety of fundamental movement skills. They explore how to modify rules and games whilst using different equipment.",
+       "inquiryQuestions": [
+        "What are the different ways we can move our body?",
+        "How can we participate safely and fairly during physical activity?",
+        "How can we move and improve our involvement in physical activity? /"
+       ],
+       "outcomes": [
+        "PD1-4",
+        "PD1-5",
+        "PD1-10",
+        "PD1-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

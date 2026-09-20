@@ -1,0 +1,742 @@
+{
+ "framework": "nsw",
+ "subject": "mathematics",
+ "syllabus": "NSW Mathematics K–10 Syllabus (2022)",
+ "band": "Stage 2",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — maths-s2.xlsx",
+ "variants": [
+  {
+   "label": "Year A",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Unit 1",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Whole numbers: Order numbers in the thousands",
+        "Generate and describe patterns"
+       ]
+      },
+      {
+       "title": "Unit 2",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Use the principle of equality"
+       ]
+      },
+      {
+       "title": "Unit 3",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Measure and compare objects using metres, centimetres and millimetres",
+        "Length: Use scaled instruments to measure and compare lengths",
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "Time: Represent and read analog time"
+       ]
+      },
+      {
+       "title": "Unit 4",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-PF-01"
+       ],
+       "focusAreas": [
+        "Partitioned fractions A"
+       ],
+       "contentGroups": [
+        "Create fractional parts of a length using techniques other than repeated halving",
+        "Model equivalent fractions as lengths"
+       ]
+      },
+      {
+       "title": "Unit 5",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01",
+        "MA2-DATA-01",
+        "MA2-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Collect discrete data"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Unit 6",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Whole numbers: Order numbers in the thousands",
+        "Recognise and explain the connection between addition and subtraction"
+       ]
+      },
+      {
+       "title": "Unit 7",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Generate and describe patterns",
+        "Represent and solve word problems with number sentences involving multiplication or division"
+       ]
+      },
+      {
+       "title": "Unit 8",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-01",
+        "MA2-CHAN-01"
+       ],
+       "focusAreas": [
+        "Geometric measure A",
+        "Chance A"
+       ],
+       "contentGroups": [
+        "Position: Interpret movement on a map",
+        "Position: Create and interpret grid maps",
+        "Identify possible outcomes from chance experiments",
+        "Describe the likelihood of outcomes of chance events"
+       ]
+      },
+      {
+       "title": "Unit 9",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-2DS-01"
+       ],
+       "focusAreas": [
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "3D objects: Make models of three-dimensional objects to compare and describe key features",
+        "3D objects: Connect three-dimensional objects and two-dimensional representations"
+       ]
+      },
+      {
+       "title": "Unit 10",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Identify angles as measures of turn",
+        "Time: Represent and read analog time"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Unit 11",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Whole numbers: Order numbers in the thousands",
+        "Generate and describe patterns",
+        "Represent and solve word problems with number sentences involving multiplication or division"
+       ]
+      },
+      {
+       "title": "Unit 12",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-02",
+        "MA2-2DS-01",
+        "MA2-2DS-02",
+        "MA2-2DS-03"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Represent and solve problems involving multiplication fact families",
+        "2D shapes: Compare and describe features of two-dimensional shapes"
+       ]
+      },
+      {
+       "title": "Unit 13",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Generate and describe patterns",
+        "Investigate number sequences involving related multiples"
+       ]
+      },
+      {
+       "title": "Unit 14",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Measure and compare objects using metres, centimetres and millimetres",
+        "Length: Use scaled instruments to measure and compare lengths",
+        "Mass: Compare objects using the kilogram",
+        "Mass: Use scaled instruments to measure and compare masses"
+       ]
+      },
+      {
+       "title": "Unit 15",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-AR-01"
+       ],
+       "focusAreas": [
+        "Additive relations A"
+       ],
+       "contentGroups": [
+        "Use the principle of equality",
+        "Partition, rearrange and regroup numbers to at least 1000 to solve additive problems"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Unit 16",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Generate and describe patterns",
+        "Create fractional parts of a length using techniques other than repeated halving",
+        "Model equivalent fractions as lengths"
+       ]
+      },
+      {
+       "title": "Unit 17",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01",
+        "MA2-2DS-03"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Generate and describe patterns",
+        "Area: Use square centimetres to measure and estimate the areas of rectangles",
+        "Area: Measure the areas of shapes using the grid structure",
+        "3D objects: Make models of three-dimensional objects to compare and describe key features",
+        "3D objects: Connect three-dimensional objects and two-dimensional representations"
+       ]
+      },
+      {
+       "title": "Unit 18",
+       "strand": "Statistics and probability",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-DATA-01",
+        "MA2-DATA-02"
+       ],
+       "focusAreas": [
+        "Data A"
+       ],
+       "contentGroups": [
+        "Organise and display data using tables and graphs",
+        "Select and trial methods for data collection",
+        "Identify possible outcomes from chance experiments",
+        "Describe the likelihood of outcomes of chance events"
+       ]
+      },
+      {
+       "title": "Unit 19",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Identify angles as measures of turn",
+        "Angles: Compare angles to a right angle",
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "Time: Represent and read analog time"
+       ]
+      },
+      {
+       "title": "Unit 20",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01",
+        "MA2-GM-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Apply place value to partition and regroup numbers up to 4 digits",
+        "Whole numbers: Recognise and represent numbers that are 10, 100 or 1000 times as large",
+        "Use the principle of equality",
+        "Recall multiplication facts of 2 and 4, 5 and 10 and related division facts",
+        "Use number properties to find related multiplication facts",
+        "Position: Locate positions on grid maps",
+        "Position: Create and interpret grid maps",
+        "Back to the top"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year B",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Unit 21",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Whole numbers: Order numbers in the thousands",
+        "Generate and describe patterns",
+        "Investigate number sequences involving related multiples"
+       ]
+      },
+      {
+       "title": "Unit 22",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value B"
+       ],
+       "contentGroups": [
+        "Whole numbers: Apply place value to partition, regroup and rename numbers up to 6 digits",
+        "Recognise and explain the connection between addition and subtraction",
+        "Partition, rearrange and regroup numbers to at least 1000 to solve additive problems"
+       ]
+      },
+      {
+       "title": "Unit 23",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Measure and compare objects using metres, centimetres and millimetres",
+        "Length: Use scaled instruments to measure and compare lengths",
+        "2D shapes: Create two-dimensional shapes that result from combining and splitting common shapes",
+        "Time: Represent and interpret digital time displays"
+       ]
+      },
+      {
+       "title": "Unit 24",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-PF-01"
+       ],
+       "focusAreas": [
+        "Partitioned fractions A"
+       ],
+       "contentGroups": [
+        "Create fractional parts of a length using techniques other than repeated halving",
+        "Model equivalent fractions as lengths"
+       ]
+      },
+      {
+       "title": "Unit 25",
+       "strand": "Statistics and probability",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-DATA-01",
+        "MA2-DATA-02"
+       ],
+       "focusAreas": [
+        "Data A"
+       ],
+       "contentGroups": [
+        "Collect discrete data",
+        "Select and trial methods for data collection"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Unit 26",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value A"
+       ],
+       "contentGroups": [
+        "Whole numbers: Read, represent and order numbers to thousands",
+        "Whole numbers: Apply place value to partition, regroup and rename numbers up to 6 digits",
+        "Select strategies flexibly to solve addition and subtraction problems of up to 3 digits",
+        "Partition, rearrange and regroup numbers to at least 1000 to solve additive problems"
+       ]
+      },
+      {
+       "title": "Unit 27",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Represent and solve problems involving multiplication fact families",
+        "Investigate number sequences involving related multiples"
+       ]
+      },
+      {
+       "title": "Unit 28",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-01",
+        "MA2-GM-03",
+        "MA2-DATA-01"
+       ],
+       "focusAreas": [
+        "Geometric measure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Position: Interpret movement on a map",
+        "Position: Create and interpret grid maps",
+        "Organise and display data using tables and graphs",
+        "Identify possible outcomes from chance experiments",
+        "Describe the likelihood of outcomes of chance events"
+       ]
+      },
+      {
+       "title": "Unit 29",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-2DS-01"
+       ],
+       "focusAreas": [
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "3D objects: Make models of three-dimensional objects to compare and describe key features",
+        "3D objects: Connect three-dimensional objects and two-dimensional representations"
+       ]
+      },
+      {
+       "title": "Unit 30",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Angles: Identify angles as measures of turn",
+        "Angles: Compare angles to a right angle",
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "Time: Represent and read analog time",
+        "Time: Represent and interpret digital time displays"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Unit 31",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01",
+        "MA2-RN-02"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value B"
+       ],
+       "contentGroups": [
+        "Whole numbers: Order numbers in the thousands",
+        "Use number properties to find related multiplication facts"
+       ]
+      },
+      {
+       "title": "Unit 32",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01",
+        "MA2-2DS-01",
+        "MA2-2DS-03"
+       ],
+       "focusAreas": [
+        "Multiplicative relations B",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Use the structure of the area model to represent multiplication and division",
+        "2D shapes: Compare and describe features of  two-dimensional shapes",
+        "2D shapes: Create two-dimensional shapes that result from combining and splitting common shapes"
+       ]
+      },
+      {
+       "title": "Unit 33",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A"
+       ],
+       "contentGroups": [
+        "Generate and describe patterns",
+        "Use the structure of the area model to represent multiplication and division"
+       ]
+      },
+      {
+       "title": "Unit 34",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-02"
+       ],
+       "focusAreas": [
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Length: Measure and compare objects using metres, centimetres and millimetres",
+        "Length: Use scaled instruments to measure and compare lengths",
+        "Mass: Compare objects using the kilogram",
+        "Mass: Use scaled instruments to measure and compare masses"
+       ]
+      },
+      {
+       "title": "Unit 35",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-AR-01"
+       ],
+       "focusAreas": [
+        "Additive relations A"
+       ],
+       "contentGroups": [
+        "Use the principle of equality",
+        "Partition, rearrange and regroup numbers to at least 1000 to solve additive problems"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Unit 36",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-02"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value B"
+       ],
+       "contentGroups": [
+        "Decimals: Extend the application of the place value system from whole numbers to tenths and hundredths",
+        "Investigate number sequences involving related multiples",
+        "Model and represent unit fractions, and their multiples, to a complete whole on a number line"
+       ]
+      },
+      {
+       "title": "Unit 37",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-MR-01",
+        "MA2-2DS-01",
+        "MA2-2DS-03"
+       ],
+       "focusAreas": [
+        "Multiplicative relations A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Represent and solve problems involving multiplication fact families",
+        "Use known number facts and strategies",
+        "2D shapes: Compare and describe features of two-dimensional shapes",
+        "Area: Measure the areas of shapes using the grid structure",
+        "3D objects: Make models of three-dimensional objects to compare and describe key features",
+        "3D objects: Connect three-dimensional objects and two-dimensional representations"
+       ]
+      },
+      {
+       "title": "Unit 38",
+       "strand": "Statistics and probability",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-DATA-01",
+        "MA2-DATA-02"
+       ],
+       "focusAreas": [
+        "Data A"
+       ],
+       "contentGroups": [
+        "Collect discrete data",
+        "Select and trial methods for data collection",
+        "Identify possible outcomes from chance experiments",
+        "Describe the likelihood of outcomes of chance events"
+       ]
+      },
+      {
+       "title": "Unit 39",
+       "strand": "Measurement and space",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-GM-03"
+       ],
+       "focusAreas": [
+        "Geometric measure B"
+       ],
+       "contentGroups": [
+        "Angles: Compare angles to a right angle",
+        "2D shapes: Create two-dimensional shapes that result from combining and splitting common shapes",
+        "Time: Represent and interpret digital time displays"
+       ]
+      },
+      {
+       "title": "Unit 40",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA2-RN-01",
+        "MA2-RN-02"
+       ],
+       "focusAreas": [
+        "Representing numbers using place value B"
+       ],
+       "contentGroups": [
+        "Whole numbers: Apply place value to partition, regroup and rename numbers up to 6 digits",
+        "Use the principle of equality",
+        "Partition, rearrange and regroup numbers to at least 1000 to solve additive problems",
+        "Operate with multiples of 10",
+        "Position: Locate positions on grid maps",
+        "Position: Create and interpret grid maps",
+        "Back to the top"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

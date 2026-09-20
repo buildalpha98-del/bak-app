@@ -1,0 +1,219 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE 7–10 Syllabus (2024)",
+ "validFrom": "2027-01-01",
+ "band": "Stage 4",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-s4-sample-scope-and-sequence.docx",
+ "variants": [
+  {
+   "label": "Year 7",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Exploring my strengths and identity",
+       "strand": "Integrated /",
+       "weeks": "1–10 /",
+       "description": "This is an integrated teaching and learning program which covers both practical and theory lessons for the whole of Term 1. Students explore their personal identity through examining their own strengths, characteristics and contextual influences in both practical and theory contexts. Students learn a range of skills and strategies that support a positive sense of identity and can enhance health and wellbeing. They also explore how identity relates to diversity, inclusivity and belonging. The program has opportunities for students to work together as they get to know one another and develop their collaborative skills. Students explore their physical strengths through practicing and refining fundamental movement skills and applying them to athletics disciplines. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-SMI-01",
+        "PH4-IBC-01"
+       ],
+       "assessment": "This teaching and learning program has an associated summative assessment task. |"
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Mastering space in territory games",
+       "strand": "Practical /",
+       "weeks": "1–10 /",
+       "description": "This teaching and learning program introduces students to a variety of territory games with a strong focus on developing attacking and defending strategies. Students learn how to create and exploit space, make effective passes, and work as a team in both offense and defence scenarios. Through small-sided games and structured activities, students build game sense, communication skills and tactical awareness while refining their movement skills. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-MSS-02",
+        "PH4-SMI-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. The NSW Physical literacy continuum K–10 is used as a model for creating a skills checklist to use when assessing students’ movement competencies, tactical movement skills, and motivational and behavioural skills. |"
+      },
+      {
+       "title": "Creating my toolkit for change",
+       "strand": "Theory /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students explore the various changes that occur during adolescence across the social, emotional and physical domains. Using a strengths-based approach, students examine the impact of these changes and develop their knowledge and understanding of the strategies they can utilise to support their health and wellbeing through these periods of transition. Students acquire and refine the tools needed to support both themselves and others in navigating difficult situations and adapting to change. /",
+       "outcomes": [
+        "PH4-SMI-01",
+        "PH4-SHW-01",
+        "PH4-RRL-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Net game skills: serve, smash, score",
+       "strand": "Practical /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students learn to develop and refine fundamental movement skills and understand basic movement strategies in net games while fostering teamwork and interpersonal skills. Students develop these skills through engaging in a range of modified volleyball and paddleball games. This program also incorporates target games that emphasise accuracy, control and strategic placement and their application for successful game play in net games. Through the program, students will learn and practise skills and techniques, including serving, passing, body positioning, and court awareness. Net game attacking and defending tactics and strategies are also introduced including using court space, strategic shot placement and anticipating opponents’ actions. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-MSS-02",
+        "PH4-SHP-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      },
+      {
+       "title": "Building a balanced and healthy lifestyle",
+       "strand": "Theory /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students learn about the holistic nature of health through exploring the dimensions of health and how these interrelate to influence overall wellbeing. Students learn that health is more than just the absence of illness. It is a dynamic and relative state that can vary between individuals and across life stages. Students examine what it means to live a balanced and healthy lifestyle and develop strategies and critical health literacy skills to support them in making informed decisions to improve and maintain their own health. /",
+       "outcomes": [
+        "PH4-SMI-01",
+        "PH4-SHW-01",
+        "PH4-IPS-01"
+       ],
+       "assessment": "This teaching and learning program has an associated summative assessment task which is in development. The requirements of the task will be aligned to relevant course outcomes and focus on the application of knowledge and skills specific to building a balanced and healthy lifestyle. |"
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Grip it and hit it",
+       "strand": "Practical /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students develop and refine fundamental and specialised movement skills by participating in a range of modified striking and fielding games. Students are provided opportunities to enhance their ability to manipulate equipment with accuracy, power and control as they engage in striking games that require the use of different implements for striking in increasingly dynamic environments. They apply movement concepts to a variety of striking game situations, evaluating their performance and identifying actions to increase success individually and as a team. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-MSS-02"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      },
+      {
+       "title": "Safety never takes a holiday",
+       "strand": "Theory /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students develop their understanding of responsibility, risk-taking and safety. Students learn to identify, assess and apply a range of protective behaviours and strategies to manage their responsibilities and mitigate risk across varying contexts with a focus on online environments, road use and water environments. They also develop an understanding of contextual factors that may influence decision-making and the level of risk in a range of scenarios. /",
+       "outcomes": [
+        "PH4-SMI-01",
+        "PH4-SHW-01",
+        "PH4-IPS-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year 8",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Celebrating diversity",
+       "strand": "Integrated /",
+       "weeks": "1–10 /",
+       "description": "This teaching and learning program is an integrated program which covers both practical and theory lessons for the whole of Term 1. In this program, students learn about diversity through the lens of culture, identity and inclusion. They critically examine how identity is shaped by cultural and contextual experiences, the importance and impact of inclusive practice and how diversity enriches the community. Within this program, students also engage in practical lessons to experience a range of physical activities and sports from different cultures, developing an appreciation of how participation in these activities fosters cultural awareness. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-SHW-01",
+        "PH4-RRL-01",
+        "PH4-IBC-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Move to the beat: creativity and teamwork in motion",
+       "strand": "Practical /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students will develop and refine their movement skills, creativity and teamwork within the framework of rhythmic movement. Through the use of music and other stimuli as inspiration, students learn to create and perform group movement sequences that demonstrate a clear understanding of space, time and dynamics. They will refine their movement skills, including body control, coordination and timing while working collaboratively to refine performance quality. Students will also analyse movement and performance elements and learn to apply constructive feedback to improve their own and others’ movement sequences. The program encourages creativity, teamwork and critical thinking, as students shape and adapt their performances to better communicate meaning and intention. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-MSS-02",
+        "PH4-SMI-01"
+       ],
+       "assessment": "This teaching and learning program has an associated summative assessment task which is in development. The requirements of the task will be aligned to relevant course outcomes and focused on the application of knowledge and skills specific to the development and performance of movement skills, creativity and teamwork by designing and performing rhythmic sequences. |"
+      },
+      {
+       "title": "Connecting with kindness and compassion",
+       "strand": "Theory /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students build their capacity to foster healthy, respectful relationships that support their health, safety and overall wellbeing. They explore the qualities of positive relationships and develop skills, including self-management and interpersonal skills to navigate challenges with confidence. Through learning about consent, communication and appropriate use of power, students strengthen their ability to make informed and respectful choices. The program empowers students to recognise and promote safe, inclusive and equitable connections in friendships and emerging intimate relationships, while developing strategies to maintain their personal boundaries and wellbeing. A focus on sexual health reinforces the value of knowledge, respect and agency in all relationships. /",
+       "outcomes": [
+        "PH4-SMI-01",
+        "PH4-SHW-01",
+        "PH4-IPS-01",
+        "PH4-RRL-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Territory tactics",
+       "strand": "Practical /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students will develop, apply and refine movement skills and strategies in a variety of territory games. Through participation in a range of activities and sports, including AFL, touch football and Gaelic football, students will learn how to work collaboratively in teams to attack, defend and maintain possession. Students will compare how different games use similar and contrasting tactics, building their tactical awareness and confidence in making decisions during gameplay. They will also reflect on their individual contributions to team performance and how strategic thinking enhances success. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-MSS-02",
+        "PH4-SMI-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      },
+      {
+       "title": "Safety matters: navigating risk and responsibility",
+       "strand": "Theory /",
+       "weeks": "1–10 /",
+       "description": "In this teaching and learning program, students continue learning about strategies to promote safe decision-making in potentially challenging or unsafe scenarios and when faced with risk-taking behaviours. Students investigate the role of protective behaviours and harm-minimisation strategies in managing their responsibilities and promoting the safety of themselves and others in varying contexts, including road use, the effects of alcohol and other drugs and online engagement. Students will critically analyse contextual factors that may influence decision-making and the level of risk in a range of scenarios. /",
+       "outcomes": [
+        "PH4-SMI-01",
+        "PH4-SHW-01",
+        "PH4-IPS-01"
+       ],
+       "assessment": "A summative assessment which will evaluate student learning and achievement across the teaching and learning program. The requirements of the task will be aligned to relevant course outcomes and focused on the application of knowledge and skills specific to navigating risk and responsibility. |"
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Creating the best version of me",
+       "strand": "Integrated /",
+       "weeks": "1–10 /",
+       "description": "This teaching and learning program is an integrated program which covers both practical and theory lessons for the whole of Term 4. In this program, students deepen their understanding of the dimensions of health and explore sustainable health behaviours that promote fitness and wellbeing. They demonstrate an understanding of how contextual influences including environmental, sociocultural and socioeconomic factors influence health behaviours. Students will learn about physical, social, spiritual, emotional and mental health, their interrelated nature, and strategies and resources to support their health and wellbeing in each dimension. In practical lessons, students explore a range of physical activities to support and improve fitness and wellbeing, reflecting on their suitability for their own enjoyment, accessibility and lifestyles. /",
+       "outcomes": [
+        "PH4-MSS-01",
+        "PH4-SHP-01",
+        "PH4-SHW-01",
+        "PH4-IPS-01"
+       ],
+       "assessment": "Suggested formative assessment is outlined throughout this teaching and learning program. |"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
