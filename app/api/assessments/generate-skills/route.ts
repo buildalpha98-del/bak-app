@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateSkills } from "@/lib/ai/generate-skills";
-import { SPORTS } from "@/lib/types/enums";
+import { subjectOf } from "@/lib/curriculum/subjects";
 import {
   checkDailyLimit,
   getCached,
@@ -60,11 +60,16 @@ export async function POST(request: Request) {
 
     // 4. Parse and validate body
     const body = await request.json();
-    const { sport, ageGroup } = body as { sport: string; ageGroup: string };
+    const { sport, ageGroup, subject: subjectKey } = body as {
+      sport: string;
+      ageGroup: string;
+      subject?: string;
+    };
+    const subject = subjectOf(subjectKey);
 
-    if (!sport || !SPORTS.includes(sport as typeof SPORTS[number])) {
+    if (!sport || !subject.strandOptions.includes(sport)) {
       return NextResponse.json(
-        { error: "Invalid sport selection." },
+        { error: `Invalid ${subject.strandLabel.toLowerCase()} selection.` },
         { status: 400 }
       );
     }
@@ -79,6 +84,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
       .from("assessment_templates")
       .select("id, skills_json, created_at")
+      .eq("subject", subject.key)
       .eq("sport", sport)
       .eq("age_group", ageGroup)
       .order("created_at", { ascending: false })
@@ -88,7 +94,7 @@ export async function POST(request: Request) {
     // Claude output for 24h. Lets a user reopen the dialog without
     // re-spending the AI tokens. Cache key is global (not per-user)
     // because the output doesn't depend on who's asking.
-    const cacheKey = hashRequestKey("skills", { sport, ageGroup });
+    const cacheKey = hashRequestKey("skills", { subject: subject.key, sport, ageGroup });
     const cached = getCached<unknown>(cacheKey);
     if (cached) {
       return NextResponse.json({
@@ -112,7 +118,7 @@ export async function POST(request: Request) {
 
     // 8. Generate skills via Claude
     rateLimitMap.set(user.id, Date.now());
-    const skills = await generateSkills(sport, ageGroup);
+    const skills = await generateSkills(sport, ageGroup, subject);
     setCached(cacheKey, skills);
 
     return NextResponse.json({

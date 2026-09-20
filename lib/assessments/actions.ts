@@ -21,6 +21,7 @@ import type {
 
 export interface AssessmentTemplateListItem {
   id: string;
+  subject: string;
   sport: string;
   age_group: AgeGroup;
   skill_count: number;
@@ -53,6 +54,7 @@ export interface ChildRatingWithDetails {
 
 export interface CoachAssessmentTask {
   template_id: string;
+  subject: string;
   sport: string;
   age_group: AgeGroup;
   skills: AssessmentSkill[];
@@ -101,7 +103,7 @@ export async function getAssessmentTemplates(): Promise<{
 
     const { data, error } = await supabase
       .from("assessment_templates")
-      .select("id, sport, age_group, skills_json, term_id, centre_id, created_at")
+      .select("id, subject, sport, age_group, skills_json, term_id, centre_id, created_at")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -143,6 +145,7 @@ export async function getAssessmentTemplates(): Promise<{
 
     const items: AssessmentTemplateListItem[] = (data ?? []).map((t) => ({
       id: t.id,
+      subject: t.subject ?? "pdhpe",
       sport: t.sport,
       age_group: t.age_group as AgeGroup,
       skill_count: Array.isArray(t.skills_json) ? t.skills_json.length : 0,
@@ -367,6 +370,7 @@ export async function bulkDeleteAssessmentTemplates(
 // ============================================================
 
 export async function createAssessmentTemplate(input: {
+  subject?: string;
   sport: string;
   age_group: AgeGroup;
   skills_json: AssessmentSkill[];
@@ -383,6 +387,7 @@ export async function createAssessmentTemplate(input: {
     const { data, error } = await supabase
       .from("assessment_templates")
       .insert({
+        subject: input.subject ?? "pdhpe",
         sport: input.sport,
         age_group: input.age_group,
         skills_json: input.skills_json,
@@ -544,7 +549,7 @@ export async function getCoachAssessmentTasks(): Promise<{
     // Get templates for the active term
     const { data: templates } = await supabase
       .from("assessment_templates")
-      .select("id, sport, age_group, skills_json, centre_id, term_id")
+      .select("id, subject, sport, age_group, skills_json, centre_id, term_id")
       .eq("term_id", activeTerm.id);
 
     if (!templates || templates.length === 0) return { data: [], error: null };
@@ -672,6 +677,7 @@ export async function getCoachAssessmentTasks(): Promise<{
             if (clsChildren.length === 0) continue;
             tasks.push({
               template_id: template.id,
+              subject: template.subject ?? "pdhpe",
               sport: template.sport,
               age_group: template.age_group as AgeGroup,
               skills: template.skills_json as AssessmentSkill[],
@@ -688,6 +694,7 @@ export async function getCoachAssessmentTasks(): Promise<{
           if (unassigned.length > 0) {
             tasks.push({
               template_id: template.id,
+              subject: template.subject ?? "pdhpe",
               sport: template.sport,
               age_group: template.age_group as AgeGroup,
               skills: template.skills_json as AssessmentSkill[],
@@ -703,6 +710,7 @@ export async function getCoachAssessmentTasks(): Promise<{
         } else {
           tasks.push({
             template_id: template.id,
+            subject: template.subject ?? "pdhpe",
             sport: template.sport,
             age_group: template.age_group as AgeGroup,
             skills: template.skills_json as AssessmentSkill[],

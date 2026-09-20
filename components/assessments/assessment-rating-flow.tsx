@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { subjectOf } from "@/lib/curriculum/subjects";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -38,6 +39,8 @@ export interface RatingFlowChild {
 
 export interface RatingFlowTask {
   template_id: string;
+  /** Migration 089; absent or "pdhpe" shows no badge. */
+  subject?: string;
   sport: string;
   age_group: string;
   skills: RatingFlowSkill[];
@@ -152,6 +155,7 @@ function TaskCard({
           </div>
           <CardDescription className="flex items-center gap-2">
             <ClipboardList className="size-3.5" />
+            {task.subject && task.subject !== "pdhpe" ? `${subjectOf(task.subject).label} · ` : ""}
             {task.sport} &middot; {task.term_name}
           </CardDescription>
         </CardHeader>
