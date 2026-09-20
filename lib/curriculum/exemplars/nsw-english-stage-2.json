@@ -1,0 +1,2364 @@
+{
+ "framework": "nsw",
+ "subject": "english",
+ "syllabus": "NSW English K–10 Syllabus (2022)",
+ "band": "Stage 2",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — english-s2.docx",
+ "variants": [
+  {
+   "label": "Single year",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Reading automaticity and rate",
+        "Syllabify, blend grapheme–phoneme correspondences and use morphemic knowledge as strategies for reading words accurately",
+        "Prosody",
+        "Explain how prosodic reading involves emphasis, expression, intonation and pausing /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Reading automaticity and rate",
+        "Demonstrate use of navigation pathways to support fluency when engaging with print, visual and multimodal texts",
+        "Monitoring reading fluency",
+        "Recognise that there are different purposes and audiences for reading and adjust reading rate to suit a text’s purpose /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "/ Reading comprehension /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Phonological component",
+        "Explain how to segment multisyllabic words into syllables and phonemes, and apply this knowledge when spelling",
+        "Identify differences in vowel phonemes (short, long, diphthong and schwa vowels)",
+        "Orthographic component",
+        "Apply knowledge of taught vowel graphemes when spelling",
+        "Morphological component",
+        "Identify inflected suffixes, explaining when and how to treat base words when they are affixed, and apply this knowledge when spelling /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Understand that some graphemes are dependent on their position in a word in English and apply this knowledge when spelling",
+        "Understand that graphemes can be explained by their etymology /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "/ Handwriting and digital transcription /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Reading automaticity and rate",
+        "Read multisyllabic words, phrases and continuous texts with accuracy and appropriate rate suited to reading purpose",
+        "Prosody",
+        "Adjust voice, tone, volume and pitch reflected by the punctuation in a text, to enhance reading fluency and support comprehension /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Reading automaticity and rate",
+        "Explain how effortless and accurate word reading, at a pace appropriate for text and purpose, can support reading fluency and comprehension",
+        "Monitoring reading fluency",
+        "Monitor and adjust own goals for improving reading fluency /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Proofread, identify and correct misspellings when creating written texts",
+        "Morphological component",
+        "Identify prefixes that require no change to the base word or root when they are affixed, and apply this knowledge when spelling /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Morphological component",
+        "Identify derivational suffixes such as -able, -ness, -ian and -ment, explaining when and how to treat base words when they are affixed, and apply this knowledge when spelling",
+        "Correctly spell irregular plural words across a range of written contexts /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Reading automaticity and rate",
+        "Maintain stamina when reading extended texts",
+        "Prosody",
+        "Apply appropriate tone to represent characters' emotions when reading text with dialogue",
+        "Monitoring reading fluency",
+        "Reflect on how adjusting reading rate and prosody supports comprehension and can engage an audience /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Monitoring reading fluency",
+        "Reflect on and compare differences between own oral reading fluency and silent reading fluency /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Use spelling reference tools where required and recognise that spellcheck accuracy may depend on understanding the word",
+        "Morphological component",
+        "Correctly spell taught homophones when creating written texts /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Phonological component",
+        "Recognise stressed and unstressed syllables in multisyllabic words and apply this knowledge when spelling",
+        "Understand that the schwa occurs in an unstressed syllable and apply this knowledge when spelling /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Monitoring reading fluency",
+        "Reflect on stamina for reading sustained texts",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN2-REFLU-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN2-SPELL-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year 3",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Interacting",
+        "Follow agreed-upon protocols and assigned roles for classroom interactions in person and through the use of technology",
+        "Listening for understanding",
+        "Listen actively to identify spoken information, acknowledging the value of others’ contributions /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Interacting",
+        "Contribute to discussions with peers and stay on topic, build on others' ideas and express own ideas /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Build personal Tier 1, Tier 2 and Tier 3 vocabulary through social and learning interactions, reading and writing",
+        "Defining and analysing words",
+        "Apply morphemic knowledge to change word meanings by adding different prefixes and suffixes to a base word or root /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Understand that many words derive from other languages, including Aboriginal and Torres Strait Islander Languages, and that the pronunciation and spelling of words may reflect their etymology /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "/ Year 4",
+        "Table SEQ Table \\* ARABIC 4 – term-specific content points for Vocabulary Year 4",
+        "Term 1 /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Identify and explain the difference between synonyms and antonyms /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Defining and analysing words",
+        "Use word associations to build word knowledge /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "/ Reading fluency /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Identify similarities and compare differences within and between texts by making text-to-self, text-to-text and text-to-world connections",
+        "Comprehending language",
+        "Use morphemic knowledge to read and understand the meaning of words",
+        "Use key words from a text to visualise events, characters and settings when making inferences and confirming predictions",
+        "Monitoring comprehension",
+        "Identify where meaning breaks down when reading /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending text structures and features",
+        "Identify different structures and features of persuasive, informative and imaginative texts",
+        "Comprehending language",
+        "Link the meanings of words and phrases across consecutive sentences to support local inferencing",
+        "Monitoring comprehension",
+        "Ask questions to clarify meaning and promote deeper understanding of a text /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "/ Year 4",
+        "Table SEQ Table \\* ARABIC 7 – term-specific content points for Reading comprehension Year 4",
+        "Term 1 /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Identify different purposes and strategies for reading",
+        "Comprehending language",
+        "Clarify and link the meanings of key words across a text to support global inferencing",
+        "Monitoring comprehension",
+        "Make gist statements and record them to monitor understanding /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Locate, select and retrieve relevant information from a print or digital text and consider accuracy of information presented",
+        "Determine the relevance of a text for a specific purpose",
+        "Comprehending text structures and features",
+        "Identify and describe how text structure, features and language work together to achieve a text’s purpose",
+        "Monitoring comprehension",
+        "Reflect on own understanding of texts and monitor own goals for reading /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Creating written texts /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Use an orientation, complication, resolution structure to create narratives centred on time, place and characters",
+        "Sentence-level grammar",
+        "Use adverbs and adverbial phrases to add information to a sentence, providing reasons or circumstances",
+        "Use coordinating conjunctions in compound sentences to signal addition, comparison, consequence or alternatives",
+        "Use declarative sentences to provide facts or state a viewpoint",
+        "Use exclamatory sentences to emphasise a point or express a strong emotion",
+        "Punctuation",
+        "Use capital letters to indicate the beginning of a sentence, proper nouns, headings and subheadings, to indicate the beginning of a poetry line, for emphasis, and when using acronym",
+        "Use commas between words in a list or to separate adjectives when more than one is used",
+        "Word-level language",
+        "Use adjectives to develop descriptive features /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Informative purposes",
+        "Create written texts that instruct, that may include a statement of purpose or goal, a list of resources and a series of steps",
+        "Create written texts that describe experiences and observations to connect with and inform an audience",
+        "Text features for multiple purposes",
+        "Select and use multimodal features to add meaning",
+        "Sentence-level grammar",
+        "Use verb sentence openers to indicate action processes",
+        "Use imperative sentences to advise, provide instructions, express a request or a command",
+        "Punctuation",
+        "Use bullet points or numbering to list items or a sequence of steps /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Handwriting legibility and fluency",
+        "Understand that legible handwriting is consistent in size and spacing and can support learning /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Position a chosen device in a way that facilitates efficient and sustained text creation /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Narrative",
+        "Describe how narratives set up expectations using familiar, real and imagined characters, situations and phrases",
+        "Characterisation",
+        "Recognise that characters may be identified through familiar, individual or group characteristics /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Genre",
+        "Understand that genre refers to texts that are grouped according to purpose, subject matter, form, structure and language choices, and that a type of text can differ in mode and medium",
+        "Perspective and context",
+        "Identify and discuss the purpose of a text, and its intended audience, mode and medium /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Identify the evidence a speaker provides to support a particular point of view",
+        "Presenting",
+        "Plan and deliver spoken presentations using language and structure to suit purpose and audience",
+        "Reflect on and monitor own presentations according to given criteria /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Identify language features in spoken texts that contribute to own or others’ enjoyment and understanding",
+        "Presenting",
+        "Adjust volume, pace and intonation to enhance meaning when presenting and reciting /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Describe how modal words indicate degrees of probability, occurrence, obligation and inclination /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Identify and use terminology associated with figurative language encountered in texts /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Term 2 /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Recognise that words and phrases can have literal or implied meanings according to context /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Defining and analysing words",
+        "Use a thesaurus to locate synonyms and antonyms or to clarify dictionary meanings, to expand vocabulary /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Build topic knowledge, including key vocabulary, and activate background knowledge prior to and during reading",
+        "Comprehending text structures and features",
+        "Understand that literal information can be sourced directly from a text and that inferences can be made by using multiple sources of information",
+        "Comprehending language",
+        "Identify different types of verbs that control meaning /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Select and read texts of personal interest and to gather information for learning",
+        "Comprehending text structures and features",
+        "Describe how multimodal features enhance meaning and contribute to salience in texts",
+        "Monitoring comprehension",
+        "Identify and use strategies to repair reading when meaning breaks down /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Term 2 /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending text structures and features",
+        "Identify the difference between quoted speech and reported speech",
+        "Comprehending language",
+        "Identify and describe the difference between subjective and objective language in texts /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Identify word patterns, including repetition, that create cohesion or effect",
+        "Use knowledge of homonyms to understand metaphor and to support inference /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Persuasive purposes",
+        "Use a structure that includes a statement of position, has sequenced paragraphs and a conclusion",
+        "Experiment with modality to modulate an argument for persuasive effect",
+        "Use facts or opinions to reinforce a viewpoint",
+        "Sentence-level grammar",
+        "Use subordinating conjunctions in complex sentences to signal sequence, cause and effect or contrast",
+        "Use interrogative sentences to ask a direct question, or for rhetorical effect to engage the reader with a viewpoint",
+        "Planning, monitoring and revising",
+        "Plan structures and language to suit the purpose of a text /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Experiment with different poetic forms using stanzas",
+        "Text features for multiple purposes",
+        "Use language to create imagery or humour, including idioms, puns, simile and personification",
+        "Sentence-level grammar",
+        "Select and use precise saying, thinking, acting, and relating verbs and verb groups to align with text purposes",
+        "Planning, monitoring and revising",
+        "Reflect on and monitor texts according to given criteria, and respond to feedback from others /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Handwriting legibility and fluency",
+        "Join letters using consistent size and spacing to develop fluency /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Use knowledge of the keyboard layout and functions to type texts /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Argument and authority",
+        "Recognise that an argument is not a dispute but can be a single perspective that is presented or defended",
+        "Describe the difference between authorship and authority /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Imagery, symbol and connotation",
+        "Recognise imagery and symbols in literature",
+        "Identify figurative language in literature and how it can influence meaning, and experiment with figurative language when creating texts /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Pose and respond to specific questions to clarify or follow up on information /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Interacting",
+        "Pose and respond to open-ended questions about literature that contribute to own or others’ enjoyment",
+        "Presenting",
+        "Use temporal connectives to sequence planned information in a presentation /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Defining and analysing words",
+        "Define meanings for homonyms according to context",
+        "Understand and use word play including puns and spoonerisms /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Understand and use language associated with digital texts /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Term 3 /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending text structures and features",
+        "Understand that dialogue is a common feature of imaginative texts, signalled by quotation marks or speech bubbles to indicate interactions between characters",
+        "Comprehending language",
+        "Adjust own mental model as reading presents new words and understanding",
+        "Understand that word contractions are a feature of informal language and that apostrophes of contraction are used to signal missing letters /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Identify different types of connectives used by the author that support inference /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Term 3 /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Identify the adverbs, nouns and verbs that influence own emotional response to characters",
+        "Monitoring comprehension",
+        "Use information from paragraphs or chapters to group related ideas and support summarisation of the whole text",
+        "Identify how their background knowledge is used to actively build and adjust a mental model prior to and during reading /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Create imaginative texts to engage an audience, using first person or third person narrative voice",
+        "Experiment with using and punctuating dialogue in texts",
+        "Text features for multiple purposes",
+        "Maintain noun–pronoun referencing across a text for cohesion",
+        "Punctuation",
+        "Use a comma to separate a dependent clause before a main clause",
+        "Use apostrophes for contractions, and to show singular and plural possession /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Informative purposes",
+        "Create written factual and historical accounts that include an introduction with the who, what, when, where and why of an experience or event, a description of a series of events and a conclusion",
+        "Sentence-level grammar",
+        "Create cause-and-effect statements",
+        "Planning, monitoring and revising",
+        "Create texts using digital technologies /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Handwriting legibility and fluency",
+        "Apply appropriate pressure when joining letters /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Select and insert visual, print and audio elements into texts /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Narrative",
+        "Describe connections between own or shared experiences and those depicted in narratives",
+        "Characterisation",
+        "Identify how authors use dialogue to convey what characters say and think, and experiment with dialogue when creating texts",
+        "Describe ways in which characters are represented in literature and experiment with characterisation when creating texts /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Theme",
+        "Describe the difference between themes and topics in literature",
+        "Perspective and context",
+        "Identify and describe ways in which perspective is represented in literature",
+        "Understand how context informs the setting within a text, and experiment with setting for different contexts when creating texts /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Interacting",
+        "Identify cultural practices and/or protocols that Aboriginal and/or Torres Strait Islander Peoples use to interact, and how these may relate to specific roles",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Understand that Aboriginal English is a recognised dialect and that Aboriginal English words are used in multimodal, spoken and written texts",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Term 4",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Understand past, present and future tense and their impact on text meaning",
+        "Monitoring comprehension",
+        "Reflect on reading experiences and identify texts of personal significance and pleasure",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Term 4",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Text features for multiple purposes",
+        "Maintain appropriate, consistent past, present or future tense across a text",
+        "Maintain correct subject–verb agreement throughout a text",
+        "Planning, monitoring and revising",
+        "Create texts by drawing on personal and others’ experiences, and texts read, viewed and listened to for inspiration and ideas",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Narrative",
+        "Identify the purpose and structure of Aboriginal and Torres Strait Islander cultural narratives",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year 4",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Interacting",
+        "Identify contexts in which social conventions can vary and influence interactions",
+        "Demonstrate appropriate language use when interacting in different social and learning contexts /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Make notes when listening to spoken texts, asking questions to clarify or follow up on information and seeking assistance if required",
+        "Presenting",
+        "Include multimodal features in planned and delivered presentations, to expand meaning and engage an audience /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "/ Vocabulary /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Identify and explain the difference between synonyms and antonyms /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Defining and analysing words",
+        "Use word associations to build word knowledge /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "/ Reading fluency /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Identify different purposes and strategies for reading",
+        "Comprehending language",
+        "Clarify and link the meanings of key words across a text to support global inferencing",
+        "Monitoring comprehension",
+        "Make gist statements and record them to monitor understanding /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Reading for interest and wide purposes",
+        "Locate, select and retrieve relevant information from a print or digital text and consider accuracy of information presented",
+        "Determine the relevance of a text for a specific purpose",
+        "Comprehending text structures and features",
+        "Identify and describe how text structure, features and language work together to achieve a text’s purpose",
+        "Monitoring comprehension",
+        "Reflect on own understanding of texts and monitor own goals for reading /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Creating written texts /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Sequence ideas and actions into paragraphs aligned to the stages of the text, to provide elaborated details about settings, character motives and actions",
+        "Text features for multiple purposes",
+        "Use temporal, conditional and causal connectives within and between sentences for cohesion and effect",
+        "Sentence-level grammar",
+        "Use simple, compound and complex sentences of varying lengths for variation and readability /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Experiment using second person narrative voice for effect",
+        "Informative purposes",
+        "Create informative written texts that include headings, paragraphs beginning with topic sentences, and may conclude information in a final paragraph",
+        "Create written texts that explain how or why something happens through a series of steps, including an opening statement and a conclusion",
+        "Planning, monitoring and revising",
+        "Research, summarise and list topic-related ideas when planning /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "/ Spelling /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Handwriting legibility and fluency",
+        "Join letters when writing familiar words /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Monitor goals that build on typing accuracy and rate /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "/ Understanding and responding to literature /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Narrative",
+        "Describe the interplay of plot, character and setting in different types of narratives",
+        "Describe how narrative conventions engage the reader",
+        "Experiment with narrative structures and narrative conventions encountered in literature when creating texts",
+        "Characterisation",
+        "Describe how a character drives the plot in a narrative /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Genre",
+        "Identify different text genres when a text is characterised by more than a single genre /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "/ References",
+        "This resource contains NSW Curriculum and syllabus content. The NSW Curriculum is developed by the NSW Education Standards Authority. This content is prepared by NESA for and on behalf of the Crown in right of the State of New South Wales. The material is protected by Crown copyright.",
+        "Please refer to the NESA Copyright Disclaimer for more information https://educationstandards.nsw.edu.au/wps/portal/nesa/mini-footer/copyright.",
+        "NESA holds the only official and up-to-date versions of the NSW Curriculum and syllabus documents. Please visit the NSW Education Standards Authority (NESA) website https://educationstandards.nsw.edu.au and the NSW Curriculum website https://curriculum.nsw.edu.au.",
+        "English K–10 Syllabus © NSW Education Standards Authority (NESA) for and on behalf of the Crown in right of the State of New South Wales, 2022.",
+        "/ © State of New South Wales (Department of Education), 2023",
+        "The copyright material published in this resource is subject to the Copyright Act 1968 (Cth) and is owned by the NSW Department of Education or, where indicated, by a party other than the NSW Department of Education (third-party material).",
+        "Copyright material available in this resource and owned by the NSW Department of Education is licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) license.",
+        "/ This license allows you to share and adapt the material for any purpose, even commercially.",
+        "Attribution should be given to © State of New South Wales (Department of Education), 2023.",
+        "Material in this resource not available under a Creative Commons license:",
+        "the NSW Department of Education logo, other logos and trademark-protected material",
+        "material owned by a third party that has been reproduced with permission. You will need to obtain permission from the third party to reuse its material.",
+        "Links to third-party material and websites",
+        "Please note that the provided (reading/viewing material/list/links/texts) are a suggestion only and implies no endorsement, by the New South Wales Department of Education, of any author, publisher, or book title. School principals and teachers are best placed to assess the suitability of resources that would complement the curriculum and reflect the needs and interests of their students.",
+        "If you use the links provided in this document to access a third-party's website, you acknowledge that the terms of use, including licence terms set out on the third-party's website apply to the use which may be made of the materials on that third-party website or where permitted by the Copyright Act 1968 (Cth). The department accepts no responsibility for content on third-party websites. /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Understand that rhetorical questions can be used for intentional effect",
+        "Presenting",
+        "State a reasoned argument in a presentation about learning area content, to a familiar audience /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Identify how inferred or literal meaning is impacted by tone, pace, pitch and volume, gesture and posture communication, and how these affect the audience /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Recognise that words and phrases can have literal or implied meanings according to context /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Defining and analysing words",
+        "Use a thesaurus to locate synonyms and antonyms or to clarify dictionary meanings, to expand vocabulary /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending text structures and features",
+        "Identify the difference between quoted speech and reported speech",
+        "Comprehending language",
+        "Identify and describe the difference between subjective and objective language in texts /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Identify word patterns, including repetition, that create cohesion or effect",
+        "Use knowledge of homonyms to understand metaphor and to support inference /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Persuasive purposes",
+        "Create written texts that argue a viewpoint using rhetorical devices to persuade an audience",
+        "Sequence argument points in paragraphs that begin with a topic sentence and support the development of ideas",
+        "Punctuation",
+        "Understand and use quoted and reported text or speech in own writing",
+        "Word-level language",
+        "Use topic-specific Tier 2 and Tier 3 vocabulary to demonstrate authority",
+        "Experiment with modality to indicate probability, occurrence, obligation or inclination /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Imaginative purposes",
+        "Experiment with poetry to include innovative use of punctuation to suit purpose and for effect",
+        "Sentence-level grammar",
+        "Use adjectival clauses with noun groups to add information to subjects and objects",
+        "Word-level language",
+        "Experiment with words, word order and repetition for rhetorical effect or to create atmosphere",
+        "Use synonyms to replace words to avoid repetition and engage the reader /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Handwriting legibility and fluency",
+        "Sustain the NSW Foundation Style cursive to facilitate fluency and legibility across a text /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Search, filter, select, download and save relevant digital information /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Argument and authority",
+        "Understand that to control impact and effect authors make intentional choices about language, form and structure /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Imagery, symbol and connotation",
+        "Describe how words, sounds, images, logos and colour contribute to meaning in literature",
+        "Recognise how Aboriginal and Torres Strait Islander authors use imagery and symbols in texts /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Identify connective vocabulary that supports cohesion and understanding in a spoken text /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Presenting",
+        "Select and use prepositional, adverbial and adjectival phrases to extend communication and to suit the intended purpose of a planned and delivered spoken presentation /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Comprehending language",
+        "Identify the adverbs, nouns and verbs that influence own emotional response to characters",
+        "Monitoring comprehension",
+        "Use information from paragraphs or chapters to group related ideas and support summarisation of the whole text",
+        "Identify how their background knowledge is used to actively build and adjust a mental model prior to and during reading /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Word-level language",
+        "Use personal pronouns to suit purpose and to connect personally with the audience",
+        "Planning, monitoring and revising",
+        "Proofread, revise and edit written texts to refine language, correct spelling and ensure cohesion and engagement for the reader /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Text features for multiple purposes",
+        "Use definite articles for particular things and indefinite articles for general things for cohesion /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Software functionalities and typing",
+        "Use word-processing program functions or augmentative and alternative communication (AAC) to draft and revise texts /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data. /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Characterisation",
+        "Understand that characterisation refers to the qualities attributed to real and imagined characters, including their personality and emotional attributes",
+        "Describe how characters invite emotional engagement with literature /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Theme",
+        "Identify themes in literature, recognising that there may be multiple themes within and between texts",
+        "Perspective and context",
+        "Understand that literature is created by drawing upon personal, social and cultural contexts and perspectives",
+        "Describe how Aboriginal and/or Torres Strait Islander authors use language to build cultural understanding and context /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Paraphrase portions of a spoken text or information that is presented through media",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN2-OLC-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN2-VOCAB-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN2-RECOM-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN2-CWT-03",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Handwriting and digital transcription",
+       "outcome": "EN2-HANDW-02",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Early",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Late",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN2-UARL-01",
+       "points": [
+        "Further revision and consolidation of previously introduced content, based on assessment data.",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

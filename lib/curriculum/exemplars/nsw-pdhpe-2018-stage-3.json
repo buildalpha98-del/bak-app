@@ -1,0 +1,376 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–10 Syllabus (2018)",
+ "validTo": "2026-12-31",
+ "band": "Stage 3",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-s3-stage-based-1-sample-scope-and-sequence.docx",
+ "variants": [
+  {
+   "label": "Even year",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "How can I support others?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students investigate the challenges of changing relationships. Through evaluating roles and responsibilities, they develop strategies to build positive relationships, mental health and wellbeing for themselves and others.",
+       "inquiryQuestions": [
+        "How can I manage transitions and challenges?",
+        "How do empathy, inclusion and respect have an impact on myself and others?",
+        "What actions positively influence the health, safety and wellbeing of my community? /"
+       ],
+       "outcomes": [
+        "PD3-1",
+        "PD3-3",
+        "PD3-7",
+        "PD3-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How can we aim for accuracy?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students further develop their movement skills whilst exploring and applying concepts and tactics specific to striking and fielding games.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "How can I enhance my health, safety and wellbeing?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students investigate contextual factors that influence their health, safety and wellbeing. They plan and practise responses, behaviours and actions to protect themselves and promote positive choices. Focus areas could include drug education, healthy eating, road safety, bullying and safe and unsafe situations.",
+       "inquiryQuestions": [
+        "How can I manage transitions and challenges?",
+        "How does a healthy safe and active lifestyle enhance connection with others?",
+        "What actions positively influence the health, safety and wellbeing of my community? /"
+       ],
+       "outcomes": [
+        "PD3-2",
+        "PD3-6",
+        "PD3-7",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Drug education",
+        "Road Safety",
+        "|"
+       ]
+      },
+      {
+       "title": "What challenges me?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students further develop specialised movement skills to complete movement challenges. They reflect on their strengths and use feedback to refine their skills and solve problems.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "How am I changing and who can support me with change?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students identify strategies to establish and manage positive and supportive relationships. They investigate the physical, emotional and social changes that occur during puberty and examine ways to use their strengths and different strategies to manage these changes.",
+       "inquiryQuestions": [
+        "How does my uniqueness change over time?",
+        "How can I manage transitions and challenges?",
+        "How do empathy, inclusion and respect have an impact on myself and others? /"
+       ],
+       "outcomes": [
+        "PD3-1",
+        "PD3-3",
+        "PD3-9",
+        "PD3-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How can I use teamwork to solve problems during physical activity?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students develop tactical awareness through game play. They learn and apply offensive and defensive strategies by working in groups to solve movement-based problems.",
+       "inquiryQuestions": [
+        "How can we use strategies and tactics to create solutions to movement challenges?",
+        "How can we work with others to build positive relationships during physical activity? /"
+       ],
+       "outcomes": [
+        "PD3-5",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "How can I improve community health and wellbeing?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students identify local community health issues, investigate community resources and develop plans to improve community health and wellbeing. They evaluate how the media and stereotypes influence perception and decisions made in the local community.",
+       "inquiryQuestions": [
+        "How can I manage transitions and challenges?",
+        "How does a healthy, safe and active lifestyle enhance connection with others? /"
+       ],
+       "outcomes": [
+        "PD3-2",
+        "PD3-6",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "Drug education",
+        "|"
+       ]
+      },
+      {
+       "title": "How do children play around the world?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students apply different movement skills whilst exploring cultural games from around the world. They recognise how their involvement in games creates connections and intercultural understanding and promotes active lifestyles.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we work with others to build positive relationships during physical activity? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-8",
+        "PD3-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Odd year",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "What shapes my identity and how can I build positive relationships?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students examine how their identity and behaviour are influenced by a range of factors that can change over time. They explore strategies to build positive, inclusive and respectful relationships with others.",
+       "inquiryQuestions": [
+        "How does my uniqueness change over time?",
+        "How do empathy, inclusion and respect have an impact on myself and others? /"
+       ],
+       "outcomes": [
+        "PD3-1",
+        "PD3-3",
+        "PD3-9",
+        "PD3-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How do I beat the net?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students further develop movement skills and understanding of concepts through participation in various net and wall games. They explore how their knowledge, understanding and skills in other games transfer to net and wall games.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges?",
+        "How responsible am I for my own and others health, safety and wellbeing? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-8",
+        "PD3-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "How does technology impact our health, safety and wellbeing?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore the increased use of technology in their lives and how it impacts their physical health, social and emotional wellbeing. They evaluate the safe use of all technology including social media.",
+       "inquiryQuestions": [
+        "How do empathy, inclusion and respect have an impact on myself and others?",
+        "How does a healthy safe and active lifestyle enhance connection with others?",
+        "What actions positively influence the health, safety and wellbeing of my community? /"
+       ],
+       "outcomes": [
+        "PD3-3",
+        "PD3-6",
+        "PD3-7",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How can we move to the music?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students explore rhythmic and expressive movement skills while creating and modifying movement sequences. They further develop an understanding of concepts related to movement by experimenting and evaluating the transition, flow and levels of movement.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Why is it important to be healthy?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore the health benefits of physical activity and the importance of nutrition in maintaining a healthy lifestyle. They research and develop strategies to improve community health.",
+       "inquiryQuestions": [
+        "How can I manage transitions and challenges?",
+        "How does a healthy safe and active lifestyle enhance connection with others?",
+        "What actions positively influence the health, safety and wellbeing of my community? /"
+       ],
+       "outcomes": [
+        "PD3-2",
+        "PD3-6",
+        "PD3-7",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "Drug education",
+        "|"
+       ]
+      },
+      {
+       "title": "How can I succeed in invasion/territorial games?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students build their understanding of how to effectively participate in invasion/territorial games. They develop knowledge and understanding of offensive and defensive strategies while applying different movement skills. Students negotiate roles and responsibilities to enhance fair play and achieve success in games.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges?",
+        "How responsible am I for my own and others health, safety and wellbeing? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-8",
+        "PD3-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "How can we ensure our safety in outdoor environments?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students develop an understanding of how to manage risk by assessing safe and unsafe behaviours. They investigate what actions need to be taken in different situations to ensure positive outcomes. Concepts are addressed across a variety of contexts including aquatic activities and safe travel.",
+       "inquiryQuestions": [
+        "How does a healthy safe and active lifestyle enhance connection with others?",
+        "What actions positively influence the health, safety and wellbeing of my community? /"
+       ],
+       "outcomes": [
+        "PD3-6",
+        "PD3-7",
+        "PD3-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Road safety",
+        "|"
+       ]
+      },
+      {
+       "title": "How can we work together to play a game?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students explore how to modify existing games and create new ones. They use innovation, negotiation and team work to create games for others to play in different environments.",
+       "inquiryQuestions": [
+        "How can we adapt and perform movement skills in different situations?",
+        "How can we use strategies and tactics to create solutions to movement challenges?",
+        "How can we work with others to build positive relationships during physical activity? /"
+       ],
+       "outcomes": [
+        "PD3-4",
+        "PD3-5",
+        "PD3-10",
+        "PD3-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

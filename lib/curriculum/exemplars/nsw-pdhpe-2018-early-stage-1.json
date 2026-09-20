@@ -1,0 +1,188 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–10 Syllabus (2018)",
+ "validTo": "2026-12-31",
+ "band": "Early Stage 1",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-es1-stage-based-1-sample-scope-and-sequence.docx",
+ "variants": [
+  {
+   "label": "Single year",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "What makes school a safe and happy place?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore the day to day routines and events that occur when they first start school. They learn about safe play, building relationships with peers and other key information needed at school.",
+       "inquiryQuestions": [
+        "How do we care for and include each other?",
+        "What helps us to stay healthy and safe? /"
+       ],
+       "outcomes": [
+        "PDe-3",
+        "PDe-7",
+        "PDe-10"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      },
+      {
+       "title": "How can we move and be active with others?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students explore different ways their body can move. They demonstrate a variety of movement skills through active play and structured activities. Students learn to interact positively with peers and participate safely in play situations.",
+       "inquiryQuestions": [
+        "How do we move our bodies?",
+        "How do we participate with others when we are active? /"
+       ],
+       "outcomes": [
+        "PDe-4",
+        "PDe-10",
+        "PDe-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "How can I look after myself?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students identify who supports them to stay healthy and safe. They learn skills and strategies to allow them to be safe and apply these across a range of contexts. Students make connections between their feelings, thoughts, body reactions and body language to safe and unsafe situations.",
+       "inquiryQuestions": [
+        "What choices can help make me safe, supported and active?",
+        "What helps us to stay healthy and safe?",
+        "How do we make healthy and safe choices in different situations? /"
+       ],
+       "outcomes": [
+        "PDe-2",
+        "PDe-7",
+        "PDe-9"
+       ],
+       "opportunities": [
+        "Child protection",
+        "Drug education",
+        "|"
+       ]
+      },
+      {
+       "title": "How can we solve movement challenges?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students participate in movement experiences to identify and trial a range of options to solve challenges with and without equipment.",
+       "inquiryQuestions": [
+        "How do we move our bodies?",
+        "How can we solve problems when moving? /"
+       ],
+       "outcomes": [
+        "PDe-4",
+        "PDe-5",
+        "PDe-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "What makes me special and how do I communicate with others?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore their personal strengths and qualities and identify how people grow and change. They learn about and use appropriate ways to communicate their feelings with others and practise interpersonal skills to interact positively with others.",
+       "inquiryQuestions": [
+        "What makes me unique?",
+        "How do we grow?",
+        "How can we care for and include each other? /"
+       ],
+       "outcomes": [
+        "PDe-1",
+        "PDe-2",
+        "PDe-10"
+       ],
+       "opportunities": [
+        "Child protection",
+        "|"
+       ]
+      },
+      {
+       "title": "How can I move to music?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students develop their understanding of rhythmic and expressive movement. They work individually or in a group to respond and move to a variety of stimuli.",
+       "inquiryQuestions": [
+        "How do we move our bodies?",
+        "How do we participate with others when we are active? /"
+       ],
+       "outcomes": [
+        "PDe-4",
+        "PDe-10",
+        "PDe-11"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "How can I be safe and active?",
+       "strand": "Personal development and health",
+       "weeks": "10 weeks /",
+       "description": "Students explore the notion of living safe and active lifestyles. They discuss safe practices and how being physically active contributes to a healthy lifestyle.",
+       "inquiryQuestions": [
+        "What choices can help make me safe, supported and active?",
+        "What helps us to stay healthy and safe? /"
+       ],
+       "outcomes": [
+        "PDe-6",
+        "PDe-7",
+        "PDe-8",
+        "PDe-9"
+       ],
+       "opportunities": [
+        "Road safety",
+        "|"
+       ]
+      },
+      {
+       "title": "How can I play the game?",
+       "strand": "Physical education",
+       "weeks": "10 weeks /",
+       "description": "Students participate in game play situations whilst developing their movement skills. They learn to make positive choices, follow instructions and rules whilst participating in different cultural games.",
+       "inquiryQuestions": [
+        "How do we move our bodies?",
+        "How can we solve problems when moving?",
+        "How do we participate with others when we are active? /"
+       ],
+       "outcomes": [
+        "PDe-4",
+        "PDe-5",
+        "PDe-9"
+       ],
+       "opportunities": [
+        "/ |"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

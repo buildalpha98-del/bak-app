@@ -1,0 +1,639 @@
+{
+ "framework": "nsw",
+ "subject": "english",
+ "syllabus": "NSW English K–10 Syllabus (2022)",
+ "band": "Stage 1",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — english-s1.docx",
+ "variants": [
+  {
+   "label": "Single year",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN1-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Follow extended instructions that contain connectives and conjunctions",
+        "Listen to or engage with texts for enjoyment and recognise that their own experience can shape their ideas and opinions of texts",
+        "Social and learning interactions",
+        "Initiate, listen and/or respond in partner and group conversations",
+        "Understanding and using grammar when interacting",
+        "Incorporate extended sentences (simple, compound, complex) during dialogue",
+        "Organise key ideas in logical sequence",
+        "Oral narrative",
+        "Recite poems and rhymes /"
+       ]
+      },
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN1-OLC-01",
+       "points": [
+        "/ Vocabulary /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN1-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Use taught morphemic knowledge to create word families",
+        "Understand and communicate jokes and riddles that play on words",
+        "Identify, understand and use wordplay and rhyme in a range of texts",
+        "Use vocabulary to express cause and effect /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN1-VOCAB-01",
+       "points": [
+        "Phonic knowledge /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN1-REFLU-01",
+       "points": [
+        "Automaticity",
+        "Apply grapheme–phoneme correspondence to read words with automaticity",
+        "Prosody",
+        "Use sentence punctuation to enhance reading in a conversational manner",
+        "Adjust phrasing, intonation, volume or rate to maintain fluency when reading aloud /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN1-REFLU-01",
+       "points": [
+        "/ Reading comprehension /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN1-RECOM-01",
+       "points": [
+        "Activating word meaning",
+        "Use known vocabulary to build a mental model of the content of the text",
+        "Understand vocabulary that signals humorous wordplay in texts",
+        "Understanding and connecting sentences",
+        "Make an inference by connecting the meaning of words across sentences and/or paragraphs",
+        "Understanding whole text",
+        "Combine multiple sources of information within a text to make meaning",
+        "Identify how creative visual features are used to expand meaning",
+        "Monitoring comprehension",
+        "Use knowledge of text structure, type of text, author, and forms of writing to predict and confirm meaning",
+        "Make text-to-self, text-to-text or text-to-world connections when reading",
+        "Use visual and/or auditory features in multimodal texts to build meaning",
+        "Recalling details",
+        "Recount relevant ideas from texts in the form of a written, visual or oral summary /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN1-RECOM-01",
+       "points": [
+        "Creating written texts /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN1-CWT-01",
+       "points": [
+        "Text features",
+        "Write texts that describe, explain, give an opinion, recount an event, tell a story",
+        "Use a logical order to sequence ideas and events in sentences across a text",
+        "Select and use a range of conjunctions to create cohesive texts",
+        "Use appropriate tense across a text",
+        "Use visual elements to expand meaning in own texts",
+        "Sentence-level grammar",
+        "Write compound sentences using coordinating conjunctions",
+        "Recognise compound sentences in own writing, knowing that each clause has meaning by itself",
+        "Use noun groups to build descriptions of people and things",
+        "Use action, saying, relating and sensing verbs to add detail and precision to writing",
+        "Use contextually precise prepositional phrases when creating texts",
+        "Punctuation",
+        "Use punctuation, including question marks and exclamation marks, accurately and for effect",
+        "Use quotation marks for simple dialogue",
+        "Word-level language",
+        "Use creative wordplay to affect the reader",
+        "Planning and revising",
+        "Use a variety of planning strategies and tools for creating texts",
+        "Understand that their own texts can be improved by incorporating feedback and editing /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN1-CWT-01",
+       "points": [
+        "/ Spelling /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting",
+       "outcome": "EN1-HANDW-01",
+       "points": [
+        "Handwriting",
+        "Form all letters with consistent size and slope in NSW Foundation Style from memory",
+        "Position all letters correctly on the line with appropriate spacing between words /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting",
+       "outcome": "EN1-HANDW-01",
+       "points": [
+        "/ Understanding and responding to literature /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN1-UARL-01",
+       "points": [
+        "Context",
+        "Identify how the language and form of a text vary according to purpose, audience and mode",
+        "Identify representations of groups and cultures in a range of texts",
+        "Create and re-create texts in a range of modes and media using understanding of context",
+        "Narrative",
+        "Identify the sequence of events that make up a narrative in own and others’ texts",
+        "Character",
+        "Compare and contrast characters in text",
+        "Create and re-create characters in texts that demonstrate understanding of character traits",
+        "Imagery, symbol and connotation",
+        "Identify figurative language and wordplay in texts",
+        "Innovate from studied texts using wordplay and figurative language",
+        "Perspective and argument",
+        "Identify phrases in texts that project opinions",
+        "Identify how structure and images reinforce ideas",
+        "Create and re-create texts that include persuasive arguments, using knowledge of text and language features",
+        "Representation",
+        "Express personal responses to the real and imagined worlds that are represented in texts /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN1-UARL-01",
+       "points": [
+        "/ References",
+        "This resource contains NSW Curriculum and syllabus content. The NSW Curriculum is developed by the NSW Education Standards Authority. This content is prepared by NESA for and on behalf of the Crown in right of the State of New South Wales. The material is protected by Crown copyright.",
+        "Please refer to the NESA Copyright Disclaimer for more information https://educationstandards.nsw.edu.au/wps/portal/nesa/mini-footer/copyright.",
+        "NESA holds the only official and up-to-date versions of the NSW Curriculum and syllabus documents. Please visit the NSW Education Standards Authority (NESA) website https://educationstandards.nsw.edu.au and the NSW Curriculum website https://curriculum.nsw.edu.au.",
+        "English K–10 Syllabus © NSW Education Standards Authority (NESA) for and on behalf of the Crown in right of the State of New South Wales, 2022.",
+        "/ © State of New South Wales (Department of Education), 2023",
+        "The copyright material published in this resource is subject to the Copyright Act 1968 (Cth) and is owned by the NSW Department of Education or, where indicated, by a party other than the NSW Department of Education (third-party material).",
+        "Copyright material available in this resource and owned by the NSW Department of Education is licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) license.",
+        "/ This license allows you to share and adapt the material for any purpose, even commercially.",
+        "Attribution should be given to © State of New South Wales (Department of Education), 2023.",
+        "Material in this resource not available under a Creative Commons license:",
+        "the NSW Department of Education logo, other logos and trademark-protected material",
+        "material owned by a third party that has been reproduced with permission. You will need to obtain permission from the third party to reuse its material.",
+        "Links to third-party material and websites",
+        "Please note that the provided (reading/viewing material/list/links/texts) are a suggestion only and implies no endorsement, by the New South Wales Department of Education, of any author, publisher, or book title. School principals and teachers are best placed to assess the suitability of resources that would complement the curriculum and reflect the needs and interests of their students.",
+        "If you use the links provided in this document to access a third-party's website, you acknowledge that the terms of use, including licence terms set out on the third-party's website apply to the use which may be made of the materials on that third-party website or where permitted by the Copyright Act 1968 (Cth). The department accepts no responsibility for content on third-party websites. /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN1-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Understand that oral language can be used in combination with nonverbal communication",
+        "Understanding and using grammar when interacting",
+        "Use adjectives and adverbs to elaborate and/or provide some supporting details or justifications and express causal relationships",
+        "Use tense correctly to discuss past, present and future events",
+        "Oral narrative",
+        "Recount narratives with key components /"
+       ]
+      },
+      {
+       "focusArea": "Reading fluency",
+       "outcome": "EN1-REFLU-01",
+       "points": [
+        "Automaticity",
+        "Read aloud with an easy speech rhythm",
+        "Self-correct when fluency and/or meaning is interrupted",
+        "Prosody",
+        "Vary pace when reading according to the audience and purpose",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN1-RECOM-01",
+       "points": [
+        "Activating word meaning",
+        "Use known morphemes and known vocabulary in the text to work out or refine the meaning of unknown words",
+        "Understanding and connecting sentences",
+        "Identify pronouns linked to nouns within and across sentences and/or paragraphs",
+        "Understanding whole text",
+        "Use navigation pathways, including hyperlinks, to extract essential information to support reading fluency and enhance meaning when reading digital texts",
+        "Monitoring comprehension",
+        "Register a break in comprehension when reading",
+        "Recalling details",
+        "Use information read in texts to enhance learning across key learning areas",
+        "Confirm meaning by sequencing and explaining events and information /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN1-CWT-01",
+       "points": [
+        "Text features",
+        "Use noun/pronoun-referencing across a text",
+        "Sentence-level grammar",
+        "Use a combination of simple and compound sentences to engage the reader when creating written texts",
+        "Use adverbs to modify the meaning of verbs and adjectives",
+        "Accurately use articles and pronouns in own writing",
+        "Use time connectives to sequence information and events in texts",
+        "Planning and revising",
+        "Identify the context, audience and purpose for own texts",
+        "Use knowledge of similarities and differences between imaginative, informative and persuasive texts when planning for writing",
+        "Re-read and edit their own texts after receiving feedback /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting",
+       "outcome": "EN1-HANDW-01",
+       "points": [
+        "Handwriting",
+        "Use word-processing program functions, including text-editing applications",
+        "Recognise and use keys to show more complex punctuation or symbols",
+        "Type up to 5 familiar words per minute /"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN1-UARL-01",
+       "points": [
+        "Context",
+        "Recognise ways that settings and situations are represented within texts",
+        "Narrative",
+        "Create and re-create narratives using understanding of narrative features",
+        "Character",
+        "Identify how characters can invite positive and negative responses",
+        "Identify the language, dialogue, actions, images or music that create a reader response to a character",
+        "Imagery, symbol and connotation",
+        "Identify symbols and images in texts, and how they bring deeper meaning",
+        "Create texts that include symbols, wordplay and figurative language",
+        "Representation",
+        "Adapt a well-known text for a different audience and/or purpose /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN1-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Respond to information by asking relevant questions to extend their own and others' knowledge",
+        "Social and learning interactions",
+        "Use a range of strategies for effective dialogue and manage digression from a topic",
+        "Understanding and using grammar when interacting",
+        "Link or compare ideas when interacting",
+        "Oral narrative",
+        "Adapt a narrative for a particular audience /"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN1-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Understand and intentionally choose subject-specific vocabulary to enhance precision and for effect /"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN1-RECOM-01",
+       "points": [
+        "Activating word meaning",
+        "Draw on sources to seek clarification for unknown words",
+        "Understanding and connecting sentences",
+        "Know that a complex sentence includes a clause for expressing a main message and one or more clauses that elaborate on that message",
+        "Know the meaning and purpose of coordinating and subordinating conjunctions and identify them in a sentence",
+        "Recognise how the position of a clause in a complex sentence influences the important idea for the reader",
+        "Understanding whole text",
+        "Coordinate information or events from different parts of the text to form an overall opinion",
+        "Monitoring comprehension",
+        "Use a mental model to confirm predictions",
+        "Monitor understanding to ensure meaning is sustained and expanded through the whole text /"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN1-CWT-01",
+       "points": [
+        "Text features",
+        "Group sentences into paragraphs commencing with a topic sentence, followed by other sentences with related ideas",
+        "Use subject–verb agreement across a text",
+        "Sentence-level grammar",
+        "Experiment with writing complex sentences which include a clause for the main message and dependent clause to elaborate or modify the message",
+        "Punctuation",
+        "Use commas to separate ideas, lists and/or dependent clauses in a sentence",
+        "Use possessive apostrophes in own writing",
+        "Word-level language",
+        "Make intentional word choices to enhance precision of meaning and ideas in a text",
+        "Planning and revising",
+        "Use different modes and media to enhance the presentation of texts they have created /"
+       ]
+      },
+      {
+       "focusArea": "Handwriting",
+       "outcome": "EN1-HANDW-01",
+       "points": [
+        "Handwriting",
+        "Use taught software functions to create texts in a range of modes for different contexts, audiences and purposes",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN1-UARL-01",
+       "points": [
+        "Narrative",
+        "Identify patterns in narratives that set up expectation and aid prediction of actions and attitudes",
+        "Identify and appreciate how key messages in narratives evoke feelings",
+        "Character",
+        "Identify how characters are constructed through different modes and media and through a combination of modes",
+        "Identify how a character reflects their own or other lived experiences",
+        "Perspective and argument",
+        "Identify arguments and the intended audience",
+        "Create paragraphs that contain a single idea, beginning with a topic sentence and including supporting evidence with elaborations /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Oral language and communication",
+       "outcome": "EN1-OLC-01",
+       "points": [
+        "Listening for understanding",
+        "Understand when a message is not clear and ask questions and/or gesture to elicit support and/or seek clarification",
+        "Social and learning interactions",
+        "Interact to evaluate ideas and refine meaning",
+        "Oral narrative",
+        "Deliver a planned narrative to an audience for specific contexts and purposes",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Vocabulary",
+       "outcome": "EN1-VOCAB-01",
+       "points": [
+        "Learning and using words",
+        "Understand and use words that have different meanings in different contexts",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Reading comprehension",
+       "outcome": "EN1-RECOM-01",
+       "points": [
+        "Monitoring comprehension",
+        "Identify when meaning is not complete and/or contradicts prior understanding",
+        "Re-read words, phrases or sentences to check and clarify precise meaning",
+        "Ask a clarifying question when more background knowledge is needed to make an inference",
+        "Recalling details",
+        "Interpret patterns in texts to enhance understanding",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts",
+       "outcome": "EN1-CWT-01",
+       "points": [
+        "Word-level language",
+        "Use modifying and qualifying words and words to indicate quantity",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Understanding and responding to literature",
+       "outcome": "EN1-UARL-01",
+       "points": [
+        "Perspective and argument",
+        "Identify and share how their own experience and interests influence opinions and/or interpretations of texts",
+        "Express preferences for specific texts and authors and recognise the opinions of others",
+        "Representation",
+        "Identify cultural representations in a range of texts",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year 1",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Phonic knowledge",
+       "outcome": "EN1-PHOKW-01",
+       "points": [
+        "Single-syllable words",
+        "Blend grapheme–phoneme correspondences to read CCVCC words, CCCVC words and CCCVCC words and apply this when reading texts",
+        "Segment and encode one-syllable high-frequency base words with split digraphs and apply this when creating texts",
+        "Segment and encode CCVCC words, CCCVC words and CCCVCC words and apply this when creating texts",
+        "Blend and decode one-syllable words with taught extended vowel graphs and digraphs, including graphemes for r-controlled vowels and diphthongs, and apply this when reading texts",
+        "Segment and encode one-syllable words with taught vowel graphs, digraphs and trigraphs and apply this when creating texts",
+        "Multisyllabic words",
+        "Blend and decode 2-syllable words with taught vowel graphs, digraphs, trigraphs and quadgraphs, including graphemes for r-controlled vowels and diphthongs and apply this when reading texts /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Phonological component",
+        "Segment single-syllable words into phonemes as a strategy for spelling",
+        "Segment multisyllabic words into syllables and phonemes as a strategy for spelling",
+        "Orthographic component",
+        "Spell high-frequency base words with taught vowel graphs, digraphs, split digraphs, trigraphs and quadgraphs",
+        "Spell taught high-frequency contractions",
+        "Morphological component",
+        "Use spelling conventions when adding plural-marking suffixes",
+        "Use spelling conventions when adding tense-marking suffixes",
+        "Use knowledge of morphemes to spell taught compound words and homophones with taught single-letter graphemes, digraphs, split digraphs, trigraphs and quadgraphs /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "/ Year 2",
+        "Table SEQ Table \\* ARABIC 9 – term-specific content points for Spelling Year 2",
+        "Term 1 /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Explain when to use double consonants to spell 2-syllable base words and apply this when spelling",
+        "Morphological component",
+        "Use the comparative and superlative suffixes –er and –est /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "/ Handwriting /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Phonic knowledge",
+       "outcome": "EN1-PHOKW-01",
+       "points": [
+        "Single-syllable words",
+        "Decode words with trigraphs and quadgraphs and apply this when reading texts /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Morphological component",
+        "Use the suffixes –ful, –y and –ly to spell taught high-frequency words /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Term 3",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Morphological component",
+        "Use common prefixes such as un–, re– and dis–",
+        "|"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Explain that the consonant trigraphs, –tch and –dge, can end a base word immediately following a short vowel and apply this when spelling",
+        "Morphological component",
+        "Spell nouns ending in the suffix –er to indicate a person /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Phonic knowledge",
+       "outcome": "EN1-PHOKW-01",
+       "points": [
+        "Single-syllable words",
+        "Decode words with less common consonant digraphs and apply this when reading texts",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Use extended phonic code for taught consonant phonemes",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year 2",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Phonic knowledge",
+       "outcome": "EN1-PHOKW-01",
+       "points": [
+        "Multisyllabic words",
+        "Decode 2-syllable base words with common double consonants when reading texts",
+        "|"
+       ]
+      },
+      {
+       "focusArea": "Phonic knowledge",
+       "outcome": "EN1-PHOKW-01",
+       "points": [
+        "/ Reading fluency /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Orthographic component",
+        "Explain when to use double consonants to spell 2-syllable base words and apply this when spelling",
+        "Morphological component",
+        "Use the comparative and superlative suffixes –er and –est /"
+       ]
+      },
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "/ Handwriting /"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Spelling",
+       "outcome": "EN1-SPELL-01",
+       "points": [
+        "Morphological component",
+        "Use common prefixes such as un–, re– and dis–",
+        "|"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

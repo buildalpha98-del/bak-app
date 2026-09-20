@@ -1,0 +1,989 @@
+{
+ "framework": "nsw",
+ "subject": "mathematics",
+ "syllabus": "NSW Mathematics K–10 Syllabus (2022)",
+ "band": "Stage 1",
+ "organisation": "units",
+ "source": "NSW Department of Education sample scope and sequences (education.nsw.gov.au), fetched 2026-09-21 — maths-s1.xlsx",
+ "variants": [
+  {
+   "label": "Year A / Year B",
+   "terms": [
+    {
+     "term": 1,
+     "units": [
+      {
+       "title": "Learning sequence 1 – Collections of ten are really useful",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "2D shapes: Represent, combine and separate two-dimensional shapes",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Patterns have something that repeats over and over and over again",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "2D shapes: Represent, combine and separate two dimensional shapes",
+        "Ask questions and gather data",
+        "Create displays of data and interpret them"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Length: Compare lengths using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Indirectly compare area",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "Volume: Measure and compare the internal volumes (capacities) of containers by filling",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Investigate mass using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Smaller numbers can be found hiding in bigger numbers",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – New shapes can be made by joining (combining) or partitioning (breaking apart) existing shapes",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Recognise and represent division",
+        "Length: Subdivide lengths to find halves and quarters",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "3D objects: Recognise familiar 3D objects",
+        "3D objects: Describe the features of 3D objects"
+       ]
+      },
+      {
+       "title": "Learning sequence 1 – Collections of ten are really useful",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "2D shapes: Represent, combine and separate two-dimensional shapes",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Patterns have something that repeats over and over and over",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "2D shapes: Represent, combine and separate two-dimensional shapes",
+        "Ask questions and gather data",
+        "Create displays of data and interpret them"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Length: Compare lengths using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Indirectly compare area",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "Volume: Measure and compare the internal volumes (capacities) of containers by filling",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Investigate mass using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Smaller numbers can be found hiding in bigger numbers",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – New shapes can be made by joining (combining) or partitioning (breaking apart) existing shapes",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Recognise and represent division",
+        "Length: Subdivide lengths to find halves and quarters",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "3D objects: Describe the features of three-dimensional objects"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "units": [
+      {
+       "title": "Learning sequence 1 – Equal means equivalent",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Mass: Investigate mass using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Data helps describe and wonder about the world",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data",
+        "Identify and describe possible outcomes",
+        "Identify and describe activities that involve chance"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Recognise and represent division",
+        "Model doubling and halving with fractions",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "2D shapes: Identify and describe the orientation of shapes using quarter turns",
+        "Time: Tell time to the half-hour",
+        "Time: Describe duration using units of time"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Collections of objects can be changed by adding more (combining) or taking some away (separating)",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Mass: Investigate mass using an equal-arm balance",
+        "Mass: Compare the masses of objects using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – Sometimes things move and change location",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-01",
+        "MA1-GM-02",
+        "MA1-CHAN-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A",
+        "Chance A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Position: Follow directions to familiar locations",
+        "Position: Explore simple maps of familiar locations",
+        "2D shapes: Identify and describe the orientation of shapes using quarter turns",
+        "Identify and describe possible outcomes",
+        "Identify and describe activities that involve chance"
+       ]
+      },
+      {
+       "title": "Learning sequence 1 – Equal means equivalent",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Mass: Investigate mass using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Data helps describe and wonder about the world",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data",
+        "Identify and describe possible outcomes",
+        "Identify and describe activities that involve chance"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Recognise and represent division",
+        "Model doubling and halving with fractions",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "2D shapes: Identify and describe the orientation of shapes using quarter turns",
+        "Volume: Measure and compare the internal volumes (capacities) of containers by filling",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Time: Tell time to the half-hour",
+        "Time: Describe duration using units of time"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Collections of objects can be changed by adding more (combining) or taking some away (separating)",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – Sometimes things move and change location",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Position: Follow directions to familiar locations",
+        "Position: Explore simple maps of familiar locations",
+        "2D shapes: Transform shapes with slides and reflections",
+        "2D shapes: Identify and describe the orientation of shapes using quarter turns"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "units": [
+      {
+       "title": "Learning sequence 1 – Collections of ten are really useful",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Position: Follow directions to familiar locations",
+        "Mass: Investigate mass using an equal-arm balance",
+        "Time: Tell time to the quarter-hour using the language of 'past' and 'to'"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Patterns have something that repeats over and over and over",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and recall number bonds up to ten",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Represent data with objects and drawings and describe the displays",
+        "Create displays of data and interpret them"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – Making and using equal groups",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01",
+        "MA1-2DS-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent equality",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "2D shapes: Represent, combine and separate two-dimensional shapes",
+        "3D objects: Sort and describe three-dimensional objects",
+        "Mass: Investigate mass using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Measure areas using uniform informal units",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Compare the masses of objects using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – A fraction (like one half) can mean half of a collection, half of an object or half of a measure. A whole unit can be partitioned into smaller parts",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and represent division",
+        "Model doubling and halving with fractions",
+        "Length: Subdivide lengths to find halves and quarters",
+        "Length: Repeatedly halve lengths to form eighths"
+       ]
+      },
+      {
+       "title": "Learning sequence 1 – Collections of ten are really useful",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A",
+        "Data B"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Position: Follow directions to familiar locations",
+        "Position: Explore simple maps of familiar locations",
+        "Identify a question of interest and gather relevant data"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – Patterns have something that repeats over and over and over",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Represent data with objects and drawings and describe the displays",
+        "Create displays of data and interpret them"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – Making and using equal groups",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent equality",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Measure areas using uniform informal units",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Compare the masses of objects using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – A fraction (like one half) can mean half of a collection, half of an object or half of a measure. A whole unit can be partitioned into smaller parts",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-03"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Recognise and represent division",
+        "Model doubling and halving with fractions",
+        "Length: Subdivide lengths to find halves and quarters",
+        "Length: Repeatedly halve lengths to form eighths"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "units": [
+      {
+       "title": "Learning sequence 1 – There are many different situations where addition, subtraction, multiplication and division can be used",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Measure areas using uniform informal units",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Compare the masses of objects using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – Data is collected to solve problems",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-02",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Time: Name and order the cycle of months",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data",
+        "Identify and describe possible outcomes",
+        "Identify and describe activities that involve chance"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Objects can be sorted and classified in different ways",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "3D objects: Describe the features of three-dimensional objects"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – Problems can be solved and represented in different ways",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure B"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use flexible strategies to solve addition and subtraction problems",
+        "Model and use equal groups of objects to represent multiplication",
+        "Represent multiplication and division problems",
+        "Time: Describe duration using units of time"
+       ]
+      },
+      {
+       "title": "Learning sequence 1 – There are many different situations where addition, subtraction, multiplication and division can be used",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use advanced count-by-one strategies to solve addition and subtraction problems",
+        "Represent and reason about additive relations",
+        "Count in multiples using rhythmic and skip counting",
+        "Represent and explain multiplication as the combining of equal groups"
+       ]
+      },
+      {
+       "title": "Learning sequence 2 – What needs to be measured determines the unit of measurement",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-GM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Geometric measure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Represent and explain multiplication as the combining of equal groups",
+        "Length: Measure the lengths of objects using uniform informal units",
+        "Length: Compare and order lengths, using appropriate uniform informal units",
+        "Area: Measure areas using uniform informal units",
+        "Area: Compare rectangular areas using uniform square units of an appropriate size in rows and columns",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "Volume: Compare containers based on internal volume (capacity) by filling and packing",
+        "Mass: Compare the masses of objects using an equal-arm balance"
+       ]
+      },
+      {
+       "title": "Learning sequence 3 – Data is collected to solve problems",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-01",
+        "MA1-DATA-01",
+        "MA1-DATA-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure A",
+        "Data A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Time: Name and order the cycle of months",
+        "Ask questions and gather data",
+        "Identify a question of interest and gather relevant data",
+        "Identify and describe possible outcomes",
+        "Identify and describe activities that involve chance"
+       ]
+      },
+      {
+       "title": "Learning sequence 4 – Objects can be sorted and classified in different ways",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-2DS-01"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Two-dimensional spatial structure A"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "2D shapes: Recognise and classify shapes using obvious features",
+        "3D objects: Recognise familiar three-dimensional objects",
+        "3D objects: Describe the features of three-dimensional objects"
+       ]
+      },
+      {
+       "title": "Learning sequence 5 – Problems can be solved and represented in different ways",
+       "strand": "Number and algebra",
+       "outcomes": [
+        "MAO-WM-01",
+        "MA1-RWN-01",
+        "MA1-RWN-02",
+        "MA1-NSM-02"
+       ],
+       "focusAreas": [
+        "Representing whole numbers A",
+        "Non-spatial measure B"
+       ],
+       "contentGroups": [
+        "Use counting sequences of ones with two-digit numbers and beyond",
+        "Use counting sequences of ones and tens flexibly",
+        "Use flexible strategies to solve addition and subtraction problems",
+        "Model and use equal groups of objects to represent multiplication",
+        "Represent multiplication and division problems",
+        "Time: Describe duration using units of time",
+        "Back to the top"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

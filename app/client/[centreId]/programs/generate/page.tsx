@@ -13,10 +13,13 @@ import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 export default async function GenerateLessonPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ centreId: string }>;
+  searchParams: Promise<{ subject?: string; focus?: string; classId?: string; week?: string; learningFocus?: string }>;
 }) {
   const { centreId } = await params;
+  const sp = await searchParams;
 
   const { data: clientUser, error: authError } = await getCurrentClientUser(centreId);
   if (authError || !clientUser) redirect("/client-login");
@@ -55,6 +58,13 @@ export default async function GenerateLessonPage({
       <LessonGenerateForm
         centreId={centreId}
         frameworkKey={framework.key}
+        initial={{
+          subject: sp.subject,
+          focus: sp.focus,
+          classId: sp.classId,
+          plannedFor: sp.week,
+          learningFocus: sp.learningFocus,
+        }}
         classes={scopeClasses(classes, clientUser.class_ids)}
         termName={term?.name ?? null}
         termWeeks={weeks}
