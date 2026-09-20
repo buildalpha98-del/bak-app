@@ -112,6 +112,9 @@ interface AssessmentListViewProps {
   templates: AssessmentTemplateListItem[];
   centres: { id: string; name: string }[];
   terms: { id: string; name: string }[];
+  /** Pre-selected in the create dialog: a template with no term produces
+   *  no coach tasks, and "All terms" was the silent default. */
+  activeTermId?: string | null;
   basePath: string;
 }
 
@@ -137,6 +140,7 @@ export function AssessmentListView({
   templates,
   centres,
   terms,
+  activeTermId = null,
   basePath,
 }: AssessmentListViewProps) {
   const router = useRouter();
@@ -799,6 +803,7 @@ export function AssessmentListView({
         onOpenChange={setDialogOpen}
         centres={centres}
         terms={terms}
+        activeTermId={activeTermId}
         existingTemplates={templates}
         basePath={basePath}
       />
@@ -979,6 +984,7 @@ function CreateAssessmentDialog({
   onOpenChange,
   centres,
   terms,
+  activeTermId,
   existingTemplates,
   basePath,
 }: {
@@ -986,13 +992,16 @@ function CreateAssessmentDialog({
   onOpenChange: (open: boolean) => void;
   centres: { id: string; name: string }[];
   terms: { id: string; name: string }[];
+  activeTermId: string | null;
   existingTemplates: AssessmentTemplateListItem[];
   basePath: string;
 }) {
   const router = useRouter();
   const [sport, setSport] = useState("");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "">("");
-  const [termId, setTermId] = useState("");
+  // "__all" is the explicit no-term choice; the Select can't carry "".
+  const [termId, setTermId] = useState(activeTermId ?? "__all");
+  const effectiveTermId = termId === "__all" ? "" : termId;
   const [centreId, setCentreId] = useState("");
   const [skills, setSkills] = useState<AssessmentSkill[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1008,16 +1017,16 @@ function CreateAssessmentDialog({
         (t) =>
           t.sport === sport &&
           t.age_group === ageGroup &&
-          (termId ? t.term_id === termId : t.term_id === null) &&
+          (effectiveTermId ? t.term_id === effectiveTermId : t.term_id === null) &&
           t.skill_count > 0,
       ) ?? null
     );
-  }, [sport, ageGroup, termId, existingTemplates]);
+  }, [sport, ageGroup, effectiveTermId, existingTemplates]);
 
   function resetForm() {
     setSport("");
     setAgeGroup("");
-    setTermId("");
+    setTermId(activeTermId ?? "__all");
     setCentreId("");
     setSkills([]);
     setIsGenerating(false);
@@ -1094,7 +1103,7 @@ function CreateAssessmentDialog({
         sport,
         age_group: ageGroup as AgeGroup,
         skills_json: validSkills,
-        term_id: termId || null,
+        term_id: effectiveTermId || null,
         centre_id: centreId || null,
       });
 
@@ -1181,6 +1190,7 @@ function CreateAssessmentDialog({
                 <SelectValue placeholder="All terms" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__all">All terms (no coach tasks)</SelectItem>
                 {terms.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     {t.name}
@@ -1218,7 +1228,7 @@ function CreateAssessmentDialog({
               <p className="font-medium text-amber-900 dark:text-amber-100">
                 A template for {sport} ·{" "}
                 {AGE_GROUP_LABELS[ageGroup as AgeGroup]}
-                {termId ? "" : " (no term)"} already exists.
+                {effectiveTermId ? "" : " (no term)"} already exists.
               </p>
               <p className="mt-1 text-amber-800 dark:text-amber-200">
                 It has {potentialDuplicate.skill_count} skill

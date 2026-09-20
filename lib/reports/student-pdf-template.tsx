@@ -28,6 +28,8 @@ export interface StudentReportData {
     sport: string;
     assessedAt: string; // pre-formatted
     skills: Array<{ name: string; mark: number; previousMark: number | null }>;
+    /** Written by the class teacher in the portal (migration 088). */
+    teacherComment?: string | null;
   }>;
   insight: {
     summary: string | null;
@@ -231,6 +233,12 @@ export function StudentReportPDF(data: StudentReportData) {
                     </View>
                   );
                 })}
+                {a.teacherComment && (
+                  <View style={styles.commentBox}>
+                    <Text style={styles.bodyText}>{a.teacherComment}</Text>
+                    <Text style={styles.commentMeta}>Class teacher</Text>
+                  </View>
+                )}
               </View>
             ))}
             <Text style={styles.legend}>

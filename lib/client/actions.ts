@@ -77,6 +77,9 @@ export async function inviteClientUser(input: {
   email: string;
   name: string;
   isPrimary?: boolean;
+  /** "teacher" scopes the invite to classIds (migration 088). */
+  role?: "teacher";
+  classIds?: string[];
 }): Promise<{ data: ClientUser | null; error: string | null }> {
   try {
     const supabase = await createSupabaseServerClient();
@@ -109,7 +112,9 @@ export async function inviteClientUser(input: {
       centreId: input.centreId,
       email: input.email,
       name: input.name,
-      isPrimary: input.isPrimary !== false,
+      isPrimary: input.role === "teacher" ? false : input.isPrimary !== false,
+      role: input.role,
+      classIds: input.classIds ?? [],
     });
   } catch (err) {
     console.error("inviteClientUser error:", err);
@@ -126,18 +131,35 @@ async function provisionPortalUser(input: {
   email: string;
   name: string;
   isPrimary: boolean;
+  role?: "teacher";
+  classIds?: string[];
 }): Promise<{ data: ClientUser | null; error: string | null }> {
   const adminClient = createSupabaseAdmin();
 
   // Check for existing client user with this email + centre
   const { data: existing } = await adminClient
     .from("client_users")
-    .select("id")
+    .select("*")
     .eq("centre_id", input.centreId)
     .eq("email", input.email)
     .maybeSingle();
 
   if (existing) {
+    // A teacher invited for a second class keeps one login and gains the
+    // class; anyone else already has what an invite would give them.
+    if (input.role === "teacher" && (input.classIds ?? []).length > 0) {
+      const merged = Array.from(
+        new Set([...(existing.class_ids ?? []), ...(input.classIds ?? [])])
+      );
+      const { data: updated, error: updErr } = await adminClient
+        .from("client_users")
+        .update({ class_ids: merged })
+        .eq("id", existing.id)
+        .select()
+        .single();
+      if (updErr || !updated) return { data: null, error: updErr?.message ?? "Failed to update." };
+      return { data: updated as ClientUser, error: null };
+    }
     return { data: null, error: "This email already has portal access for this centre." };
   }
 
@@ -233,6 +255,9 @@ async function provisionPortalUser(input: {
         name: input.name,
         email: input.email,
         is_primary: input.isPrimary,
+        ...(input.role === "teacher"
+          ? { role: "teacher", class_ids: input.classIds ?? [] }
+          : {}),
       })
       .select()
       .single();

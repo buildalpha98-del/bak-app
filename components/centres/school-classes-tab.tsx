@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useTransition } from "react";
 import { toast } from "sonner";
 import {
   GraduationCap,
+  Mail,
   Plus,
   Trash2,
   UserPlus,
@@ -29,6 +30,7 @@ import {
   type ClassRosterChild,
 } from "@/lib/schools/class-actions";
 import { YEAR_GROUP_OPTIONS, yearGroupSortKey } from "@/lib/schools/year-groups";
+import { inviteClientUser } from "@/lib/client/actions";
 import { ClassImportDialog } from "@/components/centres/class-import-dialog";
 import type { CentreType } from "@/lib/types/enums";
 
@@ -148,6 +150,7 @@ export function SchoolClassesTab({
           {classes.map((cls) => (
             <ClassCard
               key={cls.id}
+              centreId={centreId}
               cls={cls}
               members={roster.filter((c) => c.class_id === cls.id)}
               unassigned={unassigned}
@@ -259,12 +262,14 @@ function CreateClassCard({
 }
 
 function ClassCard({
+  centreId,
   cls,
   members,
   unassigned,
   onChanged,
   vocab,
 }: {
+  centreId: string;
   cls: SchoolClassSummary;
   members: ClassRosterChild[];
   unassigned: ClassRosterChild[];
@@ -274,6 +279,36 @@ function ClassCard({
   const [assigning, setAssigning] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
+  // Teacher portal invite (migration 088) — schools only; the class
+  // teacher rates their own students in the portal.
+  const [inviting, setInviting] = useState(false);
+  const [teacherName, setTeacherName] = useState(cls.teacher_name ?? "");
+  const [teacherEmail, setTeacherEmail] = useState("");
+
+  function handleInviteTeacher() {
+    const email = teacherEmail.trim().toLowerCase();
+    const name = teacherName.trim();
+    if (!email || !name) {
+      toast.error("Teacher name and email are both needed.");
+      return;
+    }
+    startTransition(async () => {
+      const { error } = await inviteClientUser({
+        centreId,
+        email,
+        name,
+        role: "teacher",
+        classIds: [cls.id],
+      });
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      toast.success(`${name} invited to the portal for ${cls.name}.`);
+      setInviting(false);
+      setTeacherEmail("");
+    });
+  }
 
   function toggle(childId: string) {
     setSelected((prev) => {
@@ -344,18 +379,59 @@ function ClassCard({
             {members.length} {members.length === 1 ? vocab.member : vocab.members}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isPending}
-          className="text-muted-foreground hover:text-red-600"
-          aria-label={`Delete ${cls.name}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {vocab.leader === "Teacher" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setInviting((v) => !v)}
+              disabled={isPending}
+              className="text-muted-foreground"
+              aria-label={`Invite teacher for ${cls.name}`}
+            >
+              <Mail className="h-4 w-4" />
+              <span className="ml-1 hidden sm:inline">Invite teacher</span>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            disabled={isPending}
+            className="text-muted-foreground hover:text-red-600"
+            aria-label={`Delete ${cls.name}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
+        {inviting && (
+          <div className="mb-3 rounded-lg border bg-muted/30 p-3 space-y-2">
+            <p className="text-xs text-muted-foreground">
+              The teacher gets a magic-link login scoped to {cls.name}: they rate their
+              students on this term&apos;s skills and the marks land on the report cards.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <Input
+                placeholder="Teacher name"
+                value={teacherName}
+                onChange={(e) => setTeacherName(e.target.value)}
+                aria-label={`Teacher name for ${cls.name}`}
+              />
+              <Input
+                type="email"
+                placeholder="teacher@school.nsw.edu.au"
+                value={teacherEmail}
+                onChange={(e) => setTeacherEmail(e.target.value)}
+                aria-label={`Teacher email for ${cls.name}`}
+              />
+              <Button onClick={handleInviteTeacher} disabled={isPending}>
+                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send invite"}
+              </Button>
+            </div>
+          </div>
+        )}
         {members.length > 0 ? (
           <ul className="flex flex-wrap gap-1.5">
             {members.map((m) => (
