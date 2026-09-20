@@ -36,9 +36,13 @@ describe("normaliseOutcomes", () => {
     expect(out.map((o) => o.code)).toEqual(["PDe-1"]);
   });
 
-  it("falls back to every PDHPE code when nothing matches the stage", () => {
-    const out = normaliseOutcomes(raw, "Stage 3");
-    expect(out.map((o) => o.code)).toEqual(["PD1-3", "PD1-6", "PD2-3", "PD2-6", "PDe-1"]);
+  it("falls back to the nearest stage that has codes, never every stage", () => {
+    // Stage 3 requested, only Stage 2 and below written → Stage 2 codes.
+    expect(normaliseOutcomes(raw, "Stage 3").map((o) => o.code)).toEqual(["PD2-3", "PD2-6"]);
+    // Stage 1 requested with only Early Stage 1 and Stage 2 written → the
+    // closer of the two is a tie; prefer the higher stage.
+    const only = [{ code: "PDe-1 / PD2-6", title: "Movement" }];
+    expect(normaliseOutcomes(only, "Stage 1").map((o) => o.code)).toEqual(["PD2-6"]);
   });
 
   it("ignores entries without a code", () => {

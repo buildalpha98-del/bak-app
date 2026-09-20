@@ -5,7 +5,7 @@
 // one-by-one flow writes, through the same server action, so both
 // surfaces stay interchangeable (migration 088).
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -31,6 +31,17 @@ export function ClassAssessmentGrid({
   const [dirty, setDirty] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
+
+  // Leaving mid-save would drop the rows still in flight.
+  useEffect(() => {
+    if (saving.size === 0 && dirty.size === 0) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [saving.size, dirty.size]);
 
   const skills = grid.template.skills;
   const assessed = countAssessed(rows);
@@ -93,8 +104,8 @@ export function ClassAssessmentGrid({
   function saveAll() {
     startTransition(async () => {
       const pending = rows.filter((r) => dirty.has(r.child.id) && r.editable);
-      let ok = 0;
-      for (const row of pending) if (await saveRow(row)) ok++;
+      // In parallel — see quiz-marking.tsx.
+      const ok = (await Promise.all(pending.map((row) => saveRow(row)))).filter(Boolean).length;
       if (ok > 0) toast.success(`${ok} ${ok === 1 ? "student" : "students"} saved.`);
       router.refresh();
     });
