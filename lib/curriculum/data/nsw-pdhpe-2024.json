@@ -1,0 +1,391 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–6 and 7–10 Syllabuses (2024)",
+ "source": "NESA digital curriculum (curriculum.nsw.edu.au), fetched 2026-09-21",
+ "validFrom": "2027-01-01",
+ "validTo": null,
+ "outcomes": [
+  {
+   "code": "PH1-IHW-01",
+   "statement": "describes factors that contribute to identity, health and wellbeing",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PH1-MSP-01",
+   "statement": "demonstrates fundamental movement skills and fair play in physical activities",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PH1-RRS-01",
+   "statement": "describes and demonstrates actions that support respectful relationships and safety offline and online",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PH1-SMI-01",
+   "statement": "describes and demonstrates self-management and interpersonal skills in a range of contexts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PH2-IHW-01",
+   "statement": "explains how related factors influence identity, health and wellbeing",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PH2-MSP-01",
+   "statement": "applies movement skills, strategies and teamwork in physical activities",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PH2-RRS-01",
+   "statement": "describes and applies skills and strategies to strengthen respectful relationships",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PH2-RRS-02",
+   "statement": "describes and applies skills and strategies to interact safely in offline and online contexts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PH2-SMI-01",
+   "statement": "explains and applies self-management and interpersonal skills in a range of contexts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PH3-CWT-01",
+   "statement": "creates written texts to communicate understanding of health, safety and wellbeing",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH3-IHW-01",
+   "statement": "examines and explains factors that influence identity, health and wellbeing of individuals and groups",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH3-MSP-01",
+   "statement": "refines and applies movement skills, strategies and collaboration in physical activities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH3-RRS-01",
+   "statement": "explains and applies skills and strategies to manage respectful relationships",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH3-RRS-02",
+   "statement": "explains and applies skills and strategies to interact safely in offline and online contexts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH3-SMI-01",
+   "statement": "evaluates and applies self-management and interpersonal skills in a range of contexts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PH4-IBC-01",
+   "statement": "investigates and explains factors that shape identity and sense of belonging",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-IPS-01",
+   "statement": "investigates and uses health information, products and support services to propose strategies that enhance safety, health and wellbeing",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-MSS-01",
+   "statement": "transfers movement skills and concepts for use in a range of dynamic movement environments",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-MSS-02",
+   "statement": "demonstrates how strategies and actions can be transferred to solve movement challenges",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-RRL-01",
+   "statement": "explains and applies strategies for promoting safe and respectful relationships in a range of contexts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-SHP-01",
+   "statement": "plans for and uses strategies to participate in activities that encourage safety, health and lifelong physical activity",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-SHW-01",
+   "statement": "assesses the influence of contextual factors on attitudes and behaviours to propose strategies that enhance safety, health and wellbeing",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH4-SMI-01",
+   "statement": "refines and applies self-management and interpersonal skills to manage complex situations",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PH5-IBC-01",
+   "statement": "analyses how identity and a sense of belonging contribute to the health and wellbeing of individuals and communities",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-IPS-01",
+   "statement": "evaluates the effectiveness and suitability of health information, products and support services for improved individual and community safety, health and wellbeing",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-MSS-01",
+   "statement": "refines and transfers movement skills and concepts for adaptation in a range of dynamic movement environments",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-MSS-02",
+   "statement": "selects, implements and justifies strategies and actions to solve movement challenges",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-RRL-01",
+   "statement": "evaluates and applies strategies for promoting and maintaining safe and respectful relationships in a range of contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-SHP-01",
+   "statement": "designs, implements and evaluates plans to enhance safety, health and participation in lifelong physical activity",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-SHW-01",
+   "statement": "analyses the interrelationship between contextual factors, attitudes and behaviours to promote safety, health and wellbeing",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PH5-SMI-01",
+   "statement": "evaluates and adapts self-management and interpersonal skills to manage complex situations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PHE-IHW-01",
+   "statement": "identifies factors that contribute to identity, health and wellbeing",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PHE-MSP-01",
+   "statement": "demonstrates fundamental movement skills and participates with others in physical activities",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PHE-RRS-01",
+   "statement": "identifies how respectful relationships and safety contribute to wellbeing",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PHE-SMI-01",
+   "statement": "identifies and demonstrates self-management and interpersonal skills",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  }
+ ]
+}

@@ -3,6 +3,7 @@ import type { AssessmentSkill } from "@/lib/types/database";
 import { AI_MODEL } from "@/lib/ai/model";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
+import { bandsForAgeBand, promptOutcomeList } from "@/lib/curriculum/knowledge-base";
 
 // ============================================================
 // Claude API Skill Framework Generator (server-only)
@@ -121,6 +122,13 @@ export async function generateSkills(
     );
   }
 
+  // Knowledge base: the band's real outcomes, so each skill is something
+  // the syllabus actually asks for rather than a plausible invention.
+  const bands = bandsForAgeBand(ageGroup);
+  const list = bands.length > 0 ? promptOutcomeList(framework, subject, bands, { max: 40 }) : "";
+  const anchor = list
+    ? `\n\nAnchor the skills to these ${framework.label} ${framework.outcomeNoun}s for the band — each skill should be observable evidence of one of them (name the code in brackets at the end of the description):\n${list}`
+    : "";
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 4000,
@@ -129,9 +137,9 @@ export async function generateSkills(
       {
         role: "user",
         content:
-          subject.key === "pdhpe"
+          (subject.key === "pdhpe"
             ? `Generate assessment skills for ${sport} for the ${ageGroup} age group.`
-            : `Generate assessment skills for the ${subject.label} ${subject.strandLabel.toLowerCase()} "${sport}" for the ${ageGroup} age group.`,
+            : `Generate assessment skills for the ${subject.label} ${subject.strandLabel.toLowerCase()} "${sport}" for the ${ageGroup} age group.`) + anchor,
       },
     ],
   });

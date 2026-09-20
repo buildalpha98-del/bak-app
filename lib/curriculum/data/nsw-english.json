@@ -1,0 +1,571 @@
+{
+ "framework": "nsw",
+ "subject": "english",
+ "syllabus": "NSW English K–10 Syllabus (2022)",
+ "source": "NESA digital curriculum (curriculum.nsw.edu.au), fetched 2026-09-21",
+ "validFrom": null,
+ "validTo": null,
+ "outcomes": [
+  {
+   "code": "EN1-CWT-01",
+   "statement": "plans, creates and revises texts written for different purposes, including paragraphs, using knowledge of vocabulary, text features and sentence structure",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-HANDW-01",
+   "statement": "uses a legible, fluent and automatic handwriting style, and digital technology, including word-processing applications, when creating texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-OLC-01",
+   "statement": "communicates effectively by using interpersonal conventions and language to extend and elaborate ideas for social and learning interactions",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-PHOKW-01",
+   "statement": "uses initial and extended phonics, including vowel digraphs, trigraphs to decode and encode words when reading and creating texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-RECOM-01",
+   "statement": "comprehends independently read texts that require sustained reading by activating background and word knowledge, connecting and understanding sentences and whole text, and monitoring for meaning",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-REFLU-01",
+   "statement": "sustains reading unseen texts with automaticity and prosody and self-corrects errors",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-SPELL-01",
+   "statement": "applies phonological, orthographic and morphological generalisations and strategies when spelling words in a range of writing contexts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-UARL-01",
+   "statement": "understands and responds to literature by creating texts using similar structures, intentional language choices and features appropriate to audience and purpose",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN1-VOCAB-01",
+   "statement": "understands and effectively uses Tier 1, taught Tier 2 and Tier 3 vocabulary to extend and elaborate ideas",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "EN2-CWT-01",
+   "statement": "plans, creates and revises written texts for imaginative purposes, using text features, sentence-level grammar, punctuation and word-level language for a target audience",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-CWT-02",
+   "statement": "plans, creates and revises written texts for informative purposes, using text features, sentence-level grammar, punctuation and word-level language for a target audience",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-CWT-03",
+   "statement": "plans, creates and revises written texts for persuasive purposes, using text features, sentence-level grammar, punctuation and word-level language for a target audience",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-HANDW-01",
+   "statement": "forms legible joined letters to develop handwriting fluency",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-HANDW-02",
+   "statement": "uses digital technologies to create texts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-OLC-01",
+   "statement": "communicates with familiar audiences for social and learning purposes, by interacting, understanding and presenting",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-RECOM-01",
+   "statement": "reads and comprehends texts for wide purposes using knowledge of text structures and language, and by monitoring comprehension",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-REFLU-01",
+   "statement": "sustains independent reading with accuracy, automaticity, rate and prosody suited to purpose, audience and meaning",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-SPELL-01",
+   "statement": "selects, applies and describes appropriate phonological, orthographic and morphological generalisations and strategies when spelling in a range of contexts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-UARL-01",
+   "statement": "identifies and describes how ideas are represented in literature and strategically uses similar representations when creating texts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN2-VOCAB-01",
+   "statement": "builds knowledge and use of Tier 1, Tier 2 and Tier 3 vocabulary through interacting, wide reading and writing, and by defining and analysing words",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "EN3-CWT-01",
+   "statement": "plans, creates and revises written texts for multiple purposes and audiences through selection of text features, sentence-level grammar, punctuation and word-level language",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-HANDW-01",
+   "statement": "sustains a legible, fluent and automatic handwriting style",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-HANDW-02",
+   "statement": "selects digital technologies to suit audience and purpose to create texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-OLC-01",
+   "statement": "communicates to wide audiences with social and cultural awareness, by interacting and presenting, and by analysing and evaluating for understanding",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-RECOM-01",
+   "statement": "fluently reads and comprehends texts for wide purposes, analysing text structures and language, and by monitoring comprehension",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-SPELL-01",
+   "statement": "automatically applies taught phonological, orthographic and morphological generalisations and strategies when spelling in a range of contexts, and justifies spelling strategies used to spell unfamiliar words",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-UARL-01",
+   "statement": "analyses representations of ideas in literature through narrative, character, imagery, symbol and connotation, and adapts these representations when creating texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-UARL-02",
+   "statement": "analyses representations of ideas in literature through genre and theme that reflect perspective and context, argument and authority, and adapts these representations when creating texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN3-VOCAB-01",
+   "statement": "extends Tier 2 and Tier 3 vocabulary through interacting, wide reading and writing, morphological analysis and generating precise definitions for specific contexts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "EN4-ECA-01",
+   "statement": "creates personal, creative and critical texts for a range of audiences by using linguistic and stylistic conventions of language to express ideas",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN4-ECB-01",
+   "statement": "uses processes of planning, monitoring, revising and reflecting to support and develop composition of texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN4-RVL-01",
+   "statement": "uses a range of personal, creative and critical strategies to read texts that are complex in their ideas and construction",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN4-URA-01",
+   "statement": "analyses how meaning is created through the use of and response to language forms, features and structures",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN4-URB-01",
+   "statement": "examines and explains how texts represent ideas, experiences and values",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN4-URC-01",
+   "statement": "identifies and explains ways of valuing texts and the connections between them",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "EN5-ECA-01",
+   "statement": "crafts personal, creative and critical texts for a range of audiences by experimenting with and controlling language forms and features to shape meaning",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "EN5-ECB-01",
+   "statement": "uses processes of planning, monitoring, revising and reflecting to purposefully develop and refine composition of texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "EN5-RVL-01",
+   "statement": "uses a range of personal, creative and critical strategies to interpret complex texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "EN5-URA-01",
+   "statement": "analyses how meaning is created through the use and interpretation of increasingly complex language forms, features and structures",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "EN5-URB-01",
+   "statement": "evaluates how texts represent ideas and experiences, and how they can affirm or challenge values and attitudes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "EN5-URC-01",
+   "statement": "investigates and explains ways of valuing texts and the relationships between them",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "ENE-CWT-01",
+   "statement": "creates written texts that include at least 2 related ideas and correct simple sentences",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-HANDW-01",
+   "statement": "produces all lower-case and upper-case letters to create texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-OLC-01",
+   "statement": "communicates effectively by using interpersonal conventions and language with familiar peers and adults",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-PHOAW-01",
+   "statement": "identifies, blends, segments and manipulates phonological units in spoken words as a strategy for reading and creating texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-PHOKW-01",
+   "statement": "uses single-letter grapheme–phoneme correspondences and common digraphs to decode and encode words when reading and creating texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-PRINT-01",
+   "statement": "tracks written text from left to right and from top to bottom of the page and identifies visual and spatial features of print",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-RECOM-01",
+   "statement": "comprehends independently read texts using background knowledge, word knowledge and understanding of how sentences connect",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-REFLU-01",
+   "statement": "reads decodable texts aloud with automaticity",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-SPELL-01",
+   "statement": "applies phonological, orthographic and morphological generalisations and strategies to spell taught familiar and high-frequency words when creating texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-UARL-01",
+   "statement": "understands and responds to literature read to them",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "ENE-VOCAB-01",
+   "statement": "understands and effectively uses Tier 1 words and Tier 2 words in familiar contexts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  }
+ ]
+}

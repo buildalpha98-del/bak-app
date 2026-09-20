@@ -1,0 +1,725 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–10 Syllabus (2018)",
+ "source": "NSW Department of Education PDHPE outcome cards (NESA PDHPE K–10 Syllabus 2018), fetched 2026-09-21",
+ "validFrom": null,
+ "validTo": "2026-12-31",
+ "outcomes": [
+  {
+   "code": "PDe-1",
+   "statement": "identifies who they are and how people grow and change",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-2",
+   "statement": "identifies people and demonstrates protective strategies that help keep themselves healthy, resilient and safe",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-3",
+   "statement": "communicates ways to be caring, inclusive and respectful of others",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-4",
+   "statement": "practises and demonstrates movement skills and sequences using different body parts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-5",
+   "statement": "explores possible solutions to movement challenges through participation in a range of activities",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-6",
+   "statement": "explores contextual factors that influence an individual’s health, safety, wellbeing and participation in physical activity",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-7",
+   "statement": "identifies actions that promote health, safety, wellbeing and physically active spaces",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-8",
+   "statement": "explores how regular physical activity keeps individuals healthy",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-9",
+   "statement": "practises self- management skills in familiar and unfamiliar scenarios",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-10",
+   "statement": "uses interpersonal skills to effectively interact with others",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PDe-11",
+   "statement": "demonstrates how the body moves in relation to space, time, objects, effort and people",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ]
+  },
+  {
+   "code": "PD1-1",
+   "statement": "describes the qualities and characteristics that make them similar and different to others",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-2",
+   "statement": "recognises and describes strategies people can use to feel comfortable, resilient and safe in situations",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-3",
+   "statement": "recognises and describes the qualities that enhance inclusive and respectful relationships",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-4",
+   "statement": "performs movement skills in a variety of sequences and situations",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-5",
+   "statement": "proposes a range of alternatives to solve movement challenges through participation in a range of activities",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-6",
+   "statement": "understands contextual factors that influence themselves and others health, safety, wellbeing and participation in physical activity",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-7",
+   "statement": "explores actions that help make home and school healthy, safe and physically active spaces",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-8",
+   "statement": "participates in a range of opportunities that promote physical activity",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-9",
+   "statement": "demonstrates self- management skills in taking responsibility for their own actions",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-10",
+   "statement": "describes and practises interpersonal skills to promote inclusion to make themselves and others feel they belong",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD1-11",
+   "statement": "incorporates elements of space, time, objects, effort and people in creating and performing simple movement sequences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ]
+  },
+  {
+   "code": "PD2-1",
+   "statement": "explores strategies to manage physical, social and emotional change",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-2",
+   "statement": "explains and uses strategies to develop resilience and to make them feel comfortable and safe",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-3",
+   "statement": "explains how empathy, inclusion and respect can positively influence relationships",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-4",
+   "statement": "performs and refines movement skills in a variety of sequences and situations",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-5",
+   "statement": "applies strategies to solve movement challenges",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-6",
+   "statement": "describes how contextual factors are interrelated and how they influence health, safety, wellbeing and participation in physical activity",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-7",
+   "statement": "describes strategies to make home and school healthy, safe and physically active spaces",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-8",
+   "statement": "investigates and participates in physical activities to promote the benefits of physical activity on health and wellbeing",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-9",
+   "statement": "demonstrates self- management skills to respond to their own and others’ actions",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-10",
+   "statement": "demonstrates a range of interpersonal skills that build and enhance relationships and promote inclusion in various situations",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD2-11",
+   "statement": "combines movement skills and concepts to effectively create and perform movement sequences",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ]
+  },
+  {
+   "code": "PD3-1",
+   "statement": "identifies and applies strengths and strategies to manage life changes and transitions",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-2",
+   "statement": "investigates information, community resources and strategies to demonstrate resilience and seek help for themselves and others",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-3",
+   "statement": "evaluates the impact of empathy, inclusion and respect on themselves and others",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-4",
+   "statement": "adapts movement skills in a variety of physical activity contexts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-5",
+   "statement": "proposes, applies and assesses solutions to movement challenges",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-6",
+   "statement": "distinguishes contextual factors that influence health, safety, wellbeing and participation in physical activity which are controllable and uncontrollable",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-7",
+   "statement": "proposes and implements actions and protective strategies that promote health, safety, wellbeing and physically active spaces",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-8",
+   "statement": "creates and participates in physical activities to promote healthy and active lifestyles",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-9",
+   "statement": "applies and adapts self- management skills to respond to personal and group situations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-10",
+   "statement": "selects and uses interpersonal skills to interact respectfully with others to promote inclusion and build connections",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD3-11",
+   "statement": "selects, manipulates and modifies movement skills and concepts to effectively create and perform movement sequences",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ]
+  },
+  {
+   "code": "PD4-1",
+   "statement": "examines and evaluates strategies to manage current and future challenges",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-2",
+   "statement": "examines and demonstrates the role help- seeking strategies and behaviours play in supporting themselves and others",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-3",
+   "statement": "investigates effective strategies to promote inclusivity, equality and respectful relationships",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-4",
+   "statement": "refines, applies and transfers movement skills in a variety of dynamic physical activity contexts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-5",
+   "statement": "transfers and adapts solutions to complex movement challenges",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-6",
+   "statement": "recognises how contextual factors influence attitudes and behaviours and proposes strategies to enhance health, safety, wellbeing  and participation in physical activity",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-7",
+   "statement": "investigates health practices, behaviours and resources to promote health, safety, wellbeing and physically active communities",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-8",
+   "statement": "plans for and participates in activities that encourage health and a lifetime of physical activity",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-9",
+   "statement": "demonstrates self- management skills to effectively manage complex situations",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-10",
+   "statement": "applies and refines interpersonal skills to assist themselves and others to interact respectfully and promote inclusion in a variety of groups or contexts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD4-11",
+   "statement": "demonstrates how movement skills and concepts can be adapted and transferred to enhance and perform movement sequences",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ]
+  },
+  {
+   "code": "PD5-1",
+   "statement": "assesses their own and others’ capacity to reflect on and respond positively to challenges",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-2",
+   "statement": "researches and appraises the effectiveness of health information and support services available in the community",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-3",
+   "statement": "analyses factors and strategies that enhance inclusivity, equality and respectful relationships",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-4",
+   "statement": "adapts and improvises movement skills to perform creative movement across a range of dynamic physical activity contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-5",
+   "statement": "appraises and justifies choices of actions when solving complex movement challenges",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-6",
+   "statement": "critiques contextual factors, attitudes and behaviours to effectively promote health, safety, wellbeing and participation in physical activity",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-7",
+   "statement": "plans, implements and critiques strategies to promote health, safety, wellbeing and participation in physical activity in their communities",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-8",
+   "statement": "designs, implements and evaluates personalised plans to enhance health and participation in a lifetime of physical activity",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-9",
+   "statement": "assesses and applies self- management skills to effectively manage complex situations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-10",
+   "statement": "critiques their ability to enact interpersonal skills to build and maintain respectful and inclusive relationships in a variety of groups or contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  },
+  {
+   "code": "PD5-11",
+   "statement": "refines and applies movement skills and concepts to compose and perform innovative movement sequences",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ]
+  }
+ ]
+}

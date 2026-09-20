@@ -1,0 +1,3526 @@
+{
+ "framework": "vic",
+ "subject": "english",
+ "syllabus": "Victorian Curriculum F–10 v2.0 English",
+ "source": "VCAA Victorian Curriculum F–10 Version 2.0 (f10.vcaa.vic.edu.au JSON:API), fetched 2026-09-21",
+ "validFrom": null,
+ "validTo": null,
+ "outcomes": [
+  {
+   "code": "VC2EFLA01",
+   "statement": "explore how language is used differently at home and school depending on the relationships between people",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2EFLA02",
+   "statement": "explore different ways of using language to express preferences, likes and dislikes",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2EFLA03",
+   "statement": "understand that texts can take many forms, such as signs, books and digital texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2EFLA04",
+   "statement": "understand concepts about print in print and digital texts, including how books and simple digital texts are usually organised",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2EFLA05",
+   "statement": "recognise that sentences are key units for expressing ideas",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2EFLA06",
+   "statement": "recognise that sentences are made up of groups of words that work together in particular ways to make meaning",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2EFLA07",
+   "statement": "explore the contribution of images, words and sound to meaning in stories and informative texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2EFLA08",
+   "statement": "recognise and develop awareness of vocabulary used in familiar contexts related to everyday experiences, personal interests and topics taught at school",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2EFLA09",
+   "statement": "identify punctuation as a feature of written text different from letters; recognise that capital letters are used for names, and that capital letters also signal the beginning of sentences while punctuation marks signal the end",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2EFLE01",
+   "statement": "discuss experiences that are similar or different to their own by engaging with literary texts by Aboriginal and Torres Strait Islander authors and illustrators and a wide range of Australian and world authors and illustrators",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2EFLE02",
+   "statement": "respond to stories and share feelings and thoughts about the events and characters depicted",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2EFLE03",
+   "statement": "recognise a range of literary texts and identify features including events, characters, and beginnings and endings",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2EFLE04",
+   "statement": "explore and replicate the rhythms and sound patterns of poems, chants, rhymes and songs",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2EFLE05",
+   "statement": "retell and adapt a range of previously encountered literary texts through play, performance, images, drawing and writing",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2EFLY01",
+   "statement": "interact in informal and structured situations, using appropriate voice levels and listening while others read or speak",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2EFLY02",
+   "statement": "deliver short spoken texts to an audience using features of voice",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2EFLY03",
+   "statement": "recognise and generate syllables, rhyming words, alliteration patterns and phonemes in spoken words (phonological awareness)",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY04",
+   "statement": "orally blend, segment and manipulate one-syllable words (phonemic awareness)",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY05",
+   "statement": "use knowledge of letters and sounds to read and spell consonant-vowel-consonant (CVC) words (phoneme–grapheme correspondence knowledge)",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY06",
+   "statement": "recognise and name all upper- and lower-case letters and know the most common phoneme–grapheme correspondences (sound–letter relationships)",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY07",
+   "statement": "read and write some high-frequency words and other familiar words",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY08",
+   "statement": "understand that words are units of meaning and can be made of more than one meaningful part (morphemic knowledge)",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2EFLY09",
+   "statement": "read decodable and authentic texts using developing phonic knowledge, and make and monitor meaning using context and emerging grammatical knowledge",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2EFLY10",
+   "statement": "identify some familiar types of texts, such as stories and informative texts, and the contexts in which they are used",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2EFLY11",
+   "statement": "identify some differences between narrative and informative texts",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2EFLY12",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising and questioning, to understand and discuss texts listened to, viewed or read independently",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2EFLY13",
+   "statement": "create short texts to explore, record and report ideas and events, using familiar words and beginning writing knowledge",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2EFLY14",
+   "statement": "participate in shared editing of students’ own texts for meaning, spelling, capital letters and full stops",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2EFLY15",
+   "statement": "form most lower-case and upper-case letters using learnt letter formations",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E1LA01",
+   "statement": "explore how language, facial expressions and gestures are used to interact with others when asking for and providing information, making offers, exclaiming, requesting and giving commands",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E1LA02",
+   "statement": "explore language to provide reasons for likes, dislikes and preferences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E1LA03",
+   "statement": "explore how types of texts are organised according to their purpose, such as to recount, narrate, express opinion, inform, report and explain",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E1LA04",
+   "statement": "explore how repetition, rhyme and rhythm create cohesion in simple poems, chants and songs",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E1LA05",
+   "statement": "understand how concepts about print in printed and digital texts are organised using features such as page numbers, tables of contents, headings and titles, navigation buttons, swipe screens, verbal commands, links and images",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E1LA06",
+   "statement": "understand that a simple sentence consists of a single independent clause representing a single event or idea",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E1LA07",
+   "statement": "understand that words can represent people, places and things (nouns, including pronouns), happenings and states (verbs), qualities (adjectives), relationships in time and space (prepositions) and details such as when, where and how (adverbs)",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E1LA08",
+   "statement": "compare how images and sound in different types of texts contribute to meaning",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E1LA09",
+   "statement": "recognise and understand vocabulary across the curriculum, such as topic-specific vocabulary in other learning areas",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E1LA10",
+   "statement": "understand that written language uses punctuation such as full stops, question marks and exclamation marks, and uses capital letters for proper nouns",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E1LE01",
+   "statement": "discuss how language and images are used to create characters, settings and events in literary texts by Aboriginal and Torres Strait Islander authors and illustrators and a wide range of Australian and world authors and illustrators",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E1LE02",
+   "statement": "discuss a range of literary texts and share responses by making connections with their own experiences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E1LE03",
+   "statement": "discuss plots, characters and settings through a range of literary texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E1LE04",
+   "statement": "listen to, recite and discuss poems, chants, rhymes and songs, and imitate and invent sound patterns including alliteration and rhyme",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E1LE05",
+   "statement": "retell or adapt a range of previously encountered literary texts using plot and characters, structure, language features and vocabulary, through role-play, writing and drawing",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E1LY01",
+   "statement": "use interaction skills including turn-taking, speaking clearly, using active listening behaviours and responding to the read or spoken contributions of others, and contributing ideas and questions",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E1LY02",
+   "statement": "deliver short spoken texts to an audience using features of voice",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E1LY03",
+   "statement": "blend, segment and manipulate phonemes in words (phonemic awareness), including words with consonant blends at the beginning and end, and words with more than one syllable",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY04",
+   "statement": "use knowledge of short vowels, common long vowels, consonant blends and digraphs to read and write one- and 2-syllable words",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY05",
+   "statement": "understand that a letter can represent more than one sound and that a syllable must contain a vowel sound",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY06",
+   "statement": "spell one- and 2-syllable words with common letter patterns",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY07",
+   "statement": "read and write an increasing number of high-frequency words",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY08",
+   "statement": "recognise and know how to use grammatical morphemes to create word families",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E1LY09",
+   "statement": "read decodable and authentic texts using developing phonic knowledge, phrasing and fluency, and make and monitor meaning using context and grammatical knowledge",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E1LY10",
+   "statement": "discuss different types of texts drawn from a range of cultures and experiences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E1LY11",
+   "statement": "describe some similarities and differences between narrative, informative and persuasive texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E1LY12",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising and questioning, and draw on learnt vocabulary and growing knowledge of context and text structures to build literal and inferred meanings",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E1LY13",
+   "statement": "create short narrative and informative texts, written and spoken, on personal and learnt topics, including using some topic-specific vocabulary, appropriate multimodal elements, and a structure with an opening, middle and conclusion",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E1LY14",
+   "statement": "re-read their own texts and discuss possible changes to improve meaning, spelling and punctuation",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E1LY15",
+   "statement": "write words using unjoined lower-case and upper-case letters",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E2LA01",
+   "statement": "explore how interpersonal language choices vary depending on the context, including the different roles taken on in interactions",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E2LA02",
+   "statement": "explore how language can be used for appreciating texts and providing reasons for preferences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E2LA03",
+   "statement": "identify how different types of texts across the curriculum are organised differently and use language features depending on purposes",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E2LA04",
+   "statement": "understand how texts are made cohesive by using personal and possessive pronouns and by omitting words that can be inferred",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E2LA05",
+   "statement": "navigate print and digital texts using chapters, tables of contents, indexes, sidebar menus, drop-down menus or links",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E2LA06",
+   "statement": "understand that connections can be made between ideas by using a compound sentence with 2 or more independent clauses usually linked by a coordinating conjunction",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E2LA07",
+   "statement": "understand that in sentences, nouns may be extended into noun groups using articles and adjectives, and verbs may be expressed as verb groups",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E2LA08",
+   "statement": "understand that images and sound add to or multiply the meanings of a text",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E2LA09",
+   "statement": "apply learnt vocabulary and begin to make conscious choices to suit the topic",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E2LA10",
+   "statement": "recognise that capital letters are used in titles and commas are used to separate items in lists",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E2LE01",
+   "statement": "discuss how characters and settings are connected in literary texts created by Aboriginal and Torres Strait Islander authors and illustrators and a wide range of Australian and world authors and illustrators",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E2LE02",
+   "statement": "compare features of a range of literary texts, such as characters and settings, and share personal preferences",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E2LE03",
+   "statement": "discuss the plots, characters and settings of a range of literary texts and identify how language is used to present these features in different ways",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E2LE04",
+   "statement": "identify, reproduce and experiment with rhythmic sound and word patterns in poems, chants, rhymes and songs",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E2LE05",
+   "statement": "create texts by adapting structures and language features of previously encountered literary texts through writing, drawing and performance",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E2LY01",
+   "statement": "use interaction skills when engaging with topics and texts, actively listening to others, receiving instructions and extending their own ideas, speaking appropriately, expressing and responding to opinions, making statements, and giving instructions",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E2LY02",
+   "statement": "deliver short spoken texts to an audience using features of voice",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E2LY03",
+   "statement": "use knowledge of blending, segmenting and manipulating to read and write increasingly complex words (phonemic awareness)",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E2LY04",
+   "statement": "use phoneme–grapheme correspondence knowledge to read and write words of one or more syllables with vowel digraphs, less common long vowel patterns, consonant blends and silent letters (phonic knowledge)",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E2LY05",
+   "statement": "use knowledge of spelling patterns and morphemes to read and write words whose spelling is not completely predictable from their sounds, including high-frequency words",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E2LY06",
+   "statement": "build morphemic word families using knowledge of prefixes and suffixes",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E2LY07",
+   "statement": "read different types of texts with phrasing and fluency, using phonic and word knowledge, and make and monitor meaning by re-reading and self-correcting",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E2LY08",
+   "statement": "discuss how similar topics and information are presented in different types of texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E2LY09",
+   "statement": "identify the purpose and audience of different types of texts",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E2LY10",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising, monitoring and questioning, and begin to analyse texts by drawing on a growing knowledge of context and text structures to build literal and inferred meanings",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E2LY11",
+   "statement": "create short narrative, informative and persuasive texts for familiar audiences using simple text structures, topic-specific vocabulary and multimodal elements as appropriate",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E2LY12",
+   "statement": "re-read and edit texts for spelling, sentence boundary punctuation and text structure",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E2LY13",
+   "statement": "write words legibly and with growing fluency using unjoined lower-case and upper-case letters",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    2
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E3LA01",
+   "statement": "understand that cooperation with others depends on shared understanding of social conventions, including turn-taking language, which vary according to the degree of formality",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E3LA02",
+   "statement": "understand how the language of evaluation and emotion can be varied to be more or less forceful",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E3LA03",
+   "statement": "describe how different types of texts across the curriculum have different language features and structures depending on purposes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E3LA04",
+   "statement": "understand that paragraphs are a key organisational feature of the stages of written texts, grouping related information together",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E3LA05",
+   "statement": "identify the purpose of layout features in print and digital texts and the words used for navigation",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E3LA06",
+   "statement": "understand that a clause is a unit of grammar usually containing a subject and a verb that need to agree",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA07",
+   "statement": "understand how verbs represent different processes for doing, feeling, thinking, saying and relating",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA08",
+   "statement": "understand that verbs are anchored in time through tense",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA09",
+   "statement": "understand how modal verbs indicate obligation, probability and possibility",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA10",
+   "statement": "identify how images and sound extend the meaning of a text",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA11",
+   "statement": "extend topic-specific and technical vocabulary and know that words can have different meanings in different contexts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LA12",
+   "statement": "understand that apostrophes signal missing letters in contractions, and how apostrophes are used to show singular and plural possession in regular and irregular nouns",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E3LE01",
+   "statement": "discuss characters, settings and events in different contexts in literary texts by Aboriginal and Torres Strait Islander authors and illustrators and a wide range of Australian and world authors and illustrators",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E3LE02",
+   "statement": "discuss connections between personal experiences and character experiences in a range of literary texts and give reasons for personal preferences",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E3LE03",
+   "statement": "discuss how an author uses language and illustrations to build plots and portray characters and settings in literary texts, and explore how mood is created through settings and events",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E3LE04",
+   "statement": "identify and discuss some literary devices, including rhythm and onomatopoeia in poetry and prose, and discuss the ways that they shape the reader’s reaction",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E3LE05",
+   "statement": "create texts, using or adapting language features, characters, settings, plot structures and ideas from literary texts they have encountered",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E3LY01",
+   "statement": "use interaction skills to contribute to conversations and discussions to share text- or topic-based information and ideas",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E3LY02",
+   "statement": "deliver spoken texts to an audience using features of voice",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E3LY03",
+   "statement": "understand how to apply knowledge of phoneme–grapheme correspondences, syllables, and blending and segmenting to fluently read and write multisyllabic words with more complex letter patterns",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E3LY04",
+   "statement": "understand how to apply knowledge of common base words, prefixes, suffixes and generalisations for adding a suffix to a base word to read and comprehend new multimorphemic words",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E3LY05",
+   "statement": "use phoneme–grapheme relationships and less common letter patterns to spell words",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E3LY06",
+   "statement": "recognise and know how to write most high-frequency words, including some homophones",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E3LY07",
+   "statement": "read different types of texts using phonic, semantic and grammatical knowledge to read accurately and fluently for meaning, re-reading and self-correcting when required",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E3LY08",
+   "statement": "discuss how texts with similar purposes can be created for different audiences",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E3LY09",
+   "statement": "identify the purpose and audience of different types of texts through the use of language features and/or images in the texts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E3LY10",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising, monitoring and questioning, to analyse texts by drawing on a growing knowledge of context, text structures and language features to build literal and inferred meanings",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E3LY11",
+   "statement": "create narrative, informative and persuasive texts, written and spoken, with ideas grouped in simple paragraphs, using topic-specific and precise vocabulary and multimodal elements as appropriate",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E3LY12",
+   "statement": "re-read and edit texts for meaning, appropriate structure, grammatical choices and punctuation",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E3LY13",
+   "statement": "write words using joined letters that are clearly formed and consistent in size",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E4LA01",
+   "statement": "understand how language is used to develop relationships in formal and informal situations",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E4LA02",
+   "statement": "identify and differentiate the language of opinion, facts and feelings",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E4LA03",
+   "statement": "describe how different types of texts across the curriculum have different language features and are typically organised into characteristic stages depending on purposes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E4LA04",
+   "statement": "understand how text connectives, including temporal and conditional words, and topic word associations, are used to sequence and connect ideas",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E4LA05",
+   "statement": "identify navigation features of digital texts that enhance readability, including headlines, drop-down menus, links, graphics and layout",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E4LA06",
+   "statement": "understand that complex sentences contain one independent clause and at least one dependent clause typically joined by a subordinating conjunction to create relationships, such as time and causality",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA07",
+   "statement": "understand how adverb groups or phrases and prepositional phrases work in different ways to provide circumstantial details about an activity",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA08",
+   "statement": "understand past, present and future tenses and their impact on meaning in a sentence",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA09",
+   "statement": "explore how the use of sound and choices in the framing of an image, the placement of elements in the image, and the salience in the image affect the composition of still and moving images and enhance the meaning of a text",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA10",
+   "statement": "expand vocabulary by exploring a range of synonyms and antonyms, and using words encountered in a range of sources",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA11",
+   "statement": "understand that punctuation signals dialogue through quotation marks and that dialogue follows conventions for the use of capital letters, commas and boundary punctuation",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LA12",
+   "statement": "explore how quoted (direct) and reported (indirect) speech are used",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E4LE01",
+   "statement": "recognise similar storylines, ideas and relationships in different contexts in literary texts by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E4LE02",
+   "statement": "describe the effects of text structures and language features in a range of literary texts when responding to and sharing opinions",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E4LE03",
+   "statement": "compare how authors and illustrators make literary texts exciting, moving and absorbing and hold readers’ interest by using plot tension, character and setting",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E4LE04",
+   "statement": "explore the use of literary devices and deliberate wordplay, including grammar, in prose and poetry, and the ways that they shape meaning",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E4LE05",
+   "statement": "create texts by developing storylines, characters and settings, and using language features from literary texts they have encountered and from their own experiences",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E4LY01",
+   "statement": "use interaction skills to gather information in order to carry out tasks, contribute to discussions, acknowledge another opinion, link a response to the text or topic, and share and extend ideas and information",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E4LY02",
+   "statement": "deliver structured spoken texts to an audience using features of voice",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E4LY03",
+   "statement": "understand how to use and apply phonological and morphological knowledge to read and write multisyllabic words with more complex letter combinations, including a variety of vowel sounds and known prefixes and suffixes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E4LY04",
+   "statement": "understand how to use knowledge of letter patterns, including double letters, spelling generalisations, morphological word families, word origins, and common prefixes and suffixes to spell more complex words",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E4LY05",
+   "statement": "read and write high-frequency words including homophones and know how to use context to identify correct spelling",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E4LY06",
+   "statement": "read different types of texts, integrating phonic, semantic and grammatical knowledge to read accurately and fluently for meaning, re-reading and self-correcting when needed",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E4LY07",
+   "statement": "compare how texts from different times, with similar purposes and audiences, depict ideas or events",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E4LY08",
+   "statement": "identify the characteristic features used in different types of texts to meet the purpose and audience of the text",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E4LY09",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising, monitoring and questioning, to expand topic knowledge and ideas, and begin to evaluate texts to build literal and inferred meanings",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E4LY10",
+   "statement": "create narrative, informative and persuasive texts, written and spoken, using relevant, linked ideas for a range of audiences and using multimodal elements as appropriate",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E4LY11",
+   "statement": "re-read and edit texts for meaning by adding, deleting or moving words or word groups to improve content and structure",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E4LY12",
+   "statement": "write words using clearly formed joined letters, with developing fluency and automaticity",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    4
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E5LA01",
+   "statement": "understand how language is selected for social contexts and that it helps to signal social roles and relationships",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E5LA02",
+   "statement": "understand how to move beyond making bare assertions by taking account of differing ideas or opinions and authoritative sources",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E5LA03",
+   "statement": "describe how different types of texts use language features and are typically organised into characteristic stages and phases, depending on purposes",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E5LA04",
+   "statement": "understand how texts are sequenced and can be made cohesive by using the starting point of a sentence or paragraph to give prominence to the message and to guide the reader through the text",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E5LA05",
+   "statement": "understand that the structure of a complex sentence includes an independent clause and at least one dependent clause, and understand how writers can use this structure for effect",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E5LA06",
+   "statement": "understand how noun groups can be expanded in a variety of ways to provide a fuller description of a person, place, thing or idea",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E5LA07",
+   "statement": "explain how the sequence of still and moving images and the use of sound in texts affect meaning",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E5LA08",
+   "statement": "understand how vocabulary is used to express greater precision of meaning, including through the use of specialist and technical terms",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E5LA09",
+   "statement": "understand how to use commas to indicate prepositional phrases, and how to use apostrophes where there is multiple possession in regular and irregular nouns",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E5LE01",
+   "statement": "identify aspects of literary texts that represent details or information about historical, cultural and social contexts in literature by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E5LE02",
+   "statement": "form and share opinions on a literary text, using metalanguage to describe relevant literary devices, text structures and language features in a range of literary texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E5LE03",
+   "statement": "recognise that the point of view in a literary text influences how readers interpret and respond to plots, characters and events",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E5LE04",
+   "statement": "compare the effects of imagery, including simile, metaphor and personification, and sound devices in prose and poetry",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E5LE05",
+   "statement": "create texts, experimenting with vocabulary, figurative language, storylines, characters and settings from literary texts they have encountered",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E5LY01",
+   "statement": "use interaction skills including paraphrasing and questioning to clarify meaning, make connections to personal experience or to a text, and present and justify an opinion or idea",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E5LY02",
+   "statement": "deliver structured spoken and multimodal texts to an audience for a specific purpose, using features of voice",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E5LY03",
+   "statement": "use phonological, morphological and vocabulary knowledge to read and spell words that share common letter patterns but have different pronunciations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E5LY04",
+   "statement": "build and spell new words from knowledge of known words, base words, prefixes and suffixes, word origins (etymology), letter patterns and spelling generalisations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E5LY05",
+   "statement": "explore less common plurals, and understand how a suffix changes the meaning or grammatical form of a word",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E5LY06",
+   "statement": "read different types of increasingly complex texts, integrating phonic, semantic and grammatical knowledge to read accurately and fluently for meaning, re-reading and self-correcting when needed",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E5LY07",
+   "statement": "describe the ways in which a text reflects the time and place in which it was created",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E5LY08",
+   "statement": "explain characteristic features used to meet the purpose and audience in different types of texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E5LY09",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising, monitoring and questioning, to evaluate information and ideas to build literal and inferred meanings",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E5LY10",
+   "statement": "create different types of texts, written and spoken, with relevant, elaborated and sequenced ideas, using text structure appropriate for topic, purpose and audience, and multimodal elements as appropriate",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E5LY11",
+   "statement": "re-read and edit their own texts and the texts of others using agreed criteria for text structures and language features",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E5LY12",
+   "statement": "write legibly, fluently and automatically",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E6LA01",
+   "statement": "understand how language varies as levels of formality and social distance change",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E6LA02",
+   "statement": "understand the uses of objective and subjective language, and identify bias",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E6LA03",
+   "statement": "explain how different types of texts are typically organised into characteristic stages and phases depending on purposes, recognising how authors often adapt text structures and language features",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E6LA04",
+   "statement": "understand that sequence and cohesion can be created by the intentional use of repetition of text structures, language features and vocabulary",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E6LA05",
+   "statement": "understand how embedded clauses can expand the variety of complex sentences to elaborate, extend and explain ideas",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E6LA06",
+   "statement": "understand how the choice of verb, elaborated tenses and a range of adverb groups can expand and sharpen ideas",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E6LA07",
+   "statement": "identify the ways that still images (such as figures, tables, diagrams, maps and graphs), moving images and sound are used in texts to create point of view",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E6LA08",
+   "statement": "examine how authors use vivid vocabulary and figurative language, such as metaphors, similes, personification, idioms, imagery and hyperbole",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E6LA09",
+   "statement": "understand how to use commas to separate a dependent clause from an independent clause",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E6LE01",
+   "statement": "explore their responses to characters and events in literary texts drawn from historical, cultural or social contexts by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E6LE02",
+   "statement": "compare language choices, modality, emphasis, repetition and metaphor, and topics, themes or plots in a range of literary texts",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E6LE03",
+   "statement": "describe characteristics of literary texts that define an author’s individual style",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E6LE04",
+   "statement": "explain the way authors use sound and imagery to create meaning and effect in prose and poetry",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E6LE05",
+   "statement": "create texts that adapt plot structure, characters, settings and/or ideas from literary texts they have encountered, and experiment with vocabulary and literary devices",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E6LY01",
+   "statement": "use interaction skills and awareness of formality when paraphrasing, questioning, clarifying and interrogating ideas; developing and supporting arguments; and sharing and evaluating information, experiences and opinions",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E6LY02",
+   "statement": "deliver structured spoken and multimodal texts to an intended audience for a specific purpose, using appropriate features of voice",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E6LY03",
+   "statement": "use combined phonological, morphological and vocabulary knowledge to read and write increasingly complex words",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E6LY04",
+   "statement": "use their knowledge of known words, base words, prefixes, suffixes, letter patterns, spelling generalisations and word origins (etymology), including some Latin and Greek roots, to spell new words, including technical words",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Phonic and word knowledge"
+  },
+  {
+   "code": "VC2E6LY05",
+   "statement": "select and read different types of texts of varying complexity, integrating phonic, semantic and grammatical knowledge to read accurately and fluently for meaning, re-reading and self-correcting when needed",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Building fluency and making meaning"
+  },
+  {
+   "code": "VC2E6LY06",
+   "statement": "examine texts, including media texts, that represent ideas and events, and identify how they reflect the context in which they were created",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E6LY07",
+   "statement": "analyse how text structures and language features work together to meet the purpose of a text and engage and influence audiences",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E6LY08",
+   "statement": "use comprehension strategies, such as visualising, predicting, connecting, summarising, monitoring and questioning, and connect and compare ideas from a variety of sources to build literal and inferred meanings",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E6LY09",
+   "statement": "create different types of texts, written and spoken, with developed and organised ideas for purpose and audience, and multimodal elements as appropriate",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E6LY10",
+   "statement": "re-read and edit their own texts and the texts of others using agreed criteria and exploring editing choices",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E6LY11",
+   "statement": "write legibly, fluently and automatically for sustained periods",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    6
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E7LA01",
+   "statement": "understand how language expresses and creates personal and social identities",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E7LA02",
+   "statement": "understand the language of evaluation and substantiation",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E7LA03",
+   "statement": "identify and describe how texts are structured differently depending on their purpose, and how language features vary in texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E7LA04",
+   "statement": "understand that the cohesion of texts relies on devices that signal, structure and sequence, such as overviews, examples, and beginnings and endings",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E7LA05",
+   "statement": "understand how complex and compound-complex sentences can be used to elaborate, extend and explain ideas",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E7LA06",
+   "statement": "understand how consistency of tense through verbs and verb groups achieves clarity",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E7LA07",
+   "statement": "explore how still images, moving images and sound can be used to create a perspective",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E7LA08",
+   "statement": "explore the role of vocabulary in building specialist and technical knowledge, including terms that have both everyday and technical meanings",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E7LA09",
+   "statement": "understand the use of punctuation including colons and brackets to support meaning",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E7LE01",
+   "statement": "identify and explore ideas, points of view, characters, events and/or issues in literary texts, drawn from different historical, cultural and/or social contexts by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E7LE02",
+   "statement": "develop an opinion about characters, settings and events in literary texts, identifying areas of agreement and difference with others’ opinions and justifying a response",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E7LE03",
+   "statement": "explore the ways that literary devices and language features, such as dialogue, and still and moving images are used to create character, and to influence emotions and opinions in a range of literary texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E7LE04",
+   "statement": "identify and explain the ways that characters, settings and events combine to create meaning in literary texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E7LE05",
+   "statement": "identify and explain how literary devices create layers of meaning and aesthetic qualities in literary texts, including poetry",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E7LE06",
+   "statement": "create texts that experiment with literary language features and devices encountered in texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E7LY01",
+   "statement": "use interaction skills when discussing ideas and information, including evaluations of the features of texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E7LY02",
+   "statement": "deliver structured spoken texts for a specific purpose and audience, employing formal language and using appropriate features of voice and multimodal or digital elements",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E7LY03",
+   "statement": "understand how to use spelling rules, base words, suffixes, prefixes, spelling patterns and word origins (etymology), including Greek and Latin roots, to learn new words and how to spell them",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Word knowledge"
+  },
+  {
+   "code": "VC2E7LY04",
+   "statement": "explain the effect of current technology on reading, creating and responding to texts, including media texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E7LY05",
+   "statement": "analyse the ways in which language features shape meaning and vary according to audience and purpose",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E7LY06",
+   "statement": "explain the structure of ideas such as the use of taxonomies, cause and effect, extended metaphors and chronology",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E7LY07",
+   "statement": "use comprehension strategies such as visualising, predicting, connecting, summarising, monitoring, questioning and inferring to analyse and summarise information and ideas",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E7LY08",
+   "statement": "create different types of texts, written and spoken, selecting aspects of subject matter and particular language and print, multimodal and/or digital elements to convey information and ideas to a specific audience",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E7LY09",
+   "statement": "review and edit their own texts and the texts of others by removing repetition, refining ideas, reordering sentences and adding or substituting words for impact and coherence, and reflect on these processes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E8LA01",
+   "statement": "understand how language shapes relationships and roles",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E8LA02",
+   "statement": "understand how language features such as simile and metaphor can add layers of meaning to the language of evaluation and substantiation",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E8LA03",
+   "statement": "explain how texts are structured depending on their purpose and how language features vary, recognising that some texts are hybrids",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E8LA04",
+   "statement": "understand how cohesion in texts is improved by strengthening internal structures and sequence, with evidence, quotations and substantiation of claims",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E8LA05",
+   "statement": "examine a variety of clause structures, including embedded clauses, that add information and expand ideas in sentences",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E8LA06",
+   "statement": "understand the effect of nominalisation in texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E8LA07",
+   "statement": "explore how still images, moving images and sound use intertextual references to enhance and layer meaning",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E8LA08",
+   "statement": "examine the role and use of academic vocabulary",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E8LA09",
+   "statement": "understand and use punctuation conventions, including semicolons and dashes, to extend ideas and support meaning",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E8LE01",
+   "statement": "explain the ways that ideas, issues and points of view in literary texts drawn from diverse historical, cultural and social contexts by Aboriginal and Torres Strait Islander authors, and a wide range of Australian and world authors, may represent the values of individuals and groups",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E8LE02",
+   "statement": "explore opinions about the language features, literary devices and text structures that contribute to the styles of literary texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E8LE03",
+   "statement": "explain how language and still and moving images in a range of literary texts influence an audience’s response to and formation of social and/or ethical positions",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E8LE04",
+   "statement": "identify intertextual references in literary texts and explain how the references enable new understandings",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E8LE05",
+   "statement": "explore how language features such as sentence patterns create tone and voice, and how literary devices such as imagery create meaning and aesthetic qualities in literary texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E8LE06",
+   "statement": "create texts that experiment with literary language features and literary devices for particular purposes and effects",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E8LY01",
+   "statement": "use interaction skills for identified purposes and contexts, including when supporting or challenging the stated or implied meanings of texts in discussion",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E8LY02",
+   "statement": "deliver structured spoken texts for particular purposes and audiences to suit formal and informal contexts, using features of voice and multimodal or digital elements",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E8LY03",
+   "statement": "explore and use learnt knowledge to spell technical and academic words consistently and accurately",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Word knowledge"
+  },
+  {
+   "code": "VC2E8LY04",
+   "statement": "describe how representations of people, places and events reflect the context of the text",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E8LY05",
+   "statement": "analyse and evaluate the ways that language features represent perspectives on an issue, event, situation, individual or group, and the ways that quotations and sources are used and repurposed in a text",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E8LY06",
+   "statement": "analyse how authors organise ideas to develop and shape meaning",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E8LY07",
+   "statement": "use comprehension strategies such as visualising, predicting, connecting, summarising, monitoring, questioning and inferring to interpret and evaluate ideas in texts",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E8LY08",
+   "statement": "create different types of texts, written and spoken, that raise issues, report events and advance opinions, using deliberate language and textual choices, and print, multimodal and/or digital elements as appropriate",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E8LY09",
+   "statement": "review and edit to refine and clarify ideas to improve the effectiveness and coherence of their own texts and the texts of others, and reflect on these processes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    8
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E9LA01",
+   "statement": "understand how language strengthens relationships and roles",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E9LA02",
+   "statement": "understand how the language of evaluation and substantiation expresses individual views and values through language features such as allusion, evocative vocabulary and metaphor",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E9LA03",
+   "statement": "explore the ways that text structures and language features can be adapted and altered according to purpose",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E9LA04",
+   "statement": "understand how a range of cohesive devices, including nominalisation, condense information in texts and link, expand and sequence ideas",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E9LA05",
+   "statement": "explore how authors vary sentence structures for effect, such as using a sentence fragment, or intentionally using a dependent clause on its own",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E9LA06",
+   "statement": "understand how abstract nouns can be used to summarise ideas in text",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E9LA07",
+   "statement": "analyse how symbols in still and moving images and the use of sound augment meaning",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E9LA08",
+   "statement": "analyse how vocabulary choices contribute to style, mood and tone",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E9LA09",
+   "statement": "understand and use punctuation conventions to condense information and for referencing and citing others for formal and informal purposes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E9LE01",
+   "statement": "analyse the representations of people and places in literary texts, drawn from diverse historical, cultural and social contexts, by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E9LE02",
+   "statement": "explore and develop responses, including personal responses, to literary texts, comparing initial and subsequent impressions",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E9LE03",
+   "statement": "analyse how literary devices and language features, and still and moving images, shape an audience’s preference about the social, moral or ethical positions presented in literary texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E9LE04",
+   "statement": "analyse the effect of text structures, language features and literary devices such as extended metaphor, metonymy, allegory, symbolism and intertextual references",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E9LE05",
+   "statement": "analyse the ways that text structures, language features and literary devices in literary texts create aesthetic qualities",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E9LE06",
+   "statement": "create texts, which may be hybrid, that experiment with literary text structures, language features and devices, and voice, for purposes and audiences",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E9LY01",
+   "statement": "use interaction skills to discuss opinions regarding texts that have different purposes and audiences, analysing how language features position an audience to respond in particular ways",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E9LY02",
+   "statement": "deliver structured spoken texts for particular purposes, demonstrating different levels of formality in consideration of audience, using features of voice and multimodal or digital elements",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E9LY03",
+   "statement": "use learnt knowledge to spell accurately and consistently, and understand that non-standard spelling is used in texts for particular effects, such as characterisation and humour, and to represent accents and distinctive speech",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Word knowledge"
+  },
+  {
+   "code": "VC2E9LY04",
+   "statement": "analyse how representations of people, places, events and concepts reflect contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E9LY05",
+   "statement": "analyse and evaluate how language features are used to explicitly represent values, beliefs and attitudes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E9LY06",
+   "statement": "analyse the organisation of ideas in paragraphs and extended texts, and evaluate its impact on meaning",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E9LY07",
+   "statement": "use comprehension strategies such as visualising, predicting, connecting, summarising, monitoring, questioning and inferring to compare and contrast ideas and opinions in and between texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E9LY08",
+   "statement": "create different types of texts, written and spoken, that present a point of view and advance, illustrate or expand ideas, including texts that integrate print, multimodal and/or digital elements in deliberate consideration of an audience",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E9LY09",
+   "statement": "review and edit their own texts and the texts of others to improve clarity, coherence and control over content, organisation, paragraphing, sentence structure, vocabulary and multimodal elements, and reflect on these processes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E10LA01",
+   "statement": "understand how language can have inclusive and exclusive social effects, and how it can empower or disempower people",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E10LA02",
+   "statement": "understand that language used to evaluate and substantiate, implicitly or explicitly, reveals views and values",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for interacting with others"
+  },
+  {
+   "code": "VC2E10LA03",
+   "statement": "analyse text structures and language features and evaluate their effectiveness in achieving their purpose",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E10LA04",
+   "statement": "understand how text structures are selected and can be varied to create sequence and cohesion",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Text structure and organisation"
+  },
+  {
+   "code": "VC2E10LA05",
+   "statement": "analyse and evaluate the effectiveness of particular sentence structures to express and craft ideas",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E10LA06",
+   "statement": "analyse how syntax contributes to meaning and style",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E10LA07",
+   "statement": "evaluate the features of still and moving images, and the use of sound, and the effects of those choices on representations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E10LA08",
+   "statement": "understand and use, with precision, an expanded vocabulary",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E10LA09",
+   "statement": "use and experiment with punctuation for meaning and effect",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Language",
+   "substrand": "Language for expressing and developing ideas"
+  },
+  {
+   "code": "VC2E10LE01",
+   "statement": "analyse representations of individuals, groups and places and evaluate how they reflect their context in literary texts by Aboriginal and Torres Strait Islander authors and a wide range of Australian and world authors",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Literature and contexts"
+  },
+  {
+   "code": "VC2E10LE02",
+   "statement": "synthesise their own interpretation of a literary text, and explore the interpretations of others",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E10LE03",
+   "statement": "analyse the ways that social, moral or ethical positions are represented in a range of literary texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Engaging with and responding to literature"
+  },
+  {
+   "code": "VC2E10LE04",
+   "statement": "analyse how text structure, language features, literary devices and intertextual connections shape interpretations of literary texts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E10LE05",
+   "statement": "compare and evaluate how ‘voice’ as a literary device is used in a range of texts to evoke emotional responses and to create aesthetic qualities",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Examining literature"
+  },
+  {
+   "code": "VC2E10LE06",
+   "statement": "create texts with a sustained voice, selecting and adapting literary text structures and devices, and language, auditory and visual features for purposes and audiences",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literature",
+   "substrand": "Creating literature"
+  },
+  {
+   "code": "VC2E10LY01",
+   "statement": "use interaction skills to discuss an opinion about texts and analyse the purposes and effects of text structures and language features",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E10LY02",
+   "statement": "deliver structured spoken texts for particular purposes, experimenting with formality in deliberate consideration of an audience, using features of voice and multimodal or digital elements",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2E10LY03",
+   "statement": "use learnt knowledge of the spelling system to spell words accurately and to manipulate standard and non-standard spelling for particular effects",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Word knowledge"
+  },
+  {
+   "code": "VC2E10LY04",
+   "statement": "analyse and evaluate how people, places, events and concepts are represented in texts and reflect contexts",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Texts in context"
+  },
+  {
+   "code": "VC2E10LY05",
+   "statement": "analyse and evaluate how language features are used to implicitly and explicitly represent values, beliefs and attitudes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E10LY06",
+   "statement": "analyse and evaluate how authors organise ideas in texts to achieve a purpose",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E10LY07",
+   "statement": "integrate comprehension strategies such as visualising, predicting, connecting, summarising, monitoring, questioning and inferring to analyse and interpret complex and abstract ideas",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Analysing, interpreting and evaluating"
+  },
+  {
+   "code": "VC2E10LY08",
+   "statement": "create different types of texts, written and spoken, that reflect on challenging and complex issues, including texts that combine specific print, multimodal and/or digital elements, for a range of purposes and in deliberate consideration of an audience",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  },
+  {
+   "code": "VC2E10LY09",
+   "statement": "review, edit and refine their own texts and the texts of others for control and coherence of content, organisation, sentence structure, vocabulary, and/or visual features to achieve particular purposes and effects, and reflect on these processes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    10
+   ],
+   "strand": "Literacy",
+   "substrand": "Creating texts"
+  }
+ ]
+}

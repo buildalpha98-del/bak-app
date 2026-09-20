@@ -1,0 +1,1350 @@
+{
+ "framework": "vic",
+ "subject": "pdhpe",
+ "syllabus": "Victorian Curriculum F–10 v2.0 Health and Physical Education",
+ "source": "VCAA Victorian Curriculum F–10 Version 2.0 (f10.vcaa.vic.edu.au JSON:API), fetched 2026-09-21",
+ "validFrom": null,
+ "validTo": null,
+ "outcomes": [
+  {
+   "code": "VC2HPFM01",
+   "statement": "practise fundamental movement skills in active play and minor games, in indoor, outdoor and aquatic settings",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HPFM02",
+   "statement": "explore different ways of moving their body safely when manipulating objects and moving through space",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HPFM03",
+   "statement": "participate safely in a range of activities in outdoor environments and aquatic settings and explore the benefits of being physically active",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HPFM04",
+   "statement": "follow rules to promote fair play and inclusion in a range of physical activities",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HPFM05",
+   "statement": "cooperate with others when participating in physical activities",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HPFP01",
+   "statement": "investigate who they are and the people in their world",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HPFP02",
+   "statement": "name parts of the body and describe how their body is growing and changing",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HPFP03",
+   "statement": "practise personal and social skills to interact respectfully with others",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HPFP04",
+   "statement": "identify emotions they experience",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HPFP05",
+   "statement": "explore how to seek, give or deny permission respectfully when sharing possessions, personal space or body autonomy",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HPFP06",
+   "statement": "identify protective behaviours and rehearse help-seeking strategies that help keep them safe",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HPFP07",
+   "statement": "identify health symbols, messages and strategies in their community that support their health and safety",
+   "bands": [
+    "Early Stage 1"
+   ],
+   "years": [
+    0
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP2M01",
+   "statement": "practise fundamental movement skills and apply them in a variety of movement situations, including indoor, outdoor and aquatic settings",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP2M02",
+   "statement": "investigate different ways of moving their body and manipulating objects and space, and draw conclusions about their effectiveness",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP2M03",
+   "statement": "participate in a range of physical activities in outdoor environments and aquatic settings and investigate contextual factors and environments that make physical activity safe and enjoyable",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP2M04",
+   "statement": "co-construct and apply rules to promote fair play and inclusion in a range of physical activities",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP2M05",
+   "statement": "apply strategies to work cooperatively when participating in physical activities",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP2P01",
+   "statement": "describe their personal characteristics and those of others, and explain how they contribute to developing identities",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP2P02",
+   "statement": "describe physical and social changes that occur as children grow older and discuss how family and community acknowledge these",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP2P03",
+   "statement": "identify and explore personal and social skills and strategies to develop respectful relationships",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP2P04",
+   "statement": "identify how different situations influence emotional responses",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP2P05",
+   "statement": "practise strategies they can use when they need to seek, give or deny permission respectfully",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP2P06",
+   "statement": "identify and demonstrate protective behaviours and help-seeking strategies they can use to help them and others stay safe",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP2P07",
+   "statement": "investigate a range of health messages and strategies in their community to promote their own health, safety and wellbeing",
+   "bands": [
+    "Stage 1"
+   ],
+   "years": [
+    1,
+    2
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP4M01",
+   "statement": "practise and refine fundamental movement skills in different movement situations, including indoor, outdoor and aquatic settings",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP4M02",
+   "statement": "practise and apply basic movement strategies to achieve movement outcomes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP4M03",
+   "statement": "demonstrate how movement concepts related to effort, space, time, objects and people can be applied when performing movement skills",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP4M04",
+   "statement": "perform movement sequences that link fundamental movement skills",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP4M05",
+   "statement": "participate in physical activities to explore how their body feels and describe how regular physical activity helps the body stay healthy and well",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP4M06",
+   "statement": "participate in physical activities in outdoor environments and aquatic settings to examine contextual factors that can influence their own and others’ safe participation",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP4M07",
+   "statement": "explore recommendations about physical activity and sedentary behaviours, and discuss strategies to achieve the recommendations",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP4M08",
+   "statement": "apply creative thinking skills when solving movement problems",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP4M09",
+   "statement": "apply rules and scoring systems to promote fair play and inclusion when participating in or designing physical activities",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP4M10",
+   "statement": "perform a range of roles in respectful ways to achieve successful outcomes in group or team movement activities",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP4P01",
+   "statement": "investigate how success, challenge, setbacks and failure strengthen resilience and identities in a range of contexts",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP4P02",
+   "statement": "plan, rehearse and reflect on strategies to cope with the different changes and transitions they experience, such as physical, social and emotional changes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP4P03",
+   "statement": "describe how choices and actions can be influenced by stereotypes",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP4P04",
+   "statement": "select, use and refine personal and social skills to establish, manage and strengthen relationships",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP4P05",
+   "statement": "describe how valuing diversity influences wellbeing and identify actions that promote inclusion in their communities",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP4P06",
+   "statement": "explain how and why emotional responses can vary and practise strategies to manage their emotions",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP4P07",
+   "statement": "practise and refine strategies for seeking, giving and denying permission respectfully and describe situations when permission is required across multiple settings (including online and offline)",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP4P08",
+   "statement": "describe and apply protective behaviours and help-seeking strategies in a range of online and offline situations at home, school and in the community",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP4P09",
+   "statement": "interpret the nature and intention of health information and messages in their community, and reflect on how these influence personal decisions and behaviours",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP4P10",
+   "statement": "investigate and apply strategies that contribute to their own and others’ health, safety, relationships and wellbeing",
+   "bands": [
+    "Stage 2"
+   ],
+   "years": [
+    3,
+    4
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP6M01",
+   "statement": "adapt movement skills across a variety of situations, including indoor, outdoor and aquatic settings",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP6M02",
+   "statement": "transfer familiar movement strategies to different movement situations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP6M03",
+   "statement": "investigate how different movement concepts related to effort, space, time, objects and people can be applied to improve movement outcomes",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP6M04",
+   "statement": "create and perform a variety of movement sequences, modifying the movement elements of time, effort, space, people and objects",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP6M05",
+   "statement": "participate in physical activities to investigate the body’s response to different levels of intensity",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP6M06",
+   "statement": "participate in physical activities that enhance health and wellbeing in outdoor environments and aquatic settings and investigate the steps and resources needed to promote safe participation",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP6M07",
+   "statement": "explore strategies to increase physical activity and reduce sedentary behaviour levels in their lives",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP6M08",
+   "statement": "predict and test the effectiveness of applying different skills and strategies in a range of movement situations",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP6M09",
+   "statement": "devise and test rules and game modifications to support fair play and inclusive participation",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP6M10",
+   "statement": "participate positively in groups and teams by contributing to group activities, encouraging others and negotiating a range of roles and responsibilities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP6P01",
+   "statement": "explain how identities can be influenced by people and places, and how we can create positive self-identities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP6P02",
+   "statement": "investigate resources and strategies to manage changes and transitions, including changes associated with puberty",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP6P03",
+   "statement": "investigate how the portrayal of societal roles and responsibilities can be influenced by gender stereotypes",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP6P04",
+   "statement": "describe and demonstrate how respect and empathy can be expressed to positively influence relationships",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP6P05",
+   "statement": "describe and implement strategies to value diversity in their communities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP6P06",
+   "statement": "apply strategies to manage emotions and analyse how emotional responses influence interactions",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP6P07",
+   "statement": "describe strategies for seeking, giving or denying consent and rehearse how to communicate their intentions effectively and respectfully across multiple settings (including online and offline)",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP6P08",
+   "statement": "explain and apply protective behaviours and help-seeking strategies that can be used in a range of online and offline situations at home, school and in the community",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP6P09",
+   "statement": "investigate different sources, quality and types of health information and how these apply to their own and others’ health choices",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP6P10",
+   "statement": "analyse how various strategies influence the health, safety, relationships and wellbeing of individuals and communities",
+   "bands": [
+    "Stage 3"
+   ],
+   "years": [
+    5,
+    6
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP8M01",
+   "statement": "refine and transfer movement skills in a variety of movement situations, including indoor, outdoor and aquatic settings",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP8M02",
+   "statement": "design and demonstrate how movement strategies can be manipulated to improve movement outcomes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP8M03",
+   "statement": "demonstrate and explain how movement concepts related to effort, space, time, objects and people can be manipulated to improve movement outcomes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP8M04",
+   "statement": "adapt and perform movement sequences in a variety of contexts, demonstrating how the movement elements of time, effort, space, people and objects can enhance performance",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP8M05",
+   "statement": "participate in physical activities designed to improve fitness to investigate the impact of regular participation on health and wellbeing",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP8M06",
+   "statement": "participate in physical activities that utilise community spaces, outdoor environments and aquatic settings safely, and evaluate strategies to support the increased use of these spaces",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP8M07",
+   "statement": "design and justify a physical activity plan that incorporates strategies to increase physical activity levels to achieve health and wellbeing outcomes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP8M08",
+   "statement": "propose, test and evaluate movement strategies and skills that would be most effective in different movement situations",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP8M09",
+   "statement": "analyse modifications to equipment, rules and scoring systems that support fair play and inclusive participation",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP8M10",
+   "statement": "practise and apply leadership, collaboration and group decision-making processes when participating in a range of physical activities",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP8P01",
+   "statement": "analyse and reflect on the influence of values and beliefs on the development of identities",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP8P02",
+   "statement": "analyse the impact of changes and transitions, and devise strategies to support themselves and others through these changes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP8P03",
+   "statement": "examine how roles, decision-making, and levels of power, coercion and control within relationships can be influenced by gender stereotypes",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP8P04",
+   "statement": "examine the roles of respect, empathy, power and coercion in developing respectful relationships",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP8P05",
+   "statement": "investigate strategies that influence how communities value diversity and propose actions they can take to promote inclusion in their communities",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP8P06",
+   "statement": "analyse factors that influence emotional responses and devise strategies to self-manage emotions",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP8P07",
+   "statement": "explain and apply skills and strategies to communicate assertively and respectfully when seeking, giving or denying consent across multiple settings (including online and offline)",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP8P08",
+   "statement": "refine protective behaviours and evaluate community resources to seek help for themselves and others (including basic first aid and CPR)",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP8P09",
+   "statement": "investigate how media and influential people in the community impact attitudes, beliefs, decisions and behaviours in relation to health, safety, relationships and wellbeing",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP8P10",
+   "statement": "plan and implement strategies, using health resources, to enhance their own and others’ health, safety, relationships and wellbeing",
+   "bands": [
+    "Stage 4"
+   ],
+   "years": [
+    7,
+    8
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP10M01",
+   "statement": "analyse, apply and adapt their own and others’ movement skills in a range of challenging movement situations to enhance performance in indoor, outdoor and aquatic settings",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP10M02",
+   "statement": "create and refine movement strategies to achieve successful outcomes across a range of challenging movement situations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP10M03",
+   "statement": "apply movement concepts in new or challenging movement situations and analyse the impact they have on movement outcomes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP10M04",
+   "statement": "evaluate their own and others’ movement compositions and provide and apply feedback to enhance performance, including the impact of the movement elements of time, effort, space, people and objects",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Moving our bodies"
+  },
+  {
+   "code": "VC2HP10M05",
+   "statement": "participate in and evaluate physical activities designed to enhance health, fitness and wellbeing",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP10M06",
+   "statement": "participate in physical activities that promote health, safety and social outcomes in outdoor environments and aquatic settings to design and evaluate participation strategies for themselves and others",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP10M07",
+   "statement": "design, implement and evaluate personalised plans for improving or maintaining their own or others’ physical activity levels to achieve health-related fitness, health and wellbeing outcomes",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Making active choices"
+  },
+  {
+   "code": "VC2HP10M08",
+   "statement": "transfer and adapt skills and strategies from previous experiences to create successful outcomes in unfamiliar movement situations",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP10M09",
+   "statement": "demonstrate fair play and reflect on how ethical behaviour can influence physical activity outcomes for individuals and groups",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP10M10",
+   "statement": "devise, implement and refine strategies for decision-making when working in groups or teams that demonstrate leadership and collaboration skills",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Movement and Physical Activity – Physical Education",
+   "substrand": "Learning through movement"
+  },
+  {
+   "code": "VC2HP10P01",
+   "statement": "evaluate factors that shape identities and evaluate how individuals influence the identities of others",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP10P02",
+   "statement": "refine, evaluate and adapt strategies for managing changes and transitions",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP10P03",
+   "statement": "investigate how gender equality and challenging assumptions about gender can prevent violence and abuse in relationships",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Identities and change"
+  },
+  {
+   "code": "VC2HP10P04",
+   "statement": "evaluate the influence of respect, empathy, power and coercion on establishing and maintaining respectful relationships",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP10P05",
+   "statement": "propose strategies and actions individuals and groups can implement to challenge biases, stereotypes, prejudices and discrimination, and promote inclusion in their communities",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP10P06",
+   "statement": "evaluate emotional responses in different situations to refine strategies for managing emotions to positively impact health and wellbeing",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP10P07",
+   "statement": "examine how strategies, such as communicating choices, seeking, giving and denying consent, and expressing opinions and needs can support the development of respectful relationships, including sexual relationships",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Interacting with others"
+  },
+  {
+   "code": "VC2HP10P08",
+   "statement": "plan, rehearse and evaluate strategies (including first aid and CPR) for managing situations where their own or others’ health, safety or wellbeing may be negatively impacted at home, school and in the community",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP10P09",
+   "statement": "critique health information, services and media messaging about relationships, lifestyle choices, health decisions and behaviours to evaluate their influence on their own, others’ and community’s attitudes and actions",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  },
+  {
+   "code": "VC2HP10P10",
+   "statement": "plan, justify and critique strategies to enhance their own, others’ and community’s health, safety, relationships and wellbeing",
+   "bands": [
+    "Stage 5"
+   ],
+   "years": [
+    9,
+    10
+   ],
+   "strand": "Personal, Social and Community Health – Health Education",
+   "substrand": "Contributing to healthy communities"
+  }
+ ]
+}

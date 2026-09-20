@@ -17,6 +17,7 @@ import { isTermReleased } from "@/lib/client/report-card-actions";
 import { canOpenReportCard } from "@/lib/client/report-card-release";
 import { subjectOf } from "@/lib/curriculum/subjects";
 import { frameworkOf } from "@/lib/curriculum/frameworks";
+import { officialStatement } from "@/lib/curriculum/knowledge-base";
 
 // Per-student report card. Everything is read through the caller's
 // cookie client, so RLS decides what a portal user can put in a PDF —
@@ -301,7 +302,12 @@ export async function GET(
     outcomeSections: Array.from(groupOutcomesBySubject(rawOutcomes).entries())
       .map(([subject, list]) => ({
         heading: framework.outcomesHeading(subject),
-        outcomes: normaliseOutcomes(list, stage, subject, framework),
+        // The knowledge base's official statement wins over whatever the
+        // model titled the outcome when the programme was generated.
+        outcomes: normaliseOutcomes(list, stage, subject, framework).map((o) => ({
+          ...o,
+          title: officialStatement(o.code) ?? o.title,
+        })),
       }))
       .filter((s) => s.outcomes.length > 0)
       .sort((a, b) => a.heading.localeCompare(b.heading)),
