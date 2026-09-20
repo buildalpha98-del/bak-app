@@ -19,6 +19,8 @@ interface SectionOut {
   description: string;
   bullets: string[];
   tip: string | null;
+  /** "Coaching tip" for sessions, "Teaching tip" for lessons (089). */
+  tipLabel: string;
 }
 
 function asStr(v: unknown): string {
@@ -47,6 +49,7 @@ function programSections(content: Record<string, unknown> | null): SectionOut[] 
       description: asStr(sec.description),
       bullets: bulletKeys.flatMap((k) => asStrArr(sec[k])),
       tip: asStr(sec.coachingTips ?? sec.coaching_tips) || null,
+      tipLabel: labels.tip,
     });
   };
 

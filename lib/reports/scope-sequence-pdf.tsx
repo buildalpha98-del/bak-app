@@ -35,6 +35,7 @@ export interface ScopeSequencePdfData {
         description: string;
         bullets: string[]; // progressions / rules / variations
         tip: string | null;
+        tipLabel?: string;
       }>;
     }>;
   }>;
@@ -219,7 +220,7 @@ export function ScopeSequencePDF(data: ScopeSequencePdfData) {
                       </View>
                     ))}
                     {sec.tip ? (
-                      <Text style={styles.tip}>Coaching tip: {sec.tip}</Text>
+                      <Text style={styles.tip}>{sec.tipLabel ?? "Coaching tip"}: {sec.tip}</Text>
                     ) : null}
                   </View>
                 ))}
