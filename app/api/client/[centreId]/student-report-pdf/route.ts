@@ -73,7 +73,7 @@ export async function GET(
   const { data: ratings } = await supabase
     .from("skill_ratings")
     .select(
-      "term_id, ratings_json, assessed_at, terms!inner(name, start_date, end_date), assessment_templates!inner(sport, centre_id)"
+      "term_id, ratings_json, assessed_at, notes, client_user_id, terms!inner(name, start_date, end_date), assessment_templates!inner(sport, centre_id)"
     )
     .eq("child_id", childId)
     .order("assessed_at", { ascending: false });
@@ -112,6 +112,9 @@ export async function GET(
       return {
         sport: tpl.sport,
         assessedAt: fmtDate(r.assessed_at as string),
+        // A teacher's note is written for the report card; a coach's
+        // note is an internal observation and stays off it.
+        teacherComment: r.client_user_id && r.notes ? String(r.notes) : null,
         skills: ((r.ratings_json as { skill_name: string; rating: number }[]) ?? []).map(
           (s) => ({
             name: s.skill_name,

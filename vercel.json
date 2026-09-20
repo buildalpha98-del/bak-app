@@ -84,6 +84,10 @@
     {
       "path": "/api/crm/sequences/process",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/session-autocomplete",
+      "schedule": "30 13 * * *"
     }
   ]
 }

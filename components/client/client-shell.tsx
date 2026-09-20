@@ -11,6 +11,7 @@ import {
   BookOpen,
   MessageSquare,
   Receipt,
+  ClipboardCheck,
   Settings,
   LogOut,
   Menu,
@@ -43,21 +44,32 @@ interface ClientShellProps {
   children: React.ReactNode;
 }
 
-function getNavItems(centreId: string, isSchool: boolean) {
-  return [
+function getNavItems(centreId: string, isSchool: boolean, isTeacher: boolean) {
+  const items = [
     { label: "Dashboard", href: `/client/${centreId}`, icon: Home, mobileOrder: 1 },
     { label: "Impact", href: `/client/${centreId}/impact`, icon: BarChart3, mobileOrder: 2 },
     { label: "Schedule", href: `/client/${centreId}/schedule`, icon: Calendar },
     { label: "Curriculum", href: `/client/${centreId}/curriculum`, icon: BookOpen, mobileOrder: 3 },
     { label: isSchool ? "Students" : "Children", href: `/client/${centreId}/children`, icon: Users },
+    // Teachers rate students in the portal (migration 088) — schools only.
+    ...(isSchool
+      ? [{ label: "Assessments", href: `/client/${centreId}/assessments`, icon: ClipboardCheck, mobileOrder: isTeacher ? 4 : undefined }]
+      : []),
     { label: "Our Coaches", href: `/client/${centreId}/staff`, icon: UserCheck },
     { label: "Resources", href: `/client/${centreId}/resources`, icon: Shield },
-    { label: "Feedback", href: `/client/${centreId}/feedback`, icon: Star, mobileOrder: 4 },
+    { label: "Feedback", href: `/client/${centreId}/feedback`, icon: Star, mobileOrder: isTeacher ? undefined : 4 },
     { label: "Reports", href: `/client/${centreId}/reports`, icon: FileText },
     { label: "Programs", href: `/client/${centreId}/programs`, icon: Layers },
     { label: "Messages", href: `/client/${centreId}/messages`, icon: MessageSquare, mobileOrder: 5 },
-    { label: "Invoices", href: `/client/${centreId}/invoices`, icon: Receipt },
-  ] as const;
+    // Money stays with the office contact, not classroom teachers.
+    ...(isTeacher ? [] : [{ label: "Invoices", href: `/client/${centreId}/invoices`, icon: Receipt }]),
+  ];
+  return items as ReadonlyArray<{
+    label: string;
+    href: string;
+    icon: typeof Home;
+    mobileOrder?: number;
+  }>;
 }
 
 export function ClientShell({
@@ -74,7 +86,8 @@ export function ClientShell({
 
   const navItems = getNavItems(
     clientUser.centre_id,
-    clientUser.centre_type === "school"
+    clientUser.centre_type === "school",
+    clientUser.role === "teacher"
   );
   const mobileNavItems = [...navItems]
     .filter((item) => "mobileOrder" in item && item.mobileOrder !== undefined)

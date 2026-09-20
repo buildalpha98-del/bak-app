@@ -25,10 +25,12 @@ export default async function AdminAssessmentsPage() {
     admin.from("centres").select("id, name").order("name"),
     admin
       .from("terms")
-      .select("id, name")
+      .select("id, name, status")
       .order("start_date", { ascending: false }),
     getAssessmentsStatusPulse(),
   ]);
+  const terms = termsResult.data ?? [];
+  const activeTermId = terms.find((t) => t.status === "active")?.id ?? null;
 
   if (templatesResult.error) {
     return (
@@ -54,7 +56,8 @@ export default async function AdminAssessmentsPage() {
       <AssessmentListView
         templates={templatesResult.data}
         centres={centresResult.data ?? []}
-        terms={termsResult.data ?? []}
+        terms={terms.map((t) => ({ id: t.id, name: t.name }))}
+        activeTermId={activeTermId}
         basePath="/admin/assessments"
       />
     </div>

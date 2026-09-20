@@ -919,6 +919,8 @@ export interface ClientUser {
   email: string;
   role: string;
   is_primary: boolean;
+  /** Teacher class scope (migration 088). Empty = every class at the centre. */
+  class_ids: string[];
   last_login: string | null;
   /** Null until the one-time portal welcome is dismissed (migration 062). */
   welcomed_at: string | null;
