@@ -170,7 +170,7 @@ export type NotificationEventType =
   | "grant_application_stale";
 
 // Children & attendance
-export type AgeGroup = "3-5" | "5-8" | "8-12";
+export type AgeGroup = "3-5" | "5-8" | "8-12" | "12-16";
 
 export type Gender = "male" | "female" | "other" | "prefer_not_to_say";
 

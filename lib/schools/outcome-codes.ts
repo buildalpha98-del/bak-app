@@ -56,7 +56,7 @@ export function normaliseOutcomes(
   // Nothing written for this stage (older programmes only listed up to
   // Stage 2): show the nearest stage that has codes rather than every
   // stage at once — a Year 6 card should never read PDe-1.
-  const order: NswStage[] = ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3"];
+  const order: NswStage[] = ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"];
   const idx = order.indexOf(stage);
   const byDistance = order
     .map((s, i) => ({ s, d: Math.abs(i - idx) }))

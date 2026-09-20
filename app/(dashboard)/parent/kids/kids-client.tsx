@@ -47,6 +47,7 @@ const AGE_GROUP_COLOURS: Record<string, string> = {
   "3-5": "bg-green-100 text-green-700 border-green-200",
   "5-8": "bg-blue-100 text-blue-700 border-blue-200",
   "8-12": "bg-purple-100 text-purple-700 border-purple-200",
+  "12-16": "bg-slate-100 text-slate-700 border-slate-200",
 };
 
 interface ParentKidsClientProps {

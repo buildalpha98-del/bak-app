@@ -12,8 +12,8 @@ import {
 } from "../age-bands";
 
 describe("AGE_BANDS", () => {
-  it("exposes 3-5, 5-8, 8-12 in order", () => {
-    expect(AGE_BANDS).toEqual(["3-5", "5-8", "8-12"]);
+  it("exposes 3-5, 5-8, 8-12, 12-16 in order", () => {
+    expect(AGE_BANDS).toEqual(["3-5", "5-8", "8-12", "12-16"]);
   });
 });
 

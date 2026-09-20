@@ -4,6 +4,7 @@ import {
   yearGroupSortKey,
   ageBandToStageLabel,
   stagesLabelForYearGroups,
+  yearGroupToStage,
 } from "@/lib/schools/year-groups";
 
 describe("yearGroupToAgeBand", () => {
@@ -17,6 +18,12 @@ describe("yearGroupToAgeBand", () => {
   it("maps 3-6 to the senior band", () => {
     expect(yearGroupToAgeBand("3")).toBe("8-12");
     expect(yearGroupToAgeBand("6")).toBe("8-12");
+  });
+
+  it("maps 7-10 to the secondary band, composites by the older year (migration 094)", () => {
+    expect(yearGroupToAgeBand("7")).toBe("12-16");
+    expect(yearGroupToAgeBand("10")).toBe("12-16");
+    expect(yearGroupToAgeBand("6/7")).toBe("12-16");
   });
 
   it("composites take the older band", () => {
@@ -61,6 +68,7 @@ describe("yearGroupSortKey", () => {
 describe("ageBandToStageLabel", () => {
   it("maps school bands to stage ranges and pre-school to none", () => {
     expect(ageBandToStageLabel("8-12")).toBe("Stage 2 – Stage 3");
+    expect(ageBandToStageLabel("12-16")).toBe("Stage 4 – Stage 5");
     expect(ageBandToStageLabel("5-8")).toBe("Early Stage 1 – Stage 1");
     expect(ageBandToStageLabel("3-5")).toBe(null);
     expect(ageBandToStageLabel(null)).toBe(null);
@@ -73,5 +81,18 @@ describe("stagesLabelForYearGroups", () => {
     expect(stagesLabelForYearGroups(["K", "5/6"])).toBe("Early Stage 1, Stage 3");
     expect(stagesLabelForYearGroups(["3-5"])).toBe(null);
     expect(stagesLabelForYearGroups([])).toBe(null);
+  });
+});
+
+describe("yearGroupToStage — secondary (migration 094)", () => {
+  it("maps Years 7-8 to Stage 4 and 9-10 to Stage 5", () => {
+    expect(yearGroupToStage("7")).toBe("Stage 4");
+    expect(yearGroupToStage("8")).toBe("Stage 4");
+    expect(yearGroupToStage("9")).toBe("Stage 5");
+    expect(yearGroupToStage("10")).toBe("Stage 5");
+    expect(yearGroupToStage("Year 10")).toBe("Stage 5");
+  });
+  it("still ignores years past 10", () => {
+    expect(yearGroupToStage("11")).toBeNull();
   });
 });

@@ -62,6 +62,7 @@ const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
   "3-5": "3–5 years",
   "5-8": "5–8 years",
   "8-12": "8–12 years",
+  "12-16": "12–16 years",
 };
 
 interface AssessmentDetailViewProps {

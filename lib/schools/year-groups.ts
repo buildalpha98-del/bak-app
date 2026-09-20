@@ -2,15 +2,15 @@
 // entered by admins — "K", "3", or a composite like "5/6" — so parsing
 // is defensive throughout.
 
-export const YEAR_GROUP_OPTIONS = ["K", "1", "2", "3", "4", "5", "6"] as const;
+export const YEAR_GROUP_OPTIONS = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
 
 /** Childcare rooms store the platform band directly as their group. */
-const AGE_BANDS = ["3-5", "5-8", "8-12"] as const;
+const AGE_BANDS = ["3-5", "5-8", "8-12", "12-16"] as const;
 
 /**
  * Derive the platform age band from a class's year group so programme
  * generation keeps working unchanged for school children:
- * K–2 → "5-8", 3–6 → "8-12". For composites the OLDER band wins
+ * K–2 → "5-8", 3–6 → "8-12", 7–10 → "12-16". For composites the OLDER band wins
  * ("2/3" → "8-12") — programmes pitched slightly up beat programmes
  * pitched down. Unparseable input falls back to "8-12" (most school
  * work is primary Years 3–6).
@@ -21,7 +21,7 @@ const AGE_BANDS = ["3-5", "5-8", "8-12"] as const;
  */
 export function yearGroupToAgeBand(
   yearGroup: string
-): "3-5" | "5-8" | "8-12" {
+): "3-5" | "5-8" | "8-12" | "12-16" {
   const trimmed = yearGroup.trim();
   if ((AGE_BANDS as readonly string[]).includes(trimmed)) {
     return trimmed as (typeof AGE_BANDS)[number];
@@ -31,11 +31,9 @@ export function yearGroupToAgeBand(
     .split(/[^0-9K]+/)
     .filter(Boolean);
   if (tokens.length === 0) return "8-12";
-  const hasSenior = tokens.some((t) => {
-    const n = Number(t);
-    return Number.isFinite(n) && n >= 3;
-  });
-  return hasSenior ? "8-12" : "5-8";
+  const years = tokens.map(Number).filter((n) => Number.isFinite(n));
+  if (years.some((n) => n >= 7)) return "12-16";
+  return years.some((n) => n >= 3) ? "8-12" : "5-8";
 }
 
 /**
@@ -58,13 +56,16 @@ export function yearGroupSortKey(yearGroup: string): number {
   return values.length > 0 ? Math.min(...values) : 99;
 }
 
-// NSW PDHPE stages — how a school's PDHPE coordinator groups years:
-// K = Early Stage 1, 1-2 = Stage 1, 3-4 = Stage 2, 5-6 = Stage 3.
+// NSW syllabus stages — how a school groups years: K = Early Stage 1,
+// 1-2 = Stage 1, 3-4 = Stage 2, 5-6 = Stage 3, 7-8 = Stage 4,
+// 9-10 = Stage 5 (migration 094 added the secondary years).
 export const NSW_STAGES = [
   "Early Stage 1",
   "Stage 1",
   "Stage 2",
   "Stage 3",
+  "Stage 4",
+  "Stage 5",
 ] as const;
 export type NswStage = (typeof NSW_STAGES)[number];
 
@@ -83,13 +84,15 @@ export function yearGroupToStage(yearGroup: string): NswStage | null {
     .filter(Boolean);
   const values = tokens
     .map((t) => (t === "K" ? 0 : Number(t)))
-    .filter((n) => Number.isFinite(n) && n >= 0 && n <= 6);
+    .filter((n) => Number.isFinite(n) && n >= 0 && n <= 10);
   if (values.length === 0) return null;
   const oldest = Math.max(...values);
   if (oldest === 0) return "Early Stage 1";
   if (oldest <= 2) return "Stage 1";
   if (oldest <= 4) return "Stage 2";
-  return "Stage 3";
+  if (oldest <= 6) return "Stage 3";
+  if (oldest <= 8) return "Stage 4";
+  return "Stage 5";
 }
 
 /**
@@ -104,6 +107,8 @@ export function ageBandToStageLabel(band: string | null | undefined): string | n
       return "Early Stage 1 – Stage 1";
     case "8-12":
       return "Stage 2 – Stage 3";
+    case "12-16":
+      return "Stage 4 – Stage 5";
     default:
       return null;
   }

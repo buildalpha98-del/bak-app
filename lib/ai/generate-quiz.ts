@@ -39,6 +39,7 @@ Age band guidance:
 - 3-5 years: picture-free, one-line questions a teacher reads aloud; concrete and playful
 - 5-8 years: short sentences, familiar contexts, numbers to 100
 - 8-12 years: multi-step reasoning, precise vocabulary, explain-why short answers
+- 12-16 years: subject vocabulary, multi-step and applied problems, justify-and-evaluate short answers
 
 ${OUTPUT_SCHEMA}`;
 }

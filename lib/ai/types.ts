@@ -5,7 +5,7 @@ import type { Sport } from "@/lib/types/enums";
 // ============================================================
 
 /** Age brackets supported by the programme generator */
-export type AgeGroup = "3-5" | "5-8" | "8-12";
+export type AgeGroup = "3-5" | "5-8" | "8-12" | "12-16";
 
 /** Session duration options (minutes) */
 export type SessionDuration = 30 | 45 | 60;

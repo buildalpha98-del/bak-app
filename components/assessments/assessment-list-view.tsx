@@ -101,12 +101,13 @@ import {
   type AssessmentTemplateListItem,
 } from "@/lib/assessments/actions";
 
-const AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12"];
+const AGE_GROUPS: AgeGroup[] = ["3-5", "5-8", "8-12", "12-16"];
 
 const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
   "3-5": "3–5 yrs",
   "5-8": "5–8 yrs",
   "8-12": "8–12 yrs",
+  "12-16": "12–16 yrs",
 };
 
 interface AssessmentListViewProps {
