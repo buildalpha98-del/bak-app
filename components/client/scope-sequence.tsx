@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { programSectionsFor } from "@/lib/curriculum/subjects";
 import { ChevronDown, ChevronRight, Clock, User, CalendarDays, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,15 +109,16 @@ function ProgramContentSection({ content }: { content: Record<string, unknown> }
   const [open, setOpen] = useState(false);
   const data = content as ProgramContentData;
 
+  const labels = programSectionsFor(typeof content.subject === "string" ? content.subject : null);
   const activities: string[] = [];
-  if (data.warmUp?.name) activities.push(`Warm-up: ${data.warmUp.name}`);
+  if (data.warmUp?.name) activities.push(`${labels.warmUp}: ${data.warmUp.name}`);
   if (data.skillDevelopment) {
     data.skillDevelopment.forEach((d) => {
       if (d.name) activities.push(d.name);
     });
   }
-  if (data.modifiedGame?.name) activities.push(`Game: ${data.modifiedGame.name}`);
-  if (data.coolDown?.name) activities.push(`Cool-down: ${data.coolDown.name}`);
+  if (data.modifiedGame?.name) activities.push(`${labels.modifiedGame}: ${data.modifiedGame.name}`);
+  if (data.coolDown?.name) activities.push(`${labels.coolDown}: ${data.coolDown.name}`);
 
   const hasObjectives = data.objectives && data.objectives.length > 0;
   const hasActivities = activities.length > 0;

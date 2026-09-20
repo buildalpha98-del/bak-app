@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateProgram } from "@/lib/ai/generate-program";
 import { validateAgeBands } from "@/lib/utils/programs/age-bands";
+import { subjectOf } from "@/lib/curriculum/subjects";
 import {
   checkDailyLimit,
   getCached,
@@ -60,11 +61,14 @@ export async function POST(request: Request) {
     // 4. Parse and validate body
     const body = (await request.json()) as Record<string, unknown>;
 
+    // Subject (migration 089): PDHPE unless told otherwise.
+    const subject = subjectOf(typeof body.subject === "string" ? body.subject : null);
+
     // Sport: accept any non-empty string up to 64 chars (custom sports supported)
     const sport = typeof body.sport === "string" ? body.sport.trim() : "";
     if (sport.length === 0 || sport.length > 64) {
       return NextResponse.json(
-        { error: "Sport is required." },
+        { error: `${subject.strandLabel} is required.` },
         { status: 400 }
       );
     }
@@ -195,6 +199,7 @@ export async function POST(request: Request) {
     // programs at a centre change over time and we want fresh output
     // when context shifts. Cache is global (not per-user).
     const cacheParams = {
+      subject: subject.key,
       sport,
       ageGroups: [...ageGroups].sort(),
       durationMinutes: body.durationMinutes,
@@ -230,6 +235,7 @@ export async function POST(request: Request) {
     rateLimitMap.set(user.id, Date.now());
 
     const programContent = await generateProgram({
+      subject,
       sport,
       ageGroups,
       durationMinutes: body.durationMinutes as number,

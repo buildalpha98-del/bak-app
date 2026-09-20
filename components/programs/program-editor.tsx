@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { programSectionsFor } from "@/lib/curriculum/subjects";
 import type { ProgramContentJson, SkillDrill } from "@/lib/ai/types";
 
 // ============================================================
@@ -31,6 +32,7 @@ function toText(arr: string[]): string {
 }
 
 export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
+  const labels = programSectionsFor(content.subject);
   function update(patch: Partial<ProgramContentJson>) {
     onChange({ ...content, ...patch });
   }
@@ -97,7 +99,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       <Card>
         <CardHeader>
           <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
-            Warm Up
+            {labels.warmUp}
           </h4>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -165,7 +167,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
-              Skill Development
+              {labels.skillDevelopment}
             </h4>
             <Button type="button" variant="outline" size="sm" onClick={addDrill}>
               <Plus className="mr-1 h-3 w-3" />
@@ -257,7 +259,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       <Card>
         <CardHeader>
           <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
-            Modified Game
+            {labels.modifiedGame}
           </h4>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -361,7 +363,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       <Card>
         <CardHeader>
           <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
-            Cool Down
+            {labels.coolDown}
           </h4>
         </CardHeader>
         <CardContent className="space-y-4">

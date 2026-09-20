@@ -11,6 +11,21 @@ import { SPORTS } from "@/lib/types/enums";
 export const SUBJECT_KEYS = ["pdhpe", "english", "mathematics"] as const;
 export type SubjectKey = (typeof SUBJECT_KEYS)[number];
 
+/** What the five programme sections are called for a subject. The JSON
+ *  keys never change (warmUp, skillDevelopment, modifiedGame, coolDown,
+ *  equipmentNeeded) so every reader — editor, PDFs, Scope & Sequence,
+ *  coach app, portal — keeps working; only the headings differ. */
+export interface ProgramSectionLabels {
+  warmUp: string;
+  skillDevelopment: string;
+  skillItem: string;
+  modifiedGame: string;
+  coolDown: string;
+  equipment: string;
+  session: string;
+  tip: string;
+}
+
 export interface SubjectDef {
   key: SubjectKey;
   label: string;
@@ -22,7 +37,32 @@ export interface SubjectDef {
   /** Label for the template grouping the `sport` column carries. */
   strandLabel: string;
   strandOptions: readonly string[];
+  /** What a lesson needs — replaces the equipment picker for non-PDHPE. */
+  resourceOptions: readonly string[];
+  programSections: ProgramSectionLabels;
 }
+
+const SPORT_SECTIONS: ProgramSectionLabels = {
+  warmUp: "Warm-up",
+  skillDevelopment: "Skill development",
+  skillItem: "Drill",
+  modifiedGame: "Modified game",
+  coolDown: "Cool-down",
+  equipment: "Equipment",
+  session: "session",
+  tip: "Coaching tip",
+};
+
+const LESSON_SECTIONS: ProgramSectionLabels = {
+  warmUp: "Hook / tuning in",
+  skillDevelopment: "Explicit teaching & guided practice",
+  skillItem: "Activity",
+  modifiedGame: "Independent task",
+  coolDown: "Reflection / plenary",
+  equipment: "Resources",
+  session: "lesson",
+  tip: "Teaching tip",
+};
 
 export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
   pdhpe: {
@@ -38,6 +78,8 @@ export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
     codeFamily: "PD",
     strandLabel: "Sport",
     strandOptions: SPORTS,
+    resourceOptions: [],
+    programSections: SPORT_SECTIONS,
   },
   english: {
     key: "english",
@@ -63,6 +105,21 @@ export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
       "Handwriting and digital transcription",
       "Understanding and responding to literature",
     ],
+    resourceOptions: [
+      "Whiteboard",
+      "Picture books",
+      "Decodable readers",
+      "Class novel",
+      "Mini whiteboards",
+      "Word cards",
+      "Sentence strips",
+      "Writing books",
+      "Anchor charts",
+      "Graphic organisers",
+      "Sound / letter tiles",
+      "Interactive display",
+    ],
+    programSections: LESSON_SECTIONS,
   },
   mathematics: {
     key: "mathematics",
@@ -82,8 +139,29 @@ export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
       "Statistics and probability",
       "Working mathematically",
     ],
+    resourceOptions: [
+      "Whiteboard",
+      "Mini whiteboards",
+      "Counters",
+      "Unifix / linking cubes",
+      "Base-ten blocks",
+      "Number lines",
+      "Hundreds chart",
+      "Dice",
+      "Playing cards",
+      "Rulers / measuring tapes",
+      "Pattern blocks",
+      "Ten frames",
+      "Interactive display",
+    ],
+    programSections: LESSON_SECTIONS,
   },
 };
+
+/** Section headings for a programme, from its stored subject key. */
+export function programSectionsFor(subject: string | null | undefined): ProgramSectionLabels {
+  return subjectOf(subject).programSections;
+}
 
 export const DEFAULT_SUBJECT: SubjectKey = "pdhpe";
 

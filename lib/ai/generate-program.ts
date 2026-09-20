@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { ProgramContentJson } from "./types";
 import { buildProgramPrompt, type BuildProgramPromptInput } from "./program-prompt";
 import { AI_MODEL } from "@/lib/ai/model";
+import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
 
 export type GenerateProgramInput = BuildProgramPromptInput;
 
@@ -21,7 +22,39 @@ function getAnthropic(): Anthropic {
   return client;
 }
 
-const SYSTEM_PROMPT = `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools in Sydney.
+// The JSON schema is shared by every subject: an English or Maths lesson
+// fills the same five sections (warmUp = hook, skillDevelopment =
+// explicit teaching + guided practice, modifiedGame = independent task,
+// coolDown = reflection/plenary, equipmentNeeded = resources), so the
+// editor, PDFs, Scope & Sequence and the coach app need no second shape.
+// Only the headings differ (lib/curriculum/subjects.ts programSections).
+
+const LESSON_SYSTEM_PROMPT = (subject: SubjectDef) => `You are an experienced NSW primary ${subject.label} teacher and curriculum designer working for Build Alpha Kids, which supports schools in Sydney with curriculum programmes.
+
+Your task is to generate a structured ${subject.label} lesson plan as a single JSON object. The JSON uses the field names of our sports-session schema; fill them with lesson content as follows:
+- "warmUp" = the HOOK / tuning-in activity that opens the lesson
+- "skillDevelopment" = 2-3 EXPLICIT TEACHING and GUIDED PRACTICE activities (each with progressions = ways to support or extend)
+- "modifiedGame" = the INDEPENDENT or applied task ("rules" = success criteria the students work to, "variations" = 2-3 ways to differentiate)
+- "coolDown" = the REFLECTION / plenary that closes the lesson
+- "equipmentNeeded" = resources, only from the available resources list
+- "sport" = the ${subject.strandLabel.toLowerCase()} name exactly as given
+
+## Age-Appropriate Guidance
+- 3-5 years: play-based, oral, short bursts (3-5 min), concrete materials, lots of modelling
+- 5-8 years (Early Stage 1 / Stage 1): explicit modelling, guided practice with concrete materials, 5-8 minute activities, simple success criteria
+- 8-12 years (Stage 2 / Stage 3): strategies named and practised, independent application, 8-12 minute activities, reasoning and reflection
+
+## Curriculum Alignment
+Use NSW ${subject.fullName} syllabus outcomes with real outcome codes for the band (${Object.values(subject.stagePrefixes).join(", ")}…). For ages 3-5 use EYLF V2.0 outcomes instead. Select 2-3 that genuinely apply. Set "framework" to "${subject.key}" (or "eylf").
+
+## Reflection Prompt
+Also generate a "reflectionPrompt": 2-3 sentences in first person that the teacher could use for their planning notes, referencing specific activities and the outcomes addressed.
+
+## Resource Constraints
+Only use resources from the "available resources" list provided.
+`;
+
+const sportSystemPrompt = () => `You are an experienced children's sports coaching programme designer for Build Alpha Kids, an Australian multi-sport programme provider operating across childcare centres and schools in Sydney.
 
 Your task is to generate a structured coaching session plan as a single JSON object. Follow these rules strictly:
 
@@ -76,7 +109,9 @@ Also generate a "reflectionPrompt" field: a 2-3 sentence paragraph that an educa
 ## Equipment Constraints
 Only use equipment from the "available equipment" list provided. Do not suggest equipment that is not on the list.
 
-## Output Format
+${OUTPUT_FORMAT}`;
+
+const OUTPUT_FORMAT = `## Output Format
 Respond with ONLY a valid JSON object (no markdown, no explanation, no code fences). The JSON must match this exact structure:
 
 {
@@ -123,8 +158,8 @@ names only ONE age band, omit "scaffolds" entirely.
   },
   "curriculumOutcomes": [
     {
-      "framework": "eylf" or "pdhpe",
-      "code": "string — e.g. EYLF 3.1 or PD1-6",
+      "framework": "eylf" or "pdhpe" or "english" or "mathematics",
+      "code": "string — e.g. EYLF 3.1, PD1-6, EN1-RECOM-01, MA1-RN-01",
       "title": "string — short outcome title",
       "description": "string — how this session addresses the outcome"
     }
@@ -182,10 +217,14 @@ export async function generateProgram(
     );
   }
 
+  const subject = request.subject ?? SUBJECTS.pdhpe;
   const message = await getAnthropic().messages.create({
     model: AI_MODEL,
     max_tokens: 8000,
-    system: SYSTEM_PROMPT,
+    system:
+      subject.key === "pdhpe"
+        ? sportSystemPrompt()
+        : `${LESSON_SYSTEM_PROMPT(subject)}\n${OUTPUT_FORMAT}`,
     messages: [
       {
         role: "user",
@@ -208,5 +247,7 @@ export async function generateProgram(
     throw new Error("No text response received from AI.");
   }
 
-  return parseResponse(textBlock.text);
+  const content = parseResponse(textBlock.text);
+  content.subject = subject.key;
+  return content;
 }

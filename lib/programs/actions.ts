@@ -16,6 +16,8 @@ import type { ProgramContentJson } from "@/lib/ai/types";
 // ============================================================
 
 export interface SaveProgramInput {
+  /** Migration 089: "pdhpe" | "english" | "mathematics". */
+  subject?: string;
   sport: string;
   ageGroups: string[];           // multi-age support; replaces singular ageGroup
   durationMinutes: number;
@@ -91,6 +93,7 @@ export async function saveProgram(
     const { data, error } = await supabase
       .from("programs")
       .insert({
+        subject: input.subject ?? "pdhpe",
         sport: input.sport,
         age_groups: input.ageGroups,
         age_group: input.ageGroups[0] ?? null,  // keep denormalised primary band
@@ -536,6 +539,7 @@ export async function createNewVersion(
     const { data, error } = await supabase
       .from("programs")
       .insert({
+        subject: input.subject ?? "pdhpe",
         sport: input.sport,
         age_groups: input.ageGroups,
         age_group: input.ageGroups[0] ?? null,  // keep denormalised primary band
