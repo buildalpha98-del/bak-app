@@ -91,7 +91,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { SPORTS, type AgeGroup } from "@/lib/types/enums";
+import type { AgeGroup } from "@/lib/types/enums";
+import { SUBJECTS, SUBJECT_KEYS, type SubjectKey } from "@/lib/curriculum/subjects";
 import type { AssessmentSkill } from "@/lib/types/database";
 import {
   createAssessmentTemplate,
@@ -564,6 +565,9 @@ export function AssessmentListView({
                     {template.sport}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {template.subject !== "pdhpe" && (
+                      <Badge variant="outline">{SUBJECTS[template.subject as SubjectKey]?.label ?? template.subject}</Badge>
+                    )}
                     <Badge variant="secondary">
                       {AGE_GROUP_LABELS[template.age_group]}
                     </Badge>
@@ -669,6 +673,9 @@ export function AssessmentListView({
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <span>{template.sport}</span>
+                          {template.subject !== "pdhpe" && (
+                            <Badge variant="outline">{SUBJECTS[template.subject as SubjectKey]?.label ?? template.subject}</Badge>
+                          )}
                           {template.skill_count === 0 && (
                             <span
                               className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
@@ -997,6 +1004,8 @@ function CreateAssessmentDialog({
   basePath: string;
 }) {
   const router = useRouter();
+  const [subject, setSubject] = useState<SubjectKey>("pdhpe");
+  const subjectDef = SUBJECTS[subject];
   const [sport, setSport] = useState("");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "">("");
   // "__all" is the explicit no-term choice; the Select can't carry "".
@@ -1015,15 +1024,17 @@ function CreateAssessmentDialog({
     return (
       existingTemplates.find(
         (t) =>
+          t.subject === subject &&
           t.sport === sport &&
           t.age_group === ageGroup &&
           (effectiveTermId ? t.term_id === effectiveTermId : t.term_id === null) &&
           t.skill_count > 0,
       ) ?? null
     );
-  }, [sport, ageGroup, effectiveTermId, existingTemplates]);
+  }, [subject, sport, ageGroup, effectiveTermId, existingTemplates]);
 
   function resetForm() {
+    setSubject("pdhpe");
     setSport("");
     setAgeGroup("");
     setTermId(activeTermId ?? "__all");
@@ -1048,7 +1059,7 @@ function CreateAssessmentDialog({
       const res = await fetch("/api/assessments/generate-skills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sport, ageGroup }),
+        body: JSON.stringify({ subject, sport, ageGroup }),
       });
 
       if (!res.ok) {
@@ -1100,6 +1111,7 @@ function CreateAssessmentDialog({
 
     startSaveTransition(async () => {
       const { error } = await createAssessmentTemplate({
+        subject,
         sport,
         age_group: ageGroup as AgeGroup,
         skills_json: validSkills,
@@ -1126,26 +1138,50 @@ function CreateAssessmentDialog({
         <DialogHeader>
           <DialogTitle>Create Assessment Template</DialogTitle>
           <DialogDescription>
-            Select a sport and age group, then generate or add skills to
-            assess.
+            Pick the subject, its {subjectDef.strandLabel.toLowerCase()} and an age
+            group, then generate or add skills to assess.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Sport */}
+          {/* Subject (migration 089) */}
+          <div className="space-y-1.5">
+            <Label>Subject</Label>
+            <Select
+              value={subject}
+              onValueChange={(v) => {
+                setSubject((v as SubjectKey) ?? "pdhpe");
+                setSport("");
+                setSkills([]);
+              }}
+            >
+              <SelectTrigger className="w-full min-h-[44px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUBJECT_KEYS.map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {SUBJECTS[k].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Sport / focus area / strand */}
           <div className="space-y-1.5">
             <Label>
-              Sport <span className="text-destructive">*</span>
+              {subjectDef.strandLabel} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={sport}
               onValueChange={(v) => setSport(v ?? "")}
             >
               <SelectTrigger className="w-full min-h-[44px]">
-                <SelectValue placeholder="Select sport" />
+                <SelectValue placeholder={`Select ${subjectDef.strandLabel.toLowerCase()}`} />
               </SelectTrigger>
               <SelectContent>
-                {SPORTS.map((s) => (
+                {subjectDef.strandOptions.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>

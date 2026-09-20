@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { normaliseOutcomes, splitOutcomeCode } from "../outcome-codes";
+import { normaliseOutcomes, splitOutcomeCode, groupOutcomesBySubject } from "../outcome-codes";
+import { SUBJECTS } from "@/lib/curriculum/subjects";
 
 describe("splitOutcomeCode", () => {
   it("splits bundled codes with or without spaces", () => {
@@ -42,5 +43,25 @@ describe("normaliseOutcomes", () => {
 
   it("ignores entries without a code", () => {
     expect(normaliseOutcomes([{ code: null, title: "x" }, { title: "y" }], null)).toEqual([]);
+  });
+
+  it("filters to the given subject's family and stage (English, Maths)", () => {
+    const mixed = [
+      { code: "ENe-1A / EN1-1A", title: "Communicates" },
+      { code: "MA1-RN-01", title: "Represents numbers" },
+      { code: "PD1-6", title: "Movement" },
+    ];
+    expect(normaliseOutcomes(mixed, "Stage 1", SUBJECTS.english).map((o) => o.code)).toEqual(["EN1-1A"]);
+    expect(normaliseOutcomes(mixed, "Early Stage 1", SUBJECTS.english).map((o) => o.code)).toEqual(["ENe-1A"]);
+    expect(normaliseOutcomes(mixed, "Stage 1", SUBJECTS.mathematics).map((o) => o.code)).toEqual(["MA1-RN-01"]);
+  });
+
+  it("groups a mixed list by subject", () => {
+    const groups = groupOutcomesBySubject([
+      { code: "PD2-4 / EN2-RECOM-01", title: "x" },
+      { code: "MA2-RN-01", title: "y" },
+      { code: "EYLF 1.1", title: "z" },
+    ]);
+    expect([...groups.keys()].map((s) => s.key).sort()).toEqual(["english", "mathematics", "pdhpe"]);
   });
 });

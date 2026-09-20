@@ -829,6 +829,9 @@ export interface AssessmentSkill {
 
 export interface AssessmentTemplate {
   id: string;
+  /** Migration 089: "pdhpe" | "english" | "mathematics". */
+  subject: string;
+  /** The template's grouping — a sport for PDHPE, a focus area or strand otherwise. */
   sport: string;
   age_group: AgeGroup;
   skills_json: AssessmentSkill[];

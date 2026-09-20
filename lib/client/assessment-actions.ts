@@ -36,7 +36,7 @@ export async function getClientAssessmentTasks(
 
     const { data: templates } = await supabase
       .from("assessment_templates")
-      .select("id, sport, age_group, skills_json, centre_id")
+      .select("id, subject, sport, age_group, skills_json, centre_id")
       .eq("term_id", activeTerm.id)
       .or(`centre_id.is.null,centre_id.eq.${centreId}`);
     if (!templates || templates.length === 0) return { data: [], error: null };
@@ -110,6 +110,7 @@ export async function getClientAssessmentTasks(
       });
       const base = {
         template_id: template.id,
+        subject: template.subject ?? "pdhpe",
         sport: template.sport,
         age_group: template.age_group as AgeGroup,
         skills: template.skills_json as AssessmentSkill[],

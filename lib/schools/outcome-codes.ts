@@ -1,4 +1,5 @@
 import type { NswStage } from "./year-groups";
+import { SUBJECTS, subjectForCode, type SubjectDef } from "@/lib/curriculum/subjects";
 
 /**
  * Programme `curriculumOutcomes` codes arrive as the AI wrote them —
@@ -12,13 +13,6 @@ export interface OutcomeEntry {
   title: string;
 }
 
-const STAGE_PREFIX: Record<NswStage, string> = {
-  "Early Stage 1": "PDE-",
-  "Stage 1": "PD1-",
-  "Stage 2": "PD2-",
-  "Stage 3": "PD3-",
-};
-
 export function splitOutcomeCode(code: string): string[] {
   return code
     .split(/[\/,;]+/)
@@ -28,16 +22,17 @@ export function splitOutcomeCode(code: string): string[] {
 
 /**
  * Flatten, dedupe and — for a school student whose class maps to a
- * stage — keep only that stage's PDHPE outcomes. A Year 4 child has no
- * use for the Early Stage 1 line of a multi-band programme, and EYLF
- * (pre-school framework) codes never belong on a school report. If the
- * stage filter would empty the list (programme written for another
- * band), fall back to every PDHPE code so the section is never blank
- * for a child who attended mapped sessions.
+ * stage — keep only that stage's outcomes for the subject. A Year 4
+ * child has no use for the Early Stage 1 line of a multi-band programme,
+ * and EYLF (pre-school framework) codes never belong on a school report.
+ * If the stage filter would empty the list (programme written for
+ * another band), fall back to every code of the subject so the section
+ * is never blank for a child who attended mapped sessions.
  */
 export function normaliseOutcomes(
   raw: Array<{ code?: string | null; title?: string | null }>,
-  stage: NswStage | null
+  stage: NswStage | null,
+  subject: SubjectDef = SUBJECTS.pdhpe
 ): OutcomeEntry[] {
   const seen = new Map<string, string>();
   for (const o of raw) {
@@ -53,16 +48,36 @@ export function normaliseOutcomes(
   }));
   if (!stage) return sortCodes(all);
 
-  const pdhpe = all.filter((o) => o.code.toUpperCase().startsWith("PD"));
-  const forStage = pdhpe.filter((o) =>
-    o.code.toUpperCase().startsWith(STAGE_PREFIX[stage])
+  const ofSubject = all.filter((o) => o.code.toUpperCase().startsWith(subject.codeFamily));
+  const forStage = ofSubject.filter((o) =>
+    o.code.toUpperCase().startsWith(subject.stagePrefixes[stage])
   );
-  return sortCodes(forStage.length > 0 ? forStage : pdhpe);
+  return sortCodes(forStage.length > 0 ? forStage : ofSubject);
+}
+
+/** Split a mixed outcome list by subject, keyed by subject key. */
+export function groupOutcomesBySubject(
+  raw: Array<{ code?: string | null; title?: string | null }>
+): Map<SubjectDef, Array<{ code: string; title: string }>> {
+  const groups = new Map<SubjectDef, Array<{ code: string; title: string }>>();
+  for (const o of raw) {
+    if (!o.code) continue;
+    for (const atomic of splitOutcomeCode(o.code)) {
+      const subject = subjectForCode(atomic);
+      if (!subject) continue;
+      const list = groups.get(subject) ?? [];
+      list.push({ code: atomic, title: o.title ?? "" });
+      groups.set(subject, list);
+    }
+  }
+  return groups;
 }
 
 function displayCode(upper: string): string {
-  // "PDE-1" is written "PDe-1" in the syllabus; everything else is upper-case.
-  return upper.startsWith("PDE-") ? `PDe-${upper.slice(4)}` : upper;
+  // Early Stage 1 codes are written "PDe-1" / "ENe-1" / "MAe-1" in the
+  // syllabus; everything else is upper-case.
+  const m = /^([A-Z]{2})E-(.*)$/.exec(upper);
+  return m ? `${m[1]}e-${m[2]}` : upper;
 }
 
 function sortCodes(list: OutcomeEntry[]): OutcomeEntry[] {
