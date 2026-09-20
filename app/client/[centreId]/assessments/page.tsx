@@ -4,6 +4,8 @@ import { getCurrentClientUser } from "@/lib/client/actions";
 import { getClientAssessmentTasks } from "@/lib/client/assessment-actions";
 import { isClassScoped } from "@/lib/client/assessment-scope";
 import { ClientAssessmentsView } from "@/components/client/client-assessments-view";
+import { getReportCardRelease } from "@/lib/client/report-card-actions";
+import { ReportCardReleaseCard } from "@/components/client/report-card-release-card";
 
 // Teachers (and the school's contacts) complete the term's skill
 // assessments here — the same flow the coaches use, same table, so the
@@ -22,8 +24,15 @@ export default async function ClientAssessmentsPage({
     redirect(`/client/${clientUser.centre_id}`);
   if (clientUser.centre_type !== "school") redirect(`/client/${centreId}`);
 
-  const { data: tasks, error } = await getClientAssessmentTasks(centreId);
+  const [{ data: tasks, error }, { data: release }] = await Promise.all([
+    getClientAssessmentTasks(centreId),
+    getReportCardRelease(centreId),
+  ]);
   const scoped = isClassScoped(clientUser.class_ids);
+  // Distinct students with any rating this term, across every task.
+  const students = new Map<string, boolean>();
+  for (const t of tasks) for (const c of t.children) students.set(c.id, (students.get(c.id) ?? false) || c.already_rated);
+  const assessed = [...students.values()].filter(Boolean).length;
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -44,6 +53,16 @@ export default async function ClientAssessmentsPage({
           the Feedback and Messages pages.
         </p>
       </div>
+
+      {release && (
+        <ReportCardReleaseCard
+          centreId={centreId}
+          release={release}
+          isPrimary={clientUser.is_primary}
+          assessed={assessed}
+          total={students.size}
+        />
+      )}
 
       {error ? (
         <p className="text-sm text-destructive">{error}</p>

@@ -28,6 +28,9 @@ interface ChildDetailViewProps {
   centreId: string;
   /** Schools see "Students" vocabulary; childcare centres see "Children". */
   isSchool?: boolean;
+  /** Report-card sign-off (migration 090): teachers and colleagues wait
+   *  for the principal's release; the button explains instead of 403ing. */
+  reportCardAccess?: { open: true } | { open: false; termName: string };
 }
 
 type TabKey = "attendance" | "assessments" | "progression" | "insights" | "notes";
@@ -69,6 +72,7 @@ export function ChildDetailView({
   child,
   centreId,
   isSchool = false,
+  reportCardAccess = { open: true },
 }: ChildDetailViewProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("attendance");
 
@@ -212,7 +216,7 @@ export function ChildDetailView({
         </div>
         {/* Per-student report card — hidden until an assessment exists,
             since the PDF is built from assessment terms. */}
-        {child.assessments.length > 0 && (
+        {child.assessments.length > 0 && reportCardAccess.open && (
           <a
             href={`/api/client/${centreId}/student-report-pdf?childId=${child.id}`}
             className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
@@ -223,6 +227,16 @@ export function ChildDetailView({
             </span>
             <span className="sm:hidden">Report</span>
           </a>
+        )}
+        {child.assessments.length > 0 && !reportCardAccess.open && (
+          <span
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
+            title={`${reportCardAccess.termName} report cards open once the principal releases them.`}
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Report card not released yet</span>
+            <span className="sm:hidden">Not released</span>
+          </span>
         )}
       </div>
 

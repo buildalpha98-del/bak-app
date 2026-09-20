@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { saveClientChildRating } from "@/lib/client/assessment-actions";
+import { subjectOf } from "@/lib/curriculum/subjects";
 import {
   AssessmentRatingFlow,
   type RatingFlowTask,
@@ -67,7 +68,7 @@ export function ClientAssessmentsView({
             <thead className="bg-portal-50 text-xs uppercase tracking-wide text-portal-800">
               <tr>
                 <th className="px-3 py-2 text-left font-semibold">Class</th>
-                <th className="px-3 py-2 text-left font-semibold">Sport</th>
+                <th className="px-3 py-2 text-left font-semibold">Assessment</th>
                 <th className="px-3 py-2 text-right font-semibold">Assessed</th>
                 <th className="px-3 py-2 text-left font-semibold">Progress</th>
               </tr>
@@ -79,7 +80,10 @@ export function ClientAssessmentsView({
                 return (
                   <tr key={`${t.template_id}-${t.class_id ?? "all"}`} className="border-t border-portal-100">
                     <td className="px-3 py-2 font-medium">{t.class_name ?? "Not in a class"}</td>
-                    <td className="px-3 py-2">{t.sport}</td>
+                    <td className="px-3 py-2">
+                      {t.subject && t.subject !== "pdhpe" ? `${subjectOf(t.subject).label} · ` : ""}
+                      {t.sport}
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {done} / {t.children.length}
                     </td>
