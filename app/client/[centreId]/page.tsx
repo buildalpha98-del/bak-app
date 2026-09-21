@@ -32,7 +32,9 @@ export default async function ClientDashboardPage({
   if (clientUser.centre_type === "school") {
     const { data: school, error: schoolError } = await getSchoolDashboard(centreId);
     if (school && !schoolError) {
-      const first = (clientUser.name ?? "").split(" ")[0] || "there";
+      // "Mrs Bennett" greets as "Mrs Bennett", not "Mrs".
+      const tokens = (clientUser.name ?? "").trim().split(/\s+/);
+      const first = /^(mr|mrs|ms|miss|dr|prof)\.?$/i.test(tokens[0] ?? "") ? tokens.join(" ") : tokens[0] || "there";
       return <SchoolDashboard data={school} centreId={centreId} firstName={first} />;
     }
   }
