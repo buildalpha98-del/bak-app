@@ -95,3 +95,36 @@ describe("normaliseTermPlan", () => {
     expect(isTermPlanJson(null)).toBe(false);
   });
 });
+
+describe("normaliseTermPlan — the syllabus in force when the term is TAUGHT", () => {
+  const raw = (code: string) => ({
+    title: "Plan",
+    rationale: "",
+    units: [
+      {
+        title: "Unit",
+        strand: "Movement skill and physical activity",
+        weeks: [1, 2],
+        description: "d",
+        outcomes: [{ framework: "pdhpe", code, title: "", description: "" }],
+        weeklyFocus: [
+          { week: 1, focus: "a" },
+          { week: 2, focus: "b" },
+        ],
+      },
+    ],
+  });
+  const opts = { subject: "pdhpe", bandLabel: "Stage 2", bands: ["Stage 2" as const], weekCount: 2 };
+
+  it("a Term 1 2027 plan keeps 2024-syllabus codes and drops 2018 ones — whenever it is drafted", () => {
+    const next = normaliseTermPlan(raw("PH2-MSP-01"), { ...opts, on: "2027-02-01" });
+    expect(next.unknownCodes).toEqual([]);
+    expect(next.plan.units[0].outcomes.map((o) => o.code)).toEqual(["PH2-MSP-01"]);
+    expect(normaliseTermPlan(raw("PD2-4"), { ...opts, on: "2027-02-01" }).unknownCodes).toEqual(["PD2-4"]);
+  });
+
+  it("a 2026 plan is the mirror image", () => {
+    expect(normaliseTermPlan(raw("PD2-4"), { ...opts, on: "2026-07-20" }).unknownCodes).toEqual([]);
+    expect(normaliseTermPlan(raw("PH2-MSP-01"), { ...opts, on: "2026-07-20" }).unknownCodes).toEqual(["PH2-MSP-01"]);
+  });
+});

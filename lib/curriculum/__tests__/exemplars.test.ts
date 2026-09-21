@@ -6,7 +6,8 @@ import { SUBJECTS } from "../subjects";
 
 describe("exemplar scope and sequences — data integrity", () => {
   it("loads the Department samples for every primary stage in PDHPE, English and Mathematics, plus PDHPE Stage 4", () => {
-    const keys = allExemplars().map((d) => `${d.subject}/${d.band}`).sort();
+    // PDHPE K–6 carries both syllabuses (2018 to end 2026, 2024 from 2027).
+    const keys = Array.from(new Set(allExemplars().map((d) => `${d.subject}/${d.band}`))).sort();
     expect(keys).toEqual(
       [
         "english/Stage 1", "english/Stage 2", "english/Stage 3",
@@ -51,6 +52,56 @@ describe("exemplar scope and sequences — data integrity", () => {
     expect(s2.variants.map((v) => v.label)).toEqual(["Even year", "Odd year"]);
     expect(s2.variants[0].terms[0].units!.map((u) => u.strand)).toEqual(["Personal development and health", "Physical education"]);
     expect(exemplarFor("nsw", "pdhpe", "Early Stage 1", "2026-09-21")!.doc.variants.map((v) => v.label)).toEqual(["Single year"]);
+  });
+});
+
+describe("NSW PDHPE K–6 (2024) samples — in force from 2027", () => {
+  const BANDS = ["Early Stage 1", "Stage 1", "Stage 2", "Stage 3"] as const;
+
+  it("every primary stage switches from the 2018 sample to the 2024 one on 1 January 2027", () => {
+    for (const b of BANDS) {
+      expect(exemplarFor("nsw", "pdhpe", b, "2026-12-31")!.doc.syllabus, b).toMatch(/2018/);
+      expect(exemplarFor("nsw", "pdhpe", b, "2027-01-01")!.doc.syllabus, b).toMatch(/K–6 Syllabus \(2024\)/);
+    }
+  });
+
+  it("stages run a two-year cycle (Year A / Year B); Kindergarten is one year", () => {
+    expect(exemplarFor("nsw", "pdhpe", "Early Stage 1", "2027-02-01")!.doc.variants.map((v) => v.label)).toEqual(["Kindergarten"]);
+    for (const b of BANDS.slice(1)) {
+      const doc = exemplarFor("nsw", "pdhpe", b, "2027-02-01")!.doc;
+      expect(doc.variants.map((v) => v.label)).toEqual(["Year A", "Year B"]);
+      for (const v of doc.variants) expect(v.terms.map((t) => t.term)).toEqual([1, 2, 3, 4]);
+    }
+  });
+
+  it("cites only that stage's PH codes — the workbook's two typos are normalised, paired outcomes kept", () => {
+    const prefix = { "Early Stage 1": "PHE-", "Stage 1": "PH1-", "Stage 2": "PH2-", "Stage 3": "PH3-" } as const;
+    for (const b of BANDS) {
+      const codes = exemplarCodes(exemplarFor("nsw", "pdhpe", b, "2027-02-01")!.doc);
+      expect(codes.length).toBeGreaterThanOrEqual(4);
+      for (const c of codes) expect(c, b).toMatch(new RegExp(`^${prefix[b]}[A-Z]{3}-0\\d$`));
+    }
+    expect(exemplarCodes(exemplarFor("nsw", "pdhpe", "Stage 2", "2027-02-01")!.doc)).toEqual(
+      expect.arrayContaining(["PH2-RRS-01", "PH2-RRS-02"])
+    );
+  });
+
+  it("no placeholder or 'not planned' cells leak in, and every term has the movement focus area", () => {
+    for (const b of BANDS) {
+      for (const v of exemplarFor("nsw", "pdhpe", b, "2027-02-01")!.doc.variants) {
+        for (const t of v.terms) {
+          const text = JSON.stringify(t);
+          expect(text).not.toMatch(/Not planned|\[Insert/i);
+          expect(t.focusAreas!.some((f) => f.focusArea.startsWith("Movement skill and physical activity"))).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("serialises a term for the prompt with focus area › content group and the outcome", () => {
+    const text = exemplarPromptText(exemplarFor("nsw", "pdhpe", "Stage 2", "2027-02-01")!, { term: 2, maxChars: 20000 });
+    expect(text).toMatch(/^Sample: NSW PDHPE K–6 Syllabus \(2024\) — Stage 2 \(Year A\), Term 2\./);
+    expect(text).toMatch(/Movement skill and physical activity › .+ \(PH2-MSP-01\): /);
   });
 });
 

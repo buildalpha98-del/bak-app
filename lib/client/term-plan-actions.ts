@@ -139,7 +139,7 @@ export async function getTermPlans(
       const cls = p.school_classes as unknown as { name: string; year_group: string };
       const band = yearGroupToStage(cls.year_group);
       const outcome_options = band && isSubjectKey(p.subject)
-        ? outcomesFor({ framework, subject: p.subject, bands: [band] }).map((o) => ({ code: o.code, statement: o.statement }))
+        ? outcomesFor({ framework, subject: p.subject, bands: [band], on: term.start_date }).map((o) => ({ code: o.code, statement: o.statement }))
         : [];
       plans.push({
         coach_sessions: coachSessions.get(p.id) ?? [],
@@ -262,6 +262,7 @@ export async function updateTermPlan(
       bandLabel: bandLabelForYearGroup(framework, yearGroup) ?? band,
       bands,
       weekCount: term.weekCount,
+      on: term.start_date,
     });
     if (issues.length > 0) {
       return { data: null, error: "The plan still has gaps — fix them before saving.", issues: issues.map((i) => i.detail) };

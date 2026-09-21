@@ -1,0 +1,458 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–6 Syllabus (2024)",
+ "validFrom": "2027-01-01",
+ "band": "Stage 1",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education PDHPE K–6 sample scope and sequence (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-k-6-scope-and-sequence.xlsx",
+ "variants": [
+  {
+   "label": "Year A",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Demonstrate spatial awareness in relation to people, objects and the environment when participating in physical activities [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]",
+        "Demonstrate and explain how fair play and rules contribute to safety in group activities [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Demonstrate static and dynamic balances with different body parts [each year]",
+        "Run and sprint varying pace according to purpose [each year]",
+        "Catch balls and objects of various shapes and sizes at different levels [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Recognise emergency situations where help is required and demonstrate ways to respond",
+        "Describe and demonstrate road safety behaviours and explain how responsible actions enhance safety in different contexts [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors and characteristics can shape identity",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe changes in a person’s physical and social development [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Identify and apply hygiene and self-care practices that promote health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Recognise emotional responses to various situations and describe the impact on themselves and other [each year]",
+        "Identify and describe the connection between feelings, words and body language",
+        "Identify and demonstrate self-regulation strategies in response to situations and emotions [each year]",
+        "Demonstrate help-seeking and decision-making actions to support learning",
+        "Develop goals to improve learning [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]",
+        "Describe ways in which people use their strengths and abilities to be physically active [each year]",
+        "Participate in and describe the purpose of Aboriginal and/or Torres Strait Islander games and activities [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Jump vertically and horizontally with control [each year]",
+        "Hop from one point to another around objects [each year]",
+        "Skip at different speeds and directions in games [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Describe choices and actions that contribute to a safe environment",
+        "Demonstrate fire safety behaviours and explain how responsible actions enhance safety [each year]",
+        "Describe the messages in Aboriginal Dreaming stories and/or Torres Strait Islander Legends that promote safe behaviours on Country and/or Place"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Seek and respond to feedback to improve skills and reflect on accomplishments [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills support positive interactions and cooperation",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Demonstrate interpersonal skills that contribute to positive and respectful interactions [each year]",
+        "Demonstrate ways to respectfully win and lose in different contexts [each year]",
+        "Demonstrate communication skills in group activities to support cooperation [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]",
+        "Participate in physical activities from across the continents and identify how these foster a sense of connection [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Side gallop, changing directions with control [each year]",
+        "Throw balls and objects of various shapes and sizes underarm and overarm towards a target [each year]",
+        "Kick a ball with force towards a target or space [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships enhance personal safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Identify and describe a support network outside of the home",
+        "Identify and demonstrate assertive help-seeking actions when feeling unsafe [each year]",
+        "Understand that parts of their own and others’ bodies are private and that privacy can depend on context",
+        "Identify the emotional and physical signs of safe and unsafe situations and demonstrate assertive responses",
+        "Identify and apply strategies to respond to appropriate and inappropriate touch, contact or interactions offline and online",
+        "Practise and determine when to use ‘No-Go-Tell’ as a protective strategy [each year]",
+        "Demonstrate strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Responsible choices promote online safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Recognise that personal information and images can be seen, accessed and used online by others, and describe strategies to protect personal information [each year]",
+        "Describe and enact ways to contribute to personal safety online and seek help from trusted adults when feeling unsafe [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors and characteristics can shape identity",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Explain how people’s strengths, characteristics and interests can be similar or different and contribute to identity",
+        "Describe how culture, family and place can shape identity"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Identify how ancient and enduring cultures have moved to keep healthy",
+        "Follow agreed rules for the healthy use of digital devices and describe how these rules support health and wellbeing [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Identify how connections to others, emotional regulation, persistence, problem-solving, support networks and help-seeking build resilience and describe why it is important [each year]",
+        "Develop goals to improve learning [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Apply fundamental movement skills to create and participate in physically active games [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Dodge, pushing from the outside foot [each year]",
+        "Leap, using a long running step [each year]",
+        "Strike an object using an implement towards a target [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships improve health and wellbeing",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Describe ways Aboriginal and/or Torres Strait Islander Peoples’ connections to Country/Place and others enhance wellbeing",
+        "Describe how connecting to family, people, groups and places contributes to health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Demonstrate sun safety behaviours and explain how responsible actions enhance protection of the eyes and skin [each year]",
+        "Demonstrate water and local environmental safety behaviours and explain how responsible actions enhance safety at home and in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors and characteristics can shape identity",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe the role of family and Community in Aboriginal and/or Torres Strait Islander Peoples’ identities"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe how the brain, heart and lungs enable the body to move and function, using Tier 2 and Tier 3 vocabulary"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Seek and respond to feedback to improve skills and reflect on accomplishments [each semester]"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year B",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Demonstrate spatial awareness in relation to people, objects and the environment when participating in physical activities [each year]",
+        "Demonstrate and explain how fair play and rules contribute to safety in group activities [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Demonstrate static and dynamic balances with different body parts [each year]",
+        "Run and sprint varying pace according to purpose [each year]",
+        "Catch balls and objects of various shapes and sizes at different levels [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships improve health and wellbeing",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Describe how relationships can change over time",
+        "Demonstrate actions that contribute to respectful relationships"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Describe and demonstrate road safety behaviours and explain how responsible actions enhance safety in different contexts [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors and characteristics can shape identity",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe changes in a person’s physical and social development [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe the benefits of healthy eating and drinking habits for health and wellbeing",
+        "Describe the benefits of bush food to improve health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Develop goals to improve learning [each semester]",
+        "Identify and demonstrate self-regulation strategies in response to situations and emotions [each year]",
+        "Recognise emotional responses to various situations and describe the impact on themselves and others [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Participate in and describe the purpose of Aboriginal and/or Torres Strait Islander games and activities [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]",
+        "Describe ways in which people use their strengths and abilities to be physically active [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Jump vertically and horizontally with control [each year]",
+        "Hop from one point to another around objects [each year]",
+        "Skip at different speeds and directions in games [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Describe and explain why the safe storage of medications and poisons in the home and school supports safety",
+        "Demonstrate fire safety behaviours and explain how responsible actions enhance safety [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Describe how sleep, spending time outdoors, healthy eating, movement and connection to others supports health and wellbeing",
+        "Identify messages in the media related to health and wellbeing and describe their purpose"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Seek and respond to feedback to improve skills and reflect on accomplishments [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills support positive interactions and cooperation",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Demonstrate interpersonal skills that contribute to positive and respectful interactions [each year]",
+        "Demonstrate ways to respectfully win and lose in different contexts [each year]",
+        "Demonstrate communication skills in group activities to support cooperation [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Participate in physical activities from across the continents and identify how these foster a sense of connection [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills support health and wellbeing",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Side gallop, changing directions with control [each year]",
+        "Throw balls and objects of various shapes and sizes underarm and overarm towards a target [each year]",
+        "Kick a ball with force towards a target or space [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships enhance personal safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Identify and demonstrate assertive help-seeking actions when feeling unsafe [each year]",
+        "Practise and determine when to use ‘No-Go-Tell’ as a protective strategy [each year]",
+        "Demonstrate strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Responsible choices promote online safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Recognise that personal information and images can be seen, accessed and used online by others, and describe strategies to protect personal information [each year]",
+        "Describe and enact ways to contribute to personal safety online and seek help from trusted adults when feeling unsafe [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Follow agreed rules for the healthy use of digital devices and describe how these rules support health and wellbeing [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Develop goals to improve learning [each semester]",
+        "Identify how connections to others, emotional regulation, persistence, problem-solving, support networks and help-seeking build resilience and describe why it is important [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others safely and fairly in physical activities",
+       "outcome": "PH1-MSP-01",
+       "points": [
+        "Dribble a ball at different levels",
+        "Apply fundamental movement skills to create and participate in physically active games [each year]",
+        "Identify and participate in physical activities to enhance enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Choices and actions contribute to safety",
+       "outcome": "PH1-RRS-01",
+       "points": [
+        "Demonstrate sun safety behaviours and explain how responsible actions enhance protection of the eyes and skin [each year]",
+        "Demonstrate water and local environmental safety behaviours and explain how responsible actions enhance safety at home and in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Responsible choices improve health and wellbeing",
+       "outcome": "PH1-IHW-01",
+       "points": [
+        "Identify how money can be saved and spent on needs and wants"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Responsible choices and actions promote self-management skills",
+       "outcome": "PH1-SMI-01",
+       "points": [
+        "Seek and respond to feedback to improve skills and reflect on accomplishments [each semester]"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

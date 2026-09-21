@@ -1,0 +1,261 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–6 Syllabus (2024)",
+ "validFrom": "2027-01-01",
+ "band": "Early Stage 1",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education PDHPE K–6 sample scope and sequence (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-k-6-scope-and-sequence.xlsx",
+ "variants": [
+  {
+   "label": "Kindergarten",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others during physical activities",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Demonstrate spatial awareness during physical activities",
+        "Demonstrate fair play, safe use of equipment and rule following [each term]",
+        "Participate in physical activities which provide enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills are important for health and wellbeing",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Maintain stability during a static balance",
+        "Run and sprint over short distances",
+        "Catch objects thrown from a short distance"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships support health and wellbeing",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify how personal strengths and characteristics contribute to respectful relationships"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal actions support safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify messages in stories shared within Aboriginal and/or Torres Strait Islander families or Elders that teach children how to stay safe on Country and/or Place",
+        "Identify and demonstrate road safety behaviours and describe why they are important"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Caring for the body improves health and wellbeing",
+       "outcome": "PHE-IHW-01",
+       "points": [
+        "Identify and demonstrate hygiene strategies that promote health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills support actions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Identify and describe various emotions",
+        "Identify ways to manage emotions [each semester]",
+        "Use help-seeking and decision-making actions to ask for assistance",
+        "Co-create goals to assist learning [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills support positive interactions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Identify how people respectfully communicate for a range of purposes"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others during physical activities",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Demonstrate fair play, safe use of equipment and rule following [each term]",
+        "Participate in physical activities which provide enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills are important for health and wellbeing",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Jump vertically and horizontally with a soft landing from a stationary position",
+        "Hop, maintaining balance"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships support health and wellbeing",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify familiar or personal relationships and connections to family, people and groups",
+        "Identify the ways Aboriginal and/or Torres Strait Islander Peoples’ Cultural connections to others enhance wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships contribute to personal safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify people who can be trusted for safety and support"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal actions support safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify situations as being safe or unsafe and demonstrate how to seek help",
+        "Identify symbols in the home and messages in the school and community that support safety",
+        "Demonstrate fire safety behaviours and describe why they are important"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Personal strengths and qualities shape identity",
+       "outcome": "PHE-IHW-01",
+       "points": [
+        "Identify and describe personal strengths and characteristics that shape identity and contribute to wellbeing, using Tier 2 vocabulary",
+        "Identify how connections to family, culture and place can shape identity",
+        "Identify how connections to Country/Place may shape Aboriginal and/or Torres Strait Islander Peoples’ identities"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills support actions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Identify how connections to others, persistence, problem-solving and help-seeking builds resilience",
+        "Respond to feedback to improve skills and identify accomplishments [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills support positive interactions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Recognise how personal strengths contribute to the success of group activities",
+        "Use interpersonal skills to cooperate with others [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others during physical activities",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Demonstrate fair play, safe use of equipment and rule following [each term]",
+        "Identify the diverse ways in which people participate in physical activities",
+        "Participate in physical activities which provide enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills are important for health and wellbeing",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Side gallop with rhythm",
+        "Skip with a rhythmical pattern",
+        "Throw underarm and overarm towards a target from a stationary position"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships contribute to personal safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Demonstrate how to assertively ask for help in a range of situations",
+        "Describe the meaning of the word ‘private’ and identify private body parts",
+        "Recognise emotional and physical signs that can indicate safe and unsafe situations",
+        "Identify appropriate and inappropriate touch, contact or interactions and demonstrate ways to respond offline and online",
+        "Demonstrate protective strategies including ‘No-Go-Tell’",
+        "Demonstrate how to assertively gain, give or deny consent and respect responses"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal actions support safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Identify people who can help maintain health and safety in various contexts",
+        "Recognise that all data, including personal information and images, can be accessed by others when shared online",
+        "Identify ways to contribute to personal safety online and seek help from trusted adults when feeling unsafe"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Caring for the body improves health and wellbeing",
+       "outcome": "PHE-IHW-01",
+       "points": [
+        "Recognise that following trusted adult directions for the healthy use of digital devices at school and home supports health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills support actions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Identify ways to manage emotions [each semester]",
+        "Co-create goals to assist learning [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Participate with others during physical activities",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Participate in and identify the fundamental movement skills in Aboriginal and/or Torres Strait games and activities",
+        "Participate in games with peers that incorporate fundamental movement skills",
+        "Demonstrate fair play, safe use of equipment and rule following [each term]",
+        "Participate in physical activities which provide enjoyment and motivation to be physically active [each term]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Fundamental movement skills are important for health and wellbeing",
+       "outcome": "PHE-MSP-01",
+       "points": [
+        "Kick a stationary ball",
+        "Strike large and light weight objects"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal actions support safety",
+       "outcome": "PHE-RRS-01",
+       "points": [
+        "Demonstrate sun safe behaviours and describe why they are important to protect the eyes and skin",
+        "Demonstrate water and local environmental safety behaviours and describe why they are important at home and in the community"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Caring for the body improves health and wellbeing",
+       "outcome": "PHE-IHW-01",
+       "points": [
+        "Recognise that the brain, heart and lungs are vital organs of the body",
+        "Understand that sleep, exposure to daylight, time outdoors, healthy eating, movement and connection to others contributes to health and wellbeing",
+        "Identify foods and drinks, including bush food, that contribute to healthy eating habits and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills support actions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Respond to feedback to improve skills and identify accomplishments [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills support positive interactions",
+       "outcome": "PHE-SMI-01",
+       "points": [
+        "Use interpersonal skills to cooperate with others [each semester]"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

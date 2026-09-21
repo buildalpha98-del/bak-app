@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import Link from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SUBJECTS, lessonDefFor, subjectOf } from "@/lib/curriculum/subjects";
+import { PDHPE_HEALTH, SUBJECTS, lessonFocusForStrand, subjectOf } from "@/lib/curriculum/subjects";
 import { yearGroupLabel } from "@/lib/schools/year-groups";
 import { setTermPlanStatus, deleteTermPlan, type PlanCoachSession, type SchoolTermPlan, type TermPlanTerm } from "@/lib/client/term-plan-actions";
 import type { TermPlanJson } from "@/lib/curriculum/term-plan";
@@ -35,15 +35,17 @@ export function TermPlanUnits({
   // unit is the coach's (written from the roster); the classroom unit is
   // the teacher's health lesson.
   const teacherWrites = (u: TermPlanJson["units"][number]) => subject !== "pdhpe" || !isMovementUnit(u);
-  const lessonHref = (week: number, focus: string) => {
+  const lessonHref = (u: TermPlanJson["units"][number], week: number, focus: string) => {
     const p = new URLSearchParams();
     p.set("subject", subject);
     if (classId) p.set("classId", classId);
     const weekStart = term?.weekStarts[week - 1];
     if (weekStart) p.set("week", weekStart);
     p.set("learningFocus", focus.slice(0, 200));
-    const strand = plan.units.find((u) => u.weeks.includes(week))?.strand ?? "";
-    if (strand && lessonDefFor(subject, strand).strandOptions.includes(strand)) p.set("focus", strand);
+    // The link's own unit, not "whichever unit covers the week": PDHPE
+    // runs two in parallel, and only the classroom one gets a link.
+    const area = lessonFocusForStrand(subject === "pdhpe" ? PDHPE_HEALTH : subjectOf(subject), u.strand);
+    if (area) p.set("focus", area);
     return `/client/${centreId}/programs/generate?${p.toString()}`;
   };
   return (
@@ -96,7 +98,7 @@ export function TermPlanUnits({
                       ))}
                 </div>
                 {teacherWrites(u) && (
-                  <Link href={lessonHref(w.week, w.focus)} className="inline-flex min-h-[36px] shrink-0 items-center gap-1 text-xs font-medium text-portal-700 hover:underline">
+                  <Link href={lessonHref(u, w.week, w.focus)} className="inline-flex min-h-[36px] shrink-0 items-center gap-1 text-xs font-medium text-portal-700 hover:underline">
                     <PenLine className="h-3.5 w-3.5" /> Write lesson
                   </Link>
                 )}

@@ -1,0 +1,483 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–6 Syllabus (2024)",
+ "validFrom": "2027-01-01",
+ "band": "Stage 2",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education PDHPE K–6 sample scope and sequence (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-k-6-scope-and-sequence.xlsx",
+ "variants": [
+  {
+   "label": "Year A",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Pass and receive a ball at different levels and directions in games and modified sport [each year]",
+        "Promote ways to be inclusive in physical activities to cater for the diverse ways people move [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Move and adjust the body to catch balls and objects of various shapes and sizes [each year]",
+        "Throw underarm or overarm towards a target at different levels with control [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-02",
+       "points": [
+        "Describe and apply strategies to support safety in the home, school and local community",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors can support and strengthen identity",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain the physical, social and emotional changes associated with growth and development [each year]",
+        "Identify trusted adults and reliable sources of information to learn about life changes and how to seek help [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Create and monitor goals to enhance learning [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills promote positive interactions and collaboration",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Apply interpersonal skills to enhance positive and respectful interactions [each year]",
+        "Demonstrate respectfully winning, losing and accepting decisions [each year]",
+        "Apply communication and cooperation skills in group activities to promote inclusion [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Identify and engage in games or sport from around the world and describe how participation can bring people together [each year]",
+        "Demonstrate fair and inclusive play to enhance teamwork and communication when creating physically active games [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Kick a ball at different levels over various distances [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-02",
+       "points": [
+        "Identify emergency situations and describe how action plans support safety",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Apply hygiene strategies and self-care routines and explain why they are important",
+        "Describe the benefits of healthy eating and drinking habits that reflect the Australian Government dietary guidelines",
+        "Create written texts to promote the benefits of healthy habits, using rhetorical devices and supporting facts [repeated]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Describe how an individual’s emotional responses to situations can affect others",
+        "Identify and apply self-regulation strategies in response to situations and emotions offline and online [each year]",
+        "Apply problem-solving and decision-making actions to enhance learning [each year]",
+        "Apply feedback to improve skills and strategies in a range of contexts [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate and describe how roles in teams contribute to team goals [each year]",
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Participate in Aboriginal and/or Torres Strait Islander games and activities and identify the Cultural connections [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Apply static and dynamic balances at different levels [each year]",
+        "Strike using an implement to propel an object over various distances and towards a target [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal safety strategies strengthen respectful relationships",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Identify people and places to seek help from when in unsafe situations",
+        "Practise assertive strategies and responses that promote protective behaviours in unsafe or risky situations offline and online [each year]",
+        "Describe emotional and physical signs associated with safe and unsafe situations and demonstrate ways to respond",
+        "Describe and apply strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions can enhance online safety",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Describe the importance of protecting personal information online [each year]",
+        "Identify unsafe situations in online environments and describe how to seek help [each year]",
+        "Identify respectful digital citizen behaviours [each year]",
+        "Identify how and when to assertively gain, give or deny consent before information is shared online [each year]",
+        "Devise a set of guidelines for maintaining safety when online [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors can support and strengthen identity",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain how family, community, peers, culture and place contribute to identity, health and wellbeing",
+        "Identify personal strengths that contribute to a positive sense of identity"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain how following an agreed code of conduct for the healthy use of digital devices can enhance health and wellbeing [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Create and monitor goals to enhance learning [each semester]",
+        "Explain how a positive mindset contributes to resilience and wellbeing using Tier 2 and Tier 3 vocabulary [each year]",
+        "Use a combination of written sentences to describe how self-management skills enhance relationships and wellbeing"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Demonstrate how to defend and move into space to create an advantage in games and modified sport [each year]",
+        "Propose and participate in physical activities that promote enjoyment and motivation to be physically active in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Combine fundamental movement skills with smooth transitions in games, modified sport and physical activities [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships influence health and wellbeing",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Describe and apply actions and behaviours that contribute to respectful relationships [each year]",
+        "Identify types of conflict, including bullying and intimidation, and promote upstander behaviour offline and online [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Demonstrate safety behaviours in water and local environments, and explain how they protect people [each year]",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors can support and strengthen identity",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain the importance of connection to Culture for Aboriginal and/or Torres Strait Islander Peoples' identity"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Describe the customary uses of bush food and its connection to Country"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Apply feedback to improve skills and strategies in a range of contexts [each semester]"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year B",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Pass and receive a ball at different levels and directions in games and modified sport [each year]",
+        "Promote ways to be inclusive in physical activities to cater for the diverse ways people move [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Move and adjust the body to catch balls and objects of various shapes and sizes [each year]",
+        "Throw underarm or overarm towards a target at different levels with control [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships influence health and wellbeing",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Examine how stereotypes can influence attitudes",
+        "Explain how Aboriginal and/or Torres Strait Islander Peoples’ connections to Country, Community and Culture strengthen relationships",
+        "Describe how connecting to family, people, groups, community organisations and places strengthens relationship and supports health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Explain actions and strategies that Aboriginal and/or Torres Strait Islander Peoples use to promote safety",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Factors can support and strengthen identity",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain the physical, social and emotional changes associated with growth and development [each year]",
+        "Identify personal strengths helpful for overcoming challenges",
+        "Identify trusted adults and reliable sources of information to learn about life changes and how to seek help [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Describe the benefits of responsible saving and spending of money for wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Create and monitor goals to enhance learning [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills promote positive interactions and collaboration",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Apply interpersonal skills to enhance positive and respectful interactions [each year]",
+        "Demonstrate respectfully winning, losing and accepting decisions [each year]",
+        "Apply communication and cooperation skills in group activities to promote inclusion [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Identify and engage in games or sport from around the world and describe how participation can bring people together [each year]",
+        "Demonstrate fair and inclusive play to enhance teamwork and communication when creating physically active games [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Kick a ball at different levels over various distances [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-02",
+       "points": [
+        "Recognise that medications or harmful substances can be used for medical and non-medical reasons",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Compare physically active and sedentary lifestyles to identify the effects on health and wellbeing",
+        "Engage in and propose ways to increase opportunities for outdoor activities and explain the benefits to learning and wellbeing",
+        "Create written texts to promote the benefits of healthy habits, using rhetorical devices and supporting facts [repeated]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Apply feedback to improve skills and strategies in a range of contexts [each semester]",
+        "Identify and apply self-regulation strategies in response to situations and emotions offline and online [each year]",
+        "Apply problem-solving and decision-making actions to enhance learning [each year]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Participate in Aboriginal and/or Torres Strait Islander games and activities and identify the Cultural connections [each year]",
+        "Demonstrate and describe how roles in teams contribute to team goals [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Strike using an implement to propel an object over various distances and towards a target [each year]",
+        "Apply static and dynamic balances at different levels [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal safety strategies strengthen respectful relationships",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Practise assertive strategies and responses that promote protective behaviours in unsafe or risky situations offline and online [each year]",
+        "Describe and apply strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions can enhance online safety",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Describe the importance of protecting personal information online [each year]",
+        "Identify unsafe situations in online environments and describe how to seek help [each year]",
+        "Identify respectful digital citizen behaviours [each year]",
+        "Identify how and when to assertively gain, give or deny consent before information is shared online [each year]",
+        "Devise a set of guidelines for maintaining safety when online [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Explain how following an agreed code of conduct for the healthy use of digital devices can enhance health and wellbeing [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Create and monitor goals to enhance learning [each semester]",
+        "Explain how a positive mindset contributes to resilience and wellbeing using Tier 2 and Tier 3 vocabulary [each year]",
+        "Use a combination of written sentences to describe how self-management skills enhance relationships and wellbeing"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Cooperate and communicate for teamwork in physical activities",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Demonstrate skills and strategies in target, net and court, striking and fielding, territory games and modified sport [each term]",
+        "Demonstrate how to defend and move into space to create an advantage in games and modified sport [each year]",
+        "Propose and participate in physical activities that promote enjoyment and motivation to be physically active in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Consolidating fundamental movement skills improves health and wellbeing",
+       "outcome": "PH2-MSP-01",
+       "points": [
+        "Combine fundamental movement skills with smooth transitions in games, modified sport and physical activities [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Respectful relationships influence health and wellbeing",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Identify and describe rights and responsibilities in relationships",
+        "Describe and apply actions and behaviours that contribute to respectful relationships [each year]",
+        "Identify types of conflict, including bullying and intimidation, and promote upstander behaviour offline and online [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Actions and strategies promote safety",
+       "outcome": "PH2-RRS-01, PH2-RRS-02",
+       "points": [
+        "Demonstrate safety behaviours in water and local environments, and explain how they protect people [each year]",
+        "Demonstrate road, fire and sun safety behaviours and explain how community messaging enhances safety [each year]",
+        "Use written imperative sentences and modal words to explain and promote behaviours for staying safe in a road, water, fire or sun context"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Decisions and actions promote health and wellbeing",
+       "outcome": "PH2-IHW-01",
+       "points": [
+        "Examine the purpose and intended audience of health and wellbeing messages in the media",
+        "Describe how movement, nutrition and social influences contribute to the prevention of lifestyle diseases",
+        "Create written texts to promote the benefits of healthy habits, using rhetorical devices and supporting facts [repeated]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are enhanced by choices and actions",
+       "outcome": "PH2-SMI-01",
+       "points": [
+        "Apply feedback to improve skills and strategies in a range of contexts [each semester]"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

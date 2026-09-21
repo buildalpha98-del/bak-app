@@ -57,3 +57,16 @@ describe("PDHPE classroom (health) lessons", () => {
     expect(PDHPE_HEALTH_FOCUS).toContain("Personal, social and community health");
   });
 });
+
+describe("lessonFocusForStrand", () => {
+  it("finds the focus area inside a plan's free-form strand, preferring the specific over the umbrella", async () => {
+    const { lessonFocusForStrand, PDHPE_HEALTH, SUBJECTS } = await import("../subjects");
+    expect(lessonFocusForStrand(PDHPE_HEALTH, "Personal development and health")).toBe("Personal development and health");
+    expect(
+      lessonFocusForStrand(PDHPE_HEALTH, "Personal development and health — Identity, health and wellbeing / Self-management and interpersonal skills")
+    ).toBe("Identity, health and wellbeing");
+    expect(lessonFocusForStrand(PDHPE_HEALTH, "Physical education — Movement skill and physical activity")).toBeNull();
+    expect(lessonFocusForStrand(SUBJECTS.mathematics, "Number and algebra")).toBe("Number and algebra");
+    expect(lessonFocusForStrand(SUBJECTS.english, "")).toBeNull();
+  });
+});
