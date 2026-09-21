@@ -283,7 +283,7 @@ export async function generateProgram(
   // section — the report card's nearest-band fallback still applies.
   const bands = kbBandsFor(request);
   if (bands.length > 0) {
-    const check = validateOutcomes(content.curriculumOutcomes, { bands });
+    const check = validateOutcomes(content.curriculumOutcomes, { bands, on: request.on });
     if (check.kept.length > 0) content.curriculumOutcomes = check.kept;
     if (process.env.NODE_ENV !== "production" && (check.unknown.length || check.offBand.length)) {
       console.warn("generateProgram: outcomes rejected by the knowledge base", {

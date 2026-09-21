@@ -6,7 +6,9 @@ import { getScopeAndSequence } from "@/lib/client/curriculum-actions";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { ScopeSequenceView } from "@/components/client/scope-sequence";
 import { TermPlanCard } from "@/components/client/term-plan-card";
-import { getTermPlans } from "@/lib/client/term-plan-actions";
+import { getPlannableTerms, getTermPlans } from "@/lib/client/term-plan-actions";
+import { termTiming } from "@/lib/schools/plannable-terms";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 export default async function CurriculumPage({
   params,
@@ -33,10 +35,15 @@ export default async function CurriculumPage({
   const centreType =
     (centre?.type as "childcare_centre" | "school" | null) ?? "childcare_centre";
 
-  const [{ termName, weeks }, termPlans] = await Promise.all([
+  // Plans for this term and any coming term the school has planned ahead.
+  const today = sydneyTodayIso();
+  const [{ termName, weeks }, planTerms] = await Promise.all([
     getScopeAndSequence(centreId),
-    centreType === "school" ? getTermPlans(centreId) : Promise.resolve({ term: null, plans: [], error: null }),
+    centreType === "school" ? getPlannableTerms() : Promise.resolve([]),
   ]);
+  const termPlanSets = (await Promise.all(planTerms.map((t) => getTermPlans(centreId, t.id)))).filter(
+    (set) => set.term && set.plans.length > 0
+  );
 
   const pageTitle =
     centreType === "school" ? "Scope & Sequence" : "Weekly Program Overview";
@@ -95,14 +102,24 @@ export default async function CurriculumPage({
 
       {/* Term plans (migration 096): the programme of record for each
           class × subject this term, drafted by the AI and approved here. */}
-      {centreType === "school" && termPlans.plans.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground">Term plans</h2>
-          {termPlans.plans.map((p) => (
-            <TermPlanCard key={p.id} plan={p} centreId={centreId} term={termPlans.term} canApprove={clientUser.is_primary} />
+      {termPlanSets.map((set) => (
+        <section key={set.term!.id} className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">
+            Term plans
+            {(termPlanSets.length > 1 || set.term!.status !== "active") && (
+              <>
+                {" "}
+                <span className="font-normal text-muted-foreground">
+                  — {set.term!.name} · {termTiming(set.term!, today)}
+                </span>
+              </>
+            )}
+          </h2>
+          {set.plans.map((p) => (
+            <TermPlanCard key={p.id} plan={p} centreId={centreId} term={set.term} canApprove={clientUser.is_primary} />
           ))}
         </section>
-      )}
+      ))}
 
       {/* Content */}
       {weeks.length === 0 ? (

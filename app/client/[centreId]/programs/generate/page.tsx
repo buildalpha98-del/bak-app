@@ -6,6 +6,7 @@ import { scopeClasses } from "@/lib/client/assessment-scope";
 import { LessonGenerateForm } from "@/components/client/lesson-generate-form";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { termWeeks, weekStartFor } from "@/lib/schools/term-weeks";
+import { plannableTerms } from "@/lib/schools/plannable-terms";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 
 // Teachers write an English / Mathematics lesson with AI (migration
@@ -28,13 +29,23 @@ export default async function GenerateLessonPage({
   if (clientUser.centre_type !== "school") redirect(`/client/${centreId}/programs`);
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: classes }, { data: term }] = await Promise.all([
+  const [{ data: classes }, { data: terms }] = await Promise.all([
     getPortalSchoolClasses(centreId),
-    supabase.from("terms").select("name, start_date, end_date").eq("status", "active").limit(1).maybeSingle(),
+    supabase.from("terms").select("id, name, start_date, end_date, status").neq("status", "completed").order("start_date"),
   ]);
+  // A plan's "Write lesson" link can point at a week of a coming term:
+  // the week list is that term's. Otherwise this term's.
+  const today = sydneyTodayIso();
+  const open = plannableTerms(terms ?? [], today);
+  const week = sp.week && /^\d{4}-\d{2}-\d{2}$/.test(sp.week) ? sp.week : null;
+  const term =
+    (week ? open.find((t) => t.start_date <= week && t.end_date >= week) : undefined) ??
+    open.find((t) => t.status === "active") ??
+    open[0] ??
+    null;
   const framework = frameworkOf(clientUser.centre_framework);
   const weeks = term ? termWeeks(term.start_date, term.end_date) : [];
-  const defaultWeekStart = term ? weekStartFor(term.start_date, term.end_date, sydneyTodayIso()) : null;
+  const defaultWeekStart = term ? weekStartFor(term.start_date, term.end_date, today) : null;
 
   return (
     <div className="animate-fade-up space-y-6">
