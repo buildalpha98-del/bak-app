@@ -6,6 +6,8 @@ import { generateTermPlan } from "@/lib/ai/generate-term-plan";
 import { frameworkOf, bandLabelForYearGroup } from "@/lib/curriculum/frameworks";
 import { SUBJECTS, isSubjectKey } from "@/lib/curriculum/subjects";
 import { yearGroupToStage } from "@/lib/schools/year-groups";
+import { isPlannableTerm } from "@/lib/schools/plannable-terms";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import { checkDailyLimit, getCached, setCached, hashRequestKey } from "@/lib/ai/cache-and-limit";
 
 // A full programme or term plan can take a couple of minutes to write;
@@ -62,6 +64,7 @@ export async function POST(
     if (!cls) return NextResponse.json({ error: "Class not found." }, { status: 404 });
     const term = await getPlanningTerm(typeof body.termId === "string" ? body.termId : undefined);
     if (!term) return NextResponse.json({ error: "No active term to plan." }, { status: 400 });
+    if (!isPlannableTerm(term, sydneyTodayIso())) return NextResponse.json({ error: `${term.name} is over — pick this term or a coming one.` }, { status: 400 });
 
     const framework = frameworkOf(clientUser.centre_framework);
     const subject = SUBJECTS[subjectKey];

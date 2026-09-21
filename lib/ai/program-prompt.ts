@@ -17,6 +17,10 @@ import { SUBJECTS, isLessonDef, type SubjectDef } from "@/lib/curriculum/subject
 import type { PlanWeekBrief } from "@/lib/curriculum/plan-roster";
 
 export interface BuildProgramPromptInput {
+  /** The date the programme is taught (ISO) — picks the syllabus in
+   *  force then. A lesson written in December for a February week is a
+   *  next-year lesson. Defaults to today. */
+  on?: string;
   /**
    * The week of the school's approved term plan this session delivers
    * (lib/curriculum/plan-roster.ts). The plan sets the focus and the
@@ -112,9 +116,9 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
   // Curriculum knowledge base: the real outcomes for the band, so the
   // model chooses rather than recalls. Validated again after generation.
   const kbBands = kbBandsFor(input);
-  const kbList = kbBands.length > 0 ? promptOutcomeList(framework, subject, kbBands) : "";
+  const kbList = kbBands.length > 0 ? promptOutcomeList(framework, subject, kbBands, { on: input.on }) : "";
   const outcomeSection = kbList
-    ? `\n\n## Curriculum ${framework.outcomeNoun}s — choose ONLY from this list\nSelect 2-3 ${framework.outcomeNoun}s from the ${syllabusNameFor(framework, subject) ?? framework.fullLabel} that this ${subject.programSections.session} genuinely addresses. Copy each code EXACTLY as written (one code per entry — never bundle, alter or invent codes) and use the official statement as the "title".\n${kbList}`
+    ? `\n\n## Curriculum ${framework.outcomeNoun}s — choose ONLY from this list\nSelect 2-3 ${framework.outcomeNoun}s from the ${syllabusNameFor(framework, subject, input.on) ?? framework.fullLabel} that this ${subject.programSections.session} genuinely addresses. Copy each code EXACTLY as written (one code per entry — never bundle, alter or invent codes) and use the official statement as the "title".\n${kbList}`
     : "";
 
   const centreSection = input.centreContext

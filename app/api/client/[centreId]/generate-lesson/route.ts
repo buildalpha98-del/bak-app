@@ -52,7 +52,12 @@ export async function POST(
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const input = parsed.value;
 
+    // The week the lesson is for decides the syllabus (a Term 1 2027 week
+    // written this year is a 2024-syllabus PDHPE lesson).
+    const on = typeof body.plannedFor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.plannedFor) ? body.plannedFor : undefined;
+
     const cacheKey = hashRequestKey("lesson", {
+      on: on ?? null,
       framework: clientUser.centre_framework,
       classId: input.classId,
       subject: input.subject.key,
@@ -90,6 +95,7 @@ export async function POST(
     }
     const content = await generateProgram({
       subject: input.subject,
+      on,
       framework: frameworkOf(clientUser.centre_framework),
       yearGroups,
       sport: input.focus,

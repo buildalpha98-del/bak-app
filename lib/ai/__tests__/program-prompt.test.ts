@@ -159,3 +159,15 @@ describe("buildProgramPrompt — PDHPE classroom (health) lesson", () => {
     expect(prompt).not.toContain("CLASSROOM health lesson");
   });
 });
+
+describe("buildProgramPrompt — the date the programme is taught", () => {
+  const base = { sport: "Netball", ageGroups: ["8-12"], yearGroups: ["3"], durationMinutes: 45, availableEquipment: ["Balls"] };
+  it("offers the 2024 PDHPE codes for a 2027 week and the 2018 ones for a 2026 week", () => {
+    const next = buildProgramPrompt({ ...base, on: "2027-02-08" });
+    expect(next).toContain("PH2-MSP-01");
+    expect(next).not.toMatch(/PD2-\d/);
+    const now = buildProgramPrompt({ ...base, on: "2026-09-21" });
+    expect(now).toMatch(/PD2-\d/);
+    expect(now).not.toContain("PH2-");
+  });
+});

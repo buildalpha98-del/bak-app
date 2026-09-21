@@ -108,6 +108,7 @@ export function LessonGenerateForm({
           learningFocus: learningFocus.trim() || undefined,
           resources,
           classId,
+          plannedFor: plannedFor || undefined,
         }),
       });
       const json = await res.json();

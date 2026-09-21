@@ -12,6 +12,8 @@ import { getCurrentClientUser } from "@/lib/client/actions";
 import { isSubjectKey } from "@/lib/curriculum/subjects";
 import { isTermPlanJson, normaliseTermPlan, type TermPlanJson } from "@/lib/curriculum/term-plan";
 import { termWeeks } from "@/lib/schools/term-weeks";
+import { isPlannableTerm, plannableTerms } from "@/lib/schools/plannable-terms";
+import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import { frameworkOf, bandLabelForYearGroup, type YearBand } from "@/lib/curriculum/frameworks";
 import { outcomesFor } from "@/lib/curriculum/knowledge-base";
 import { yearGroupToStage } from "@/lib/schools/year-groups";
@@ -47,6 +49,9 @@ export interface TermPlanTerm {
   name: string;
   start_date: string;
   end_date: string;
+  /** "active" is this term; "draft" is one Build Alpha Kids has opened
+   *  for planning but not started; "completed" is never planned. */
+  status: "draft" | "active" | "completed";
   weekCount: number;
   /** Week-start dates, so a unit's week can prefill a lesson's placement. */
   weekStarts: string[];
@@ -62,19 +67,39 @@ async function requirePortalUser(centreId: string) {
 /** The active term (or a given one) as the planner sees it. */
 export async function getPlanningTerm(termId?: string): Promise<TermPlanTerm | null> {
   const supabase = await createSupabaseServerClient();
-  let q = supabase.from("terms").select("id, name, start_date, end_date");
+  let q = supabase.from("terms").select("id, name, start_date, end_date, status");
   q = termId ? q.eq("id", termId) : q.eq("status", "active");
   const { data: term } = await q.limit(1).maybeSingle();
-  if (!term) return null;
+  return term ? toPlanTerm(term) : null;
+}
+
+function toPlanTerm(term: { id: string; name: string; start_date: string; end_date: string; status: string }): TermPlanTerm {
   const weeks = termWeeks(term.start_date, term.end_date);
   return {
     id: term.id,
     name: term.name,
     start_date: term.start_date,
     end_date: term.end_date,
+    status: term.status === "active" || term.status === "completed" ? term.status : "draft",
     weekCount: weeks.length,
     weekStarts: weeks.map((w) => w.weekStart),
   };
+}
+
+/**
+ * The terms a school can plan: this term and the ones after it. Schools
+ * write next term's scope and sequence in the last weeks of this one —
+ * and Term 1's before the summer — so the picker has to reach forward.
+ * Pure selection lives in lib/schools/plannable-terms.ts.
+ */
+export async function getPlannableTerms(): Promise<TermPlanTerm[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("terms")
+    .select("id, name, start_date, end_date, status")
+    .neq("status", "completed")
+    .order("start_date");
+  return plannableTerms(data ?? [], sydneyTodayIso()).map(toPlanTerm);
 }
 
 /** Saved plans for a school this term, scoped to a teacher's classes. */
@@ -187,6 +212,12 @@ export async function saveTermPlan(
       .eq("centre_id", centreId)
       .maybeSingle();
     if (!cls) return { data: null, error: "Class not found." };
+    // A plan is for this term or a coming one — never one that is over.
+    const planTerm = await getPlanningTerm(input.termId);
+    if (!planTerm) return { data: null, error: "That term no longer exists." };
+    if (!isPlannableTerm(planTerm, sydneyTodayIso())) {
+      return { data: null, error: `${planTerm.name} is over — plan this term or a coming one.` };
+    }
 
     const admin = createSupabaseAdmin();
     const { data, error } = await admin
