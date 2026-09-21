@@ -1,9 +1,17 @@
 // Pure validation for a teacher's lesson request (migration 091). Kept
 // out of the route so the rules are testable without Next.
 
-import { SUBJECTS, isSubjectKey, type SubjectDef } from "@/lib/curriculum/subjects";
+import { PDHPE_HEALTH, SUBJECTS, isSubjectKey, type SubjectDef } from "@/lib/curriculum/subjects";
 
-export const LESSON_SUBJECT_KEYS = ["english", "mathematics"] as const;
+// PDHPE here is the classroom (health) lesson — PDHPE_HEALTH, whose focus
+// areas stand where a sport would. Coaching sessions are never requested
+// through the portal.
+export const LESSON_SUBJECT_KEYS = ["pdhpe", "english", "mathematics"] as const;
+
+/** The definition a portal lesson of this subject is written with. */
+export function lessonSubjectDef(key: (typeof LESSON_SUBJECT_KEYS)[number]): SubjectDef {
+  return key === "pdhpe" ? PDHPE_HEALTH : SUBJECTS[key];
+}
 export const LESSON_DURATIONS = [30, 45, 60] as const;
 export const LESSON_AGE_BANDS = ["3-5", "5-8", "8-12", "12-16"] as const;
 
@@ -22,9 +30,9 @@ export function validateLessonInput(
 ): { ok: true; value: LessonInput } | { ok: false; error: string } {
   const subjectKey = typeof body.subject === "string" ? body.subject : "";
   if (!isSubjectKey(subjectKey) || !(LESSON_SUBJECT_KEYS as readonly string[]).includes(subjectKey)) {
-    return { ok: false, error: "Pick English or Mathematics." };
+    return { ok: false, error: "Pick a subject." };
   }
-  const subject = SUBJECTS[subjectKey];
+  const subject = lessonSubjectDef(subjectKey as (typeof LESSON_SUBJECT_KEYS)[number]);
 
   const focus = typeof body.focus === "string" ? body.focus.trim() : "";
   if (!subject.strandOptions.includes(focus)) {

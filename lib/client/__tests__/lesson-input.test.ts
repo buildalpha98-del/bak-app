@@ -22,8 +22,20 @@ describe("validateLessonInput", () => {
     }
   });
 
-  it("refuses PDHPE and unknown subjects — lessons are English or Maths", () => {
-    expect(validateLessonInput({ ...good, subject: "pdhpe" }).ok).toBe(false);
+  it("accepts a PDHPE health lesson, but never a sport — coaching sessions are not portal lessons", () => {
+    const health = validateLessonInput({
+      ...good,
+      subject: "pdhpe",
+      focus: "Online safety",
+      resources: ["Scenario cards", "Counters"],
+    });
+    expect(health.ok).toBe(true);
+    if (health.ok) {
+      expect(health.value.subject.key).toBe("pdhpe");
+      expect(health.value.subject.programSections.session).toBe("lesson");
+      expect(health.value.resources).toEqual(["Scenario cards"]);
+    }
+    expect(validateLessonInput({ ...good, subject: "pdhpe", focus: "Soccer", resources: ["Scenario cards"] }).ok).toBe(false);
     expect(validateLessonInput({ ...good, subject: "science" }).ok).toBe(false);
   });
 

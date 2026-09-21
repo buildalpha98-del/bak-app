@@ -55,7 +55,10 @@ function programSections(content: Record<string, unknown> | null): SectionOut[] 
     });
   };
 
-  const labels = programSectionsFor(typeof content.subject === "string" ? content.subject : null);
+  const labels = programSectionsFor(
+    typeof content.subject === "string" ? content.subject : null,
+    typeof content.sport === "string" ? content.sport : null
+  );
   push(labels.warmUp, content.warmUp ?? content.warm_up);
   const drills = (content.skillDevelopment ??
     content.skill_development ??

@@ -33,7 +33,7 @@ const OUTPUT_SCHEMA = `Return ONLY a JSON object with no markdown or code fences
 function systemPrompt(subject: SubjectDef, framework: FrameworkDef): string {
   const who =
     subject.key === "pdhpe"
-      ? "children's sport and physical education teacher"
+      ? "children's PDHPE (health and physical education) teacher"
       : framework.persona(subject);
   return `You are an experienced ${who} in Australia writing a short knowledge check for a class. Write 8 questions: 6 multiple choice (4 options, one clearly correct, plausible distractors) and 2 short answer (with a model answer a teacher can mark against). Match the age band exactly — vocabulary, sentence length and number ranges a child of that age reads independently. Order from easiest to hardest. Each question names the skill it checks. Use Australian English.
 

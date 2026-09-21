@@ -3,7 +3,7 @@ import type { ProgramContentJson } from "./types";
 import { buildProgramPrompt, kbBandsFor, type BuildProgramPromptInput } from "./program-prompt";
 import { validateOutcomes } from "@/lib/curriculum/knowledge-base";
 import { AI_MODEL } from "@/lib/ai/model";
-import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import { SUBJECTS, isLessonDef, type SubjectDef } from "@/lib/curriculum/subjects";
 import { FRAMEWORKS, type FrameworkDef } from "@/lib/curriculum/frameworks";
 
 export type GenerateProgramInput = BuildProgramPromptInput;
@@ -31,6 +31,19 @@ function getAnthropic(): Anthropic {
 // editor, PDFs, Scope & Sequence and the coach app need no second shape.
 // Only the headings differ (lib/curriculum/subjects.ts programSections).
 
+// The PDHPE classroom lesson covers safety, bodies, relationships and
+// mental health with children. These rules are the difference between a
+// lesson a school can use and one it cannot.
+const HEALTH_LESSON_RULES = `
+## Health lesson rules
+- This is a classroom PDHPE lesson (health, wellbeing, relationships, safety) — not a sport session. No drills or games beyond a short energiser.
+- Strengths-based and age-appropriate: build skills (help-seeking, decision-making, assertive communication, recognising feelings and warning signs) rather than using fear or shock.
+- Use third-person scenarios and fictional characters. NEVER ask students to disclose personal or family experiences to the group, and never plan an activity that would single a child out (weight, food at home, family structure, puberty stage).
+- Use correct anatomical terms and protective-behaviours language where the topic calls for it, at the level the syllabus sets for the stage.
+- For sensitive topics (protective behaviours, puberty, mental health, drugs), put in the teaching tip: set a group agreement first, offer a way to ask questions privately, and follow the school's wellbeing and mandatory-reporting procedures if a student discloses.
+- Name trusted adults and real Australian help services suited to the age (Kids Helpline 1800 55 1800; Triple Zero 000 for emergencies) where help-seeking is taught.
+`;
+
 const LESSON_SYSTEM_PROMPT = (subject: SubjectDef, framework: FrameworkDef) => `You are an experienced ${framework.persona(subject)} and curriculum designer working for Build Alpha Kids, which supports Australian schools with curriculum programmes.
 
 Your task is to generate a structured ${subject.label} lesson plan as a single JSON object. The JSON uses the field names of our sports-session schema; fill them with lesson content as follows:
@@ -55,7 +68,7 @@ Also generate a "reflectionPrompt": 2-3 sentences in first person that the teach
 
 ## Resource Constraints
 Only use resources from the "available resources" list provided.
-`;
+${subject.key === "pdhpe" ? HEALTH_LESSON_RULES : ""}`;
 
 const NSW_PDHPE_ROWS = `Use NSW PDHPE syllabus outcomes. Select 2-3 that apply, and ALWAYS include the code for every stage the age band covers (Early Stage 1 = Kindergarten, Stage 1 = Years 1-2, Stage 2 = Years 3-4, Stage 3 = Years 5-6, Stage 4 = Years 7-8, Stage 5 = Years 9-10; the 8-12 band spans Stage 2 AND Stage 3, the 12-16 band spans Stage 4 AND Stage 5):
 - PDe-1 / PD1-6 / PD2-6 / PD3-4 / PD4-4 / PD5-4: Movement skill and performance
@@ -236,7 +249,7 @@ export async function generateProgram(
     model: AI_MODEL,
     max_tokens: 8000,
     system:
-      subject.key === "pdhpe"
+      !isLessonDef(subject)
         ? sportSystemPrompt(framework)
         : `${LESSON_SYSTEM_PROMPT(subject, framework)}\n${OUTPUT_FORMAT}`,
     messages: [

@@ -32,7 +32,7 @@ function toText(arr: string[]): string {
 }
 
 export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
-  const labels = programSectionsFor(content.subject);
+  const labels = programSectionsFor(content.subject, content.sport);
   function update(patch: Partial<ProgramContentJson>) {
     onChange({ ...content, ...patch });
   }

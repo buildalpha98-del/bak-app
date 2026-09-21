@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Clock, Target, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { programSectionsFor, subjectOf } from "@/lib/curriculum/subjects";
+import { isClassroomLesson, programSectionsFor, subjectOf } from "@/lib/curriculum/subjects";
 import {
   Collapsible,
   CollapsibleContent,
@@ -231,7 +231,7 @@ export function ProgramView({
     );
   }
 
-  const labels = programSectionsFor(data.subject);
+  const labels = programSectionsFor(data.subject, data.sport);
   const sections: {
     key: string;
     title: string;
@@ -286,7 +286,7 @@ export function ProgramView({
         <div>
           <h3 className="text-lg font-semibold text-foreground">{data.title}</h3>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            {data.subject && data.subject !== "pdhpe" && (
+            {isClassroomLesson(data.subject, data.sport) && (
               <Badge variant="outline" className="text-xs">
                 {subjectOf(data.subject).label}
               </Badge>

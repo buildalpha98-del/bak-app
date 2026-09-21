@@ -118,7 +118,10 @@ function ProgramContentSection({ content }: { content: Record<string, unknown> }
   const [open, setOpen] = useState(false);
   const data = content as ProgramContentData;
 
-  const labels = programSectionsFor(typeof content.subject === "string" ? content.subject : null);
+  const labels = programSectionsFor(
+    typeof content.subject === "string" ? content.subject : null,
+    typeof content.sport === "string" ? content.sport : null
+  );
   const activities: string[] = [];
   if (data.warmUp?.name) activities.push(`${labels.warmUp}: ${data.warmUp.name}`);
   if (data.skillDevelopment) {
@@ -266,7 +269,7 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
                         <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
                         {session.kind === "lesson" ? `Week of ${formatDateNice(session.date)}` : formatDateNice(session.date)}
                       </span>
-                      {session.subject !== "pdhpe" && (
+                      {(session.subject !== "pdhpe" || session.kind === "lesson") && (
                         <Badge variant="outline" className="text-xs">{subjectOf(session.subject).label}</Badge>
                       )}
                       <Badge

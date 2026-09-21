@@ -16,7 +16,7 @@ import {
   hashRequestKey,
 } from "@/lib/ai/cache-and-limit";
 
-// Teachers generate English / Mathematics lessons from the portal
+// Teachers generate PDHPE (health), English and Mathematics lessons from the portal
 // (migration 091). Same generator as the admin builder, gated on the
 // portal user rather than a staff profile, with its own daily cap.
 
@@ -99,6 +99,8 @@ export async function POST(
       availableEquipment: input.resources,
       centreContext: { centreName: clientUser.centre_name, recentPrograms: [] },
     });
+    // Headings (and, for PDHPE, lesson-vs-session) key off the strand.
+    content.sport = input.focus;
     setCached(cacheKey, content);
     return NextResponse.json({ data: content });
   } catch (err) {

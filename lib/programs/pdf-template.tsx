@@ -1,7 +1,7 @@
 import React from "react";
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { ProgramContentJson, SkillDrill } from "@/lib/ai/types";
-import { subjectOf } from "@/lib/curriculum/subjects";
+import { isLessonDef, lessonDefFor } from "@/lib/curriculum/subjects";
 
 // ============================================================
 // Program session-plan PDF
@@ -112,14 +112,14 @@ export interface ProgramPdfProps {
 
 export function ProgramPdf({ content, ageGroups, generatedOn }: ProgramPdfProps) {
   const bands = ageGroups.length > 0 ? ageGroups.join(", ") : content.ageGroup;
-  const subject = subjectOf(content.subject);
+  const subject = lessonDefFor(content.subject, content.sport);
   const labels = subject.programSections;
   return (
     <Document title={content.title} author="Build Alpha Kids">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <Text style={s.brand}>
-            Build Alpha Kids — {subject.key === "pdhpe" ? "Session Plan" : `${subject.label} Lesson Plan`}
+            Build Alpha Kids — {isLessonDef(subject) ? `${subject.label} Lesson Plan` : "Session Plan"}
           </Text>
           <Text style={s.title}>{content.title}</Text>
           <Text style={s.meta}>
