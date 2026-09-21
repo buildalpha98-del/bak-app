@@ -138,12 +138,17 @@ export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
  * it as a lesson is the focus area sitting where a sport would. None of
  * these names is a sport, so the strand alone decides.
  *
- * The first two are the strand names term plans use (NSW samples / the
- * Victorian curriculum), so a plan's "Write lesson" link prefills.
+ * The first five are the strand names term plans use (NSW 2018 samples,
+ * the Victorian curriculum, the NSW 2024 focus areas), so a plan's
+ * "Write lesson" link prefills.
  */
 export const PDHPE_HEALTH_FOCUS = [
   "Personal development and health",
   "Personal, social and community health",
+  // The 2024 NSW K–6 syllabus's classroom focus areas (in force 2027).
+  "Respectful relationships and safety",
+  "Identity, health and wellbeing",
+  "Self-management and interpersonal skills",
   "Health, wellbeing and relationships",
   "Healthy, safe and active lifestyles",
   "Personal safety and protective behaviours",
@@ -155,6 +160,22 @@ export const PDHPE_HEALTH_FOCUS = [
   "Online safety",
   "Medicines, drugs and help-seeking",
 ] as const;
+
+/**
+ * The lesson focus a term plan's strand points at. Plans name strands
+ * freely — "Personal development and health — Identity, health and
+ * wellbeing / Self-management…" — so match the most specific focus area
+ * the strand mentions, not the whole string.
+ */
+export function lessonFocusForStrand(def: SubjectDef, strand: string | null | undefined): string | null {
+  const text = (strand ?? "").toLowerCase();
+  if (!text) return null;
+  const hits = def.strandOptions.filter((o) => text.includes(o.toLowerCase()));
+  if (hits.length === 0) return null;
+  // Prefer a specific focus area over the umbrella strand name.
+  const umbrella = new Set<string>(["Personal development and health", "Personal, social and community health"]);
+  return hits.find((h) => !umbrella.has(h)) ?? hits[0];
+}
 
 /** The PDHPE classroom lesson: PDHPE's key and syllabus, a lesson's shape. */
 export const PDHPE_HEALTH: SubjectDef = {

@@ -5,6 +5,10 @@ import pdhpe18Es1 from "./exemplars/nsw-pdhpe-2018-early-stage-1.json";
 import pdhpe18S1 from "./exemplars/nsw-pdhpe-2018-stage-1.json";
 import pdhpe18S2 from "./exemplars/nsw-pdhpe-2018-stage-2.json";
 import pdhpe18S3 from "./exemplars/nsw-pdhpe-2018-stage-3.json";
+import pdhpe24Es1 from "./exemplars/nsw-pdhpe-2024-early-stage-1.json";
+import pdhpe24S1 from "./exemplars/nsw-pdhpe-2024-stage-1.json";
+import pdhpe24S2 from "./exemplars/nsw-pdhpe-2024-stage-2.json";
+import pdhpe24S3 from "./exemplars/nsw-pdhpe-2024-stage-3.json";
 import pdhpe24S4 from "./exemplars/nsw-pdhpe-2024-stage-4.json";
 import englishS1 from "./exemplars/nsw-english-stage-1.json";
 import englishS2 from "./exemplars/nsw-english-stage-2.json";
@@ -85,6 +89,10 @@ const DOCS: ExemplarDoc[] = [
   pdhpe18S1,
   pdhpe18S2,
   pdhpe18S3,
+  pdhpe24Es1,
+  pdhpe24S1,
+  pdhpe24S2,
+  pdhpe24S3,
   pdhpe24S4,
   englishS1,
   englishS2,
@@ -218,7 +226,8 @@ export function exemplarCodes(doc: ExemplarDoc): string[] {
   for (const v of doc.variants) {
     for (const t of v.terms) {
       for (const u of t.units ?? []) u.outcomes.forEach((c) => codes.add(c));
-      for (const f of t.focusAreas ?? []) codes.add(f.outcome);
+      // A PDHPE 2024 focus area can address two outcomes ("PH2-RRS-01, PH2-RRS-02").
+      for (const f of t.focusAreas ?? []) f.outcome.split(",").forEach((c) => c.trim() && codes.add(c.trim()));
     }
   }
   return Array.from(codes);

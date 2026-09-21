@@ -51,13 +51,16 @@ export interface GenerateTermPlanInput {
   /** Term number 1–4 when it can be read from the term name. */
   termNumber: number | null;
   weekCount: number;
+  /** The term's start date — picks the syllabus and the sample in force
+   *  when the plan is TAUGHT, not when it is drafted. */
+  on?: string;
   /** Teacher's steer: themes, priorities, constraints. */
   notes?: string;
 }
 
 export function systemPrompt(input: GenerateTermPlanInput): string {
   const { framework, subject } = input;
-  const syllabus = syllabusNameFor(framework, subject) ?? framework.fullLabel;
+  const syllabus = syllabusNameFor(framework, subject, input.on) ?? framework.fullLabel;
   const noun = framework.outcomeNoun;
   const parallel =
     subject.key === "pdhpe"
@@ -80,11 +83,11 @@ ${OUTPUT_FORMAT}`;
 
 export function userPrompt(input: GenerateTermPlanInput): string {
   const { framework, subject, bands } = input;
-  const exemplar = nearestExemplarFor(framework, subject, bands);
+  const exemplar = nearestExemplarFor(framework, subject, bands, input.on);
   const sample = exemplar
     ? `## Department sample for this stage${exemplar.structuralOnly ? " (a NSW sample — use it for STRUCTURE only; every code must come from the list below)" : ""}\n${exemplarPromptText(exemplar, { term: input.termNumber })}`
     : `## No Department sample exists for this stage — follow the rules above.`;
-  const list = promptOutcomeList(framework, subject, bands, { max: 120 });
+  const list = promptOutcomeList(framework, subject, bands, { max: 120, on: input.on });
   return `Plan ${input.termName} for class ${input.className} (${input.yearGroups.map((y) => (y === "K" ? "Kindergarten" : `Year ${y}`)).join(" / ")}, ${input.bandLabel}) in ${framework.subjectLabel(subject)}. The term has ${input.weekCount} weeks.${
     input.notes ? `\n\nThe teacher's steer: ${input.notes}` : ""
   }
@@ -139,5 +142,6 @@ export async function generateTermPlan(
     bandLabel: input.bandLabel,
     bands: input.bands,
     weekCount: input.weekCount,
+    on: input.on,
   });
 }

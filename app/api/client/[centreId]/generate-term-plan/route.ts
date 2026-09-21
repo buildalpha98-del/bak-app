@@ -97,6 +97,7 @@ export async function POST(
       termName: term.name,
       termNumber,
       weekCount: term.weekCount,
+      on: term.start_date,
       notes: notes || undefined,
     });
     const payload = { ...result, termId: term.id, termName: term.name, className: cls.name, classId: cls.id };

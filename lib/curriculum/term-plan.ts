@@ -48,7 +48,16 @@ export interface TermPlanJson {
  */
 export function normaliseTermPlan(
   raw: unknown,
-  opts: { subject: string; bandLabel: string; bands: YearBand[]; weekCount: number }
+  opts: {
+    subject: string;
+    bandLabel: string;
+    bands: YearBand[];
+    weekCount: number;
+    /** The term's start date: the syllabus in force THEN decides which
+     *  codes are real — a Term 1 2027 plan drafted in 2026 is a 2024-
+     *  syllabus plan. Defaults to today. */
+    on?: string;
+  }
 ): { plan: TermPlanJson; issues: TermPlanIssue[]; unknownCodes: string[] } {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const issues: TermPlanIssue[] = [];
@@ -74,7 +83,7 @@ export function normaliseTermPlan(
         title: String(o?.title ?? ""),
         description: String(o?.description ?? ""),
       })),
-      { bands: opts.bands }
+      { bands: opts.bands, on: opts.on }
     );
     unknownCodes.push(...check.unknown, ...check.offBand);
     const weeklyRaw = Array.isArray(x.weeklyFocus) ? (x.weeklyFocus as unknown[]) : [];

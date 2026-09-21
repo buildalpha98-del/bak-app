@@ -199,6 +199,14 @@ export function validateOutcomes(
         unknown.push(code);
         continue;
       }
+      // With a date, a real code from a syllabus not in force then is as
+      // wrong as an invented one (a 2027 plan citing PD2-4, a 2026 plan
+      // citing PH2-MSP-01). Without one, any published code passes — a
+      // stored programme keeps the codes it was written with.
+      if (opts.on && ((hit.set.validFrom && hit.set.validFrom > opts.on) || (hit.set.validTo && hit.set.validTo < opts.on))) {
+        unknown.push(code);
+        continue;
+      }
       if (opts.bands && opts.bands.length > 0 && !hit.outcome.bands.some((b) => opts.bands!.includes(b))) {
         offBand.push(code);
         continue;

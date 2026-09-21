@@ -1,0 +1,545 @@
+{
+ "framework": "nsw",
+ "subject": "pdhpe",
+ "syllabus": "NSW PDHPE K–6 Syllabus (2024)",
+ "validFrom": "2027-01-01",
+ "band": "Stage 3",
+ "organisation": "focus-areas",
+ "source": "NSW Department of Education PDHPE K–6 sample scope and sequence (education.nsw.gov.au), fetched 2026-09-21 — pdhpe-k-6-scope-and-sequence.xlsx",
+ "variants": [
+  {
+   "label": "Year A",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Understand and negotiate roles and responsibilities in physical activities [each year]",
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Participate in Aboriginal and/or Torres Strait Islander games and activities and explain how the movement skills can be applied in other contexts [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Transition between static and dynamic balances with control [each year]",
+        "Refine fundamental movement combinations with control and precision in games, sport and physical activities [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Manage respectful relationships to support health and wellbeing",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Explain and apply strategies to manage changes respectfully in relationships [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Analyse actions and strategies to maintain and enhance safety in the home, school and local environmental contexts",
+        "Investigate Cultural safety and the impacts of this for Aboriginal and/or Torres Strait Islander Peoples and others",
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Changes and factors can promote a positive identity",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Examine life changes and develop management strategies",
+        "Investigate products and resources to manage changes associated with puberty",
+        "Examine reliable sources of health information to seek help and advice"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Apply hygiene strategies and self-care routines and explain how they positively impact health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Apply goal-setting strategies and evaluate the effectiveness [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills enhance positive interactions and effective communication",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Apply and evaluate interpersonal skills to make decisions that support the wellbeing of themselves and others [each year]",
+        "Apply and explain how respectfully winning, losing and accepting decisions can enhance positive interactions [each year]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a combination of simple, compound and complex sentences to create written texts reflecting on factors that influence wellbeing [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Participate in and explain how regular and frequent physical activity enhances fitness and wellbeing [each year]",
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Investigate and engage in physical activities to increase enjoyment and motivation to be physically active in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Catch to maintain possession or gain advantage in games and sport [each year]",
+        "Throw underarm or overarm to maintain possession or gain advantage in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-02",
+       "points": [
+        "Describe the purpose of emergency plans and practice procedures to promote safety",
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Explain the benefits of saving, goal-setting and decision making to manage finances for wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Explain how emotional responses to situations can impact decision-making and relationships [each year]",
+        "Respond to peer and teacher feedback to refine skills and strategies in a range of contexts [each semester]",
+        "Explain and demonstrate when resilience strategies can be applied across a range of contexts",
+        "Apply problem-solving and decision-making actions across contexts [each year]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use connectives to link ideas between sentences, describing the effects of choices and behaviours on health, safety and wellbeing [repeated]",
+        "Use nominalisations and noun groups to convey health, safety, and wellbeing concepts succinctly and authoritatively [repeated]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Collaborate to create physically active games, incorporating rules and scoring systems that are fair and inclusive [each year]",
+        "Investigate physical activity opportunities in Australia that cater for the diverse ways in which people move [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Kick a ball to maintain possession or gain advantage in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal safety strategies enhance respectful relationships",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Identify and explain how to communicate with and seek help from support networks when in unsafe situations",
+        "Apply strategies to enhance protective and upstander behaviours in unsafe or risky situations offline and online [each year]",
+        "Describe the right to be safe from abuse and identify protective strategies [each year]",
+        "Explain and demonstrate communication strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance online safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Identify and apply strategies to contribute to safety in online environments [each year]",
+        "Describe and demonstrate ways to report negative, harmful or unsafe situations to trusted adults or in online tools [each year]",
+        "Demonstrate and explain how respectful and responsible digital citizen behaviours enhance online safety [each year]",
+        "Demonstrate how and when to assertively gain, give or deny consent when sharing information online and promote help-seeking strategies [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Examine how following an agreed code of conduct for the healthy and productive use of digital devices can have a positive impact on wellbeing [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Evaluate and apply self-regulation strategies to manage responses in offline and online situations [each year]",
+        "Apply goal-setting strategies and evaluate the effectiveness [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a combination of simple, compound and complex sentences to create written texts reflecting on factors that influence wellbeing [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Transfer defensive and offensive strategies to different movement situations [each year]",
+        "Participate in sports from around the world and research how the Olympic Games, Paralympic Games and international sporting events provide opportunities for unity [each year]",
+        "Transition between movement skills and select strategies to pass and receive a ball in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Strike to strategically propel an object at different levels towards a target or space using an implement in games and sport [each year]",
+        "Refine fundamental movement combinations with control and precision in games, sport and physical activities [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Manage respectful relationships to support health and wellbeing",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply effective ways to resolve conflict and deal with bullying, discrimination and coercion offline and online [each year]",
+        "Explain ways to build positive connections within families, groups, community organisations and places to enhance health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]",
+        "Apply safety behaviours in water and local environments and identify ways to enhance community safety [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Investigate nutritional information for foods and drinks that reflect the Australian Government Dietary Guidelines to develop strategies that promote and maintain health and wellbeing",
+        "Analyse health and wellbeing messages in the media and critically reflect on the purpose, intended audience and the impact on the individual and community [each year]",
+        "Investigate nutritional information and medicinal uses for bush foods and explain how they can improve health and Cultural wellbeing using Tier 2 and Tier 3 vocabulary"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Respond to peer and teacher feedback to refine skills and strategies in a range of contexts [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a variety of sentence types sequenced in cohesive paragraphs to evaluate the purpose and impact of a health message in the media [repeated]",
+        "Use nominalisations and noun groups to convey health, safety, and wellbeing concepts succinctly and authoritatively [repeated]",
+        "Acknowledge sources of information used in own texts to add authority [repeated]"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Year B",
+   "terms": [
+    {
+     "term": 1,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Understand and negotiate roles and responsibilities in physical activities [each year]",
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Participate in Aboriginal and/or Torres Strait Islander games and activities and explain how the movement skills can be applied in other context [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Transition between static and dynamic balances with control [each year]",
+        "Refine fundamental movement combinations with control and precision in games, sport and physical activities [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Manage respectful relationships to support health and wellbeing",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Explain and apply strategies to manage changes respectfully in relationships [each year]",
+        "Explain how stereotypes can influence relationships and the wellbeing of individuals and groups",
+        "Investigate the importance of how celebrating and commemorating Aboriginal and/or Torres Strait Islander Cultures supports health and wellbeing"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Changes and factors can promote a positive identity",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Investigate how family, culture, peers, media, education and place can impact actions, influencing identity, health and wellbeing",
+        "Explain strategies that enhance a positive sense of identity and support health and wellbeing",
+        "Explain how personal strengths can support the management of challenges"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Apply goal-setting strategies and evaluate the effectiveness"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Interpersonal skills enhance positive interactions and effective communication",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Apply and evaluate interpersonal skills to make decisions that support the wellbeing of themselves and others [each year]",
+        "Apply and explain how respectfully winning, losing and accepting decisions can enhance positive interactions [each year]",
+        "Describe and demonstrate respectful and effective communication to promote leadership, inclusion and collaboration"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a combination of simple, compound and complex sentences to create written texts reflecting on factors that influence wellbeing [each semester]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 2,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Participate in and explain how regular and frequent physical activity enhances fitness and wellbeing [each year]",
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Investigate and engage in physical activities to increase enjoyment and motivation to be physically active in the community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Catch to maintain possession or gain advantage in games and sport [each year]",
+        "Throw underarm or overarm to maintain possession or gain advantage in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-02",
+       "points": [
+        "Describe positive choices and actions that reduce risks associated with harmful substances",
+        "Investigate the impact of harmful substances on personal and community health",
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Investigate the impact active and sedentary lifestyles have on health and wellbeing and devise strategies to maintain a physically active lifestyle",
+        "Engage in outdoor activities and evaluate the benefits to learning and wellbeing",
+        "Propose a personal plan to increase engagement with the outdoors"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Explain how emotional responses to situations can impact decision-making and relationships [each year]",
+        "Respond to peer and teacher feedback to refine skills and strategies in a range of contexts [each term]",
+        "Apply problem-solving and decision-making actions across contexts [each year]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use connectives to link ideas between sentences, describing the effects of choices and behaviours on health, safety and wellbeing [repeated]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 3,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Collaborate to create physically active games, incorporating rules and scoring systems that are fair and inclusive [each year]",
+        "Investigate physical activity opportunities in Australia that cater for the diverse ways in which people move [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Kick a ball to maintain possession or gain advantage in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Manage respectful relationships to support health and wellbeing",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Explain how rights and responsibilities contribute to respectful relationships"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Personal safety strategies enhance respectful relationships",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply strategies to enhance protective and upstander behaviours in unsafe or risky situations offline and online [each year]",
+        "Evaluate and apply strategies to respond to emotional or physically unsafe situations",
+        "Describe the right to be safe from abuse and identify protective strategies [each year]",
+        "Explain and demonstrate communication strategies to assertively gain, give or deny consent and respect responses [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance online safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Identify and apply strategies to contribute to safety in online environments [each year]",
+        "Describe and demonstrate ways to report negative, harmful or unsafe situations to trusted adults or in online tools [each year]",
+        "Demonstrate and explain how respectful and responsible digital citizen behaviours enhance online safety [each year]",
+        "Demonstrate how and when to assertively gain, give or deny consent when sharing information online and promote help-seeking strategies [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Examine how following an agreed code of conduct for the healthy and productive use of digital devices can have a positive impact on wellbeing [each year]",
+        "Investigate strategies that contribute to the prevention of lifestyle diseases and propose actions to support a healthy lifestyle"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Evaluate and apply self-regulation strategies to manage responses in offline and online situations [each year]",
+        "Apply goal-setting strategies and evaluate the effectiveness [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a combination of simple, compound and complex sentences to create written texts reflecting on factors that influence wellbeing [each semester]",
+        "Acknowledge sources of information used in own texts to add authority [repeated]"
+       ]
+      }
+     ]
+    },
+    {
+     "term": 4,
+     "focusAreas": [
+      {
+       "focusArea": "Movement skill and physical activity › Create, communicate and collaborate in physical activities",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Refine and apply skills and strategies in target, net and court, striking and fielding, and territory games and sport [each term]",
+        "Transfer defensive and offensive strategies to different movement situations [each year]",
+        "Participate in sports from around the world and research how the Olympic Games, Paralympic Games and international sporting events provide opportunities for unity [each year]",
+        "Transition between movement skills and select strategies to pass and receive a ball in games and sport [each year]"
+       ]
+      },
+      {
+       "focusArea": "Movement skill and physical activity › Refining fundamental movement skills enhances health and wellbeing",
+       "outcome": "PH3-MSP-01",
+       "points": [
+        "Strike to strategically propel an object at different levels towards a target or space using an implement in games and sport [each year]",
+        "Refine fundamental movement combinations with control and precision in games, sport and physical activities [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Manage respectful relationships to support health and wellbeing",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply effective ways to resolve conflict and deal with bullying, discrimination and coercion offline and online [each year]"
+       ]
+      },
+      {
+       "focusArea": "Respectful relationships and safety › Informed decisions and strategies enhance safety",
+       "outcome": "PH3-RRS-01, PH3-RRS-02",
+       "points": [
+        "Apply road, fire and sun safety behaviours and identify influences that can impact decisions [each year]",
+        "Apply safety behaviours in water and local environments and identify ways to enhance community safety [each year]"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Changes and factors can promote a positive identity",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Investigate Aboriginal and/or Torres Strait Islander Peoples and identify their contributions to community"
+       ]
+      },
+      {
+       "focusArea": "Identity, health and wellbeing › Informed decisions and actions influence health and wellbeing",
+       "outcome": "PH3-IHW-01",
+       "points": [
+        "Analyse health and wellbeing messages in the media and critically reflect on the purpose, intended audience and the impact on the individual and community [each year]"
+       ]
+      },
+      {
+       "focusArea": "Self-management and interpersonal skills › Self-management skills are supported by informed decisions",
+       "outcome": "PH3-SMI-01",
+       "points": [
+        "Respond to peer and teacher feedback to refine skills and strategies in a range of contexts [each semester]"
+       ]
+      },
+      {
+       "focusArea": "Creating written texts in PDHPE › Creating written texts supports understanding of health, safety and wellbeing",
+       "outcome": "PH3-CWT-01",
+       "points": [
+        "Use a variety of sentence types sequenced in cohesive paragraphs to evaluate the purpose and impact of a health message in the media [repeated]",
+        "Use nominalisations and noun groups to convey health, safety, and wellbeing concepts succinctly and authoritatively [repeated]",
+        "Acknowledge sources of information used in own texts to add authority [repeated]"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
