@@ -50,8 +50,8 @@ export async function checkBadgeEligibility(
   // --- fifty_sessions & century_coach ---
   const { count: sessionCount, error: sessionCountError } = await supabase
     .from("sessions")
-    .select("id", { count: "exact", head: true })
-    .eq("coach_id", coachId)
+    .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+    .eq("membership.user_id", coachId)
     .eq("status", "completed");
 
   if (!sessionCountError) {
@@ -80,8 +80,8 @@ export async function checkBadgeEligibility(
 
   const { data: punctualitySessions, error: punctualityError } = await supabase
     .from("sessions")
-    .select("scheduled_start, started_at")
-    .eq("coach_id", coachId)
+    .select("scheduled_start, started_at, membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .gte("scheduled_start", monthStart)
     .lte("scheduled_start", monthEnd)
@@ -116,8 +116,8 @@ export async function checkBadgeEligibility(
   for (const { start, end } of formMonths) {
     const { count: completedInMonth, error: completedErr } = await supabase
       .from("sessions")
-      .select("id", { count: "exact", head: true })
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+      .eq("membership.user_id", coachId)
       .eq("status", "completed")
       .gte("scheduled_start", start)
       .lte("scheduled_start", end);
@@ -132,8 +132,8 @@ export async function checkBadgeEligibility(
     // Get session IDs for this month to scope form_submissions
     const { data: monthSessions, error: monthSessionsErr } = await supabase
       .from("sessions")
-      .select("id")
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", coachId)
       .eq("status", "completed")
       .gte("scheduled_start", start)
       .lte("scheduled_start", end);
@@ -171,8 +171,8 @@ export async function checkBadgeEligibility(
   for (const { start, end } of reliabilityMonths) {
     const { count: completedInMonth, error: completedErr } = await supabase
       .from("sessions")
-      .select("id", { count: "exact", head: true })
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+      .eq("membership.user_id", coachId)
       .eq("status", "completed")
       .gte("scheduled_start", start)
       .lte("scheduled_start", end);
@@ -200,8 +200,8 @@ export async function checkBadgeEligibility(
   // --- multi_sport_master ---
   const { data: sportsData, error: sportsError } = await supabase
     .from("sessions")
-    .select("sport")
-    .eq("coach_id", coachId)
+    .select("sport, membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .not("sport", "is", null);
 

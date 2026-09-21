@@ -346,9 +346,12 @@ test.describe("school portal — plan, roster, lesson, report card (096–098)",
   });
 
   test("a school lands on the school dashboard", async ({ page, baseURL }) => {
+    // First page of the run against a cold dev server: the dashboard's
+    // module graph once took longer to compile than the default budget.
+    test.setTimeout(180_000);
     await asColleague(page, baseURL!);
     await page.goto(`/client/${fx!.centreId}`);
-    await expect(page.getByRole("heading", { name: /Term plans by class/ })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole("heading", { name: /Term plans by class/ })).toBeVisible({ timeout: 150_000 });
     await expect(page.getByRole("heading", { name: /This week/ })).toBeVisible();
   });
 

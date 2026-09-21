@@ -104,8 +104,8 @@ export async function calculateCoachPerformance(
   // ── 1. Fetch completed sessions in current period ────────────────────────
   const { data: currentSessions } = await supabase
     .from("sessions")
-    .select("id, date, time, started_at, headcount")
-    .eq("coach_id", coachId)
+    .select("id, date, time, started_at, headcount, membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .gte("date", periodStart)
     .lte("date", periodEnd);
@@ -116,8 +116,8 @@ export async function calculateCoachPerformance(
   // ── 2. Previous period session count (for session_volume trend) ──────────
   const { count: prevSessionCount } = await supabase
     .from("sessions")
-    .select("id", { count: "exact", head: true })
-    .eq("coach_id", coachId)
+    .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .gte("date", prev.start)
     .lte("date", prev.end);
@@ -143,8 +143,8 @@ export async function calculateCoachPerformance(
   // Previous period feedback
   const { data: prevSessions } = await supabase
     .from("sessions")
-    .select("id")
-    .eq("coach_id", coachId)
+    .select("id, membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .gte("date", prev.start)
     .lte("date", prev.end);

@@ -59,16 +59,16 @@ export async function getCoachStatusPulse(
     // 1. Shifts today (any active status).
     const shiftsTodayPromise = supabase
       .from("sessions")
-      .select("id", { count: "exact", head: true })
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+      .eq("membership.user_id", coachId)
       .eq("date", today)
       .neq("status", "cancelled");
 
     // 2. Shifts assigned to me awaiting confirmation.
     const shiftsToConfirmPromise = supabase
       .from("sessions")
-      .select("id", { count: "exact", head: true })
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+      .eq("membership.user_id", coachId)
       .eq("status", "pending_confirmation");
 
     // 3. Completed past sessions without a form submission. We fetch
@@ -77,8 +77,8 @@ export async function getCoachStatusPulse(
     //    submission session_ids to subtract.
     const recentCompletedPromise = supabase
       .from("sessions")
-      .select("id")
-      .eq("coach_id", coachId)
+      .select("id, membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", coachId)
       .eq("status", "completed")
       .lt("date", today)
       .order("date", { ascending: false })
@@ -184,15 +184,15 @@ export async function getCoachStatusPulseWithCompare(
     const [priorRes, currentRes] = await Promise.all([
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "completed")
         .gte("date", priorPeriod.start)
         .lte("date", priorPeriod.end),
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "completed")
         .gte("date", thisWeek.start)
         .lte("date", thisWeek.end),
@@ -239,19 +239,19 @@ export async function getCoachSchedulePulse(
     const [todayRes, toConfirmRes, pastUnconfirmedRes] = await Promise.all([
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("date", today)
         .neq("status", "cancelled"),
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "pending_confirmation"),
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "pending_confirmation")
         .lt("date", today),
     ]);

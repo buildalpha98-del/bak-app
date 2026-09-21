@@ -347,8 +347,8 @@ export async function getCoachPerformanceDetail(coachId: string): Promise<{
   // Fetch recent 20 completed sessions with centre name and feedback rating
   const { data: recentSessionRows } = await supabase
     .from("sessions")
-    .select("id, date, sport, centres!inner(name)")
-    .eq("coach_id", coachId)
+    .select("id, date, sport, centres!inner(name), membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", coachId)
     .eq("status", "completed")
     .order("date", { ascending: false })
     .limit(20);

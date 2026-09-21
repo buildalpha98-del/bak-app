@@ -163,9 +163,9 @@ export async function getCoachNextSession(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type, address, primary_contact_name, primary_contact_phone), terms:term_id(name), equipment_kits:equipment_kit_id(name)"
+        "*, centres:centre_id(name, type, address, primary_contact_name, primary_contact_phone), terms:term_id(name), equipment_kits:equipment_kit_id(name), membership:session_coaches!inner(user_id)"
       )
-      .eq("coach_id", coachId)
+      .eq("membership.user_id", coachId)
       .gte("date", today)
       .in("status", [
         "pending_confirmation",
@@ -215,9 +215,9 @@ export async function getCoachSessionsForDate(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type, address), terms:term_id(name), equipment_kits:equipment_kit_id(name)"
+        "*, centres:centre_id(name, type, address), terms:term_id(name), equipment_kits:equipment_kit_id(name), membership:session_coaches!inner(user_id)"
       )
-      .eq("coach_id", coachId)
+      .eq("membership.user_id", coachId)
       .eq("date", dateStr)
       .neq("status", "cancelled")
       .order("time");
@@ -256,9 +256,9 @@ export async function getCoachSessionsForWeek(
     const { data: raw, error } = await supabase
       .from("sessions")
       .select(
-        "*, centres:centre_id(name, type, address), terms:term_id(name), equipment_kits:equipment_kit_id(name)"
+        "*, centres:centre_id(name, type, address), terms:term_id(name), equipment_kits:equipment_kit_id(name), membership:session_coaches!inner(user_id)"
       )
-      .eq("coach_id", coachId)
+      .eq("membership.user_id", coachId)
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
       .neq("status", "cancelled")
@@ -293,8 +293,8 @@ export async function getCoachSessionsForTerm(
 
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, date, status, sport")
-      .eq("coach_id", coachId)
+      .select("id, date, status, sport, membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", coachId)
       .eq("term_id", termId)
       .neq("status", "cancelled")
       .order("date");
@@ -328,8 +328,8 @@ export async function getCoachPendingActions(
       // Shifts awaiting confirmation
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "pending_confirmation"),
 
       // Swap requests received (coach needs to respond)
@@ -444,8 +444,12 @@ export async function getCoachSessionDetail(
       return { data: null, error: "Session not found." };
     }
 
-    // Security gate: verify this session belongs to the coach
-    if (raw.coach_id !== coachId) {
+    // Security gate: the coach must be on this shift — lead or second.
+    // (RLS already hides other coaches' shifts; this guards the admin path.)
+    const onShift = (
+      (raw as unknown as { session_coaches?: Array<{ user_id: string }> }).session_coaches ?? []
+    ).some((sc) => sc.user_id === coachId);
+    if (raw.coach_id !== coachId && !onShift) {
       return { data: null, error: "Session not found." };
     }
 
@@ -461,6 +465,19 @@ export async function getCoachSessionDetail(
       string,
       unknown
     > | null;
+
+    // Crewmates' names. A coach can read only their own profiles row
+    // under RLS, so the embed above returns null for everyone else — read
+    // the names (names only) with the admin client, after the gate above.
+    const crewIds = (
+      ((raw as unknown as Record<string, unknown>).session_coaches as unknown as Array<{ user_id: string }>) ?? []
+    ).map((sc) => sc.user_id);
+    const crewNames = new Map<string, string>();
+    if (crewIds.length > 1) {
+      const { createSupabaseAdmin } = await import("@/lib/supabase/admin");
+      const { data: crew } = await createSupabaseAdmin().from("profiles").select("id, name").in("id", crewIds);
+      for (const c of crew ?? []) crewNames.set(c.id as string, c.name as string);
+    }
 
     const session = {
       ...(raw as unknown as Session),
@@ -484,7 +501,7 @@ export async function getCoachSessionDetail(
         return rows
           .map((sc) => ({
             user_id: sc.user_id,
-            name: sc.profiles?.name ?? null,
+            name: crewNames.get(sc.user_id) ?? sc.profiles?.name ?? null,
             is_primary: sc.is_primary,
           }))
           .sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
@@ -649,10 +666,10 @@ export async function addShiftThreadMessage(
         .select("user_id")
         .eq("session_id", sessionId);
 
-      // Also get the session's assigned coach
+      // Also every coach on the shift (lead and second), not only the lead.
       const { data: sessionData } = await supabase
         .from("sessions")
-        .select("coach_id")
+        .select("coach_id, session_coaches(user_id)")
         .eq("id", sessionId)
         .single();
 
@@ -662,6 +679,9 @@ export async function addShiftThreadMessage(
       }
       if (sessionData?.coach_id && sessionData.coach_id !== user.id) {
         recipientIds.add(sessionData.coach_id);
+      }
+      for (const sc of (sessionData?.session_coaches as unknown as Array<{ user_id: string }> | null) ?? []) {
+        if (sc.user_id !== user.id) recipientIds.add(sc.user_id);
       }
 
       if (recipientIds.size > 0) {
@@ -889,8 +909,8 @@ export async function getCoachPendingSessions(
 
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, date, time, sport, centres:centre_id(name)")
-      .eq("coach_id", coachId)
+      .select("id, date, time, sport, centres:centre_id(name), membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", coachId)
       .eq("status", "pending_confirmation")
       .order("date")
       .order("time");

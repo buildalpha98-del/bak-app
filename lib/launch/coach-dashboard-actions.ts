@@ -112,9 +112,10 @@ export async function getTodaysSessions(
       .from("sessions")
       .select(
         `id, date, time, duration_minutes, sport, status, coach_notes, equipment_kit_id,
-         centres:centre_id(name, address, primary_contact_name, primary_contact_phone, primary_contact_email)`
+         centres:centre_id(name, address, primary_contact_name, primary_contact_phone, primary_contact_email),
+         membership:session_coaches!inner(user_id)`
       )
-      .eq("coach_id", coachId)
+      .eq("membership.user_id", coachId)
       .eq("date", today)
       .neq("status", "cancelled")
       .order("time");
@@ -234,9 +235,10 @@ export async function getWeekSessions(
       .from("sessions")
       .select(
         `id, date, time, duration_minutes, sport, status,
-         centres:centre_id(name)`
+         centres:centre_id(name),
+         membership:session_coaches!inner(user_id)`
       )
-      .eq("coach_id", coachId)
+      .eq("membership.user_id", coachId)
       .gte("date", start)
       .lte("date", end)
       .neq("date", today)
