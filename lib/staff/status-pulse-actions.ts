@@ -25,6 +25,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday, getFriday } from "@/lib/utils/roster";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 
 export interface StaffStatusPulse {
   expiredCertsCount: number;
@@ -82,16 +83,16 @@ export async function getStaffStatusPulse(): Promise<StaffStatusPulse> {
           .from("profiles")
           .select("id", { count: "exact", head: true })
           .eq("status", "onboarding"),
-        // sessions.coach_id is the trigger-maintained primary cache; safe to
-        // read for "is this coach rostered". We restrict to Mon–Fri of the
-        // current week and exclude cancelled rows.
+        // "Is this coach rostered" counts the whole crew: sessions.coach_id
+        // is the LEAD only, so reading it alone reported a coach who only
+        // works shared shifts as "not rostered". Mon–Fri of the current
+        // week, cancelled rows excluded.
         supabase
           .from("sessions")
-          .select("coach_id")
+          .select(`coach_id, ${CREW_EMBED}`)
           .gte("date", mondayIso)
           .lte("date", fridayIso)
-          .neq("status", "cancelled")
-          .not("coach_id", "is", null),
+          .neq("status", "cancelled"),
       ]);
 
     const activeProfiles = activeCoachesRes.data ?? [];
@@ -117,8 +118,7 @@ export async function getStaffStatusPulse(): Promise<StaffStatusPulse> {
     // (3) Not rostered this week — active coaches with zero week sessions.
     const rosteredIds = new Set<string>();
     for (const s of weekSessionsRes.data ?? []) {
-      const coachId = (s as { coach_id: string | null }).coach_id;
-      if (coachId) rosteredIds.add(coachId);
+      for (const { userId } of crewOf(s)) rosteredIds.add(userId);
     }
     let notRosteredThisWeekCount = 0;
     for (const id of activeCoachIdSet) {

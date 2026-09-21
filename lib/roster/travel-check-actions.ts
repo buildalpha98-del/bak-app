@@ -58,9 +58,12 @@ export async function checkCoachTravelWarnings(
       supabase
         .from("session_coaches")
         .select(
-          "coach_id, sessions!inner(id, date, time, duration_minutes, centre_id, status, centres(name, latitude, longitude))"
+          // session_coaches keys the coach as `user_id`. This read once
+          // asked for `coach_id`, a column that does not exist — the query
+          // errored, `rows` was null and no travel warning ever fired.
+          "user_id, sessions!inner(id, date, time, duration_minutes, centre_id, status, centres(name, latitude, longitude))"
         )
-        .in("coach_id", coachIds)
+        .in("user_id", coachIds)
         .eq("sessions.date", target.date),
       supabase.from("profiles").select("id, name").in("id", coachIds),
     ]);
@@ -72,7 +75,7 @@ export async function checkCoachTravelWarnings(
     const warnings: TravelWarning[] = [];
     for (const coachId of coachIds) {
       const days = (rows ?? [])
-        .filter((r) => r.coach_id === coachId)
+        .filter((r) => r.user_id === coachId)
         .map((r) => r.sessions as unknown as {
           id: string;
           time: string;

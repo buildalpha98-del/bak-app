@@ -18,6 +18,7 @@
 //      `created_at >= first day of current month`.
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { CREW_FILTER, CREW_JOIN, crewOf } from "@/lib/sessions/coach-membership";
 
 export interface IntelligenceStatusPulse {
   newCentresThisMonthCount: number;
@@ -72,25 +73,26 @@ export async function getIntelligenceStatusPulse(): Promise<IntelligenceStatusPu
       // Sessions per coach in window
       const { data: sessions } = await supabase
         .from("sessions")
-        .select("coach_id")
+        .select(`coach_id, ${CREW_JOIN}`)
         .gte("date", cutoff)
-        .in("coach_id", coachIds);
+        .in(CREW_FILTER, coachIds);
 
       // Availability slots — assume 5/week if no rows
       const { data: availability } = await supabase
         .from("availability_slots")
-        .select("coach_id, day_of_week")
-        .in("coach_id", coachIds);
+        // `user_id`, not `coach_id` — see lib/intelligence/actions.ts.
+        .select("user_id, day_of_week")
+        .in("user_id", coachIds);
 
       const sessionsByCoach = new Map<string, number>();
       for (const s of sessions ?? []) {
-        const cid = (s as { coach_id: string | null }).coach_id;
-        if (!cid) continue;
-        sessionsByCoach.set(cid, (sessionsByCoach.get(cid) ?? 0) + 1);
+        for (const { userId } of crewOf(s)) {
+          sessionsByCoach.set(userId, (sessionsByCoach.get(userId) ?? 0) + 1);
+        }
       }
       const slotsByCoach = new Map<string, number>();
       for (const a of availability ?? []) {
-        const cid = (a as { coach_id: string }).coach_id;
+        const cid = (a as { user_id: string }).user_id;
         slotsByCoach.set(cid, (slotsByCoach.get(cid) ?? 0) + 1);
       }
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 
 // ============================================================
 // Types
@@ -319,7 +320,7 @@ export async function getFinancialIntelligence(): Promise<{
     // Sessions (to link to centres)
     const { data: sessions } = await supabase
       .from("sessions")
-      .select("id, centre_id, coach_id, date");
+      .select(`id, centre_id, coach_id, date, ${CREW_EMBED}`);
 
     // Centres
     const { data: centres } = await supabase
@@ -377,9 +378,10 @@ export async function getFinancialIntelligence(): Promise<{
     const centreCosts = new Map<string, number>();
     for (const inv of invoices ?? []) {
       // Find sessions this coach ran during the invoice period
+      // An invoice covers every shift its coach worked — lead or second.
       const coachSessions = (sessions ?? []).filter(
         (s) =>
-          s.coach_id === inv.coach_id &&
+          crewOf(s).some((c) => c.userId === inv.coach_id) &&
           s.date >= inv.period_start &&
           s.date <= inv.period_end
       );
@@ -459,13 +461,16 @@ export async function getCoachUtilisation(): Promise<{
 
     const { data: sessions } = await supabase
       .from("sessions")
-      .select("id, coach_id, date, centre_id")
+      .select(`id, coach_id, date, centre_id, ${CREW_EMBED}`)
       .gte("date", cutoff);
 
     // Availability slots for utilisation rate
     const { data: availability } = await supabase
+      // availability_slots keys the coach as `user_id`. This asked for
+      // `coach_id`, which does not exist: the query errored and every
+      // coach silently fell back to "5 slots a week".
       .from("availability_slots")
-      .select("coach_id, day_of_week");
+      .select("user_id, day_of_week");
 
     // Payments + bookings for revenue
     const { data: bookings } = await supabase
@@ -493,13 +498,13 @@ export async function getCoachUtilisation(): Promise<{
     // Availability slots per coach (weekly slots count)
     const coachSlots = new Map<string, number>();
     for (const a of availability ?? []) {
-      coachSlots.set(a.coach_id, (coachSlots.get(a.coach_id) ?? 0) + 1);
+      coachSlots.set(a.user_id, (coachSlots.get(a.user_id) ?? 0) + 1);
     }
 
     const rows: CoachUtilRow[] = [];
 
     for (const coach of coaches ?? []) {
-      const coachSessions = (sessions ?? []).filter((s) => s.coach_id === coach.id);
+      const coachSessions = (sessions ?? []).filter((s) => crewOf(s).some((c) => c.userId === coach.id));
       const sessionCount = coachSessions.length;
 
       // Revenue generated

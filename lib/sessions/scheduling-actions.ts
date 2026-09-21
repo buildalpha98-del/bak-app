@@ -18,6 +18,8 @@ import {
 } from "@/lib/utils/scheduling";
 import type { SessionWithRelations } from "./actions";
 import { toLocalIso } from "@/lib/utils/roster";
+import { CREW_EMBED, CREW_FILTER, CREW_JOIN, crewOf } from "@/lib/sessions/coach-membership";
+import { sessionCrewIds } from "@/lib/utils/scheduling";
 
 // ============================================================
 // 1. getCoachAvailabilityForSession
@@ -87,9 +89,9 @@ export async function getCoachAvailabilityForSession(
     // Get existing sessions for these coaches on this date
     const { data: existingSessions } = await supabase
       .from("sessions")
-      .select("coach_id, time, duration_minutes, centre_id, centres:centre_id(name)")
+      .select(`coach_id, time, duration_minutes, centre_id, centres:centre_id(name), ${CREW_JOIN}`)
       .eq("date", session.date)
-      .in("coach_id", coachIds)
+      .in(CREW_FILTER, coachIds)
       .neq("id", sessionId) // Exclude current session
       .not("status", "eq", "cancelled");
 
@@ -100,7 +102,7 @@ export async function getCoachAvailabilityForSession(
       );
 
       const coachExisting = (existingSessions ?? [])
-        .filter((s) => s.coach_id === coach.id)
+        .filter((s) => crewOf(s).some((c) => c.userId === coach.id))
         .map((s) => ({
           time: s.time,
           duration_minutes: s.duration_minutes,
@@ -261,9 +263,8 @@ export async function checkWeekClashes(
     }));
 
     // Get unique coach IDs
-    const coachIds = [
-      ...new Set(sessions.filter((s) => s.coach_id).map((s) => s.coach_id!)),
-    ];
+    // Whole crews — a second coach's compliance and clashes count too.
+    const coachIds = [...new Set(sessions.flatMap((s) => sessionCrewIds(s)))];
 
     if (coachIds.length === 0) {
       return { data: [], error: null };
@@ -289,6 +290,9 @@ export async function checkWeekClashes(
     for (const s of sessions) {
       if (s.coach_id && s.coach_name) {
         coachNames.set(s.coach_id, s.coach_name);
+      }
+      for (const c of s.assigned_coaches ?? []) {
+        if (c.name) coachNames.set(c.user_id, c.name);
       }
     }
 
@@ -381,7 +385,7 @@ export async function getReplacementSuggestions(
     // Get session details
     const { data: session, error: sessError } = await supabase
       .from("sessions")
-      .select("date, time, duration_minutes, centre_id, sport, coach_id")
+      .select(`date, time, duration_minutes, centre_id, sport, coach_id, ${CREW_EMBED}`)
       .eq("id", sessionId)
       .single();
 
@@ -414,14 +418,16 @@ export async function getReplacementSuggestions(
     const weekStart = toLocalIso(monday);
     const weekEnd = toLocalIso(friday);
 
-    // Get all active coaches except the current one
-    const { data: coaches } = await supabase
+    // Get all active coaches except those already on this shift (the
+    // second coach is not a replacement candidate for their own shift).
+    const onShift = new Set(crewOf(session).map((c) => c.userId));
+    const { data: allCoaches } = await supabase
       .from("profiles")
       .select("id, name")
       .eq("role", "coach")
       .eq("status", "active")
-      .neq("id", session.coach_id ?? "")
       .order("name");
+    const coaches = (allCoaches ?? []).filter((c) => !onShift.has(c.id));
 
     if (!coaches || coaches.length === 0) return { data: [], error: null };
 
@@ -436,16 +442,16 @@ export async function getReplacementSuggestions(
     // Get existing sessions on the same date
     const { data: existingSessions } = await supabase
       .from("sessions")
-      .select("coach_id, time, duration_minutes, centre_id, centres:centre_id(name)")
+      .select(`coach_id, time, duration_minutes, centre_id, centres:centre_id(name), ${CREW_JOIN}`)
       .eq("date", session.date)
-      .in("coach_id", coachIds)
+      .in(CREW_FILTER, coachIds)
       .not("status", "eq", "cancelled");
 
     // Get week sessions for utilisation
     const { data: weekSessions } = await supabase
       .from("sessions")
-      .select("coach_id, duration_minutes")
-      .in("coach_id", coachIds)
+      .select(`coach_id, duration_minutes, ${CREW_JOIN}`)
+      .in(CREW_FILTER, coachIds)
       .gte("date", weekStart)
       .lte("date", weekEnd)
       .not("status", "eq", "cancelled");
@@ -453,8 +459,8 @@ export async function getReplacementSuggestions(
     // Get past sessions for sport experience
     const { data: pastSessions } = await supabase
       .from("sessions")
-      .select("coach_id")
-      .in("coach_id", coachIds)
+      .select(`coach_id, ${CREW_JOIN}`)
+      .in(CREW_FILTER, coachIds)
       .eq("sport", session.sport)
       .eq("status", "completed")
       .limit(500);
@@ -462,17 +468,14 @@ export async function getReplacementSuggestions(
     // Build utilisation map (hours per coach this week)
     const utilisationMap = new Map<string, number>();
     for (const ws of weekSessions ?? []) {
-      if (!ws.coach_id) continue;
-      const current = utilisationMap.get(ws.coach_id) ?? 0;
-      utilisationMap.set(
-        ws.coach_id,
-        current + ws.duration_minutes / 60
-      );
+      for (const { userId } of crewOf(ws)) {
+        utilisationMap.set(userId, (utilisationMap.get(userId) ?? 0) + ws.duration_minutes / 60);
+      }
     }
 
     // Build sport experience set
     const sportExperienceSet = new Set(
-      (pastSessions ?? []).map((s) => s.coach_id)
+      (pastSessions ?? []).flatMap((s) => crewOf(s).map((c) => c.userId))
     );
 
     // Build candidates
@@ -482,7 +485,7 @@ export async function getReplacementSuggestions(
       );
 
       const coachExisting = (existingSessions ?? [])
-        .filter((s) => s.coach_id === coach.id)
+        .filter((s) => crewOf(s).some((c) => c.userId === coach.id))
         .map((s) => ({
           time: s.time,
           duration_minutes: s.duration_minutes,

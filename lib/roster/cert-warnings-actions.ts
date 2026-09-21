@@ -11,6 +11,7 @@ import type {
   SessionCertWarning,
 } from "@/lib/utils/compliance/cert-warnings";
 import { toLocalIso } from "@/lib/utils/roster";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 
 const EXPIRING_WINDOW_DAYS = 14;
 
@@ -53,23 +54,26 @@ export async function getSessionCertWarningsForWeek(
 
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")
-      .select("id, date, coach_id, status")
+      .select(`id, date, coach_id, status, ${CREW_EMBED}`)
       .gte("date", weekStartDate)
       .lte("date", weekEndDate)
-      .not("coach_id", "is", null)
       .neq("status", "cancelled");
 
     if (sessErr) throw sessErr;
 
-    const rows = (sessions ?? []) as Array<{
+    // Every coach on every shift: a second coach with an expired WWCC is
+    // as much a problem as a lead with one, and used to raise nothing.
+    const rows = ((sessions ?? []) as unknown as Array<{
       id: string;
       date: string;
-      coach_id: string;
+      coach_id: string | null;
       status: string;
-    }>;
+    }>)
+      .map((s) => ({ ...s, crew: crewOf(s).map((c) => c.userId) }))
+      .filter((s) => s.crew.length > 0);
     if (rows.length === 0) return { data: {}, error: null };
 
-    const coachIds = Array.from(new Set(rows.map((s) => s.coach_id)));
+    const coachIds = Array.from(new Set(rows.flatMap((s) => s.crew)));
 
     const { data: certs, error: certErr } = await supabase
       .from("compliance_docs")
@@ -95,7 +99,10 @@ export async function getSessionCertWarningsForWeek(
     const result: Record<string, SessionCertWarning> = {};
 
     for (const sess of rows) {
-      const coachCerts = certsByCoach.get(sess.coach_id) ?? [];
+      const blockedAll: SessionCertWarning["blocked"] = [];
+      const expiringAll: ExpiringCert[] = [];
+      for (const coachId of sess.crew) {
+      const coachCerts = certsByCoach.get(coachId) ?? [];
 
       const guard = assertCoachCertsValidForSession({
         certs: coachCerts,
@@ -130,6 +137,17 @@ export async function getSessionCertWarningsForWeek(
           });
         }
       }
+      blockedAll.push(...blocked);
+      expiringAll.push(...expiring);
+      }
+      // One line per cert type across the crew: the soonest expiry wins.
+      const blocked = Array.from(new Map(blockedAll.map((b) => [JSON.stringify(b), b])).values());
+      const expiring = Array.from(
+        expiringAll
+          .sort((x, y) => x.daysUntilExpiry - y.daysUntilExpiry)
+          .reduce((m, e) => (m.has(e.doc_type) ? m : m.set(e.doc_type, e)), new Map<string, ExpiringCert>())
+          .values()
+      );
 
       if (blocked.length > 0 || expiring.length > 0) {
         result[sess.id] = { blocked, expiring };

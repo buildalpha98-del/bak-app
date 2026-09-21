@@ -53,3 +53,45 @@ export async function isCoachOnSession(
     .maybeSingle();
   return Boolean(data);
 }
+
+// ------------------------------------------------------------
+// Admin side: "which coaches worked this shift?"
+// ------------------------------------------------------------
+//
+// Staff hours, utilisation, workload, cost forecasts, compliance warnings,
+// reminders — anything that attributes a shift to coaches — must count
+// the whole crew, or a second coach's hours vanish and their expired
+// WWCC is never flagged. Two shapes:
+//
+//   * every coach of every shift:   select(`…, ${CREW_EMBED}`)
+//                                   → crewOf(row)
+//   * only shifts of some coaches:  select(`…, ${CREW_JOIN}`)
+//                                   .in(CREW_FILTER, coachIds)
+//                                   → crewOf(row) is then ONLY the
+//                                     matching coaches — exactly the
+//                                     attribution an aggregate wants.
+
+export const CREW_EMBED = "crew:session_coaches(user_id, is_primary)";
+export const CREW_JOIN = "crew:session_coaches!inner(user_id, is_primary)";
+export const CREW_FILTER = "crew.user_id";
+
+export interface CrewMember {
+  userId: string;
+  isLead: boolean;
+}
+
+/**
+ * The coaches on a row selected with CREW_EMBED / CREW_JOIN, lead first.
+ * Falls back to the lead column when the embed is missing or empty (a
+ * row the 048 trigger has not mirrored, or a caller that did not embed).
+ */
+export function crewOf(row: unknown): CrewMember[] {
+  const r = (row ?? {}) as { crew?: unknown; coach_id?: string | null };
+  const raw = Array.isArray(r.crew) ? r.crew : r.crew ? [r.crew] : [];
+  const crew = (raw as Array<{ user_id?: string; is_primary?: boolean }>)
+    .filter((c) => typeof c.user_id === "string")
+    .map((c) => ({ userId: c.user_id as string, isLead: Boolean(c.is_primary) }))
+    .sort((a, b) => Number(b.isLead) - Number(a.isLead));
+  if (crew.length > 0) return crew;
+  return r.coach_id ? [{ userId: r.coach_id, isLead: true }] : [];
+}

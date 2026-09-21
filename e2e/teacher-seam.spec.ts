@@ -340,6 +340,9 @@ test.describe("school portal — the class teacher seam (migrations 088, 090, 09
     page,
     baseURL,
   }) => {
+    // The first report-card PDF on a dev server compiles react-pdf: late
+    // in a long run that once took longer than the default 60s budget.
+    test.setTimeout(240_000);
     test.skip(!fx, skipReason ?? "fixture missing");
     test.skip(
       fx!.releaseExisted,
@@ -351,7 +354,7 @@ test.describe("school portal — the class teacher seam (migrations 088, 090, 09
       "/api/client/"
     );
 
-    const gated = await page.request.get(url);
+    const gated = await page.request.get(url, { timeout: 180_000 });
     expect(gated.status(), "teacher was not gated before release").toBe(403);
 
     // The student page explains instead of 403ing.
