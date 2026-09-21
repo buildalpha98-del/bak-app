@@ -345,6 +345,9 @@ export function ProgramView({
         if (collapsible) {
           return (
             <Collapsible key={section.key} open={isOpen}>
+              {/* The trigger is the button; the header inside it must not
+                  be one too (button-in-button is invalid HTML — it broke
+                  hydration and made every click toggle twice). */}
               <CollapsibleTrigger
                 className="w-full text-left"
                 onClick={() => toggleSection(section.key)}
@@ -354,7 +357,6 @@ export function ProgramView({
                   duration={section.duration}
                   collapsible
                   isOpen={isOpen}
-                  onToggle={() => toggleSection(section.key)}
                 />
               </CollapsibleTrigger>
               <CollapsibleContent>

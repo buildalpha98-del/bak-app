@@ -62,9 +62,17 @@ export async function getScopeAndSequence(
   }
   const [{ data: term }, { data: centreRow }] = await Promise.all([
     termQuery.single(),
-    supabase.from("centres").select("curriculum_framework").eq("id", centreId).maybeSingle(),
+    supabase.from("centres").select("curriculum_framework, type").eq("id", centreId).maybeSingle(),
   ]);
   const framework = frameworkOf(centreRow?.curriculum_framework);
+  // A multi-band coaching programme carries EYLF lines for its 3-5 band;
+  // on a school's Scope & Sequence (and its PDF) only the syllabus codes
+  // belong. The programme content itself is left untouched.
+  const isSchool = centreRow?.type === "school";
+  const schoolOutcomes = (list: unknown[]): WeeklyProgramEntry["sessions"][number]["outcomes"] =>
+    ((list ?? []) as WeeklyProgramEntry["sessions"][number]["outcomes"]).filter(
+      (o) => !isSchool || !(o?.framework === "eylf" || /^eylf/i.test(String(o?.code ?? "")))
+    );
   if (!term) return { termName: "No active term", weeks: [], frameworkKey: framework.key };
 
   // Get sessions with programs and coaches
@@ -132,7 +140,7 @@ export async function getScopeAndSequence(
       duration_minutes: session.duration_minutes,
       program_title: content?.title as string ?? (session as any).programs?.skill_focus ?? null,
       program_content: content,
-      outcomes,
+      outcomes: schoolOutcomes(outcomes),
       status: session.status,
       stage,
       class_names: targeted.map((c) => c.name),
@@ -178,7 +186,7 @@ export async function getScopeAndSequence(
       duration_minutes: lesson.duration_minutes,
       program_title: ((content?.title as string) ?? lesson.sport) || null,
       program_content: content,
-      outcomes: ((content?.curriculumOutcomes as any[]) ?? []),
+      outcomes: schoolOutcomes((content?.curriculumOutcomes as any[]) ?? []),
       status: "planned",
       stage: cls ? bandLabelForYearGroup(framework, cls.year_group) : ageBandToBandLabel(framework, (content?.ageGroup ?? content?.age_group) as string | undefined),
       class_names: cls ? [cls.name] : [],
