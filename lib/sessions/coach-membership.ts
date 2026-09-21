@@ -26,6 +26,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export const MEMBERSHIP_JOIN = "membership:session_coaches!inner(user_id)";
 export const MEMBERSHIP_FILTER = "membership.user_id";
 
+/** The same join, also telling you whether the coach LEADS the shift —
+ *  pay needs it (the lead is paid the shift's rate, a second coach their
+ *  own). Read it with `isLeadOf(row)`. */
+export const MEMBERSHIP_JOIN_WITH_ROLE = "membership:session_coaches!inner(user_id, is_primary)";
+
+/** Whether the filtered coach leads this row's shift. An inner join on
+ *  one user returns one membership row (object or one-element array). */
+export function isLeadOf(row: unknown): boolean {
+  const m = (row as { membership?: unknown }).membership;
+  const first = Array.isArray(m) ? m[0] : m;
+  return Boolean((first as { is_primary?: boolean } | undefined)?.is_primary);
+}
+
 /** True when the user is any coach on the session, lead or not. */
 export async function isCoachOnSession(
   supabase: SupabaseClient,

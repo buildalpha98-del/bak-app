@@ -26,6 +26,8 @@ const PROGRAMME_TITLE = `E2E shared-shift plan ${RUN_ID}`;
 const email = (who: string) => `${RUN_ID}-${who}@buildalphakids.app`;
 
 type Fixture = {
+  paidCentreId: string;
+  paidSessionId: string;
   termId: string;
   sessionId: string;
   programId: string;
@@ -130,17 +132,77 @@ test.beforeAll(async () => {
   });
   if (rpcErr) return fail(`Could not put the coaches on the shift: ${rpcErr.message}`);
 
-  fx = { termId: term.id, sessionId: session.id, programId: programme.id, centreId: centre.id, users };
+  // ---- Pay (the lead is paid the shift's rate, the second coach their own) ----
+  // A COMPLETED shift dated today so it falls in the current pay fortnight —
+  // on a throwaway centre, so no real centre's portal or roster ever shows it.
+  const { data: activeTerm } = await admin.from("terms").select("id").eq("status", "active").limit(1).maybeSingle();
+  const { data: paidCentre, error: pcErr } = await admin
+    .from("centres")
+    .insert({ name: `E2E Centre ${RUN_ID}`, type: "childcare_centre" })
+    .select("id")
+    .single();
+  if (pcErr || !paidCentre) return fail(`Could not create the throwaway centre: ${pcErr?.message}`);
+  undo.push(async () => admin.from("centres").delete().eq("id", paidCentre.id));
+
+  // Lead: $80 a session (their default). Second: $40 an hour at childcare.
+  await admin.from("profiles").update({ default_pay_rate: 80 }).eq("id", users.lead.id);
+  const { error: rateErr } = await admin
+    .from("pay_rates")
+    .insert({ user_id: users.second.id, session_type: "childcare", rate: 40, rate_unit: "per_hour", effective_from: "2026-01-01" });
+  if (rateErr) return fail(`Could not set the second coach's rate: ${rateErr.message}`);
+  undo.push(async () => admin.from("pay_rates").delete().eq("user_id", users.second.id));
+
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney" }).format(new Date());
+  const { data: paid, error: paidErr } = await admin
+    .from("sessions")
+    .insert({
+      term_id: activeTerm?.id ?? term.id,
+      centre_id: paidCentre.id,
+      date: today,
+      time: "06:00:00",
+      duration_minutes: 90,
+      sport: "Netball",
+      status: "draft",
+    })
+    .select("id")
+    .single();
+  if (paidErr || !paid) return fail(`Could not create the paid shift: ${paidErr?.message}`);
+  undo.push(async () => admin.from("sessions").delete().eq("id", paid.id));
+  const { error: crewErr } = await admin.rpc("set_session_coaches", {
+    p_session_id: paid.id,
+    p_coaches: [
+      { user_id: users.lead.id, is_primary: true },
+      { user_id: users.second.id, is_primary: false },
+    ],
+    p_assigned_by: staff.id,
+  });
+  if (crewErr) return fail(`Could not crew the paid shift: ${crewErr.message}`);
+  await admin.from("sessions").update({ status: "completed" }).eq("id", paid.id);
+
+  fx = {
+    paidCentreId: paidCentre.id,
+    paidSessionId: paid.id,
+    termId: term.id,
+    sessionId: session.id,
+    programId: programme.id,
+    centreId: centre.id,
+    users,
+  };
 });
 
 test.afterAll(async () => {
   const admin = adminClient();
   if (fx) {
+    await admin.from("coach_invoices").delete().in("coach_id", Object.values(fx.users).map((u) => u.id));
+    await admin.from("pay_rates").delete().in("user_id", Object.values(fx.users).map((u) => u.id));
+    await admin.from("sessions").delete().eq("id", fx.paidSessionId);
+    await admin.from("centres").delete().eq("id", fx.paidCentreId);
     await admin.from("shift_threads").delete().eq("session_id", fx.sessionId);
     await admin.from("sessions").delete().eq("id", fx.sessionId);
     await admin.from("programs").delete().eq("id", fx.programId);
   }
   await admin.from("terms").delete().eq("name", TERM_NAME);
+  await admin.from("centres").delete().eq("name", `E2E Centre ${RUN_ID}`);
   for (const who of ["lead", "second", "bystander"] as const) {
     const { data } = await admin.from("profiles").select("id").eq("email", email(who)).maybeSingle();
     if (data) {
@@ -237,5 +299,39 @@ test.describe("shared shifts — the second coach (migration 099)", () => {
     await page.goto(`/coach/schedule/${fx!.sessionId}`);
     await expect(page.locator("body")).toContainText(/not found|could not be found|404/i, { timeout: 45_000 });
     await expect(page.locator("body")).not.toContainText(PROGRAMME_TITLE);
+  });
+
+  // ---------------- pay: the second coach is paid their own rate ----------------
+
+  test("the shift stores the lead's rate — which is exactly why it cannot price the second coach", async () => {
+    const { data } = await adminClient().from("sessions").select("pay_rate_resolved").eq("id", fx!.paidSessionId).single();
+    expect(Number(data!.pay_rate_resolved)).toBe(80);
+  });
+
+  test("the second coach's invoicing page lists the shared shift at THEIR rate: $40/h × 1.5h = $60", async ({ page, baseURL }) => {
+    await signInAs(page, fx!.users.second.email, baseURL!);
+    await page.goto("/coach/invoicing");
+    const main = page.locator("main");
+    await expect(main).toContainText(`E2E Centre ${RUN_ID}`, { timeout: 60_000 });
+    await expect(main).toContainText("60.00");
+    await expect(main).not.toContainText("80.00"); // never the lead's
+  });
+
+  test("the lead's page lists the same shift at the shift's rate: $80", async ({ page, baseURL }) => {
+    await signInAs(page, fx!.users.lead.email, baseURL!);
+    await page.goto("/coach/invoicing");
+    const main = page.locator("main");
+    await expect(main).toContainText(`E2E Centre ${RUN_ID}`, { timeout: 60_000 });
+    await expect(main).toContainText("80.00");
+    await expect(main).not.toContainText("60.00");
+  });
+
+  test("the session screen shows each coach their own rate, never the other's", async ({ page, baseURL }) => {
+    await signInAs(page, fx!.users.second.email, baseURL!);
+    await page.goto(`/coach/schedule/${fx!.paidSessionId}`);
+    const body = page.locator("body");
+    await expect(body).toContainText(`Coaching with ${fx!.users.lead.name}`, { timeout: 45_000 });
+    await expect(body).toContainText("$40.00");
+    await expect(body).not.toContainText("$80.00");
   });
 });

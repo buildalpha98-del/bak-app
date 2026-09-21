@@ -8,6 +8,9 @@ import {
   getFortnightlyPeriod,
 } from "@/lib/utils/payRates";
 import type { RateUnit, SessionType, CentreType } from "@/lib/types/enums";
+import type { PayRateRecord } from "@/lib/utils/payRates";
+import { priceShiftForCoach } from "@/lib/pay-rates/coach-shift-pay";
+import { MEMBERSHIP_FILTER, MEMBERSHIP_JOIN_WITH_ROLE, isCoachOnSession, isLeadOf } from "@/lib/sessions/coach-membership";
 
 // ============================================================
 // Types
@@ -447,12 +450,14 @@ export async function getCoachEarnings(): Promise<{
     const startStr = start.toISOString().split("T")[0];
     const endStr = end.toISOString().split("T")[0];
 
+    // Every completed shift the coach was ON this fortnight — lead or
+    // second (099) — each priced for THIS coach.
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")
       .select(
-        "id, date, time, sport, duration_minutes, actual_duration_minutes, pay_rate_override, pay_rate_resolved, centre_id, centres(name)"
+        `id, date, time, sport, duration_minutes, actual_duration_minutes, pay_rate_override, pay_rate_resolved, centre_id, centres(name, type), ${MEMBERSHIP_JOIN_WITH_ROLE}`
       )
-      .eq("coach_id", user.id)
+      .eq(MEMBERSHIP_FILTER, user.id)
       .eq("status", "completed")
       .gte("date", startStr)
       .lte("date", endStr)
@@ -478,66 +483,37 @@ export async function getCoachEarnings(): Promise<{
 
     const earningsSessions: EarningsSessionItem[] = (sessions ?? []).map(
       (s: Record<string, unknown>) => {
-        const centreName =
-          (s.centres as { name: string } | null)?.name ?? "Unknown";
+        const centre = s.centres as { name: string; type: CentreType } | null;
         const duration =
           (s.actual_duration_minutes as number) ??
           (s.duration_minutes as number);
         totalMinutes += duration;
 
-        // Use the resolved rate from DB if available; otherwise calculate
-        const resolvedRate = (s.pay_rate_resolved as number) ?? 0;
-        let amount = resolvedRate; // Default: treat as per_session
-        let rateUnit: RateUnit = "per_session";
-
-        // Try to determine the actual rate unit from the pay_rates table
-        // The DB trigger stores the resolved amount, but we need the unit for display
-        if (s.pay_rate_override) {
-          amount = s.pay_rate_override as number;
-          rateUnit = "per_session";
-        } else {
-          // Check session-type rates for unit info
-          const centreType =
-            (s as unknown as Record<string, unknown>).centre_type ??
-            "childcare_centre";
-          const matchingRate = (ratesRes.data ?? []).find(
-            (r) =>
-              r.effective_from <= (s.date as string)
-          );
-          if (matchingRate) {
-            rateUnit = matchingRate.rate_unit;
-            if (rateUnit === "per_hour") {
-              amount =
-                Math.round(resolvedRate * (duration / 60) * 100) / 100;
-            }
-          }
-        }
-
-        // If pay_rate_resolved is set on DB, use it as the amount
-        // The DB trigger already calculates the correct amount
-        if (resolvedRate > 0) {
-          // For per_session rates, amount = resolvedRate
-          // For per_hour rates, the DB might store the hourly rate;
-          // we calculate the actual pay
-          if (rateUnit === "per_hour") {
-            amount = Math.round(resolvedRate * (duration / 60) * 100) / 100;
-          } else {
-            amount = resolvedRate;
-          }
-        }
-
-        totalEarnings += amount;
+        const pay = priceShiftForCoach(
+          {
+            isLead: isLeadOf(s),
+            coachId: user.id,
+            date: s.date as string,
+            durationMinutes: duration,
+            centreType: centre?.type ?? "childcare_centre",
+            payRateOverride: (s.pay_rate_override as number | null) ?? null,
+            payRateResolved: (s.pay_rate_resolved as number | null) ?? null,
+          },
+          (ratesRes.data ?? []) as PayRateRecord[],
+          profileRes.data ? { default_pay_rate: profileRes.data.default_pay_rate as number | null } : null
+        );
+        totalEarnings += pay.amount;
 
         return {
           id: s.id as string,
           date: s.date as string,
           time: s.time as string,
           sport: s.sport as string,
-          centre_name: centreName,
+          centre_name: centre?.name ?? "Unknown",
           duration_minutes: duration,
-          pay_rate_resolved: resolvedRate > 0 ? resolvedRate : null,
-          rate_unit: rateUnit,
-          amount,
+          pay_rate_resolved: pay.rate,
+          rate_unit: pay.rate_unit,
+          amount: pay.amount,
         };
       }
     );
@@ -583,7 +559,9 @@ export async function requestHoursAdjustment(input: {
       .single();
 
     if (!session) return { error: "Session not found." };
-    if (session.coach_id !== user.id)
+    // How long the shift ran is a fact about the shift: any coach on it
+    // can ask ops to correct it.
+    if (!(await isCoachOnSession(supabase, input.sessionId, user.id)))
       return { error: "Not your session." };
     if (session.status !== "completed")
       return { error: "Session must be completed." };
@@ -776,14 +754,20 @@ export async function getCoachCompletedSessions(): Promise<{
     const { data, error } = await supabase
       .from("sessions")
       .select(
-        "id, date, time, sport, duration_minutes, actual_duration_minutes, needs_ops_review, pay_rate_resolved, centres(name)"
+        `id, date, time, sport, duration_minutes, actual_duration_minutes, needs_ops_review, pay_rate_override, pay_rate_resolved, centres(name, type), ${MEMBERSHIP_JOIN_WITH_ROLE}`
       )
-      .eq("coach_id", user.id)
+      .eq(MEMBERSHIP_FILTER, user.id)
       .eq("status", "completed")
       .order("date", { ascending: false })
       .limit(30);
 
     if (error) return { data: null, error: error.message };
+
+    // The rate shown is THIS coach's — never the lead's to a second coach.
+    const [{ data: myRates }, { data: myProfile }] = await Promise.all([
+      supabase.from("pay_rates").select("session_type, rate, rate_unit, effective_from").eq("user_id", user.id),
+      supabase.from("profiles").select("default_pay_rate").eq("id", user.id).single(),
+    ]);
 
     const mapped = (data ?? []).map((s: Record<string, unknown>) => ({
       id: s.id as string,
@@ -795,7 +779,19 @@ export async function getCoachCompletedSessions(): Promise<{
       duration_minutes: s.duration_minutes as number,
       actual_duration_minutes: s.actual_duration_minutes as number | null,
       needs_ops_review: s.needs_ops_review as boolean,
-      pay_rate_resolved: s.pay_rate_resolved as number | null,
+      pay_rate_resolved: priceShiftForCoach(
+        {
+          isLead: isLeadOf(s),
+          coachId: user.id,
+          date: s.date as string,
+          durationMinutes: (s.actual_duration_minutes as number | null) ?? (s.duration_minutes as number),
+          centreType: (s.centres as { type: CentreType } | null)?.type ?? "childcare_centre",
+          payRateOverride: (s.pay_rate_override as number | null) ?? null,
+          payRateResolved: (s.pay_rate_resolved as number | null) ?? null,
+        },
+        (myRates ?? []) as PayRateRecord[],
+        myProfile ? { default_pay_rate: myProfile.default_pay_rate as number | null } : null
+      ).rate,
     }));
 
     return { data: mapped, error: null };

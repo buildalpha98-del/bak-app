@@ -17,15 +17,15 @@ import { join, relative } from "path";
 // Ask the join table instead — lib/sessions/coach-membership.ts:
 //   .select(`…, ${MEMBERSHIP_JOIN}`).eq(MEMBERSHIP_FILTER, coachId)
 //
-// Exempt, deliberately lead-only:
-//   * pay and invoicing — a shift stores one resolved rate, the lead's.
-//     Paying a second coach needs its own rule before these can change.
+// No exemptions. Pay and invoicing were the last lead-only readers; they
+// now list every shift the coach was on and price each one for THAT
+// coach (lib/pay-rates/coach-shift-pay.ts).
 // (`.in("coach_id", ids)` admin aggregates are not matched here; they
 // undercount a second coach's hours and are tracked separately.)
 
 const ROOT = process.cwd();
 const ROOTS = ["lib", "app", "components"];
-const EXEMPT = new Set<string>(["lib/pay-rates/actions.ts", "lib/invoicing/actions.ts"]);
+const EXEMPT = new Set<string>();
 
 function* walk(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {

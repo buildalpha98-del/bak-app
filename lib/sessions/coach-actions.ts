@@ -13,6 +13,8 @@ import type {
 import type { Session, Program, FeedbackRating } from "@/lib/types/database";
 import { toLocalIso } from "@/lib/utils/roster";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
+import { priceShiftForCoach } from "@/lib/pay-rates/coach-shift-pay";
+import type { PayRateRecord } from "@/lib/utils/payRates";
 
 // ============================================================
 // Types
@@ -134,7 +136,18 @@ function todayString(): string {
   return sydneyTodayIso();
 }
 
-function mapSession(raw: Record<string, unknown>): CoachSessionWithCentre {
+/**
+ * The rate stored on a shift is the LEAD's. A second coach's copy of the
+ * row has it blanked before it leaves the server — list views never show
+ * pay, and the detail screen fills in the viewer's own rate instead.
+ */
+function withoutLeadPay<T extends { coach_id: string | null }>(row: T, viewerId: string): T {
+  if (row.coach_id === viewerId) return row;
+  return { ...row, pay_rate_override: null, pay_rate_resolved: null };
+}
+
+function mapSession(raw: Record<string, unknown>, viewerId: string): CoachSessionWithCentre {
+  raw = withoutLeadPay(raw as unknown as { coach_id: string | null }, viewerId) as unknown as Record<string, unknown>;
   const centre = raw.centres as unknown as Record<string, unknown> | null;
   const term = raw.terms as unknown as Record<string, unknown> | null;
   const kit = raw.equipment_kits as unknown as Record<string, unknown> | null;
@@ -184,7 +197,7 @@ export async function getCoachNextSession(
 
     if (!raw) return { data: null, error: null };
 
-    const mapped = mapSession(raw as unknown as Record<string, unknown>);
+    const mapped = mapSession(raw as unknown as Record<string, unknown>, coachId);
     const centre = (raw as unknown as Record<string, unknown>).centres as Record<
       string,
       unknown
@@ -228,7 +241,7 @@ export async function getCoachSessionsForDate(
     }
 
     const sessions = (raw ?? []).map((r) =>
-      mapSession(r as unknown as Record<string, unknown>)
+      mapSession(r as unknown as Record<string, unknown>, coachId)
     );
     return { data: sessions, error: null };
   } catch (err) {
@@ -271,7 +284,7 @@ export async function getCoachSessionsForWeek(
     }
 
     const sessions = (raw ?? []).map((r) =>
-      mapSession(r as unknown as Record<string, unknown>)
+      mapSession(r as unknown as Record<string, unknown>, coachId)
     );
     return { data: sessions, error: null };
   } catch (err) {
@@ -479,8 +492,34 @@ export async function getCoachSessionDetail(
       for (const c of crew ?? []) crewNames.set(c.id as string, c.name as string);
     }
 
+    // Pay shown on the screen is the VIEWER's. The shift row carries the
+    // lead's; a second coach gets their own resolved rate instead
+    // (lib/pay-rates/coach-shift-pay.ts — the rule payroll pays by).
+    let payForViewer: Pick<Session, "pay_rate_override" | "pay_rate_resolved"> | null = null;
+    if (raw.coach_id !== coachId) {
+      const [{ data: myRates }, { data: myProfile }] = await Promise.all([
+        supabase.from("pay_rates").select("session_type, rate, rate_unit, effective_from").eq("user_id", coachId),
+        supabase.from("profiles").select("default_pay_rate").eq("id", coachId).single(),
+      ]);
+      const mine = priceShiftForCoach(
+        {
+          isLead: false,
+          coachId,
+          date: raw.date as string,
+          durationMinutes: (raw.actual_duration_minutes as number | null) ?? (raw.duration_minutes as number),
+          centreType: (centre?.type as CentreType) ?? "childcare_centre",
+          payRateOverride: null,
+          payRateResolved: null,
+        },
+        (myRates ?? []) as PayRateRecord[],
+        myProfile ? { default_pay_rate: myProfile.default_pay_rate as number | null } : null
+      );
+      payForViewer = { pay_rate_override: null, pay_rate_resolved: mine.rate };
+    }
+
     const session = {
       ...(raw as unknown as Session),
+      ...(payForViewer ?? {}),
       centre_name: (centre?.name as string) ?? "Unknown",
       centre_type: (centre?.type as CentreType) ?? "childcare_centre",
       centre_address: (centre?.address as string) ?? null,
