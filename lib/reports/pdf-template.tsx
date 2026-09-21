@@ -10,6 +10,8 @@ import {
 import type { ReportContentJson } from "@/lib/types/database";
 import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
 import { bandSummaryHeading, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
+import type { SchoolReportContent } from "@/lib/reports/school-report-model";
+import { SUBJECTS } from "@/lib/curriculum/subjects";
 
 // ============================================================
 // Props
@@ -249,7 +251,12 @@ export function ReportPDF({
           <Text style={styles.summaryText}>{content.summary}</Text>
         )}
 
+        {/* School term report (Sept 2026): by subject and stage. */}
+        {content.school && <SchoolReportPages school={content.school} accent={accent} />}
+
         {/* Key Stats */}
+        {!content.school && (
+        <>
         <Text style={[styles.sectionTitle, { color: accent }]}>
           Term Overview
         </Text>
@@ -282,8 +289,11 @@ export function ReportPDF({
           )}
         </View>
 
+        </>
+        )}
+
         {/* Sports Covered */}
-        {content.sports_covered && content.sports_covered.length > 0 && (
+        {!content.school && content.sports_covered && content.sports_covered.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: accent }]}>
               Sports Covered
@@ -466,5 +476,129 @@ export function ReportPDF({
         </View>
       </Page>
     </Document>
+  );
+}
+
+
+// ============================================================
+// School term report — by subject and stage (September 2026)
+// ============================================================
+
+const school = StyleSheet.create({
+  row: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: "#DDDDDD", paddingVertical: 3 },
+  head: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#999999", paddingVertical: 3 },
+  headText: { fontFamily: "Helvetica-Bold", fontSize: 8 },
+  cell: { fontSize: 8.5, paddingRight: 4 },
+  sub: { fontSize: 7.5, color: GREY },
+  chip: { fontSize: 7.5, backgroundColor: "#EEF6F8", color: "#1B5E6B", paddingHorizontal: 4, paddingVertical: 1.5, borderRadius: 3, marginRight: 3, marginBottom: 3 },
+  chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 4 },
+  statRow: { flexDirection: "row", gap: 8, marginBottom: 6 },
+});
+
+function SchoolReportPages({ school: s, accent }: { school: SchoolReportContent; accent: string }) {
+  const fw = frameworkOf(s.framework);
+  const pct = s.assessment_completion.total ? Math.round((s.assessment_completion.done / s.assessment_completion.total) * 100) : null;
+  const w = { subject: "26%", delivered: "18%", assessed: "14%", mark: "12%", move: "12%", quiz: "18%" };
+  return (
+    <>
+      <Text style={[styles.sectionTitle, { color: accent }]}>Term Overview</Text>
+      <View style={styles.statsGrid}>
+        <View style={styles.statBox}>
+          <Text style={[styles.statValue, { color: accent }]}>{pct != null ? `${pct}%` : "—"}</Text>
+          <Text style={styles.statLabel}>{s.assessment_completion.done} of {s.assessment_completion.total} assessments complete</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={[styles.statValue, { color: accent }]}>{s.report_cards.released ? "Released" : "Pending"}</Text>
+          <Text style={styles.statLabel}>Report cards</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={[styles.statValue, { color: accent }]}>{s.sessions_total}</Text>
+          <Text style={styles.statLabel}>Coaching sessions</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={[styles.statValue, { color: accent }]}>{s.lessons_total}</Text>
+          <Text style={styles.statLabel}>Teacher lessons</Text>
+        </View>
+      </View>
+
+      <Text style={[styles.sectionTitle, { color: accent }]}>By Subject</Text>
+      <View style={school.head}>
+        <Text style={[school.headText, { width: w.subject }]}>Subject</Text>
+        <Text style={[school.headText, { width: w.delivered }]}>Delivered</Text>
+        <Text style={[school.headText, { width: w.assessed }]}>Assessed</Text>
+        <Text style={[school.headText, { width: w.mark }]}>Avg mark</Text>
+        <Text style={[school.headText, { width: w.move }]}>Movement</Text>
+        <Text style={[school.headText, { width: w.quiz }]}>Knowledge checks</Text>
+      </View>
+      {s.subjects.map((x) => (
+        <View key={x.subject} style={school.row}>
+          <View style={{ width: w.subject }}>
+            <Text style={school.cell}>{fw.subjectLabel(SUBJECTS[x.subject])}</Text>
+            {x.strands.length > 0 && <Text style={school.sub}>{x.strands.join(" · ")}</Text>}
+          </View>
+          <Text style={[school.cell, { width: w.delivered }]}>
+            {[x.sessions > 0 ? `${x.sessions} session${x.sessions === 1 ? "" : "s"}` : "", x.lessons > 0 ? `${x.lessons} lesson${x.lessons === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "—"}
+          </Text>
+          <Text style={[school.cell, { width: w.assessed }]}>{x.assessable > 0 ? `${x.assessed} / ${x.assessable}` : "—"}</Text>
+          <Text style={[school.cell, { width: w.mark }]}>{x.avg_mark != null ? x.avg_mark.toFixed(1) : "—"}</Text>
+          <Text style={[school.cell, { width: w.move }]}>{x.mark_delta != null ? `${x.mark_delta > 0 ? "+" : ""}${x.mark_delta.toFixed(1)}` : "—"}</Text>
+          <Text style={[school.cell, { width: w.quiz }]}>{x.quizzes > 0 ? `${x.quizzes}${x.quiz_avg_pct != null ? ` · avg ${x.quiz_avg_pct}%` : ""}` : "—"}</Text>
+        </View>
+      ))}
+
+      {s.subjects.some((x) => x.by_stage.length > 0) && (
+        <>
+          <Text style={[styles.sectionTitle, { color: accent }]}>By {fw.bandNoun}</Text>
+          <View style={school.head}>
+            <Text style={[school.headText, { width: "26%" }]}>{fw.bandNoun}</Text>
+            <Text style={[school.headText, { width: "26%" }]}>Subject</Text>
+            <Text style={[school.headText, { width: "16%" }]}>Students</Text>
+            <Text style={[school.headText, { width: "16%" }]}>Assessed</Text>
+            <Text style={[school.headText, { width: "16%" }]}>Avg mark</Text>
+          </View>
+          {s.subjects.flatMap((x) =>
+            x.by_stage.map((row) => (
+              <View key={`${x.subject}#${row.stage}`} style={school.row}>
+                <Text style={[school.cell, { width: "26%" }]}>{fw.bandLabels[row.stage]}</Text>
+                <Text style={[school.cell, { width: "26%" }]}>{x.label}</Text>
+                <Text style={[school.cell, { width: "16%" }]}>{row.students}</Text>
+                <Text style={[school.cell, { width: "16%" }]}>{row.assessed}</Text>
+                <Text style={[school.cell, { width: "16%" }]}>{row.avg_mark != null ? row.avg_mark.toFixed(1) : "—"}</Text>
+              </View>
+            ))
+          )}
+        </>
+      )}
+
+      {s.subjects.some((x) => x.outcomes.length > 0) && (
+        <>
+          <Text style={[styles.sectionTitle, { color: accent }]}>{fw.label} {fw.outcomeNoun}s addressed</Text>
+          {s.subjects.filter((x) => x.outcomes.length > 0).map((x) => (
+            <View key={x.subject} wrap={false}>
+              <Text style={[school.sub, { marginBottom: 2 }]}>{x.label} · {x.outcomes.length}</Text>
+              <View style={school.chips}>
+                {x.outcomes.map((o) => (
+                  <Text key={o.code} style={school.chip}>{o.code}</Text>
+                ))}
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+
+      {s.term_plans.length > 0 && (
+        <>
+          <Text style={[styles.sectionTitle, { color: accent }]}>Term Plans</Text>
+          {s.term_plans.map((p, i) => (
+            <View key={i} style={school.row}>
+              <Text style={[school.cell, { width: "16%" }]}>{p.class_name}</Text>
+              <Text style={[school.cell, { width: "20%" }]}>{SUBJECTS[p.subject as keyof typeof SUBJECTS]?.label ?? p.subject}</Text>
+              <Text style={[school.cell, { width: "46%" }]}>{p.title} ({p.units} units)</Text>
+              <Text style={[school.cell, { width: "18%" }]}>{p.status === "approved" ? "Approved" : "Draft"}</Text>
+            </View>
+          ))}
+        </>
+      )}
+    </>
   );
 }

@@ -1,6 +1,8 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { compileSchoolReport } from "@/lib/reports/school-report";
+import { schoolSummary } from "@/lib/reports/school-report-model";
 import { computeClassRollups } from "@/lib/schools/class-rollups";
 import type { CentreReport, ReportContentJson } from "@/lib/types/database";
 
@@ -106,7 +108,7 @@ export async function compileReportData(
     const enrolledIds = (enrolled ?? []).map((e) => e.child_id);
 
     // Parallel queries for attendance, feedback, assessments
-    const [attendanceResult, feedbackResult, assessmentResult, prevAssessmentResult, classBreakdown] =
+    const [attendanceResult, feedbackResult, assessmentResult, prevAssessmentResult, classBreakdown, school] =
       await Promise.all([
         supabase
           .from("session_attendances")
@@ -135,6 +137,11 @@ export async function compileReportData(
               .in("child_id", enrolledIds)
           : Promise.resolve({ data: [] as { child_id: string; ratings_json: unknown }[] }),
         computeClassRollups(supabase, centreId, {
+          termId,
+          prevTermId,
+          termSessionIds: sessionIds,
+        }),
+        compileSchoolReport(supabase, centreId, {
           termId,
           prevTermId,
           termSessionIds: sessionIds,
@@ -199,7 +206,9 @@ export async function compileReportData(
         : 0;
 
     const content: ReportContentJson = {
-      summary: `${sessions.length} sessions delivered across ${sportsSet.size} sport${sportsSet.size !== 1 ? "s" : ""} during this term.`,
+      summary: school
+        ? schoolSummary(school)
+        : `${sessions.length} sessions delivered across ${sportsSet.size} sport${sportsSet.size !== 1 ? "s" : ""} during this term.`,
       sessions_delivered: sessions.length,
       total_children: uniqueChildren.size || totalHeadcount,
       sports_covered: [...sportsSet],
@@ -221,6 +230,7 @@ export async function compileReportData(
             }
           : undefined,
       class_breakdown: classBreakdown.length > 0 ? classBreakdown : undefined,
+      school: school ?? undefined,
       photos: [],
     };
 
