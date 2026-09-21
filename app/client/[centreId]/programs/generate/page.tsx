@@ -41,7 +41,7 @@ export default async function GenerateLessonPage({
       <div>
         <h1 className="text-2xl font-bold font-heading text-foreground">Generate a lesson</h1>
         <p className="text-muted-foreground mt-1">
-          An English or Mathematics lesson for your class, aligned to the {framework.label}, written in about a minute.
+          A PDHPE (health), English or Mathematics lesson for your class, aligned to the {framework.label}, written in about a minute.
           Review it, then save it to your school&apos;s library.
         </p>
       </div>

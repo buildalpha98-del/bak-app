@@ -29,3 +29,31 @@ describe("subject registry", () => {
     );
   });
 });
+
+describe("PDHPE classroom (health) lessons", () => {
+  it("no health focus area is also a sport — the strand alone decides", async () => {
+    const { PDHPE_HEALTH_FOCUS, SUBJECTS } = await import("../subjects");
+    for (const f of PDHPE_HEALTH_FOCUS) expect(SUBJECTS.pdhpe.strandOptions).not.toContain(f);
+  });
+
+  it("a PDHPE programme is a lesson only when its strand is a health focus", async () => {
+    const { isClassroomLesson, programSectionsFor, lessonDefFor, isLessonDef } = await import("../subjects");
+    expect(isClassroomLesson("pdhpe", "Soccer")).toBe(false);
+    expect(isClassroomLesson(null, null)).toBe(false);
+    expect(isClassroomLesson("pdhpe", "Online safety")).toBe(true);
+    expect(isClassroomLesson("english", "Vocabulary")).toBe(true);
+    expect(programSectionsFor("pdhpe", "Soccer").session).toBe("session");
+    expect(programSectionsFor("pdhpe").warmUp).toBe("Warm-up");
+    expect(programSectionsFor("pdhpe", "Online safety").warmUp).toBe("Hook / tuning in");
+    const def = lessonDefFor("pdhpe", "Respectful relationships");
+    expect(def.key).toBe("pdhpe");
+    expect(isLessonDef(def)).toBe(true);
+    expect(isLessonDef(lessonDefFor("pdhpe", "Netball"))).toBe(false);
+  });
+
+  it("carries the strand names term plans use, so Write lesson prefills", async () => {
+    const { PDHPE_HEALTH_FOCUS } = await import("../subjects");
+    expect(PDHPE_HEALTH_FOCUS).toContain("Personal development and health");
+    expect(PDHPE_HEALTH_FOCUS).toContain("Personal, social and community health");
+  });
+});

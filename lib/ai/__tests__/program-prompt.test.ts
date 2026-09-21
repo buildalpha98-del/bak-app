@@ -134,3 +134,28 @@ describe("buildProgramPrompt — approved term plan drives the session", () => {
     expect(prompt).not.toContain("approved term plan");
   });
 });
+
+describe("buildProgramPrompt — PDHPE classroom (health) lesson", () => {
+  it("is a lesson with resources, the PDHPE outcome list and a steer away from movement outcomes", async () => {
+    const { PDHPE_HEALTH } = await import("@/lib/curriculum/subjects");
+    const prompt = buildProgramPrompt({
+      subject: PDHPE_HEALTH,
+      sport: "Personal safety and protective behaviours",
+      ageGroups: ["8-12"],
+      yearGroups: ["3"],
+      durationMinutes: 45,
+      availableEquipment: ["Scenario cards"],
+    });
+    expect(prompt).toContain('PDHPE lesson on the focus area "Personal safety and protective behaviours"');
+    expect(prompt).toContain("Available resources: Scenario cards");
+    expect(prompt).toContain("CLASSROOM health lesson");
+    expect(prompt).toContain("PD2-2");
+    expect(prompt).not.toContain("coaching session for");
+  });
+
+  it("leaves a coach's PDHPE session untouched", () => {
+    const prompt = buildProgramPrompt({ sport: "Netball", ageGroups: ["8-12"], durationMinutes: 45, availableEquipment: ["Balls"] });
+    expect(prompt).toContain("coaching session for Netball");
+    expect(prompt).not.toContain("CLASSROOM health lesson");
+  });
+});

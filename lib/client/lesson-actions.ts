@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import type { ProgramContentJson } from "@/lib/ai/types";
-import { LESSON_SUBJECT_KEYS } from "@/lib/client/lesson-input";
+import { LESSON_SUBJECT_KEYS, lessonSubjectDef } from "@/lib/client/lesson-input";
 
 export interface SchoolLesson {
   id: string;
@@ -116,7 +116,13 @@ export async function saveSchoolLesson(
       return { data: null, error: "Lessons are for schools." };
     }
     if (!(LESSON_SUBJECT_KEYS as readonly string[]).includes(input.subject)) {
-      return { data: null, error: "Pick English or Mathematics." };
+      return { data: null, error: "Pick a subject." };
+    }
+    // The focus is what makes a PDHPE programme a lesson rather than a
+    // coach's session, so it must be one of the subject's own.
+    const def = lessonSubjectDef(input.subject as (typeof LESSON_SUBJECT_KEYS)[number]);
+    if (!def.strandOptions.includes(input.focus)) {
+      return { data: null, error: `Pick a ${def.strandLabel.toLowerCase()}.` };
     }
     if (input.classId) {
       // The class must be this school's (and the teacher's, when scoped).
@@ -143,7 +149,7 @@ export async function saveSchoolLesson(
         age_group: input.ageBand,
         duration_minutes: input.durationMinutes,
         skill_focus: input.learningFocus ?? null,
-        content_json: { ...input.content, subject: input.subject } as unknown as Record<string, unknown>,
+        content_json: { ...input.content, subject: input.subject, sport: input.focus } as unknown as Record<string, unknown>,
         equipment_used: input.resources,
         created_by: null,
         created_by_client_user_id: clientUser.id,

@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import Link from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SUBJECTS, subjectOf } from "@/lib/curriculum/subjects";
+import { SUBJECTS, lessonDefFor, subjectOf } from "@/lib/curriculum/subjects";
 import { yearGroupLabel } from "@/lib/schools/year-groups";
 import { setTermPlanStatus, deleteTermPlan, type PlanCoachSession, type SchoolTermPlan, type TermPlanTerm } from "@/lib/client/term-plan-actions";
 import type { TermPlanJson } from "@/lib/curriculum/term-plan";
-import { coachUnitForWeek } from "@/lib/curriculum/plan-roster";
+import { coachUnitForWeek, isMovementUnit } from "@/lib/curriculum/plan-roster";
 import { TermPlanEditor } from "@/components/client/term-plan-editor";
 
 /** The units of a plan, each week linking into the lesson generator. */
@@ -31,7 +31,10 @@ export function TermPlanUnits({
   subject: string;
   term: TermPlanTerm | null;
 }) {
-  const lessonSubjects = ["english", "mathematics"];
+  // English and Maths weeks are all the teacher's. In PDHPE the movement
+  // unit is the coach's (written from the roster); the classroom unit is
+  // the teacher's health lesson.
+  const teacherWrites = (u: TermPlanJson["units"][number]) => subject !== "pdhpe" || !isMovementUnit(u);
   const lessonHref = (week: number, focus: string) => {
     const p = new URLSearchParams();
     p.set("subject", subject);
@@ -40,7 +43,7 @@ export function TermPlanUnits({
     if (weekStart) p.set("week", weekStart);
     p.set("learningFocus", focus.slice(0, 200));
     const strand = plan.units.find((u) => u.weeks.includes(week))?.strand ?? "";
-    if (strand && subjectOf(subject).strandOptions.includes(strand)) p.set("focus", strand);
+    if (strand && lessonDefFor(subject, strand).strandOptions.includes(strand)) p.set("focus", strand);
     return `/client/${centreId}/programs/generate?${p.toString()}`;
   };
   return (
@@ -92,7 +95,7 @@ export function TermPlanUnits({
                         </Link>
                       ))}
                 </div>
-                {lessonSubjects.includes(subject) && (
+                {teacherWrites(u) && (
                   <Link href={lessonHref(w.week, w.focus)} className="inline-flex min-h-[36px] shrink-0 items-center gap-1 text-xs font-medium text-portal-700 hover:underline">
                     <PenLine className="h-3.5 w-3.5" /> Write lesson
                   </Link>

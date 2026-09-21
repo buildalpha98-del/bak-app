@@ -130,9 +130,81 @@ export const SUBJECTS: Record<SubjectKey, SubjectDef> = {
   },
 };
 
-/** Section headings for a programme, from its stored subject key. */
-export function programSectionsFor(subject: string | null | undefined): ProgramSectionLabels {
-  return subjectOf(subject).programSections;
+/**
+ * PDHPE has two halves. A coach delivers the movement half as a sport
+ * session; the classroom half — health, wellbeing, relationships, safety
+ * — is a teacher's lesson, shaped like an English or Maths one. It stays
+ * subject "pdhpe" (same syllabus, same report-card subject); what marks
+ * it as a lesson is the focus area sitting where a sport would. None of
+ * these names is a sport, so the strand alone decides.
+ *
+ * The first two are the strand names term plans use (NSW samples / the
+ * Victorian curriculum), so a plan's "Write lesson" link prefills.
+ */
+export const PDHPE_HEALTH_FOCUS = [
+  "Personal development and health",
+  "Personal, social and community health",
+  "Health, wellbeing and relationships",
+  "Healthy, safe and active lifestyles",
+  "Personal safety and protective behaviours",
+  "Respectful relationships",
+  "Emotions, resilience and mental health",
+  "Growth, change and identity",
+  "Nutrition and healthy choices",
+  "Road, water and sun safety",
+  "Online safety",
+  "Medicines, drugs and help-seeking",
+] as const;
+
+/** The PDHPE classroom lesson: PDHPE's key and syllabus, a lesson's shape. */
+export const PDHPE_HEALTH: SubjectDef = {
+  key: "pdhpe",
+  label: "PDHPE",
+  strandLabel: "Focus area",
+  strandOptions: PDHPE_HEALTH_FOCUS,
+  resourceOptions: [
+    "Whiteboard",
+    "Interactive display",
+    "Scenario cards",
+    "Picture books",
+    "Chart paper and markers",
+    "Sticky notes",
+    "Student workbooks",
+    "Body outline / feelings charts",
+    "Food models or packaging",
+    "Safety signs and posters",
+    "Role-play props",
+    "Devices (tablets / laptops)",
+  ],
+  programSections: LESSON_SECTIONS,
+};
+
+/** Lesson-shaped (teacher in a classroom) rather than a coach's session. */
+export function isLessonDef(def: SubjectDef): boolean {
+  return def.programSections === LESSON_SECTIONS;
+}
+
+/** A stored programme is a classroom lesson: any English / Maths one, or
+ *  a PDHPE one whose strand is a health focus area rather than a sport. */
+export function isClassroomLesson(subject: string | null | undefined, strand: string | null | undefined): boolean {
+  const def = subjectOf(subject);
+  if (def.key !== "pdhpe") return true;
+  return (PDHPE_HEALTH_FOCUS as readonly string[]).includes((strand ?? "").trim());
+}
+
+/** The definition a lesson is generated and rendered with. */
+export function lessonDefFor(subject: string | null | undefined, strand?: string | null): SubjectDef {
+  const def = subjectOf(subject);
+  return def.key === "pdhpe" && isClassroomLesson(subject, strand) ? PDHPE_HEALTH : def;
+}
+
+/** Section headings for a programme, from its stored subject key and —
+ *  for PDHPE, where it decides session vs lesson — its strand. */
+export function programSectionsFor(
+  subject: string | null | undefined,
+  strand?: string | null
+): ProgramSectionLabels {
+  return lessonDefFor(subject, strand).programSections;
 }
 
 export const DEFAULT_SUBJECT: SubjectKey = "pdhpe";

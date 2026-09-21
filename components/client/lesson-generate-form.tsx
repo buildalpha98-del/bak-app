@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ProgramView } from "@/components/programs/program-view";
 import { SUBJECTS, type SubjectKey } from "@/lib/curriculum/subjects";
-import { LESSON_SUBJECT_KEYS, LESSON_DURATIONS } from "@/lib/client/lesson-input";
+import { LESSON_SUBJECT_KEYS, LESSON_DURATIONS, lessonSubjectDef } from "@/lib/client/lesson-input";
 import { yearGroupToAgeBand, yearGroupLabel } from "@/lib/schools/year-groups";
 import { bandLabelForYearGroup, frameworkOf, type FrameworkKey } from "@/lib/curriculum/frameworks";
 import { saveSchoolLesson } from "@/lib/client/lesson-actions";
@@ -55,9 +55,9 @@ export function LessonGenerateForm({
     ? (initial!.subject as (typeof LESSON_SUBJECT_KEYS)[number])
     : "english";
   const [subject, setSubject] = useState<(typeof LESSON_SUBJECT_KEYS)[number]>(initialSubject);
-  const subjectDef = SUBJECTS[subject];
+  const subjectDef = lessonSubjectDef(subject);
   const [focus, setFocus] = useState(
-    initial?.focus && SUBJECTS[initialSubject].strandOptions.includes(initial.focus) ? initial.focus : ""
+    initial?.focus && lessonSubjectDef(initialSubject).strandOptions.includes(initial.focus) ? initial.focus : ""
   );
   const [classId, setClassId] = useState(
     initial?.classId && classes.some((c) => c.id === initial.classId)
@@ -85,7 +85,7 @@ export function LessonGenerateForm({
     if (!(LESSON_SUBJECT_KEYS as readonly string[]).includes(next)) return;
     setSubject(next as (typeof LESSON_SUBJECT_KEYS)[number]);
     setFocus("");
-    setResources([...SUBJECTS[next].resourceOptions]);
+    setResources([...lessonSubjectDef(next as (typeof LESSON_SUBJECT_KEYS)[number]).resourceOptions]);
   }
 
   function toggleResource(r: string) {
@@ -189,7 +189,7 @@ export function LessonGenerateForm({
                 subject === k ? "border-portal-600 bg-portal-50 text-portal-800" : "border-input bg-card"
               }`}
             >
-              {SUBJECTS[k].label}
+              {lessonSubjectDef(k).label}
             </button>
           ))}
         </div>

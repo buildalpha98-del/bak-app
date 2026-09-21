@@ -30,7 +30,7 @@ export function SchoolLessons({
         <div>
           <h2 className="text-lg font-semibold font-heading text-foreground">Your school&apos;s lessons</h2>
           <p className="text-sm text-muted-foreground">
-            English and Mathematics lessons your teachers have written with AI.
+            PDHPE, English and Mathematics lessons your teachers have written with AI.
           </p>
         </div>
         <Button render={<Link href={`/client/${centreId}/programs/generate`} />} className="min-h-[44px]">

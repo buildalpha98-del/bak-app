@@ -13,7 +13,7 @@ import { SPORTS } from "@/lib/types/enums";
 import { FRAMEWORKS, bandsLabelForYearGroups, type FrameworkDef, type YearBand } from "@/lib/curriculum/frameworks";
 import { yearGroupLabel, yearGroupToStage } from "@/lib/schools/year-groups";
 import { bandsForAgeBand, promptOutcomeList, syllabusNameFor } from "@/lib/curriculum/knowledge-base";
-import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import { SUBJECTS, isLessonDef, type SubjectDef } from "@/lib/curriculum/subjects";
 import type { PlanWeekBrief } from "@/lib/curriculum/plan-roster";
 
 export interface BuildProgramPromptInput {
@@ -82,7 +82,8 @@ export function buildProgramPrompt(input: BuildProgramPromptInput): string {
   const ages = input.ageGroups;
   const isMulti = ages.length > 1;
   const subject = input.subject ?? SUBJECTS.pdhpe;
-  const isLesson = subject.key !== "pdhpe";
+  // Lesson-shaped: English, Maths, or the PDHPE classroom (health) lesson.
+  const isLesson = isLessonDef(subject);
   const isUnknownSport = !isLesson && !PRESET_SPORTS_LOWER.has(input.sport.toLowerCase());
 
   const ageSection = isMulti
@@ -166,11 +167,18 @@ Build the whole session around that focus, using ${input.sport} as the vehicle. 
     : `You are designing a ${input.durationMinutes}-minute coaching session for ${input.sport}.`;
   const kitLabel = isLesson ? "Available resources" : "Available equipment";
 
+  // PDHPE's classroom half: steer the outcome choice away from the
+  // movement outcomes a coach's session addresses.
+  const healthSection =
+    isLesson && subject.key === "pdhpe"
+      ? `\n\nThis is a CLASSROOM health lesson, not a sport session: discussion, scenarios, explicit teaching and written or spoken tasks. Any movement is a brief energiser at most. Choose ${framework.outcomeNoun}s about health, wellbeing, relationships, safety and self-management — not movement skill or game-play ones.`
+      : "";
+
   return `${opening}
 
 ${ageSection}
 
-${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}${planSection}${outcomeSection}
+${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${healthSection}${centreSection}${progressionSection}${planSection}${outcomeSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }
