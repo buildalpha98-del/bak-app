@@ -7,13 +7,15 @@ import {
   calculateGST,
   type FlaggedItem,
 } from "@/lib/utils/invoicing";
-import { formatPeriod } from "@/lib/utils/payRates";
+import { formatPeriod, type PayRateRecord } from "@/lib/utils/payRates";
+import { priceShiftForCoach } from "@/lib/pay-rates/coach-shift-pay";
+import { MEMBERSHIP_FILTER, MEMBERSHIP_JOIN_WITH_ROLE, isLeadOf } from "@/lib/sessions/coach-membership";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
 import type {
   CoachInvoice,
   InvoiceLineItem,
 } from "@/lib/types/database";
-import type { CoachInvoiceStatus, RateUnit } from "@/lib/types/enums";
+import type { CentreType, CoachInvoiceStatus, RateUnit } from "@/lib/types/enums";
 import type { EarningsSessionItem } from "@/lib/pay-rates/actions";
 
 // ============================================================
@@ -82,13 +84,15 @@ export async function getUninvoicedSessions(
     } = await supabase.auth.getUser();
     if (!user) return { data: [], error: "Not authenticated." };
 
-    // Get completed sessions in the period
+    // Completed shifts in the period the coach was ON — lead or second
+    // (migration 099). Each is priced for THIS coach: the lead at the
+    // rate stored on the shift, a second coach at their own.
     const { data: sessions, error: sessErr } = await supabase
       .from("sessions")
       .select(
-        "id, date, time, sport, duration_minutes, actual_duration_minutes, pay_rate_override, pay_rate_resolved, centre_id, centres(name)"
+        `id, date, time, sport, duration_minutes, actual_duration_minutes, pay_rate_override, pay_rate_resolved, centre_id, centres(name, type), ${MEMBERSHIP_JOIN_WITH_ROLE}`
       )
-      .eq("coach_id", user.id)
+      .eq(MEMBERSHIP_FILTER, user.id)
       .eq("status", "completed")
       .gte("date", periodStart)
       .lte("date", periodEnd)
@@ -110,55 +114,42 @@ export async function getUninvoicedSessions(
       }
     }
 
-    // Fetch coach rates for rate_unit resolution
-    const { data: payRates } = await supabase
-      .from("pay_rates")
-      .select("session_type, rate, rate_unit, effective_from")
-      .eq("user_id", user.id);
+    const [{ data: payRates }, { data: profile }] = await Promise.all([
+      supabase.from("pay_rates").select("session_type, rate, rate_unit, effective_from").eq("user_id", user.id),
+      supabase.from("profiles").select("default_pay_rate").eq("id", user.id).single(),
+    ]);
 
     // Filter out already-invoiced sessions and build items
     const uninvoiced: EarningsSessionItem[] = [];
     for (const s of sessions ?? []) {
       if (invoicedSessionIds.has(s.id)) continue;
 
-      const centreName =
-        (s.centres as unknown as { name: string } | null)?.name ?? "Unknown";
-      const duration =
-        (s.actual_duration_minutes as number | null) ?? s.duration_minutes;
-      const resolvedRate = (s.pay_rate_resolved as number) ?? 0;
-      let amount = resolvedRate;
-      let rateUnit: RateUnit = "per_session";
-
-      if (s.pay_rate_override) {
-        amount = s.pay_rate_override;
-        rateUnit = "per_session";
-      } else {
-        const matchingRate = (payRates ?? []).find(
-          (r) => r.effective_from <= s.date
-        );
-        if (matchingRate) {
-          rateUnit = matchingRate.rate_unit;
-        }
-      }
-
-      if (resolvedRate > 0) {
-        if (rateUnit === "per_hour") {
-          amount = Math.round(resolvedRate * (duration / 60) * 100) / 100;
-        } else {
-          amount = resolvedRate;
-        }
-      }
+      const centre = s.centres as unknown as { name: string; type: CentreType } | null;
+      const duration = (s.actual_duration_minutes as number | null) ?? s.duration_minutes;
+      const pay = priceShiftForCoach(
+        {
+          isLead: isLeadOf(s),
+          coachId: user.id,
+          date: s.date,
+          durationMinutes: duration,
+          centreType: centre?.type ?? "childcare_centre",
+          payRateOverride: (s.pay_rate_override as number | null) ?? null,
+          payRateResolved: (s.pay_rate_resolved as number | null) ?? null,
+        },
+        (payRates ?? []) as PayRateRecord[],
+        profile ? { default_pay_rate: profile.default_pay_rate as number | null } : null
+      );
 
       uninvoiced.push({
         id: s.id,
         date: s.date,
         time: s.time,
         sport: s.sport,
-        centre_name: centreName,
+        centre_name: centre?.name ?? "Unknown",
         duration_minutes: duration,
-        pay_rate_resolved: resolvedRate > 0 ? resolvedRate : null,
-        rate_unit: rateUnit,
-        amount,
+        pay_rate_resolved: pay.rate,
+        rate_unit: pay.rate_unit,
+        amount: pay.amount,
       });
     }
 

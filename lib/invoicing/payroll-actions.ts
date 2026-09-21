@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { calculateGST, generateInvoiceNumber } from "@/lib/utils/invoicing";
-import { resolvePayRate, calculateSessionPay } from "@/lib/utils/payRates";
+import type { PayRateRecord } from "@/lib/utils/payRates";
+import { priceShiftForCoach } from "@/lib/pay-rates/coach-shift-pay";
 import { triggerNotification } from "@/lib/notifications/send";
 import type { CoachInvoice, PaymentBatch, InvoiceLineItem } from "@/lib/types/database";
 import type { RateUnit, CentreType } from "@/lib/types/enums";
@@ -220,66 +221,33 @@ export async function calculatePeriodPayroll(input: {
         const centreName = centre?.name ?? "Unknown";
         const duration = (s.actual_duration_minutes as number | null) ?? s.duration_minutes;
 
-        if (isPrimary) {
-          // Primary keeps the trigger-resolved rate (which includes any
-          // session-level pay_rate_override) — identical maths to the
-          // single-coach path this replaces, so existing invoices don't
-          // shift by a cent.
-          const resolvedRate =
-            (s.pay_rate_resolved as number) ?? profile?.default_pay_rate ?? 0;
-
-          let rateUnit: RateUnit = "per_session";
-          if (!s.pay_rate_override) {
-            const matchingRate = coachRates.find((r) => r.effective_from <= s.date);
-            if (matchingRate) rateUnit = matchingRate.rate_unit as RateUnit;
-          }
-
-          let amount = resolvedRate;
-          if (resolvedRate > 0 && rateUnit === "per_hour") {
-            amount = Math.round(resolvedRate * (duration / 60) * 100) / 100;
-          }
-
-          lineItems.push({
-            session_id: s.id,
+        // One pricing rule for every money path — the lead keeps the
+        // trigger-resolved rate (incl. any override), a second coach is
+        // paid their own (lib/pay-rates/coach-shift-pay.ts). A missing
+        // rate is a visible $0 line ops can spot on the draft.
+        const pay = priceShiftForCoach(
+          {
+            isLead: isPrimary,
+            coachId,
             date: s.date,
-            centre_name: centreName,
-            sport: s.sport,
-            duration_minutes: duration,
-            rate: resolvedRate,
-            rate_unit: rateUnit,
-            amount,
-          });
-        } else {
-          // Secondary coaches are paid at their own resolved rate — the
-          // session's pay_rate_override applies to the primary only
-          // (spec §10 Decision E, mirroring the roster cost projection
-          // in lib/roster/cost-actions.ts).
-          const resolved = resolvePayRate(
-            {
-              pay_rate_override: null,
-              coach_id: coachId,
-              duration_minutes: duration,
-              centre_type: centre?.type ?? "childcare_centre",
-            },
-            coachRates,
-            profile ? { default_pay_rate: profile.default_pay_rate } : null,
-            s.date
-          );
-          const pay = resolved ? calculateSessionPay(resolved, duration) : null;
-
-          // A missing rate produces a visible $0 line rather than a
-          // silently absent one — ops can spot and fix it on the draft.
-          lineItems.push({
-            session_id: s.id,
-            date: s.date,
-            centre_name: centreName,
-            sport: s.sport,
-            duration_minutes: duration,
-            rate: pay?.rate ?? 0,
-            rate_unit: pay?.rate_unit ?? "per_session",
-            amount: pay?.amount ?? 0,
-          });
-        }
+            durationMinutes: duration,
+            centreType: centre?.type ?? "childcare_centre",
+            payRateOverride: (s.pay_rate_override as number | null) ?? null,
+            payRateResolved: (s.pay_rate_resolved as number | null) ?? null,
+          },
+          coachRates as PayRateRecord[],
+          profile ? { default_pay_rate: profile.default_pay_rate } : null
+        );
+        lineItems.push({
+          session_id: s.id,
+          date: s.date,
+          centre_name: centreName,
+          sport: s.sport,
+          duration_minutes: duration,
+          rate: pay.rate ?? 0,
+          rate_unit: pay.rate_unit,
+          amount: pay.amount,
+        });
       }
 
       if (lineItems.length === 0) continue;
