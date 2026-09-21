@@ -324,6 +324,9 @@ export interface Program {
   series_id: string | null;
   series_week: number | null;
   series_length: number | null;
+  /** Written from a school's approved term plan (migration 098). */
+  term_plan_id?: string | null;
+  term_plan_week?: number | null;
   parent_version_id: string | null;
   version_number: number;
   created_by: string;

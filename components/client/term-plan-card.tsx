@@ -2,15 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, CheckCircle2, Trash2, PenLine, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle2, Dumbbell, Trash2, PenLine, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import Link from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SUBJECTS, subjectOf } from "@/lib/curriculum/subjects";
 import { yearGroupLabel } from "@/lib/schools/year-groups";
-import { setTermPlanStatus, deleteTermPlan, type SchoolTermPlan, type TermPlanTerm } from "@/lib/client/term-plan-actions";
+import { setTermPlanStatus, deleteTermPlan, type PlanCoachSession, type SchoolTermPlan, type TermPlanTerm } from "@/lib/client/term-plan-actions";
 import type { TermPlanJson } from "@/lib/curriculum/term-plan";
+import { coachUnitForWeek } from "@/lib/curriculum/plan-roster";
 import { TermPlanEditor } from "@/components/client/term-plan-editor";
 
 /** The units of a plan, each week linking into the lesson generator. */
@@ -20,7 +21,10 @@ export function TermPlanUnits({
   classId,
   subject,
   term,
+  coachSessions = [],
 }: {
+  /** Coach sessions written from this plan (migration 098). */
+  coachSessions?: PlanCoachSession[];
   plan: TermPlanJson;
   centreId: string;
   classId: string | null;
@@ -68,10 +72,26 @@ export function TermPlanUnits({
           <ul className="mt-3 divide-y divide-portal-100 rounded-xl border border-portal-100">
             {u.weeklyFocus.map((w) => (
               <li key={w.week} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                <span>
+                <div className="min-w-0">
                   <span className="mr-2 font-medium text-portal-800">Wk {w.week}</span>{" "}
                   {w.focus}
-                </span>
+                  {coachUnitForWeek(plan, w.week) === u &&
+                    coachSessions
+                      .filter((c) => c.week === w.week)
+                      .map((c) => (
+                        <Link
+                          key={c.session_id}
+                          href={`/client/${centreId}/schedule/${c.session_id}`}
+                          className="mt-1 flex min-h-[36px] items-center gap-1 text-xs font-medium text-portal-700 hover:underline"
+                        >
+                          <Dumbbell className="h-3.5 w-3.5 shrink-0" />
+                          <span>
+                            Coach session:{" "}
+                            {c.program_title}
+                          </span>
+                        </Link>
+                      ))}
+                </div>
                 {lessonSubjects.includes(subject) && (
                   <Link href={lessonHref(w.week, w.focus)} className="inline-flex min-h-[36px] shrink-0 items-center gap-1 text-xs font-medium text-portal-700 hover:underline">
                     <PenLine className="h-3.5 w-3.5" /> Write lesson
@@ -170,7 +190,7 @@ export function TermPlanCard({
       {open && !editing && (
         <div className="space-y-4 px-4 pb-4">
           {plan.plan.rationale && <p className="text-sm text-muted-foreground">{plan.plan.rationale}</p>}
-          <TermPlanUnits plan={plan.plan} centreId={centreId} classId={plan.class_id} subject={plan.subject} term={term} />
+          <TermPlanUnits coachSessions={plan.coach_sessions} plan={plan.plan} centreId={centreId} classId={plan.class_id} subject={plan.subject} term={term} />
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="min-h-[40px]">
               <Pencil className="mr-1.5 h-4 w-4" /> Edit plan

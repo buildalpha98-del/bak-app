@@ -91,3 +91,46 @@ describe("buildProgramPrompt — subjects (migration 089)", () => {
     expect(out).not.toContain("not a preset sport");
   });
 });
+
+describe("buildProgramPrompt — approved term plan drives the session", () => {
+  const planBrief = {
+    week: 3,
+    weekCount: 10,
+    planTitle: "Stage 2 PDHPE — Term 3",
+    unitTitle: "Athletics: run, jump, throw",
+    strand: "Physical education",
+    unitDescription: "Students refine running, jumping and throwing.",
+    focus: "Standing long jump — two-foot take-off and landing",
+    outcomeCodes: ["PD2-4", "PD2-11"],
+    assessment: "Week 5 skills circuit",
+    previousFocuses: [{ week: 2, focus: "Relay changeovers" }],
+    isUnitFinalWeek: false,
+  };
+
+  it("names the plan, the week's focus, the unit's codes and what came before", () => {
+    const prompt = buildProgramPrompt({
+      sport: "Athletics",
+      ageGroups: ["8-12"],
+      yearGroups: ["4"],
+      durationMinutes: 60,
+      availableEquipment: ["Cones"],
+      planBrief,
+    });
+    expect(prompt).toContain("WEEK 3 OF 10");
+    expect(prompt).toContain("Standing long jump — two-foot take-off and landing");
+    expect(prompt).toContain("PD2-4, PD2-11");
+    expect(prompt).toContain("Week 2: Relay changeovers");
+    expect(prompt).toContain("Week 5 skills circuit");
+    expect(prompt).not.toContain("FINAL week");
+  });
+
+  it("says nothing about a plan when there is none", () => {
+    const prompt = buildProgramPrompt({
+      sport: "Athletics",
+      ageGroups: ["8-12"],
+      durationMinutes: 60,
+      availableEquipment: ["Cones"],
+    });
+    expect(prompt).not.toContain("approved term plan");
+  });
+});
