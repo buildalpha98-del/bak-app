@@ -6,6 +6,7 @@ import { updateSessionStatus } from "./actions";
 import { revalidatePath } from "next/cache";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
 import { getBaseUrl } from "@/lib/utils/base-url";
+import { isCoachOnSession } from "@/lib/sessions/coach-membership";
 
 // ============================================================
 // Types
@@ -96,8 +97,8 @@ export async function startSession(
 
     if (fetchError || !session) return { error: "Session not found." };
 
-    // Verify ownership
-    if (session.coach_id !== user.id) {
+    // Any coach on the shift can run it — lead or second (migration 099).
+    if (!(await isCoachOnSession(supabase, sessionId, user.id))) {
       return { error: "You are not assigned to this session." };
     }
 
@@ -169,7 +170,7 @@ export async function saveSessionProgress(
       .single();
 
     if (!session) return { error: "Session not found." };
-    if (session.coach_id !== user.id)
+    if (!(await isCoachOnSession(supabase, sessionId, user.id)))
       return { error: "Not your session." };
     if (session.status !== "in_progress")
       return { error: "Session is not in progress." };
@@ -220,7 +221,7 @@ export async function completeSession(
       .single();
 
     if (fetchError || !session) return { error: "Session not found." };
-    if (session.coach_id !== user.id)
+    if (!(await isCoachOnSession(supabase, sessionId, user.id)))
       return { error: "Not your session." };
     if (session.status !== "in_progress")
       return { error: "Session is not in progress." };
@@ -471,8 +472,8 @@ export async function getActiveSessionData(
 
     if (fetchError || !session) return { data: null, error: "Session not found." };
 
-    // Verify ownership
-    if (session.coach_id !== coachId) {
+    // Any coach on the shift (migration 099).
+    if (!(await isCoachOnSession(supabase, sessionId, coachId))) {
       return { data: null, error: "Not your session." };
     }
 

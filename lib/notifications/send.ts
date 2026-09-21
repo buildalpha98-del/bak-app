@@ -181,8 +181,8 @@ async function checkDND(
   // Check auto-DND (in active session)
   const { data: activeSession } = await admin
     .from("sessions")
-    .select("id")
-    .eq("coach_id", userId)
+    .select("id, membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", userId)
     .eq("status", "in_progress")
     .limit(1)
     .single();

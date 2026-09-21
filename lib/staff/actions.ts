@@ -1091,8 +1091,8 @@ export async function getStaffSessions(
 
   const { data, error } = await supabase
     .from("sessions")
-    .select("*, centres(name)")
-    .eq("coach_id", userId)
+    .select("*, centres(name), membership:session_coaches!inner(user_id)")
+    .eq("membership.user_id", userId)
     .order("date", { ascending: false })
     .limit(20);
 

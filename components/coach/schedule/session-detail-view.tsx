@@ -43,7 +43,7 @@ import { getProgramById } from "@/lib/programs/actions";
 import { ProgramView } from "@/components/programs/program-view";
 import type { ProgramContentJson } from "@/lib/ai/types";
 import type { CoachSessionDetail } from "@/lib/sessions/coach-actions";
-import { Play } from "lucide-react";
+import { Play, Users } from "lucide-react";
 import { CoachProgramPicker } from "./coach-program-picker";
 
 // ============================================================
@@ -97,6 +97,12 @@ export function SessionDetailView({
 }: SessionDetailViewProps) {
   const router = useRouter();
   const { session, centreNotes, program, equipmentKit, equipmentItems, shiftThread, feedback, schoolClasses } = detail;
+  // Shared shifts (migration 099): every coach on the shift sees it and
+  // runs it; confirming, declining and swapping belong to the lead.
+  const crew = session.assigned_coaches ?? [];
+  const others = crew.filter((c) => c.user_id !== currentUserId);
+  const lead = crew.find((c) => c.is_primary) ?? null;
+  const isLead = !lead || lead.user_id === currentUserId;
 
   const [showNotes, setShowNotes] = useState(false);
   const [showDeclineReason, setShowDeclineReason] = useState(false);
@@ -194,6 +200,25 @@ export function SessionDetailView({
           </div>
         </div>
       </div>
+
+      {/* ========== Crew (shared shifts only) ========== */}
+      {others.length > 0 && (
+        <Card>
+          <CardContent className="flex items-start gap-3 p-4">
+            <Users className="size-5 text-muted-foreground shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Coaching with {others.map((c) => c.name ?? "another coach").join(", ")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isLead
+                  ? "You lead this shift."
+                  : `${lead?.name ?? "The lead coach"} leads this shift — confirming and swaps go through them.`}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ========== Time ========== */}
       <Card>
@@ -457,7 +482,7 @@ export function SessionDetailView({
       )}
 
       {/* ========== Actions ========== */}
-      {session.status === "pending_confirmation" && (
+      {session.status === "pending_confirmation" && isLead && (
         <Card>
           <CardContent className="space-y-3 p-4">
             <h3 className="text-sm font-medium text-foreground">
@@ -548,14 +573,16 @@ export function SessionDetailView({
                   "Start Session"
                 )}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setSwapDialogOpen(true)}
-                className="min-h-[44px]"
-              >
-                <ArrowRightLeft className="mr-2 size-4" />
-                Swap
-              </Button>
+              {isLead && (
+                <Button
+                  variant="outline"
+                  onClick={() => setSwapDialogOpen(true)}
+                  className="min-h-[44px]"
+                >
+                  <ArrowRightLeft className="mr-2 size-4" />
+                  Swap
+                </Button>
+              )}
             </div>
             {!canStart && (
               <p className="text-xs text-muted-foreground text-center">

@@ -557,8 +557,8 @@ export async function getCoachAssessmentTasks(): Promise<{
     // Get centres where this coach has sessions
     const { data: coachSessions } = await supabase
       .from("sessions")
-      .select("centre_id")
-      .eq("coach_id", user.id)
+      .select("centre_id, membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", user.id)
       .eq("term_id", activeTerm.id);
 
     const coachCentreIds = [...new Set((coachSessions ?? []).map((s) => s.centre_id))];

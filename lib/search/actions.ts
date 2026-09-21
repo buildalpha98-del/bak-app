@@ -4,6 +4,7 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/types/enums";
+import { MEMBERSHIP_FILTER, MEMBERSHIP_JOIN } from "@/lib/sessions/coach-membership";
 
 // ============================================================
 // Result types — flat shape so the client doesn't need to know
@@ -183,7 +184,11 @@ export async function globalSearch(
   const sessionsPromise = (async () => {
     let q = supabase
       .from("sessions")
-      .select("id, date, time, sport, centre_id, centres!inner(name)")
+      .select(
+        viewer === "coach"
+          ? `id, date, time, sport, centre_id, centres!inner(name), ${MEMBERSHIP_JOIN}`
+          : "id, date, time, sport, centre_id, centres!inner(name)"
+      )
       .limit(PER_ENTITY_LIMIT);
 
     if (dateMatch) {
@@ -193,7 +198,8 @@ export async function globalSearch(
     }
 
     if (viewer === "coach") {
-      q = q.eq("coach_id", user.id);
+      // Every shift the coach is on, lead or second (migration 099).
+      q = q.eq(MEMBERSHIP_FILTER, user.id);
     }
     return q;
   })();
@@ -323,7 +329,7 @@ export async function globalSearch(
   }
 
   for (const ses of sessionsRes?.data ?? []) {
-    const session = ses as {
+    const session = ses as unknown as {
       id: string;
       date: string;
       time: string | null;

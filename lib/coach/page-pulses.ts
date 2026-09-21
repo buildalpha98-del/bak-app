@@ -65,16 +65,16 @@ export async function getCoachFormsPulse(
     const [pastCompletedSessions, todaySessions, weekSubs] = await Promise.all([
       supabase
         .from("sessions")
-        .select("id")
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)")
+        .eq("membership.user_id", coachId)
         .eq("status", "completed")
         .lt("date", today)
         .order("date", { ascending: false })
         .limit(50),
       supabase
         .from("sessions")
-        .select("id, status")
-        .eq("coach_id", coachId)
+        .select("id, status, membership:session_coaches!inner(user_id)")
+        .eq("membership.user_id", coachId)
         .eq("date", today),
       supabase
         .from("form_submissions")
@@ -259,8 +259,8 @@ export async function getCoachInvoicingPulse(
         .gte("paid_at", monthStart),
       supabase
         .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("coach_id", coachId)
+        .select("id, membership:session_coaches!inner(user_id)", { count: "exact", head: true })
+        .eq("membership.user_id", coachId)
         .eq("status", "completed")
         .gte("date", periodStart)
         .lte("date", periodEnd),
@@ -428,8 +428,8 @@ export async function getCoachAssessmentsPulse(
     // Children whose centres have sessions assigned to me this term
     const { data: sessionCentres } = await supabase
       .from("sessions")
-      .select("centre_id")
-      .eq("coach_id", coachId)
+      .select("centre_id, membership:session_coaches!inner(user_id)")
+      .eq("membership.user_id", coachId)
       .eq("term_id", term.id);
 
     const centreIds = [
@@ -527,8 +527,8 @@ export async function getCoachEquipmentPulse(
     const [kitsRes, issueRes] = await Promise.all([
       supabase
         .from("sessions")
-        .select("equipment_kit_id")
-        .eq("coach_id", coachId)
+        .select("equipment_kit_id, membership:session_coaches!inner(user_id)")
+        .eq("membership.user_id", coachId)
         .gte("date", today)
         .not("equipment_kit_id", "is", null)
         .limit(200),

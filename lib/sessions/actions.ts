@@ -1086,7 +1086,7 @@ export async function updateSessionNotes(
 
     const [profileRes, sessionRes] = await Promise.all([
       supabase.from("profiles").select("role").eq("id", user.id).single(),
-      supabase.from("sessions").select("coach_id").eq("id", id).single(),
+      supabase.from("sessions").select("coach_id, session_coaches(user_id)").eq("id", id).single(),
     ]);
 
     if (sessionRes.error || !sessionRes.data) {
@@ -1095,7 +1095,12 @@ export async function updateSessionNotes(
 
     const role = profileRes.data?.role;
     const isAdminOrOps = role === "admin" || role === "ops";
-    const isAssignedCoach = sessionRes.data.coach_id === user.id;
+    // Any coach on the shift may edit its notes, not only the lead.
+    const isAssignedCoach =
+      sessionRes.data.coach_id === user.id ||
+      ((sessionRes.data.session_coaches as unknown as Array<{ user_id: string }> | null) ?? []).some(
+        (sc) => sc.user_id === user.id
+      );
 
     if (!isAdminOrOps && !isAssignedCoach) {
       return { error: "You don't have permission to edit notes for this session." };
