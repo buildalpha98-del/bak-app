@@ -313,6 +313,23 @@ past `npm test`; that's the signal it belongs at this tier.
   `afterAll`. It skips (never fails) on a school that has already released
   the term. Run with `E2E_PORT=3180` locally; port 3100 is held by the
   desktop app's helper.
+- `e2e/school-planning.spec.ts` (Sept 2026) is the tracked form of the
+  rehearsal scripts for term plans (096), the school dashboard, report-card
+  comments (097), plan-drives-roster (098), PDHPE health lessons and the
+  upcoming-term picker. Same self-provisioning rule: a throwaway colleague
+  and a **draft term in 2031** on the first NSW school with a class list;
+  the approved plan, one session, the plan-written programme and a health
+  lesson all live in that term, so deleting the term (by name, even after a
+  failed `beforeAll`) cascades nearly everything. The one write outside it
+  is a comment on a student who has none, removed in `afterAll`. **It bills
+  no AI**: the plan→roster route is driven through its reuse branch (the
+  week's programme is pre-inserted) and the lesson / term-plan routes
+  through their refusals. 2031 matters — it puts the plan under the 2024
+  syllabus, so the edit-in-place test also proves date-aware
+  re-normalisation keeps `PH…` codes. The session is flipped to
+  `published` only for the portal assertion (client RLS hides drafts).
+  Stop any dev server on the repo first: two `next dev` processes in one
+  checkout fight over `.next`.
 
 ## Sports List
 
