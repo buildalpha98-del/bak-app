@@ -30,6 +30,16 @@ export interface SchoolTermPlan {
   updated_at: string;
   /** The band's outcomes under the school's framework — the editor's picker. */
   outcome_options: Array<{ code: string; statement: string }>;
+  /** Coach sessions whose programme was written from this plan (098). */
+  coach_sessions: PlanCoachSession[];
+}
+
+export interface PlanCoachSession {
+  week: number;
+  session_id: string;
+  date: string;
+  sport: string;
+  program_title: string;
 }
 
 export interface TermPlanTerm {
@@ -96,6 +106,31 @@ export async function getTermPlans(
       for (const a of authors ?? []) authorName.set(a.id, a.name);
     }
 
+    // Coach sessions written from these plans. Clients read a programme
+    // through the session that carries it (client_read_centre_programs).
+    const coachSessions = new Map<string, PlanCoachSession[]>();
+    const { data: sessionRows } = await supabase
+      .from("sessions")
+      .select("id, date, sport, status, programs!inner(term_plan_id, term_plan_week, content_json)")
+      .eq("centre_id", centreId)
+      .eq("term_id", term.id)
+      .neq("status", "cancelled")
+      .not("programs.term_plan_id", "is", null)
+      .order("date");
+    for (const s of sessionRows ?? []) {
+      const prog = s.programs as unknown as { term_plan_id: string; term_plan_week: number | null; content_json: { title?: string } | null };
+      if (!prog?.term_plan_id || !prog.term_plan_week) continue;
+      const list = coachSessions.get(prog.term_plan_id) ?? [];
+      list.push({
+        week: prog.term_plan_week,
+        session_id: s.id,
+        date: s.date,
+        sport: s.sport,
+        program_title: prog.content_json?.title ?? `${s.sport} session`,
+      });
+      coachSessions.set(prog.term_plan_id, list);
+    }
+
     const framework = frameworkOf(clientUser.centre_framework);
     const plans: SchoolTermPlan[] = [];
     for (const p of data ?? []) {
@@ -107,6 +142,7 @@ export async function getTermPlans(
         ? outcomesFor({ framework, subject: p.subject, bands: [band] }).map((o) => ({ code: o.code, statement: o.statement }))
         : [];
       plans.push({
+        coach_sessions: coachSessions.get(p.id) ?? [],
         outcome_options,
         id: p.id,
         class_id: p.school_class_id,

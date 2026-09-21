@@ -58,6 +58,7 @@ import {
   MapPin,
   GripVertical,
   BookOpen,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,7 @@ import { SessionDetailSheet } from "./session-detail-sheet";
 import { CreateSessionDialog } from "./create-session-dialog";
 import { GenerateSessionsDialog } from "./generate-sessions-dialog";
 import { AutoProgrammeDialog } from "./auto-programme-dialog";
+import { PlanProgrammeDialog } from "./plan-programme-dialog";
 import { AIGenerateDialog } from "./ai-generate-dialog";
 import { AISummaryBar } from "./ai-summary-bar";
 import { ConfidenceBadge } from "./confidence-badge";
@@ -425,6 +427,7 @@ export function RosterPage({
 
   const [genOpen, setGenOpen] = useState(false);
   const [autoProgOpen, setAutoProgOpen] = useState(false);
+  const [planProgOpen, setPlanProgOpen] = useState(false);
   const [aiGenOpen, setAiGenOpen] = useState(false);
 
   // AI review mode state
@@ -846,6 +849,16 @@ export function RosterPage({
               Auto-programme
             </Button>
           )}
+          {activeTerm && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPlanProgOpen(true)}
+            >
+              <ClipboardList className="size-4" />
+              From school plans
+            </Button>
+          )}
         </div>
 
         {/* Publish week — both desktop and mobile (high-value CTA). */}
@@ -1132,6 +1145,17 @@ export function RosterPage({
           termId={activeTerm.id}
           termName={activeTerm.name}
           centres={centres}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {/* Programme from approved school term plans (migration 098) */}
+      {activeTerm && (
+        <PlanProgrammeDialog
+          open={planProgOpen}
+          onOpenChange={setPlanProgOpen}
+          termId={activeTerm.id}
+          termName={activeTerm.name}
           onSuccess={handleRefresh}
         />
       )}

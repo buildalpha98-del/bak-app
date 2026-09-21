@@ -1923,7 +1923,9 @@ export async function autoProgrammeTerm(input: {
           .from("programs")
           .select(
             "id, sport, age_group, age_groups, skill_focus, series_id, series_week, series_length, created_at"
-          ),
+          )
+          // Written for one class's term plan (098) — not library stock.
+          .is("term_plan_id", null),
       ]);
 
     const centreById = new Map(

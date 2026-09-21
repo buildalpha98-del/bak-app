@@ -14,8 +14,15 @@ import { FRAMEWORKS, bandsLabelForYearGroups, type FrameworkDef, type YearBand }
 import { yearGroupLabel, yearGroupToStage } from "@/lib/schools/year-groups";
 import { bandsForAgeBand, promptOutcomeList, syllabusNameFor } from "@/lib/curriculum/knowledge-base";
 import { SUBJECTS, type SubjectDef } from "@/lib/curriculum/subjects";
+import type { PlanWeekBrief } from "@/lib/curriculum/plan-roster";
 
 export interface BuildProgramPromptInput {
+  /**
+   * The week of the school's approved term plan this session delivers
+   * (lib/curriculum/plan-roster.ts). The plan sets the focus and the
+   * outcomes; the session still has to be a real coaching session.
+   */
+  planBrief?: PlanWeekBrief;
   /** Defaults to PDHPE (a coaching session); English/Maths make a lesson. */
   subject?: SubjectDef;
   /** The school's curriculum (migration 095). Defaults to NSW. */
@@ -135,6 +142,25 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
       }\nTitle the session so the progression is visible (e.g. a consistent theme with this week's focus).`
     : "";
 
+  const b = input.planBrief;
+  const planSection = b
+    ? `\n\n## The school's approved term plan — this session delivers it
+This session is WEEK ${b.week} OF ${b.weekCount} of "${b.planTitle}", which the school has approved.
+Unit: "${b.unitTitle}" (${b.strand}). ${b.unitDescription}
+THIS WEEK'S FOCUS, set by the plan: ${b.focus}
+Build the whole session around that focus, using ${input.sport} as the vehicle. The learning objectives must be the plan's focus in coachable terms.${
+        b.previousFocuses.length > 0
+          ? `\nEarlier weeks of this unit covered:\n${b.previousFocuses.map((f) => `- Week ${f.week}: ${f.focus}`).join("\n")}\nOpen with a brief revisit of last week's skill, then extend it — do not repeat earlier weeks.`
+          : `\nThis is the unit's opening week: establish the foundations the later weeks build on.`
+      }${b.isUnitFinalWeek ? `\nThis is the unit's FINAL week: bring the unit's skills together in game or performance form.` : ""}${
+        b.assessment ? `\nThe plan assesses this unit as follows — give the coach an observation point that feeds it: ${b.assessment}` : ""
+      }${
+        b.outcomeCodes.length > 0
+          ? `\nThe plan maps this unit to ${b.outcomeCodes.join(", ")}. Choose the session's ${framework.outcomeNoun}s from THOSE codes (2-3 of them); use another code from the list below only if none of them fits.`
+          : ""
+      }`
+    : "";
+
   const opening = isLesson
     ? `You are designing a ${input.durationMinutes}-minute ${subject.label} lesson on the ${subject.strandLabel.toLowerCase()} "${input.sport}".`
     : `You are designing a ${input.durationMinutes}-minute coaching session for ${input.sport}.`;
@@ -144,7 +170,7 @@ When only one age band is selected, omit \`scaffolds\` from each activity.`;
 
 ${ageSection}
 
-${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}${outcomeSection}
+${kitLabel}: ${input.availableEquipment.join(", ")}.${skillFocusSection}${levelSection}${unknownSportSection}${centreSection}${progressionSection}${planSection}${outcomeSection}
 
 Return the full program as structured JSON following the ProgramContentJson schema.`;
 }
