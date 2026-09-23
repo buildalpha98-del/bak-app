@@ -22,6 +22,7 @@ import {
 import { generateSessionsForWeek } from "@/lib/terms/actions";
 import type { Term } from "@/lib/types/database";
 import { toLocalIso } from "@/lib/utils/roster";
+import Link from "@/components/ui/app-link";
 
 // ============================================================
 // Helpers
@@ -80,6 +81,8 @@ interface GenerateSessionsDialogProps {
   term: Term;
   templateCount: number;
   onSuccess: () => void;
+  /** Where "Set up the term" goes when there are no slots. */
+  setupHref?: string;
 }
 
 export function GenerateSessionsDialog({
@@ -87,6 +90,7 @@ export function GenerateSessionsDialog({
   onOpenChange,
   term,
   templateCount,
+  setupHref,
   onSuccess,
 }: GenerateSessionsDialogProps) {
   const weeks = useMemo(
@@ -213,8 +217,15 @@ export function GenerateSessionsDialog({
 
             {templateCount === 0 && (
               <p className="text-sm text-amber-600">
-                No template entries found. Add sessions to the weekly template
-                first.
+                {term.name} has no template slots yet.{" "}
+                {setupHref ? (
+                  <Link href={setupHref} className="font-medium underline">
+                    Set up the term
+                  </Link>
+                ) : (
+                  "Add sessions to the weekly template first."
+                )}{" "}
+                — it rolls last term&apos;s pattern forward and generates every week at once.
               </p>
             )}
 

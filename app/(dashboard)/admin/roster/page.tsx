@@ -63,6 +63,12 @@ export default async function AdminRosterPage({
     supabase.from("centres").select("id, name, region_id").order("name"),
   ]);
 
+  // The Generate Week dialog is inert without this — it was hard-coded
+  // to 0, so the button never worked from the roster.
+  const { count: templateCount } = activeTermRes.data
+    ? await supabase.from("term_templates").select("id", { count: "exact", head: true }).eq("term_id", activeTermRes.data.id)
+    : { count: 0 };
+
   const firstError =
     sessionsRes.error ||
     centresRes.error ||
@@ -97,6 +103,7 @@ export default async function AdminRosterPage({
       basePath="/admin/roster"
       sessionCertWarnings={certWarningsRes.data ?? undefined}
       viewerRole="admin"
+      templateCount={templateCount ?? 0}
     />
   );
 }
