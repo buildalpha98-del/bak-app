@@ -36,7 +36,7 @@ interface PulseFixture {
   pendingCount?: number;
   onboardingCount?: number;
   /** Week-window sessions (coach_id rows). */
-  weekSessions?: Array<{ coach_id: string | null }>;
+  weekSessions?: Array<{ coach_id: string | null; crew?: Array<{ user_id: string; is_primary: boolean }> }>;
 }
 
 function installFixture(opts: PulseFixture) {
@@ -103,13 +103,13 @@ function installFixture(opts: PulseFixture) {
         select: () => ({
           gte: () => ({
             lte: () => ({
-              neq: () => ({
-                not: () =>
-                  Promise.resolve({
-                    data: weekSessions,
-                    error: null,
-                  }),
-              }),
+              // No `.not("coach_id", …)` any more: the crew decides who is
+              // rostered, so lead-less rows are handled in code.
+              neq: () =>
+                Promise.resolve({
+                  data: weekSessions,
+                  error: null,
+                }),
             }),
           }),
         }),
@@ -184,6 +184,29 @@ describe("getStaffStatusPulse", () => {
 
     const pulse = await getStaffStatusPulse();
     expect(pulse.notRosteredThisWeekCount).toBe(1);
+  });
+
+  it("a coach who only works shared shifts as second coach IS rostered", async () => {
+    installFixture({
+      activeProfiles: [
+        { id: "c1", role: "coach" },
+        { id: "c2", role: "coach" },
+        { id: "c3", role: "coach" },
+      ],
+      // One shared shift: c1 leads, c2 is the second coach. c3 has nothing.
+      weekSessions: [
+        {
+          coach_id: "c1",
+          crew: [
+            { user_id: "c1", is_primary: true },
+            { user_id: "c2", is_primary: false },
+          ],
+        },
+      ],
+    });
+
+    const pulse = await getStaffStatusPulse();
+    expect(pulse.notRosteredThisWeekCount).toBe(1); // only c3 — was 2 before
   });
 
   it("limits expired-cert count to active profiles only", async () => {

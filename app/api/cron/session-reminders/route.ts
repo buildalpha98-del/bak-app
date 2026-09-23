@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
 import { createNotification } from "@/lib/launch/notifications";
+import { crewOf } from "@/lib/sessions/coach-membership";
 import {
   sessionReminderParent,
   sessionReminderCoach,
@@ -52,7 +53,8 @@ export async function GET(request: Request) {
     .select(
       `id, date, time, duration_minutes, sport, status, coach_id, centre_id,
        centres:centre_id(name, address, primary_contact_name, primary_contact_phone),
-       coach:coach_id(id, name, email)`
+       coach:coach_id(id, name, email),
+       crew:session_coaches(user_id, is_primary, profiles:user_id(id, name, email))`
     )
     .eq("date", tomorrowStr)
     .in("status", ["confirmed", "published"])
@@ -200,11 +202,20 @@ export async function GET(request: Request) {
   // 5. Send COACH reminders — group sessions by coach
   const coachSessionMap = new Map<string, typeof sessions>();
 
+  // Every coach on the shift gets the reminder — the second coach turns
+  // up too. (The cron runs as the service role, so crew profiles resolve.)
+  type CoachContact = { id: string; name: string; email: string };
+  const coachContact = new Map<string, CoachContact>();
   for (const session of sessions) {
-    if (!session.coach_id) continue;
-    const existing = coachSessionMap.get(session.coach_id) || [];
-    existing.push(session);
-    coachSessionMap.set(session.coach_id, existing);
+    const lead = (session as Record<string, unknown>).coach as CoachContact | null;
+    if (session.coach_id && lead) coachContact.set(session.coach_id, lead);
+    const crewRows = ((session as Record<string, unknown>).crew as Array<{ user_id: string; profiles: CoachContact | null }> | null) ?? [];
+    for (const c of crewRows) if (c.profiles) coachContact.set(c.user_id, c.profiles);
+    for (const { userId } of crewOf(session)) {
+      const existing = coachSessionMap.get(userId) || [];
+      existing.push(session);
+      coachSessionMap.set(userId, existing);
+    }
   }
 
   for (const [coachId, coachSessions] of coachSessionMap) {
@@ -223,11 +234,7 @@ export async function GET(request: Request) {
     }
 
     // Get coach profile
-    const coach = (coachSessions[0] as Record<string, unknown>).coach as {
-      id: string;
-      name: string;
-      email: string;
-    } | null;
+    const coach = coachContact.get(coachId) ?? null;
 
     if (!coach?.email) continue;
 

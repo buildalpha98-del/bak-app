@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 import type {
   SchedulingCoach,
   SchedulingInput,
@@ -66,17 +67,18 @@ export async function assembleSchedulingInput(
   fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
   const { data: historyRows } = await supabase
     .from("sessions")
-    .select("coach_id, centre_id")
+    .select(`coach_id, centre_id, ${CREW_EMBED}`)
     .gte("date", fourWeeksAgo.toISOString().split("T")[0])
     .lt("date", weekStart)
-    .in("status", ["completed", "confirmed", "in_progress"])
-    .not("coach_id", "is", null);
+    .in("status", ["completed", "confirmed", "in_progress"]);
 
-  // Aggregate history
+  // Aggregate history — familiarity is earned by everyone on the shift.
   const historyMap = new Map<string, number>();
   (historyRows || []).forEach((h) => {
-    const key = `${h.coach_id}:${h.centre_id}`;
-    historyMap.set(key, (historyMap.get(key) || 0) + 1);
+    for (const { userId } of crewOf(h)) {
+      const key = `${userId}:${h.centre_id}`;
+      historyMap.set(key, (historyMap.get(key) || 0) + 1);
+    }
   });
   const history: SessionHistory[] = Array.from(historyMap.entries()).map(([key, count]) => {
     const [coach_id, centre_id] = key.split(":");
@@ -86,18 +88,20 @@ export async function assembleSchedulingInput(
   // 6. Current week existing assignments (confirmed/in_progress)
   const { data: existingAssignments } = await supabase
     .from("sessions")
-    .select("id, date, time, duration_minutes, centre_id, coach_id, sport, status, template_id")
+    .select(`id, date, time, duration_minutes, centre_id, coach_id, sport, status, template_id, ${CREW_EMBED}`)
     .gte("date", weekStart)
     .lte("date", weekEnd)
-    .not("coach_id", "is", null)
     .in("status", ["confirmed", "pending_confirmation", "in_progress"]);
 
+  // A coach's existing commitments include shifts they work as second —
+  // the solver must not book them over the top of one.
   const currentAssignments = new Map<string, SchedulingSession[]>();
   (existingAssignments || []).forEach((s) => {
-    if (!s.coach_id) return;
-    const list = currentAssignments.get(s.coach_id) || [];
-    list.push(s as SchedulingSession);
-    currentAssignments.set(s.coach_id, list);
+    for (const { userId } of crewOf(s)) {
+      const list = currentAssignments.get(userId) || [];
+      list.push({ ...(s as unknown as SchedulingSession), coach_id: userId });
+      currentAssignments.set(userId, list);
+    }
   });
 
   return {

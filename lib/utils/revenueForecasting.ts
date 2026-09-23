@@ -1,4 +1,8 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
+import { priceShiftForCoach } from "@/lib/pay-rates/coach-shift-pay";
+import type { PayRateRecord } from "@/lib/utils/payRates";
+import type { CentreType } from "@/lib/types/enums";
 
 // ============================================================
 // Revenue Forecasting Engine
@@ -85,7 +89,7 @@ async function calculateCommittedRevenue(
   // Get actual rostered sessions in the period
   const { data: sessions } = await supabase
     .from("sessions")
-    .select("id, centre_id, coach_id, pay_rate_resolved, date, status, profiles!sessions_coach_id_fkey(name)")
+    .select(`id, centre_id, coach_id, pay_rate_resolved, duration_minutes, date, status, profiles!sessions_coach_id_fkey(name), ${CREW_EMBED}`)
     .gte("date", periodStart.toISOString().split("T")[0])
     .lte("date", periodEnd.toISOString().split("T")[0])
     .neq("status", "cancelled");
@@ -98,6 +102,42 @@ async function calculateCommittedRevenue(
   const avgCoachRate = payRates && payRates.length > 0
     ? payRates.reduce((sum, r) => sum + r.rate, 0) / payRates.length
     : 40;
+
+  // A shared shift costs the lead's pay PLUS each second coach's own
+  // (lib/pay-rates/coach-shift-pay.ts — the rule payroll pays by). The
+  // rate stored on the shift is the lead's alone, so reading only that
+  // understated every shared shift.
+  const secondIds = Array.from(
+    new Set((sessions ?? []).flatMap((s) => crewOf(s).filter((c) => !c.isLead).map((c) => c.userId)))
+  );
+  const [{ data: secondRates }, { data: secondProfiles }] = secondIds.length
+    ? await Promise.all([
+        supabase.from("pay_rates").select("user_id, session_type, rate, rate_unit, effective_from").in("user_id", secondIds),
+        supabase.from("profiles").select("id, name, default_pay_rate").in("id", secondIds),
+      ])
+    : [{ data: [] }, { data: [] }];
+  const ratesOf = (id: string) => ((secondRates ?? []) as Array<PayRateRecord & { user_id: string }>).filter((r) => r.user_id === id);
+  const profileOf = (id: string) =>
+    ((secondProfiles ?? []) as Array<{ id: string; name: string | null; default_pay_rate: number | null }>).find((x) => x.id === id) ?? null;
+  const secondCoachCosts = (s: NonNullable<typeof sessions>[number], centreType: string) =>
+    crewOf(s)
+      .filter((c) => !c.isLead)
+      .map((c) => {
+        const pay = priceShiftForCoach(
+          {
+            isLead: false,
+            coachId: c.userId,
+            date: s.date as string,
+            durationMinutes: (s.duration_minutes as number | null) ?? 60,
+            centreType: centreType as CentreType,
+            payRateOverride: null,
+            payRateResolved: null,
+          },
+          ratesOf(c.userId),
+          profileOf(c.userId)
+        );
+        return { coachId: c.userId, name: profileOf(c.userId)?.name ?? "Unknown", cost: pay.rate === null ? avgCoachRate : pay.amount };
+      });
 
   const centreMap = new Map((centres ?? []).map((c) => [c.id, c]));
   const byCentreType = new Map<string, number>();
@@ -138,7 +178,13 @@ async function calculateCommittedRevenue(
     }
 
     const coachCost = centreSessions.length > 0
-      ? centreSessions.reduce((sum, s) => sum + (s.pay_rate_resolved ?? avgCoachRate), 0)
+      ? centreSessions.reduce(
+          (sum, s) =>
+            sum +
+            (s.pay_rate_resolved ?? avgCoachRate) +
+            secondCoachCosts(s, centre.type).reduce((x, c) => x + c.cost, 0),
+          0
+        )
       : (config.defaultSessionFrequency[centre.type] ?? 1) * weeksInPeriod * avgCoachRate * seasonalFactor;
 
     totalRevenue += revenue;
@@ -156,6 +202,12 @@ async function calculateCommittedRevenue(
         existing.sessions++;
         existing.cost += session.pay_rate_resolved ?? avgCoachRate;
         byCoach.set(session.coach_id, existing);
+      }
+      for (const second of secondCoachCosts(session, centre.type)) {
+        const row = byCoach.get(second.coachId) ?? { name: second.name, sessions: 0, cost: 0 };
+        row.sessions++;
+        row.cost += second.cost;
+        byCoach.set(second.coachId, row);
       }
     }
   }

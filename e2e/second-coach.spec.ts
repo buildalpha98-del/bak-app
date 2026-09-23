@@ -334,4 +334,28 @@ test.describe("shared shifts — the second coach (migration 099)", () => {
     await expect(body).toContainText("$40.00");
     await expect(body).not.toContainText("$80.00");
   });
+
+  // ---------------- admin side: the second coach's work is counted ----------------
+
+  test("the staff list credits the second coach with the shared shift's hours", async ({ page, baseURL }) => {
+    const { data: adminUser } = await adminClient()
+      .from("profiles")
+      .select("email")
+      .eq("role", "admin")
+      .eq("status", "active")
+      .not("email", "is", null)
+      .order("created_at")
+      .limit(1)
+      .single();
+    await signInAs(page, adminUser!.email as string, baseURL!);
+    await page.goto("/admin/staff");
+    // 90 minutes today, on a shift someone else leads: 1.5h, not 0h.
+    for (const who of ["second", "lead"] as const) {
+      const row = page.locator("tr", { hasText: fx!.users[who].name }).first();
+      await expect(row, `${who} is listed`).toBeVisible({ timeout: 60_000 });
+      await expect(row, `${who} has the shift's hours`).toContainText("1.5h");
+    }
+    const bystander = page.locator("tr", { hasText: fx!.users.bystander.name }).first();
+    await expect(bystander).toContainText("0h");
+  });
 });

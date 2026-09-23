@@ -20,8 +20,9 @@ import { join, relative } from "path";
 // No exemptions. Pay and invoicing were the last lead-only readers; they
 // now list every shift the coach was on and price each one for THAT
 // coach (lib/pay-rates/coach-shift-pay.ts).
-// (`.in("coach_id", ids)` admin aggregates are not matched here; they
-// undercount a second coach's hours and are tracked separately.)
+// `.in("coach_id", ids)` is matched too: admin aggregates (staff hours,
+// utilisation, availability, swap candidates) attribute a shift to its
+// whole crew — CREW_JOIN + `.in(CREW_FILTER, ids)` + `crewOf(row)`.
 
 const ROOT = process.cwd();
 const ROOTS = ["lib", "app", "components"];
@@ -39,7 +40,7 @@ function* walk(dir: string): Generator<string> {
 
 function leadOnlyReads(text: string): number[] {
   const hits: number[] = [];
-  const re = /\.eq\(\s*"coach_id"\s*,/g;
+  const re = /\.(?:eq|in)\(\s*"coach_id"\s*,/g;
   for (let m = re.exec(text); m; m = re.exec(text)) {
     // The nearest preceding .from() in the same statement is the table.
     const from = text.lastIndexOf('.from("', m.index);
@@ -54,6 +55,34 @@ describe("no lead-only reads of a coach's shifts", () => {
   it("finds the pattern it is looking for", () => {
     expect(leadOnlyReads('supabase\n.from("sessions")\n.select("id")\n.eq("coach_id", coachId)')).toEqual([4]);
     expect(leadOnlyReads('x.from("sessions").select("id");\ny.from("skill_ratings").select("id").eq("coach_id", u)')).toEqual([]);
+  });
+
+  it("catches the admin `.in(...)` form as well", () => {
+    expect(leadOnlyReads('db.from("sessions").select("coach_id").in("coach_id", ids)')).toEqual([1]);
+  });
+
+  // The same family of bug, one step over: `session_coaches` and
+  // `availability_slots` key the coach as `user_id`. Two reads asked for
+  // `coach_id` instead — PostgREST errors, the code reads `data ?? []`,
+  // and the feature silently does nothing: the roster's travel-time check
+  // never fired, and utilisation assumed 5 slots a week for every coach.
+  it("never asks a user_id-keyed table for coach_id", () => {
+    const offenders: string[] = [];
+    const chain = /\.from\("(session_coaches|availability_slots)"\)/g;
+    for (const root of ROOTS) {
+      for (const file of walk(join(ROOT, root))) {
+        const text = readFileSync(file, "utf8");
+        for (let m = chain.exec(text); m; m = chain.exec(text)) {
+          const end = text.indexOf(";", m.index);
+          // Comments may (and do) mention coach_id to explain this very rule.
+          const body = text.slice(m.index, end < 0 ? m.index + 600 : end).replace(/\/\/[^\n]*/g, "");
+          if (/["`,\s(]coach_id\b/.test(body)) {
+            offenders.push(`${relative(ROOT, file)}:${text.slice(0, m.index).split("\n").length} (${m[1]})`);
+          }
+        }
+      }
+    }
+    expect(offenders, "these tables key the coach as user_id").toEqual([]);
   });
 
   it("every sessions read for a coach goes through session_coaches", () => {

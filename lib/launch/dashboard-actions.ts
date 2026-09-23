@@ -6,6 +6,7 @@
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getY1Targets } from "@/lib/launch/y1-targets-actions";
+import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 
 // ========================
 // Constants
@@ -546,15 +547,17 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   // Sessions per coach this week
   const { data: weekCoachSessions } = await admin
     .from("sessions")
-    .select("coach_id")
+    .select(`coach_id, ${CREW_EMBED}`)
     .gte("date", weekRange.start)
     .lte("date", weekRange.end)
-    .neq("status", "cancelled")
-    .not("coach_id", "is", null);
+    .neq("status", "cancelled");
 
+  // Sessions per coach counts the whole crew of each shift.
   const coachSessionMap = new Map<string, number>();
-  for (const s of (weekCoachSessions ?? []) as Array<{ coach_id: string }>) {
-    coachSessionMap.set(s.coach_id, (coachSessionMap.get(s.coach_id) ?? 0) + 1);
+  for (const s of weekCoachSessions ?? []) {
+    for (const { userId } of crewOf(s)) {
+      coachSessionMap.set(userId, (coachSessionMap.get(userId) ?? 0) + 1);
+    }
   }
 
   // Avg sessions per coach over last 4 weeks

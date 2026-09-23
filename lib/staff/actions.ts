@@ -10,6 +10,7 @@ import { getMonday, getFriday } from "@/lib/utils/roster";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
+import { CREW_FILTER, CREW_JOIN, crewOf } from "@/lib/sessions/coach-membership";
 
 // ============================================================
 // Types
@@ -187,16 +188,16 @@ export async function getStaffList(
     // Historical: any session in the past-4-weeks window.
     supabase
       .from("sessions")
-      .select("coach_id, date, time, duration_minutes")
-      .in("coach_id", userIds)
+      .select(`coach_id, date, time, duration_minutes, ${CREW_JOIN}`)
+      .in(CREW_FILTER, userIds)
       .gte("date", histStart)
       .lte("date", histEnd)
       .neq("status", "cancelled"),
     // Forward-looking: next 28 days for the "Next: …" cell.
     supabase
       .from("sessions")
-      .select("coach_id, date, time")
-      .in("coach_id", userIds)
+      .select(`coach_id, date, time, ${CREW_JOIN}`)
+      .in(CREW_FILTER, userIds)
       .gt("date", fwdStart)
       .lte("date", fwdEnd)
       .neq("status", "cancelled"),
@@ -205,8 +206,8 @@ export async function getStaffList(
     // operator browses <50 coaches; this stays cheap.
     supabase
       .from("sessions")
-      .select("coach_id, date, time")
-      .in("coach_id", userIds)
+      .select(`coach_id, date, time, ${CREW_JOIN}`)
+      .in(CREW_FILTER, userIds)
       .lt("date", fwdStart)
       .neq("status", "cancelled")
       .order("date", { ascending: false })
@@ -230,11 +231,13 @@ export async function getStaffList(
       date: string;
       duration_minutes: number;
     };
-    if (!r.coach_id) continue;
+    // Every coach on the shift worked those hours — lead and second.
     const idx = weekIndexFor(r.date);
-    const arr = hoursByCoach.get(r.coach_id) ?? [0, 0, 0, 0];
-    arr[idx] += (r.duration_minutes ?? 0) / 60;
-    hoursByCoach.set(r.coach_id, arr);
+    for (const { userId } of crewOf(row)) {
+      const arr = hoursByCoach.get(userId) ?? [0, 0, 0, 0];
+      arr[idx] += (r.duration_minutes ?? 0) / 60;
+      hoursByCoach.set(userId, arr);
+    }
   }
 
   // Next session: smallest date+time ≥ today per coach.
@@ -245,10 +248,11 @@ export async function getStaffList(
       date: string;
       time: string | null;
     };
-    if (!r.coach_id) continue;
     const iso = `${r.date}T${r.time ?? "00:00:00"}`;
-    const existing = nextByCoach.get(r.coach_id);
-    if (!existing || iso < existing) nextByCoach.set(r.coach_id, iso);
+    for (const { userId } of crewOf(row)) {
+      const existing = nextByCoach.get(userId);
+      if (!existing || iso < existing) nextByCoach.set(userId, iso);
+    }
   }
 
   // Last session: largest date+time strictly before today.
@@ -261,10 +265,10 @@ export async function getStaffList(
       date: string;
       time: string | null;
     };
-    if (!r.coach_id) continue;
-    if (lastByCoach.has(r.coach_id)) continue;
     const iso = `${r.date}T${r.time ?? "00:00:00"}`;
-    lastByCoach.set(r.coach_id, iso);
+    for (const { userId } of crewOf(row)) {
+      if (!lastByCoach.has(userId)) lastByCoach.set(userId, iso);
+    }
   }
 
   const data: StaffListItem[] = profiles.map((p) => {

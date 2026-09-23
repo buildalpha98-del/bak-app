@@ -198,6 +198,16 @@ export function checkAvailability(
  * Scan a week's sessions for clashes: time overlaps, insufficient travel
  * buffer, and compliance gaps.
  */
+/** Coaches on a roster session: its crew when known, else the lead. */
+export function sessionCrewIds(s: {
+  coach_id: string | null;
+  assigned_coaches?: Array<{ user_id: string }> | null;
+}): string[] {
+  const ids = new Set<string>((s.assigned_coaches ?? []).map((c) => c.user_id));
+  if (s.coach_id) ids.add(s.coach_id);
+  return [...ids];
+}
+
 export function detectClashes(
   sessions: SessionWithRelations[],
   complianceDocs: { coach_id: string; doc_type: ComplianceDocType; expiry_date: string | null; status: string }[],
@@ -209,10 +219,14 @@ export function detectClashes(
   // Group sessions by coach
   const sessionsByCoach = new Map<string, SessionWithRelations[]>();
   for (const s of sessions) {
-    if (!s.coach_id || s.status === "cancelled") continue;
-    const arr = sessionsByCoach.get(s.coach_id) ?? [];
-    arr.push(s);
-    sessionsByCoach.set(s.coach_id, arr);
+    if (s.status === "cancelled") continue;
+    // Every coach on the shift, not only the lead: a second coach can be
+    // double-booked, out of travel range or out of compliance too.
+    for (const coachId of sessionCrewIds(s)) {
+      const arr = sessionsByCoach.get(coachId) ?? [];
+      arr.push(s);
+      sessionsByCoach.set(coachId, arr);
+    }
   }
 
   const centreMap = new Map(centres.map((c) => [c.id, c]));
