@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import {
   resolvePayRate,
@@ -576,8 +577,24 @@ export async function requestHoursAdjustment(input: {
         .single(),
     ]);
 
-    // Create a task for ops review
-    const { error: taskErr } = await supabase.from("tasks").insert({
+    // File the request as a task for ops. Two things stopped every
+    // request before: tasks.column_id is NOT NULL with no default, and a
+    // coach has no INSERT policy on tasks (it is an ops record) — so the
+    // write goes through the admin client after the coach's own checks
+    // above, the way every portal write does.
+    const admin = createSupabaseAdmin();
+    const { data: column } = await admin
+      .from("task_columns")
+      .select("id")
+      .eq("is_final", false)
+      .order("position", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (!column) return { error: "The task board has no open column to file the request in." };
+    // tasks has no status column — the board's columns are the status.
+    const { error: taskErr } = await admin.from("tasks").insert({
+      column_id: column.id,
+      source: "system",
       title: `Hours adjustment: ${profileRes.data?.name ?? "Coach"} — ${session.sport} ${session.date}`,
       description: [
         `Coach: ${profileRes.data?.name ?? "Unknown"}`,
@@ -587,7 +604,6 @@ export async function requestHoursAdjustment(input: {
         `Reason: ${input.reason}`,
         `Session ID: ${session.id}`,
       ].join("\n"),
-      status: "todo",
       priority: "medium",
       column_order: 0,
       linked_entity_type: "session",
@@ -617,6 +633,26 @@ export async function requestHoursAdjustment(input: {
   }
 }
 
+/** Move a task to the board's first final column (tasks has no status). */
+async function closeTask(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  taskId: string
+): Promise<{ error: string | null }> {
+  const { data: done } = await supabase
+    .from("task_columns")
+    .select("id")
+    .eq("is_final", true)
+    .order("position", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!done) return { error: "The task board has no final column to close the request in." };
+  const { error } = await supabase
+    .from("tasks")
+    .update({ column_id: done.id, updated_at: new Date().toISOString() })
+    .eq("id", taskId);
+  return { error: error?.message ?? null };
+}
+
 export async function approveHoursAdjustment(input: {
   taskId: string;
   sessionId: string;
@@ -641,16 +677,9 @@ export async function approveHoursAdjustment(input: {
 
     if (sessErr) return { error: sessErr.message };
 
-    // Close the task
-    const { error: taskErr } = await supabase
-      .from("tasks")
-      .update({
-        status: "done",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.taskId);
-
-    if (taskErr) return { error: taskErr.message };
+    // Close the task: move it to the board's final column.
+    const { error: taskErr } = await closeTask(supabase, input.taskId);
+    if (taskErr) return { error: taskErr };
 
     await supabase.from("activity_log").insert({
       user_id: user.id,
@@ -693,16 +722,9 @@ export async function rejectHoursAdjustment(input: {
       })
       .eq("id", input.sessionId);
 
-    // Close the task
-    const { error: taskErr } = await supabase
-      .from("tasks")
-      .update({
-        status: "done",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.taskId);
-
-    if (taskErr) return { error: taskErr.message };
+    // Close the task: move it to the board's final column.
+    const { error: taskErr } = await closeTask(supabase, input.taskId);
+    if (taskErr) return { error: taskErr };
 
     await supabase.from("activity_log").insert({
       user_id: user.id,

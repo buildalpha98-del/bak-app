@@ -10,6 +10,7 @@ import type { CommandCentreData } from "@/lib/ops/actions";
 import { TodaysSessionsWidget } from "@/components/ops/todays-sessions-widget";
 import { UnconfirmedShiftsWidget } from "@/components/ops/unconfirmed-shifts-widget";
 import { PendingSwapsWidget } from "@/components/ops/pending-swaps-widget";
+import { DecisionQueueWidget } from "@/components/ops/decision-queue-widget";
 import { ComplianceAlertsWidget } from "@/components/ops/compliance-alerts-widget";
 import { EquipmentIssuesWidget } from "@/components/ops/equipment-issues-widget";
 import { MyTasksWidget } from "@/components/ops/my-tasks-widget";
@@ -57,6 +58,7 @@ export function CommandCentre(props: CommandCentreProps) {
     recentRatings: props.recentRatings,
     pendingAssessments: props.pendingAssessments,
     activeRerosteringEvents: props.activeRerosteringEvents,
+    decisions: props.decisions,
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -117,6 +119,10 @@ export function CommandCentre(props: CommandCentreProps) {
         { event: "*", schema: "public", table: "rerostering_events" },
         () => refreshAll()
       )
+      // The decision queue: a coach's hours request lands as a task, a
+      // centre's change request in its own table.
+      .on("postgres_changes", { event: "*", schema: "public", table: "session_change_requests" }, () => refreshAll())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, () => refreshAll())
       .subscribe();
 
     return () => {
@@ -168,6 +174,9 @@ export function CommandCentre(props: CommandCentreProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left column — action items (higher urgency) */}
         <div className="space-y-6">
+          <div className="animate-fade-up stagger-1">
+            <DecisionQueueWidget queue={data.decisions} onRefresh={refreshAll} basePath="/ops/roster" />
+          </div>
           <div className="animate-fade-up stagger-2">
             <UnconfirmedShiftsWidget
               shifts={data.unconfirmedShifts}

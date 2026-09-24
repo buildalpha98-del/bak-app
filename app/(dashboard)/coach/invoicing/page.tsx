@@ -10,6 +10,8 @@ import { getCoachInvoicingPulse } from "@/lib/coach/page-pulses";
 import { InvoicingDashboard } from "@/components/invoicing/invoicing-dashboard";
 import { CoachPulseStrip } from "@/components/coach/coach-pulse-strip";
 import { LoadError } from "@/components/ui/load-error";
+import { HoursAdjustment } from "@/components/pay-rates/hours-adjustment";
+import { getCoachCompletedSessions } from "@/lib/pay-rates/actions";
 
 interface Props {
   searchParams: Promise<{ period?: string }>;
@@ -31,11 +33,12 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
   const periodEnd = end.toISOString().split("T")[0];
 
   // Parallel fetches
-  const [invoiceResult, sessionsResult, historyResult, profileResult, pulse] =
+  const [invoiceResult, sessionsResult, historyResult, completedResult, profileResult, pulse] =
     await Promise.all([
       getCoachInvoiceForPeriod(periodStart, periodEnd),
       getUninvoicedSessions(periodStart, periodEnd),
       getCoachInvoiceHistory(),
+      getCoachCompletedSessions(),
       supabase
         .from("profiles")
         .select("name, email, phone, address, abn, gst_registered")
@@ -92,6 +95,9 @@ export default async function CoachInvoicingPage({ searchParams }: Props) {
         gstRegistered={coachProfile.gst_registered}
         coachProfile={coachProfile}
       />
+      {/* Ran long, or the app closed a shift you forgot to check out of?
+          Ask ops to correct the hours before the invoice is raised. */}
+      <HoursAdjustment initialSessions={completedResult.data ?? []} />
     </div>
   );
 }

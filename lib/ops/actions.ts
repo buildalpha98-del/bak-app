@@ -6,6 +6,8 @@ import type { SwapRequestWithDetails } from "@/lib/sessions/shift-actions";
 import { getTasks } from "@/lib/tasks/actions";
 import type { TaskWithRelations } from "@/lib/types/database";
 import { getRecentFeedback } from "@/lib/feedback/actions";
+import { getDecisionQueue } from "@/lib/ops/decision-actions";
+import type { DecisionQueue } from "@/lib/ops/decision-queue";
 import {
   bucketCertExpiry,
   TRACKED_EXPIRY_TYPES,
@@ -101,6 +103,8 @@ export interface CommandCentreData {
   recentRatings: RecentRating[];
   pendingAssessments: PendingAssessmentItem[];
   activeRerosteringEvents: Awaited<ReturnType<typeof import("@/lib/rerostering/actions").getActiveRerosteringEvents>>;
+  /** Hours adjustments, review flags, change requests (lib/ops/decision-queue.ts). */
+  decisions: DecisionQueue;
 }
 
 // ============================================================
@@ -575,6 +579,7 @@ export async function getCommandCentreData(
     feedbackResult,
     assessmentsResult,
     rerosteringEvents,
+    decisionsResult,
   ] = await Promise.all([
     getTodaysSessions(),
     getUpcomingUnconfirmedShifts(),
@@ -585,6 +590,7 @@ export async function getCommandCentreData(
     getRecentFeedback(5),
     getPendingAssessments(),
     getActiveRerosteringEvents(),
+    getDecisionQueue(),
   ]);
 
   // Filter tasks to non-final columns only, limit 8, sort by priority
@@ -634,5 +640,6 @@ export async function getCommandCentreData(
     recentRatings,
     pendingAssessments: assessmentsResult.data ?? [],
     activeRerosteringEvents: rerosteringEvents,
+    decisions: decisionsResult.data ?? { hours: [], reviews: [], changes: [], total: 0 },
   };
 }

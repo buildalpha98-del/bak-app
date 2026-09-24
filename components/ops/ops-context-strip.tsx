@@ -43,6 +43,11 @@ export function OpsContextStrip({ firstName, pulse, now }: OpsContextStripProps)
 
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
           <PulseStat
+            count={pulse.decisionsCount}
+            label="waiting on your decision"
+            href="/ops#decisions"
+          />
+          <PulseStat
             count={pulse.needsCoachTodayCount}
             label="shifts need a coach today"
             href="/ops/roster?status=needs_coach"

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
+// The decision queue has its own tests; here it is one more count.
+vi.mock("@/lib/ops/decision-actions", () => ({ getDecisionCount: vi.fn().mockResolvedValue(0) }));
 
 const { supabaseMock } = vi.hoisted(() => ({
   supabaseMock: {
@@ -150,6 +152,7 @@ describe("getOpsCommandPulse", () => {
       needsCoachTodayCount: 0,
       unconfirmedShiftsCount: 0,
       equipmentIssuesCount: 0,
+      decisionsCount: 0,
     });
   });
 
@@ -220,6 +223,7 @@ describe("getOpsCommandPulse", () => {
       needsCoachTodayCount: 0,
       unconfirmedShiftsCount: 0,
       equipmentIssuesCount: 0,
+      decisionsCount: 0,
     });
   });
 });
