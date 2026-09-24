@@ -644,7 +644,7 @@ export async function publishDraftSessionsForWeek(weekStart: string): Promise<{
     // sneak in. The .eq("status","draft") below double-guards.
     const { data: drafts, error: selErr } = await supabase
       .from("sessions")
-      .select("id")
+      .select("id, coach_id")
       .gte("date", weekStart)
       .lte("date", weekEndDate)
       .eq("status", "draft");
@@ -656,13 +656,21 @@ export async function publishDraftSessionsForWeek(weekStart: string): Promise<{
 
     const draftIds = drafts.map((d) => d.id as string);
 
-    const { error: updErr } = await supabase
-      .from("sessions")
-      .update({ status: "published" })
-      .in("id", draftIds)
-      .eq("status", "draft");
-
-    if (updErr) throw updErr;
+    // A coach can confirm ONLY a pending_confirmation shift, and nothing
+    // moved a `published` one there — so publishing left every shift
+    // unconfirmable and ops bulk-confirmed on coaches' behalf. A shift
+    // with a coach now goes straight to pending_confirmation; one with
+    // no coach is merely published (visible to the centre).
+    const withCoach = drafts.filter((d) => d.coach_id).map((d) => d.id as string);
+    const without = drafts.filter((d) => !d.coach_id).map((d) => d.id as string);
+    for (const [ids, status] of [
+      [withCoach, "pending_confirmation"],
+      [without, "published"],
+    ] as const) {
+      if (ids.length === 0) continue;
+      const { error: updErr } = await supabase.from("sessions").update({ status }).in("id", ids).eq("status", "draft");
+      if (updErr) throw updErr;
+    }
 
     // One activity log row per session so the per-shift timeline is
     // accurate — best-effort, don't sink the whole call on logging

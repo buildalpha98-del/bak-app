@@ -5,14 +5,17 @@
 // a dot when it's programmed; clicking opens that centre's week on the
 // roster. Gaps sort to the top.
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CalendarRange, Wand2 } from "lucide-react";
+import { toast } from "sonner";
+import { AlertTriangle, BellRing, CalendarRange, Loader2, Send, Sparkles, Wand2 } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CoverageBoard as Board, CellState, CoverageCell } from "@/lib/roster/coverage-model";
 import type { CoverageTermOption } from "@/lib/roster/coverage-actions";
 import { termTiming } from "@/lib/schools/plannable-terms";
+import { getUnconfirmedByCoach, publishTerm, remindUnconfirmed, type UnconfirmedByCoach } from "@/lib/roster/term-actions";
 import { SYDNEY_TZ } from "@/lib/utils/sydney-time";
 
 const STATE: Record<CellState, { label: string; cls: string }> = {
@@ -50,6 +53,75 @@ export function CoverageBoardView({
   const router = useRouter();
   const t = board.totals;
   const noSessions = t.sessions === 0;
+  const future = board.weeks.filter((w) => w >= mondayOfToday(today));
+
+  // ---- Term actions: AI assign every week, publish, chase confirmations.
+  const [assigning, setAssigning] = useState<{ done: number; total: number } | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [reminding, setReminding] = useState(false);
+  const [pending, setPending] = useState<UnconfirmedByCoach[]>([]);
+  useEffect(() => {
+    getUnconfirmedByCoach(term.id).then(({ data }) => setPending(data ?? []));
+  }, [term.id, t.unconfirmed]);
+
+  async function handleAssign() {
+    // One solver run per week, like the roster's AI Assign, so every
+    // run is on the record and a failure costs one week. Only weeks from
+    // today, and only sessions with no coach.
+    const weeks = future.filter((w) => board.rows.some((r) => r.cells.find((c) => c.week_start === w)?.unassigned));
+    if (weeks.length === 0) {
+      toast.message("Every session from this week on already has a coach.");
+      return;
+    }
+    setAssigning({ done: 0, total: weeks.length });
+    let assigned = 0;
+    let left = 0;
+    for (const w of weeks) {
+      const end = new Date(`${w}T00:00:00Z`);
+      end.setUTCDate(end.getUTCDate() + 4);
+      try {
+        const res = await fetch("/api/scheduling/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ weekStart: w, weekEnd: end.toISOString().slice(0, 10), termId: term.id, keepExisting: true }),
+        });
+        const json = (await res.json()) as { summary?: { assigned_count: number; unassigned_count: number }; error?: string };
+        if (!res.ok) throw new Error(json.error ?? "Failed");
+        assigned += json.summary?.assigned_count ?? 0;
+        left += json.summary?.unassigned_count ?? 0;
+      } catch (err) {
+        toast.error(`Week of ${weekLabel(w)}: ${err instanceof Error ? err.message : "failed"}`);
+      }
+      setAssigning((a) => (a ? { ...a, done: a.done + 1 } : a));
+    }
+    setAssigning(null);
+    toast.success(`${assigned} session${assigned === 1 ? "" : "s"} assigned${left ? ` — ${left} still need a coach (no one eligible)` : ""}.`);
+    router.refresh();
+  }
+
+  async function handlePublish() {
+    setPublishing(true);
+    const { data, error } = await publishTerm(term.id);
+    setPublishing(false);
+    if (error || !data) {
+      toast.error(error ?? "Failed to publish.");
+      return;
+    }
+    toast.success(
+      `${data.sent_to_coaches} shift${data.sent_to_coaches === 1 ? "" : "s"} sent to ${data.coaches_notified} coach${data.coaches_notified === 1 ? "" : "es"} to confirm` +
+        (data.published_unassigned ? `; ${data.published_unassigned} with no coach published to centres` : "") +
+        "."
+    );
+    router.refresh();
+  }
+
+  async function handleRemind() {
+    setReminding(true);
+    const { data, error } = await remindUnconfirmed(term.id);
+    setReminding(false);
+    if (error || !data) toast.error(error ?? "Failed to send reminders.");
+    else toast.success(`Reminded ${data.reminded} coach${data.reminded === 1 ? "" : "es"}.`);
+  }
 
   return (
     <div className="space-y-5">
@@ -89,6 +161,30 @@ export function CoverageBoardView({
         <Stat label="Waiting on coach" value={t.unconfirmed} tone={t.unconfirmed ? "sky" : undefined} />
         <Stat label="Programmed" value={`${t.programmed} / ${t.sessions}`} />
       </div>
+
+      {/* The sequence, left to right: assign → publish → chase. */}
+      {!noSessions && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-muted/20 p-3">
+          <Button onClick={handleAssign} disabled={!!assigning || t.unassigned === 0} variant={t.unassigned > 0 ? "default" : "outline"} className="min-h-11">
+            {assigning ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+            {assigning ? `Assigning week ${assigning.done + 1} of ${assigning.total}…` : `AI assign ${t.unassigned} unassigned`}
+          </Button>
+          <Button onClick={handlePublish} disabled={publishing || t.drafts_total === 0} variant={t.unassigned === 0 && t.drafts_total > 0 ? "default" : "outline"} className="min-h-11">
+            {publishing ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            Publish {t.drafts_total} draft{t.drafts_total === 1 ? "" : "s"} to coaches
+          </Button>
+          <Button onClick={handleRemind} disabled={reminding || pending.length === 0} variant="outline" className="min-h-11">
+            {reminding ? <Loader2 className="size-4 animate-spin" /> : <BellRing className="size-4" />}
+            Remind {pending.length} coach{pending.length === 1 ? "" : "es"} to confirm
+          </Button>
+          {pending.length > 0 && (
+            <p className="basis-full text-xs text-muted-foreground">
+              Waiting on:{" "}
+              {pending.map((p) => `${p.name} (${p.count}, first ${weekLabel(p.first_date)})`).join(" · ")}
+            </p>
+          )}
+        </div>
+      )}
 
       {t.centres_missing > 0 && (
         <p className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -152,6 +248,13 @@ export function CoverageBoardView({
       </p>
     </div>
   );
+}
+
+function mondayOfToday(iso: string) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  const dow = d.getUTCDay() === 0 ? 7 : d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - (dow - 1));
+  return d.toISOString().slice(0, 10);
 }
 
 function Stat({ label, value, hint, strong, tone }: { label: string; value: string | number; hint?: string; strong?: boolean; tone?: "red" | "sky" }) {
