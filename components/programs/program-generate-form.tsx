@@ -46,6 +46,8 @@ type FormStatus = "idle" | "generating" | "preview" | "editing" | "saving";
 
 interface ProgramGenerateFormProps {
   basePath: string;
+  /** A library gap the term needs filled: opens the form ready to go. */
+  initial?: { sport?: string; ageGroups?: string[]; weeks?: number };
 }
 
 const DURATIONS: { value: SessionDuration; label: string }[] = [
@@ -54,7 +56,7 @@ const DURATIONS: { value: SessionDuration; label: string }[] = [
   { value: 60, label: "60 minutes" },
 ];
 
-export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
+export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormProps) {
   const router = useRouter();
 
   // Form fields
@@ -63,8 +65,8 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   const [subject, setSubject] = useState<SubjectKey>("pdhpe");
   const subjectDef = SUBJECTS[subject];
   const isLesson = subject !== "pdhpe";
-  const [sport, setSport] = useState<string>("");
-  const [ageGroups, setAgeGroups] = useState<AgeBand[]>([]);
+  const [sport, setSport] = useState<string>(initial?.sport ?? "");
+  const [ageGroups, setAgeGroups] = useState<AgeBand[]>((initial?.ageGroups ?? []).filter((b): b is AgeBand => ["3-5", "5-8", "8-12", "12-16"].includes(b)));
   const [durationMinutes, setDurationMinutes] = useState<SessionDuration | 0>(0);
   const [skillFocus, setSkillFocus] = useState("");
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([
@@ -89,7 +91,7 @@ export function ProgramGenerateForm({ basePath }: ProgramGenerateFormProps) {
   const [status, setStatus] = useState<FormStatus>("idle");
   // Multi-week series: 1 = single plan (existing flow). >1 generates
   // sequentially with progression context and saves as a linked block.
-  const [weeks, setWeeks] = useState(1);
+  const [weeks, setWeeks] = useState(initial?.weeks && initial.weeks > 1 && initial.weeks <= 12 ? initial.weeks : 1);
   const [genProgress, setGenProgress] = useState<string | null>(null);
   const [generatedSeries, setGeneratedSeries] = useState<ProgramContentJson[]>([]);
   const [generatedContent, setGeneratedContent] =

@@ -5,6 +5,8 @@ import { getProgramsStatusPulse } from "@/lib/programs/status-pulse-actions";
 import { ProgramLibrary } from "@/components/programs/program-library";
 import { ProgramsStatusPulseStrip } from "@/components/programs/programs-status-pulse";
 import { LibraryCoverage } from "@/components/programs/library-coverage";
+import { TermProgrammingCard } from "@/components/programs/term-programming-card";
+import { getTermProgrammingStatus } from "@/lib/programs/term-programming-actions";
 
 export const metadata = {
   title: "Programmes | Build Alpha Kids",
@@ -18,9 +20,10 @@ export default async function OpsProgramsPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: programs, error }, pulse] = await Promise.all([
+  const [{ data: programs, error }, pulse, termStatus] = await Promise.all([
     getPrograms(),
     getProgramsStatusPulse(),
+    getTermProgrammingStatus(),
   ]);
 
   if (error) {
@@ -46,6 +49,9 @@ export default async function OpsProgramsPage() {
       </div>
 
       <ProgramsStatusPulseStrip pulse={pulse} basePath="/ops/programs" />
+
+      {/* Is the term on the roster programmed? The library below is the stock. */}
+      {termStatus.data && <TermProgrammingCard status={termStatus.data} basePath="/ops/programs" rosterPath="/ops/roster" />}
 
       <LibraryCoverage />
 
