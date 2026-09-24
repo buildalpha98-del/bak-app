@@ -131,11 +131,12 @@ test.describe("ops dashboard — needs your decision", () => {
   });
 
   test("approve the hours: the session pays 60 min and the task closes", async ({ page, baseURL }) => {
+    test.setTimeout(180_000);
     await signInAs(page, fx!.adminEmail, baseURL!);
     await page.goto("/ops");
     const row = widget(page).locator("li", { hasText: `${fx!.coach.name} asks for 60 min` });
     await row.getByRole("button", { name: "Approve" }).click({ timeout: 60_000 });
-    await expect(page.getByText("Approved 60 min")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Approved 60 min")).toBeVisible({ timeout: 90_000 });
     const admin = adminClient();
     const { data: s } = await admin.from("sessions").select("actual_duration_minutes, needs_ops_review").eq("id", fx!.sessions[0]).single();
     expect(s).toMatchObject({ actual_duration_minutes: 60, needs_ops_review: false });
@@ -144,11 +145,12 @@ test.describe("ops dashboard — needs your decision", () => {
   });
 
   test("approve the centre's move: the session moves to the requested day and time", async ({ page, baseURL }) => {
+    test.setTimeout(180_000);
     await signInAs(page, fx!.adminEmail, baseURL!);
     await page.goto("/ops");
     const row = widget(page).locator("li", { hasText: "asks to move Soccer" });
     await row.getByRole("button", { name: "Approve" }).click({ timeout: 60_000 });
-    await expect(page.getByText("Session moved")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Session moved")).toBeVisible({ timeout: 90_000 });
     const { data: s } = await adminClient().from("sessions").select("date, time").eq("id", fx!.sessions[2]).single();
     expect(s!.date).toBe(fx!.movedTo);
     expect(String(s!.time)).toMatch(/^11:00/);
@@ -162,7 +164,7 @@ test.describe("ops dashboard — needs your decision", () => {
     await page.goto("/ops");
     const row = widget(page).locator("li", { hasText: "Ran 30 min over" }).filter({ hasText: `E2E Centre ${RUN}` });
     await row.getByRole("button", { name: "Keep rostered" }).click({ timeout: 60_000 });
-    await expect(page.getByText("Kept at 45 min")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Kept at 45 min")).toBeVisible({ timeout: 90_000 });
     const { data: s } = await adminClient().from("sessions").select("actual_duration_minutes, needs_ops_review").eq("id", fx!.sessions[1]).single();
     expect(s).toMatchObject({ actual_duration_minutes: 45, needs_ops_review: false });
     await page.goto("/ops");

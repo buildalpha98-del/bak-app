@@ -11,7 +11,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "e2e": "playwright test e2e/smoke.spec.ts e2e/shared-link.spec.ts e2e/teacher-seam.spec.ts e2e/school-planning.spec.ts e2e/second-coach.spec.ts e2e/term-setup.spec.ts e2e/term-publish.spec.ts e2e/decision-queue.spec.ts",
+    "e2e": "playwright test e2e/smoke.spec.ts e2e/shared-link.spec.ts e2e/teacher-seam.spec.ts e2e/school-planning.spec.ts e2e/second-coach.spec.ts e2e/term-setup.spec.ts e2e/term-publish.spec.ts e2e/decision-queue.spec.ts e2e/term-programming.spec.ts",
     "e2e:ui": "playwright test --ui",
     "e2e:audit": "playwright test e2e/audit.spec.ts"
   },

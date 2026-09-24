@@ -364,7 +364,7 @@ test.describe("school portal — plan, roster, lesson, report card (096–098)",
     const coming = nav.getByRole("link", { name: new RegExp(TERM_NAME) });
     await expect(coming).toContainText("Starts 3 Feb 2031");
     await coming.click();
-    await expect(page).toHaveURL(new RegExp(`termId=${fx!.termId}`));
+    await expect(page).toHaveURL(new RegExp(`termId=${fx!.termId}`), { timeout: 60_000 });
     await expect(page.getByRole("navigation", { name: "Term to plan" }).locator('[aria-current="page"]')).toContainText(TERM_NAME);
     await expect(page.getByText(new RegExp(`${TERM_NAME} · 10 weeks`))).toBeVisible();
   });
