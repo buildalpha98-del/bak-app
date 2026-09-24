@@ -73,6 +73,8 @@ export interface CoverageBoard {
     unconfirmed: number;
     ready: number;
     programmed: number;
+    /** Every live draft, with or without a coach — what Publish sends. */
+    drafts_total: number;
     /** Sessions that are both confirmed (or beyond) and programmed — the one number. */
     readiness_percent: number;
     centres_missing: number;
@@ -102,7 +104,7 @@ export function buildCoverageBoard(
   const byCentre = new Map<string, CoverageSession[]>();
   for (const s of inTerm) byCentre.set(s.centre_id, [...(byCentre.get(s.centre_id) ?? []), s]);
 
-  const totals = { sessions: 0, unassigned: 0, draft: 0, unconfirmed: 0, ready: 0, programmed: 0, readyAndProgrammed: 0, centres_missing: 0 };
+  const totals = { sessions: 0, unassigned: 0, draft: 0, unconfirmed: 0, ready: 0, programmed: 0, drafts_total: 0, readyAndProgrammed: 0, centres_missing: 0 };
 
   const rows: CoverageRow[] = centres
     .map((centre) => {
@@ -124,6 +126,7 @@ export function buildCoverageBoard(
       });
       const live = mine.filter((s) => s.status !== "cancelled").length;
       totals.sessions += live;
+      totals.drafts_total += mine.filter((s) => s.status === "draft").length;
       for (const c of cells) {
         totals.unassigned += c.unassigned;
         totals.draft += c.draft;
@@ -148,6 +151,7 @@ export function buildCoverageBoard(
       unconfirmed: totals.unconfirmed,
       ready: totals.ready,
       programmed: totals.programmed,
+      drafts_total: totals.drafts_total,
       readiness_percent: totals.sessions === 0 ? 0 : Math.round((totals.readyAndProgrammed / totals.sessions) * 100),
       centres_missing: totals.centres_missing,
     },
