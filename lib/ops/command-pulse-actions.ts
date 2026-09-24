@@ -31,6 +31,8 @@ export interface OpsCommandPulse {
   needsCoachTodayCount: number;
   unconfirmedShiftsCount: number;
   equipmentIssuesCount: number;
+  /** Hours adjustments + review flags + change requests waiting on ops. */
+  decisionsCount: number;
 }
 
 export async function getOpsCommandPulse(): Promise<OpsCommandPulse> {
@@ -121,11 +123,13 @@ export async function getOpsCommandPulse(): Promise<OpsCommandPulse> {
       ).length;
     }
 
+    const { getDecisionCount } = await import("@/lib/ops/decision-actions");
     return {
       needsCoachTodayCount:
         (unassignedRes.count ?? 0) + (needsReplacementRes.count ?? 0),
       unconfirmedShiftsCount: unconfirmedRes.count ?? 0,
       equipmentIssuesCount,
+      decisionsCount: await getDecisionCount(),
     };
   } catch (err) {
     console.error("getOpsCommandPulse error:", err);
@@ -133,6 +137,7 @@ export async function getOpsCommandPulse(): Promise<OpsCommandPulse> {
       needsCoachTodayCount: 0,
       unconfirmedShiftsCount: 0,
       equipmentIssuesCount: 0,
+      decisionsCount: 0,
     };
   }
 }
