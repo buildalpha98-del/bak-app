@@ -58,6 +58,7 @@ import {
   MapPin,
   GripVertical,
   BookOpen,
+  CalendarRange,
   ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -202,6 +203,9 @@ interface RosterPageProps {
    * move them. Default coach so non-admin viewers fail closed.
    */
   viewerRole?: "admin" | "ops" | "coach" | "client" | "parent";
+  /** Template slots on the active term — the Generate Week dialog is
+   *  inert at 0. */
+  templateCount?: number;
 }
 
 // ============================================================
@@ -223,6 +227,7 @@ export function RosterPage({
   sessionCertWarnings,
   unconfirmedShifts,
   viewerRole = "coach",
+  templateCount = 0,
 }: RosterPageProps) {
   const dndEnabled = viewerRole === "admin" || viewerRole === "ops";
   const router = useRouter();
@@ -691,6 +696,15 @@ export function RosterPage({
             variant="ghost"
             size="sm"
             nativeButton={false}
+            render={<Link href={`${basePath}/coverage`} />}
+          >
+            <CalendarRange className="size-4" />
+            Term board
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
             render={<Link href={`${basePath}/terms`} />}
           >
             View Terms
@@ -1132,7 +1146,8 @@ export function RosterPage({
           open={genOpen}
           onOpenChange={setGenOpen}
           term={activeTerm}
-          templateCount={0}
+          templateCount={templateCount}
+          setupHref={`${basePath}/terms/${activeTerm.id}/setup`}
           onSuccess={handleRefresh}
         />
       )}

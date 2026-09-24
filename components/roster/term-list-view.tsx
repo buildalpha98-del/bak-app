@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Trash2,
   LayoutTemplate,
+  Wand2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -137,10 +138,16 @@ export function TermListView({ initialData, basePath }: TermListViewProps) {
             Manage school terms and weekly session templates
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" />
-          Create Term
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" nativeButton={false} render={<Link href={`${basePath.replace(/\/terms$/, "")}/coverage`} />}>
+            <Calendar className="size-4" />
+            Term board
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            Create Term
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
@@ -194,6 +201,17 @@ export function TermListView({ initialData, basePath }: TermListViewProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      {term.status !== "completed" && (
+                        <Button
+                          variant={term.session_count === 0 ? "default" : "ghost"}
+                          size="sm"
+                          nativeButton={false}
+                          render={<Link href={`${basePath}/${term.id}/setup`} />}
+                        >
+                          <Wand2 className="size-4" />
+                          Set up
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
