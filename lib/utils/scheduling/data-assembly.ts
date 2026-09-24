@@ -30,17 +30,23 @@ export async function assembleSchedulingInput(
     .order("date")
     .order("time");
 
-  // 2. Active coaches with availability, compliance, pay rates
-  const { data: coaches } = await supabase
+  // 2. Active coaches with availability, compliance, pay rates.
+  // compliance_docs points at profiles twice (the coach and the
+  // verifier), so the embed must name the foreign key — without it
+  // PostgREST refuses the whole query, `coaches` is null, and the solver
+  // reports "No coaches available" for every session. That is what
+  // happened on every AI run until Sept 2026.
+  const { data: coaches, error: coachErr } = await supabase
     .from("profiles")
     .select(`
       id, name, phone, default_pay_rate, status,
       availability_slots(day_of_week, start_time, end_time, location_preferences),
-      compliance_docs(doc_type, status, expiry_date),
+      compliance_docs!compliance_docs_user_id_fkey(doc_type, status, expiry_date),
       pay_rates(session_type, rate, rate_unit)
     `)
     .eq("role", "coach")
     .eq("status", "active");
+  if (coachErr) throw new Error(`Could not load coaches for scheduling: ${coachErr.message}`);
 
   // 3. Centres with coordinates
   const { data: centreRows } = await supabase

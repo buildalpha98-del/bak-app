@@ -236,9 +236,12 @@ export async function publishSchedulingRun(runId: string) {
     const validSessionIds = certCheck.valid.map((p) => p.sessionId);
 
     if (validSessionIds.length > 0) {
+      // These all have a coach and the notification below says "to
+      // confirm" — so they must land in pending_confirmation, the only
+      // status a coach can confirm from.
       await supabase
         .from("sessions")
-        .update({ status: "published" })
+        .update({ status: "pending_confirmation" })
         .in("id", validSessionIds)
         .eq("status", "draft");
     }
