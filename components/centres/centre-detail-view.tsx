@@ -87,6 +87,7 @@ import { CentreReportsTab } from "@/components/reports/centre-reports-tab";
 import { PortalAccessTab } from "@/components/centres/portal-access-tab";
 import { SchoolClassesTab } from "@/components/centres/school-classes-tab";
 import { CentreGrantsTab } from "@/components/centres/centre-grants-tab";
+import { DeliveryLogPanel } from "@/components/centres/delivery-log-panel";
 import type { CentreDetail, CentreNoteWithAuthor, UpdateCentreData } from "@/lib/centres/actions";
 import type {
   CentreType,
@@ -533,6 +534,8 @@ export function CentreDetailView({
 
         {/* ==================== Sessions Tab ==================== */}
         <TabsContent value="sessions">
+          {/* The term's record of delivery, with the CSV for invoices and renewals. */}
+          <DeliveryLogPanel centreId={data.centre.id} />
           {data.sessions.length === 0 ? (
             <EmptyState icon={Calendar} message="No sessions recorded" />
           ) : (
