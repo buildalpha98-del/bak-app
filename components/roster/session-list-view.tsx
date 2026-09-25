@@ -219,8 +219,9 @@ export function SessionListView({
 
   return (
     <div className="space-y-3">
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Filter bar — the roster page's chips already cover this on a
+          phone, where two rows of filters pushed the sessions off screen. */}
+      <div className="hidden flex-wrap items-center gap-2 sm:flex">
         <Select value={centreFilter} onValueChange={(v) => setCentreFilter(v ?? "")}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Centres" />

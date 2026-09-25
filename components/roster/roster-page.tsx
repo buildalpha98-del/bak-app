@@ -251,6 +251,17 @@ export function RosterPage({
       return "staff";
     })(),
   );
+  // The staff and calendar grids are 700–980px wide; on a phone the list
+  // is the roster. Decided after mount, not in the state initialiser:
+  // the server renders the desktop default, and a client-side initial
+  // state that disagrees is a hydration mismatch (React #418). The URL
+  // param stays the durable choice — a phone user who picks the grid
+  // keeps it.
+  useEffect(() => {
+    if (params.get("view")) return;
+    if (window.matchMedia("(max-width: 639px)").matches) setViewState("list");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Which dimension the session-card border encodes: sport (default) or
   // centre. URL-persisted so a colour-by-centre view is shareable and
@@ -695,6 +706,7 @@ export function RosterPage({
           <Button
             variant="ghost"
             size="sm"
+            className="hidden sm:inline-flex"
             nativeButton={false}
             render={<Link href={`${basePath}/coverage`} />}
           >
@@ -704,6 +716,7 @@ export function RosterPage({
           <Button
             variant="ghost"
             size="sm"
+            className="hidden sm:inline-flex"
             nativeButton={false}
             render={<Link href={`${basePath}/terms`} />}
           >
@@ -763,8 +776,9 @@ export function RosterPage({
 
         <div className="ml-auto" />
 
-        {/* View toggle — single rounded-2xl group container. */}
-        <div className="flex rounded-2xl border">
+        {/* View toggle — single rounded-2xl group container. The grids
+            need a desk; on a phone the list is the roster. */}
+        <div className="hidden rounded-2xl border sm:flex">
           <Button
             variant={view === "staff" ? "default" : "ghost"}
             size="icon-sm"
@@ -801,7 +815,7 @@ export function RosterPage({
             Colour is a redundant cue (cards show centre + sport as text),
             so this just changes which axis the border encodes. */}
         {view !== "list" && (
-          <div className="flex rounded-2xl border" role="group" aria-label="Colour sessions by">
+          <div className="hidden rounded-2xl border sm:flex" role="group" aria-label="Colour sessions by">
             <Button
               variant={colourBy === "sport" ? "default" : "ghost"}
               size="sm"
@@ -892,6 +906,7 @@ export function RosterPage({
         <Button
           size="sm"
           variant="outline"
+          className="hidden sm:inline-flex"
           onClick={() => setConfirmWeekOpen(true)}
         >
           <CheckCircle2 className="size-4" />
@@ -943,6 +958,30 @@ export function RosterPage({
                   Generate week
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => setConfirmWeekOpen(true)}>
+                <CheckCircle2 className="mr-2 size-4" />
+                Confirm week
+              </DropdownMenuItem>
+              {activeTerm && (
+                <DropdownMenuItem onClick={() => setAutoProgOpen(true)}>
+                  <BookOpen className="mr-2 size-4" />
+                  Auto-programme
+                </DropdownMenuItem>
+              )}
+              {activeTerm && (
+                <DropdownMenuItem onClick={() => setPlanProgOpen(true)}>
+                  <ClipboardList className="mr-2 size-4" />
+                  From school plans
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem nativeButton={false} render={<Link href={`${basePath}/coverage`} />}>
+                <CalendarRange className="mr-2 size-4" />
+                Term board
+              </DropdownMenuItem>
+              <DropdownMenuItem nativeButton={false} render={<Link href={`${basePath}/terms`} />}>
+                <CalendarDays className="mr-2 size-4" />
+                Terms
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1021,7 +1060,7 @@ export function RosterPage({
       {/* Drag-to-reschedule discoverability — the mechanic is invisible
           otherwise. Shown only where it applies (admin/ops, card views). */}
       {dndEnabled && view !== "list" && filteredSessions.length > 0 && (
-        <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
+        <p className="hidden items-center gap-1.5 px-1 text-xs text-muted-foreground [@media(pointer:fine)]:flex">
           <GripVertical className="size-3.5" aria-hidden />
           Drag a shift to move it to another {view === "staff" ? "day or coach" : "day or time"}.
         </p>
