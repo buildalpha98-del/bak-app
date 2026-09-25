@@ -33,7 +33,8 @@ export function getEligibleCoaches(
   return coaches.filter((coach) => {
     // Hard 1: availability slot covers this day + time
     const hasSlot = coach.availability_slots.some((slot) => {
-      if (slot.day_of_week !== dayOfWeek) return false;
+      // Slots store Sunday as 0 (column CHECK 0–6); the session side uses 7.
+      if (slot.day_of_week % 7 !== dayOfWeek % 7) return false;
       const slotStart = timeToMinutes(slot.start_time);
       const slotEnd = timeToMinutes(slot.end_time);
       return sessionStart >= slotStart && sessionEnd <= slotEnd;

@@ -8,6 +8,8 @@ import { SmsOptInToggle } from "@/components/sms/sms-opt-in-toggle";
 import { PushOptInToggle } from "@/components/push/push-opt-in-toggle";
 import { SyncIssuesCard } from "@/components/coach/sync-issues-card";
 import { getPushSubscriptionCount } from "@/lib/push/actions";
+import { AvailabilityEditor } from "@/components/coach/availability-editor";
+import { getMyAvailability } from "@/lib/coach/availability-actions";
 
 export default async function CoachProfilePage() {
   const supabase = await createSupabaseServerClient();
@@ -30,10 +32,14 @@ export default async function CoachProfilePage() {
   // Count active push subscriptions for the opt-in card. Rendered
   // server-side so the toggle has a non-flicker starting state.
   const pushCount = await getPushSubscriptionCount(user.id);
+  const { data: availability } = await getMyAvailability();
 
   return (
     <div className="mx-auto max-w-lg space-y-6 animate-fade-up">
       <h1 className="text-xl font-semibold font-heading text-foreground">Profile</h1>
+
+      {/* Availability first: without it the roster cannot place the coach. */}
+      <AvailabilityEditor initial={availability ?? []} />
 
       {/* Basic info */}
       <div className="rounded-2xl border border-border bg-card p-4 space-y-3 stagger-1 transition-shadow hover:shadow-sm">
