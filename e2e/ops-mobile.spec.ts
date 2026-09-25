@@ -64,10 +64,18 @@ async function shortControls(page: import("@playwright/test").Page) {
 }
 
 test.describe("ops on a phone", () => {
-  test.beforeEach(({ page }) => {
+  test.beforeEach(async ({ page }) => {
     test.skip(!fx, skipReason ?? "fixture not provisioned");
     test.setTimeout(180_000);
-    void page;
+    // The iPhone profile is iOS Safari to the app, so the "Add to Home
+    // Screen" sheet appears after a few seconds and covers the bottom
+    // third — a real part of the phone experience, but not what these
+    // tests measure. Mark it dismissed the way the user would.
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("bak-ios-install-dismissed-at", String(Date.now()));
+      } catch {}
+    });
   });
 
   test("the roster opens as a list with the first session on screen and no sideways scroll", async ({ page, baseURL }) => {
@@ -88,11 +96,15 @@ test.describe("ops on a phone", () => {
     await page.goto("/ops/roster");
     const row = page.locator("main table tbody tr").filter({ hasText: fx!.centreName }).first();
     await expect(row).toBeVisible({ timeout: 90_000 });
-    await row.getByRole("cell").nth(1).click();
-    const sheet = page.getByRole("dialog");
+    // The row is in the server HTML before React has attached its tap
+    // handler; a tap during hydration does nothing. Wait for the page to
+    // settle first (under a loaded suite this is several seconds).
+    await page.waitForLoadState("networkidle", { timeout: 60_000 }).catch(() => {});
+    await row.click({ position: { x: 200, y: 20 } });
+    const sheet = page.locator('[data-slot="sheet-content"]');
     await expect(sheet).toBeVisible({ timeout: 30_000 });
-    const box = (await sheet.boundingBox())!;
-    expect(Math.round(box.width)).toBe(390);
+    // The sheet slides in; measure it once the transition has finished.
+    await expect.poll(async () => Math.round((await sheet.boundingBox())?.width ?? 0), { timeout: 10_000 }).toBe(390);
   });
 
   test("every control on the ops home and the roster is at least 44px tall", async ({ page, baseURL }) => {

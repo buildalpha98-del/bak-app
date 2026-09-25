@@ -138,3 +138,16 @@ export function sydneyUtcOffset(dateIso: string): string {
 export function sydneyIsoDateTime(dateIso: string, time: string): string {
   return `${dateIso}T${time.slice(0, 5)}:00${sydneyUtcOffset(dateIso)}`;
 }
+
+/** `dateIso` plus `days` calendar days, as an ISO date. Pure string arithmetic — no timezone can move it. */
+export function addDaysIso(dateIso: string, days: number): string {
+  const ms = Date.UTC(Number(dateIso.slice(0, 4)), Number(dateIso.slice(5, 7)) - 1, Number(dateIso.slice(8, 10)));
+  return new Date(ms + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Whole calendar days from `fromIso` to `toIso` (negative when `toIso` is earlier). */
+export function daysBetweenIso(fromIso: string, toIso: string): number {
+  const a = Date.UTC(Number(fromIso.slice(0, 4)), Number(fromIso.slice(5, 7)) - 1, Number(fromIso.slice(8, 10)));
+  const b = Date.UTC(Number(toIso.slice(0, 4)), Number(toIso.slice(5, 7)) - 1, Number(toIso.slice(8, 10)));
+  return Math.round((b - a) / 86_400_000);
+}

@@ -6,7 +6,8 @@ import { sendEmail } from "@/lib/launch/email";
 import { staffOnboarding } from "@/lib/launch/email-templates";
 import { generateDefaultAvailabilitySlots } from "@/lib/utils/staff/default-availability";
 import { getAuthCallbackUrl } from "@/lib/utils/base-url";
-import { getMonday, getFriday } from "@/lib/utils/roster";
+import { sydneyTodayIso, addDaysIso, daysBetweenIso } from "@/lib/utils/sydney-time";
+import { mondayOf } from "@/lib/terms/term-setup";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type { UserRole, UserStatus, ComplianceDocType, ComplianceStatus, RateUnit, SessionType } from "@/lib/types/enums";
 import type { Profile, PayRate, ComplianceDoc, AvailabilitySlot, Session } from "@/lib/types/database";
@@ -171,18 +172,17 @@ export async function getStaffList(
   // For inactive coaches we still resolve `last_session_at` so the
   // 30+-day amber callout works.
   // ============================================================
-  const today = new Date();
-  const thisMonday = getMonday(today);
-  const fourWeeksAgo = new Date(thisMonday);
-  fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 21);
-  const thisFriday = getFriday(thisMonday);
-  const horizonForward = new Date(today);
-  horizonForward.setDate(horizonForward.getDate() + 28);
-
-  const histStart = fourWeeksAgo.toISOString().split("T")[0];
-  const histEnd = thisFriday.toISOString().split("T")[0];
-  const fwdStart = today.toISOString().split("T")[0];
-  const fwdEnd = horizonForward.toISOString().split("T")[0];
+  // Sydney calendar dates, by string arithmetic. This used to be
+  // `getMonday(new Date()).toISOString()` — local midnight rendered in
+  // UTC — which on a Sydney machine is the *previous* day (a Friday shift
+  // fell outside "this week") and on Vercel (UTC) makes Monday mornings
+  // until 10am count as last week.
+  const todayIso = sydneyTodayIso();
+  const thisMondayIso = mondayOf(todayIso);
+  const histStart = addDaysIso(thisMondayIso, -21);
+  const histEnd = addDaysIso(thisMondayIso, 4); // Friday
+  const fwdStart = todayIso;
+  const fwdEnd = addDaysIso(todayIso, 28);
 
   const [histRes, fwdRes, lastEverRes] = await Promise.all([
     // Historical: any session in the past-4-weeks window.
@@ -217,10 +217,7 @@ export async function getStaffList(
   // Bucket past-4-weeks sessions into week buckets.
   // weekIndex = 0 → oldest, 3 → current week.
   function weekIndexFor(dateStr: string): number {
-    const d = new Date(dateStr + "T00:00:00");
-    const diffDays = Math.floor(
-      (d.getTime() - fourWeeksAgo.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diffDays = daysBetweenIso(histStart, dateStr);
     return Math.min(3, Math.max(0, Math.floor(diffDays / 7)));
   }
 

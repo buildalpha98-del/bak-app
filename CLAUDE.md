@@ -183,6 +183,13 @@ console of a real deployment.
   ten hours of every day.
 - **Never compute "today"/"now" with `getDate()`/`getHours()`** — those
   read the runtime's zone. Use `sydneyTodayIso()` / `sydneyHour()`.
+  Nor `getMonday(new Date()).toISOString()` — local midnight rendered in
+  UTC is the *previous* day east of Greenwich. The staff list's "this
+  week" hours did this: a Friday shift missed the week on a Sydney
+  machine, and on Vercel Monday mornings until 10am counted last week
+  (caught by `e2e/second-coach.spec.ts` the first time it ran on a
+  Friday). Walk dates as strings: `mondayOf`, `addDaysIso`,
+  `daysBetweenIso` (`lib/utils/sydney-time.ts`).
 - **Never compute relative time during render.** Use `<TimeAgo>`
   (`components/ui/time-ago.tsx`): it renders a fixed absolute date on the
   first pass (server and client cannot disagree) and swaps to "3h ago"
