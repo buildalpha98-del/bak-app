@@ -733,3 +733,17 @@
   --input: oklch(0.91 0.008 75);
   --ring: oklch(0.65 0.19 42);
 }
+
+/* Touch devices: every control inside a page is at least 44px tall.
+   Ops widgets use size="sm" buttons (32px) that are fine with a mouse
+   and miss-tap on a phone in a car park. Fixed-position chrome (nav,
+   toasts) sets its own sizes and is left alone. */
+@media (pointer: coarse) {
+  main button:not([data-slot="checkbox"]),
+  main [role="button"],
+  main a.inline-flex,
+  main select,
+  main input:not([type="checkbox"]):not([type="radio"]) {
+    min-height: 44px;
+  }
+}

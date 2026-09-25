@@ -154,8 +154,8 @@ export function CoverageBoardView({
       </div>
 
       {/* The one number, and the four counts behind it. */}
-      <div className="grid gap-3 sm:grid-cols-5">
-        <Stat label="Term ready" value={`${t.readiness_percent}%`} hint="confirmed + programmed" strong />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <Stat label="Term ready" value={`${t.readiness_percent}%`} hint="confirmed + programmed" strong className="col-span-2 sm:col-span-1" />
         <Stat label="Sessions" value={t.sessions} />
         <Stat label="No coach" value={t.unassigned} tone={t.unassigned ? "red" : undefined} />
         <Stat label="Waiting on coach" value={t.unconfirmed} tone={t.unconfirmed ? "sky" : undefined} />
@@ -257,10 +257,10 @@ function mondayOfToday(iso: string) {
   return d.toISOString().slice(0, 10);
 }
 
-function Stat({ label, value, hint, strong, tone }: { label: string; value: string | number; hint?: string; strong?: boolean; tone?: "red" | "sky" }) {
+function Stat({ label, value, hint, strong, tone, className = "" }: { label: string; value: string | number; hint?: string; strong?: boolean; tone?: "red" | "sky"; className?: string }) {
   const toneCls = tone === "red" ? "text-red-700" : tone === "sky" ? "text-sky-700" : "text-foreground";
   return (
-    <div className={`rounded-xl border p-3 ${strong ? "border-primary/40 bg-primary/5" : ""}`}>
+    <div className={`rounded-xl border p-3 ${strong ? "border-primary/40 bg-primary/5" : ""} ${className}`}>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-2xl font-semibold tabular-nums ${toneCls}`}>{value}</p>
       {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}

@@ -199,12 +199,14 @@ export function SessionListView({
   function SortHeader({
     col,
     children,
+    className,
   }: {
     col: SortColumn;
     children: React.ReactNode;
+    className?: string;
   }) {
     return (
-      <TableHead>
+      <TableHead className={className}>
         <button
           type="button"
           className="flex items-center gap-1 text-xs font-medium"
@@ -219,8 +221,9 @@ export function SessionListView({
 
   return (
     <div className="space-y-3">
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Filter bar — the roster page's chips already cover this on a
+          phone, where two rows of filters pushed the sessions off screen. */}
+      <div className="hidden flex-wrap items-center gap-2 sm:flex">
         <Select value={centreFilter} onValueChange={(v) => setCentreFilter(v ?? "")}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Centres" />
@@ -372,9 +375,11 @@ export function SessionListView({
               <SortHeader col="date">Date</SortHeader>
               <SortHeader col="time">Time</SortHeader>
               <SortHeader col="centre">Centre</SortHeader>
-              <SortHeader col="sport">Sport</SortHeader>
+              {/* Sport and length live in the sheet on a phone — the
+                  table would otherwise be nine columns in 390px. */}
+              <SortHeader col="sport" className="hidden md:table-cell">Sport</SortHeader>
               <SortHeader col="coach">Coach</SortHeader>
-              <SortHeader col="duration">Duration</SortHeader>
+              <SortHeader col="duration" className="hidden md:table-cell">Duration</SortHeader>
               <SortHeader col="status">Status</SortHeader>
               <TableHead className="w-10" />
             </TableRow>
@@ -411,7 +416,7 @@ export function SessionListView({
                   <TableCell className="text-sm font-medium">
                     {s.centre_name}
                   </TableCell>
-                  <TableCell className="text-sm">{s.sport}</TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{s.sport}</TableCell>
                   <TableCell className="text-sm">
                     {s.coach_name ? (
                       s.coach_name
@@ -421,7 +426,7 @@ export function SessionListView({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="hidden text-sm md:table-cell">
                     {s.duration_minutes}min
                   </TableCell>
                   <TableCell>

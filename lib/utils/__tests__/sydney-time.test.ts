@@ -6,7 +6,19 @@ import {
   minutesUntilSydney,
   sydneyUtcOffset,
   sydneyIsoDateTime,
+  addDaysIso,
+  daysBetweenIso,
 } from "../sydney-time";
+
+describe("addDaysIso / daysBetweenIso", () => {
+  it("walks calendar days across month, year and DST boundaries without a timezone", () => {
+    expect(addDaysIso("2026-09-25", -21)).toBe("2026-09-04");
+    expect(addDaysIso("2026-09-28", 4)).toBe("2026-10-02"); // Mon → Fri across DST start (4 Oct)
+    expect(addDaysIso("2026-12-30", 28)).toBe("2027-01-27");
+    expect(daysBetweenIso("2026-09-04", "2026-09-25")).toBe(21);
+    expect(daysBetweenIso("2026-09-25", "2026-09-04")).toBe(-21);
+  });
+});
 
 // The whole point of these helpers: the same instant is a DIFFERENT
 // calendar day in Sydney vs UTC around Sydney midnight. Fixed instants
