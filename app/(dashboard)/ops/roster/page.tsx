@@ -32,6 +32,9 @@ export default async function OpsRosterPage({
   const weekStart = mondayOfIso(weekParam);
 
   const supabase = await createSupabaseServerClient();
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
   const [
     sessionsRes,
     centresRes,
@@ -101,6 +104,7 @@ export default async function OpsRosterPage({
       unconfirmedShifts={unconfirmedRes.data ?? undefined}
       viewerRole="ops"
       templateCount={templateCount ?? 0}
+      currentUserId={viewer?.id}
     />
   );
 }

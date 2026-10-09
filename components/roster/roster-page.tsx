@@ -206,6 +206,8 @@ interface RosterPageProps {
   /** Template slots on the active term — the Generate Week dialog is
    *  inert at 0. */
   templateCount?: number;
+  /** Signed-in admin/ops user — enables "Roster me" on the shift sheet. */
+  currentUserId?: string;
 }
 
 // ============================================================
@@ -228,6 +230,7 @@ export function RosterPage({
   unconfirmedShifts,
   viewerRole = "coach",
   templateCount = 0,
+  currentUserId,
 }: RosterPageProps) {
   const dndEnabled = viewerRole === "admin" || viewerRole === "ops";
   const router = useRouter();
@@ -1163,6 +1166,7 @@ export function RosterPage({
         onEdit={handleEditSession}
         sessionCertWarnings={sessionCertWarnings}
         financialAccess={hasFinancialAccess}
+        currentUserId={currentUserId}
       />
 
       {/* Create Session Dialog */}
