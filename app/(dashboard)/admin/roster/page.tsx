@@ -2,7 +2,7 @@ import { RosterPage } from "@/components/roster/roster-page";
 import { getSessionsForWeek } from "@/lib/sessions/actions";
 import {
   getCentresForSelect,
-  getActiveCoaches,
+  getRosterableStaff,
   getActiveTerm,
 } from "@/lib/terms/actions";
 import { getSessionCertWarningsForWeek } from "@/lib/roster/cert-warnings-actions";
@@ -53,7 +53,7 @@ export default async function AdminRosterPage({
   ] = await Promise.all([
     getSessionsForWeek(weekStart),
     getCentresForSelect(),
-    getActiveCoaches(),
+    getRosterableStaff(),
     getActiveTerm(),
     getSessionCertWarningsForWeek(weekStart),
     getRegions(),

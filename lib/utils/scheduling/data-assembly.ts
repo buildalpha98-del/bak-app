@@ -11,6 +11,7 @@ import type {
   SessionHistory,
 } from "./types";
 
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 /**
  * Assemble all data needed for scheduling a week.
  */
@@ -44,7 +45,7 @@ export async function assembleSchedulingInput(
       compliance_docs!compliance_docs_user_id_fkey(doc_type, status, expiry_date),
       pay_rates(session_type, rate, rate_unit)
     `)
-    .eq("role", "coach")
+    .in("role", [...ROSTERABLE_ROLES])
     .eq("status", "active");
   if (coachErr) throw new Error(`Could not load coaches for scheduling: ${coachErr.message}`);
 

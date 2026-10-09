@@ -21,6 +21,7 @@ import { toLocalIso } from "@/lib/utils/roster";
 import { CREW_EMBED, CREW_FILTER, CREW_JOIN, crewOf } from "@/lib/sessions/coach-membership";
 import { sessionCrewIds } from "@/lib/utils/scheduling";
 
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 // ============================================================
 // 1. getCoachAvailabilityForSession
 // ============================================================
@@ -71,7 +72,7 @@ export async function getCoachAvailabilityForSession(
     const { data: coaches, error: coachError } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .in("role", [...ROSTERABLE_ROLES])
       .eq("status", "active")
       .order("name");
 
@@ -424,7 +425,7 @@ export async function getReplacementSuggestions(
     const { data: allCoaches } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .in("role", [...ROSTERABLE_ROLES])
       .eq("status", "active")
       .order("name");
     const coaches = (allCoaches ?? []).filter((c) => !onShift.has(c.id));
