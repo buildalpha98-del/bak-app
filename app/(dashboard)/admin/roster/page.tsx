@@ -39,6 +39,9 @@ export default async function AdminRosterPage({
   // server client (not the admin client `getCentresForSelect` uses) so
   // it respects RLS for the viewer.
   const supabase = await createSupabaseServerClient();
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
   const [
     sessionsRes,
     centresRes,
@@ -104,6 +107,7 @@ export default async function AdminRosterPage({
       sessionCertWarnings={certWarningsRes.data ?? undefined}
       viewerRole="admin"
       templateCount={templateCount ?? 0}
+      currentUserId={viewer?.id}
     />
   );
 }

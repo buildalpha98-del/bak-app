@@ -29,6 +29,8 @@ import {
   Trash2,
   Pencil,
   Lock,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import {
   Select,
@@ -126,6 +128,13 @@ interface SessionDetailSheetProps {
    * `WeekCostChip` and the `/admin/payroll` route.
    */
   financialAccess?: boolean;
+  /**
+   * The signed-in user. When they're in the coach pool (present in
+   * `coaches` — e.g. an ops member with "Also coaches" on), the Coaches
+   * section offers "Roster me" / "Take me off": one tap instead of
+   * finding your own name in the picker.
+   */
+  currentUserId?: string;
 }
 
 // ============================================================
@@ -141,6 +150,7 @@ export function SessionDetailSheet({
   onEdit,
   sessionCertWarnings,
   financialAccess = false,
+  currentUserId,
 }: SessionDetailSheetProps) {
   const [saving, setSaving] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -396,6 +406,23 @@ export function SessionDetailSheet({
             }
           }
         )
+    );
+  }
+
+  // Ops/admin rostering themselves. Joins as an extra coach (primary
+  // only when the shift has nobody), so it never bumps whoever is on it.
+  async function handleRosterMe(on: boolean) {
+    if (!session || !currentUserId) return;
+    const current: ChipCoach[] = (session.assigned_coaches ?? []).map((c) => ({
+      id: c.user_id,
+      name: c.name ?? "(unknown)",
+    }));
+    const me = coaches.find((c) => c.id === currentUserId);
+    if (!me) return;
+    await handleAssignCoaches(
+      on
+        ? [...current, { id: me.id, name: me.name }]
+        : current.filter((c) => c.id !== currentUserId)
     );
   }
 
@@ -874,6 +901,32 @@ export function SessionDetailSheet({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-foreground">Coaches</h3>
+              {!isTerminal &&
+                currentUserId &&
+                coaches.some((c) => c.id === currentUserId) &&
+                ((session.assigned_coaches ?? []).some(
+                  (c) => c.user_id === currentUserId
+                ) ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={saving}
+                    onClick={() => handleRosterMe(false)}
+                  >
+                    <UserMinus className="size-4" />
+                    Take me off
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={saving}
+                    onClick={() => handleRosterMe(true)}
+                  >
+                    <UserPlus className="size-4" />
+                    Roster me
+                  </Button>
+                ))}
             </div>
 
             {!isTerminal ? (
@@ -884,7 +937,7 @@ export function SessionDetailSheet({
                     id: c.user_id,
                     name: c.name ?? "(unknown)",
                     // Active coaches list is filtered server-side
-                    // (getActiveCoaches). Anyone still in `assigned_coaches`
+                    // (getActiveCoaches — the coach pool). Anyone still in `assigned_coaches`
                     // but missing from the active list is archived.
                     inactive: !coaches.some((opt) => opt.id === c.user_id),
                   }))}
