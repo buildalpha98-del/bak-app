@@ -26,6 +26,7 @@
 //   - `head: true` for the templates-this-week count keeps the wire
 //     payload tight.
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
 import type { AgeGroup } from "@/lib/types/enums";
@@ -79,7 +80,7 @@ export async function getAssessmentsStatusPulse(): Promise<AssessmentsStatusPuls
       supabase
         .from("profiles")
         .select("id")
-        .eq("role", "coach")
+        .or(COACH_POOL_FILTER)
         .eq("status", "active"),
       supabase
         .from("children")

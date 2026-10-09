@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { triggerNotification } from "@/lib/notifications/send";
@@ -372,7 +373,7 @@ export async function getContactsForMessaging(): Promise<
 
   if (profile.role === "admin" || profile.role === "ops") {
     // Admin/ops can message coaches
-    query = query.eq("role", "coach");
+    query = query.or(COACH_POOL_FILTER);
   } else {
     // Coaches can message admin and ops
     query = query.in("role", ["admin", "ops"]);

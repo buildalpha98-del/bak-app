@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { NAV_CONFIG, filterNavByAccess, isNavItemActive } from "./nav-config";
+import { NAV_CONFIG, filterNavByAccess, isNavItemActive, withRoleSwitch } from "./nav-config";
 import { useSidebar } from "./sidebar-context";
 import type { UserRole } from "@/lib/types/enums";
 import { InboxBadge } from "@/components/inbox/inbox-badge";
@@ -15,6 +15,8 @@ interface SidebarProps {
   role: UserRole;
   /** Hides items flagged `financial: true` when false. */
   financialAccess?: boolean;
+  /** Ops member who also coaches — adds the switch to the other screens. */
+  opsCoach?: boolean;
 }
 
 // Nav links do NOT prefetch on viewport. Next's default eagerly
@@ -24,10 +26,10 @@ interface SidebarProps {
 // burst of GETs for routes nobody navigated to), so the dashboard spent
 // its time competing with itself. prefetch={false} still prefetches on
 // hover, which is where the perceived speed comes from anyway.
-export function Sidebar({ role, financialAccess = true }: SidebarProps) {
+export function Sidebar({ role, financialAccess = true, opsCoach = false }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar();
   const pathname = usePathname();
-  const items = filterNavByAccess(NAV_CONFIG[role], financialAccess);
+  const items = withRoleSwitch(filterNavByAccess(NAV_CONFIG[role], financialAccess), role, opsCoach);
 
   return (
     <aside

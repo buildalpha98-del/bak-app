@@ -1,3 +1,4 @@
+import { withOr } from "@/tests/mock-chain";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -52,7 +53,7 @@ function installFixture(opts: PulseFixture) {
 
   supabaseMock.from.mockImplementation((table: string) => {
     if (table === "profiles") {
-      return {
+      return withOr({
         select: () => ({
           eq: () => ({
             eq: () =>
@@ -62,7 +63,7 @@ function installFixture(opts: PulseFixture) {
               }),
           }),
         }),
-      };
+      });
     }
     if (table === "coach_performance_snapshots") {
       return {

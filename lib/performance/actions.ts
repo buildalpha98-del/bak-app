@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { CoachMetrics, CoachPerformanceSnapshot, CoachBadge } from "@/lib/types/database";
 import { normaliseMetrics, calculateOverallScore, METRIC_WEIGHTS } from "@/lib/utils/performance/calculate";
@@ -104,7 +105,7 @@ export async function getTeamPerformanceData(
   const { data: activeCoachesRaw } = await supabase
     .from("profiles")
     .select("id, name, photo_url, region_ids")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
 
   if (!activeCoachesRaw || activeCoachesRaw.length === 0) {
@@ -690,7 +691,7 @@ export async function getPerformanceWidgetData(): Promise<{
   const { data: activeCoaches } = await supabase
     .from("profiles")
     .select("id, name")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
 
   const coachIds = (activeCoaches ?? []).map((c) => c.id);

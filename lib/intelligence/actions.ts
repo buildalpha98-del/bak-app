@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 
@@ -450,7 +451,7 @@ export async function getCoachUtilisation(): Promise<{
     const { data: coaches, error: coachErr } = await supabase
       .from("profiles")
       .select("id, name, status")
-      .eq("role", "coach");
+      .or(COACH_POOL_FILTER);
 
     if (coachErr) throw coachErr;
 

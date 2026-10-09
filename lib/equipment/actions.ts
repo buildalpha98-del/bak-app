@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
@@ -710,7 +711,7 @@ export async function getCoachesSimple(): Promise<{
   const { data, error } = await supabase
     .from("profiles")
     .select("id, name")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active")
     .order("name", { ascending: true });
 

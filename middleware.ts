@@ -9,6 +9,7 @@ import {
   isStaffDomainRoot,
   parseRoleHint,
   serializeRoleHint,
+  canOpenRoute,
   ROLE_HINT_COOKIE,
   ROLE_HINT_MAX_AGE,
   type RoleHint,
@@ -45,14 +46,6 @@ const LOGIN_ROUTES = ["/login", "/client-login", "/parent-login"];
 // Financial route list + role-hint parsing live in lib/auth/route-access
 // (pure, testable, no next/* imports).
 
-// Role → allowed route prefixes (staff roles only — parent handled separately)
-const ROLE_ROUTES: Record<string, string[]> = {
-  admin: ["/admin", "/ops", "/coach"], // admin can access all portals
-  ops: ["/ops"],
-  coach: ["/coach"],
-  parent: ["/parent"],
-};
-
 // Role → default portal
 const ROLE_PORTAL: Record<string, string> = {
   admin: "/admin",
@@ -77,11 +70,12 @@ function setRoleHint(
   userId: string,
   role: string,
   status: string,
-  financialAccess: boolean
+  financialAccess: boolean,
+  alsoCoaches: boolean = false
 ) {
   response.cookies.set(
     ROLE_HINT_COOKIE,
-    serializeRoleHint(userId, role, status, financialAccess),
+    serializeRoleHint(userId, role, status, financialAccess, alsoCoaches),
     {
       maxAge: ROLE_HINT_MAX_AGE,
       httpOnly: true,
@@ -448,7 +442,7 @@ export async function middleware(request: NextRequest) {
       if (!hint) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("role, status, financial_access")
+          .select("role, status, financial_access, also_coaches")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -461,13 +455,15 @@ export async function middleware(request: NextRequest) {
           role: profile.role,
           status: profile.status,
           financialAccess: !!profile.financial_access,
+          alsoCoaches: !!profile.also_coaches,
         };
         setRoleHint(
           response,
           user.id,
           profile.role,
           profile.status,
-          hint.financialAccess
+          hint.financialAccess,
+          hint.alsoCoaches
         );
       }
 
@@ -477,12 +473,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(setPasswordUrl);
       }
 
-      const allowedPrefixes = ROLE_ROUTES[hint.role] || [];
-      const hasAccess = allowedPrefixes.some(
-        (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-      );
-
-      if (!hasAccess) {
+      if (!canOpenRoute(hint, pathname)) {
         const portalUrl = request.nextUrl.clone();
         portalUrl.pathname = ROLE_PORTAL[hint.role] || "/login";
         return NextResponse.redirect(portalUrl);

@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotification } from "@/lib/notifications/send";
 import type { AnnouncementAudience } from "@/lib/types/enums";
@@ -79,7 +80,7 @@ export async function getAnnouncements(
       .eq("status", "active");
 
     if (ann.audience === "coaches_only") {
-      audienceQuery = audienceQuery.eq("role", "coach");
+      audienceQuery = audienceQuery.or(COACH_POOL_FILTER);
     } else if (ann.audience === "ops_and_coaches") {
       audienceQuery = audienceQuery.in("role", ["ops", "coach"]);
     }
@@ -248,7 +249,7 @@ export async function createAnnouncement(data: {
     .neq("id", user.id);
 
   if (data.audience === "coaches_only") {
-    recipientsQuery = recipientsQuery.eq("role", "coach");
+    recipientsQuery = recipientsQuery.or(COACH_POOL_FILTER);
   } else if (data.audience === "ops_and_coaches") {
     recipientsQuery = recipientsQuery.in("role", ["ops", "coach"]);
   }

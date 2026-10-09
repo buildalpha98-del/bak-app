@@ -1,3 +1,4 @@
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
@@ -42,7 +43,7 @@ export default async function AdminFeedbackPage() {
     supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active")
       .order("name"),
     supabase

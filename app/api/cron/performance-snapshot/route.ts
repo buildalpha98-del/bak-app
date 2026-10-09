@@ -1,3 +1,4 @@
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { calculateCoachPerformance } from "@/lib/utils/performance/calculate";
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     const { data: coaches, error: coachErr } = await admin
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active");
 
     if (coachErr) throw coachErr;

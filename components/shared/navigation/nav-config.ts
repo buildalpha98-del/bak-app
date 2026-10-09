@@ -36,6 +36,7 @@ import {
   Wallet,
   Mail,
   ThumbsUp,
+  ArrowLeftRight,
 } from "lucide-react";
 import type { UserRole } from "@/lib/types/enums";
 
@@ -71,6 +72,29 @@ export function filterNavByAccess(
 ): NavItem[] {
   if (financialAccess) return items;
   return items.filter((item) => !item.financial);
+}
+
+/**
+ * An ops member who also coaches (lib/staff/coach-pool.ts) gets one
+ * extra item that crosses to the other set of screens: "My coaching"
+ * from the ops nav, "Operations" from the coach nav.
+ */
+export function withRoleSwitch(
+  items: NavItem[],
+  navRole: UserRole,
+  opsCoach: boolean
+): NavItem[] {
+  if (!opsCoach) return items;
+  const toOps = navRole === "coach";
+  return [
+    ...items,
+    {
+      label: toOps ? "Operations" : "My coaching",
+      href: toOps ? "/ops" : "/coach",
+      icon: ArrowLeftRight,
+      section: "Switch",
+    },
+  ];
 }
 
 export const NAV_CONFIG: Record<UserRole, NavItem[]> = {

@@ -4,6 +4,7 @@
 // Launch Dashboard — server actions for admin landing page
 // ============================================================
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getY1Targets } from "@/lib/launch/y1-targets-actions";
 import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
@@ -540,7 +541,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const { data: coachProfiles } = await admin
     .from("profiles")
     .select("id, name")
-    .eq("role", "coach");
+    .or(COACH_POOL_FILTER);
 
   const totalCoaches = coachProfiles?.length ?? 0;
 
@@ -820,7 +821,7 @@ export async function getRecentActivity(
   const { data: newCoaches } = await admin
     .from("profiles")
     .select("id, name, created_at")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .order("created_at", { ascending: false })
     .limit(limit);
 

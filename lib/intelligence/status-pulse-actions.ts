@@ -17,6 +17,7 @@
 //   4. New parents this month       — `parent_profiles` rows whose
 //      `created_at >= first day of current month`.
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CREW_FILTER, CREW_JOIN, crewOf } from "@/lib/sessions/coach-membership";
 
@@ -58,7 +59,7 @@ export async function getIntelligenceStatusPulse(): Promise<IntelligenceStatusPu
         supabase
           .from("profiles")
           .select("id")
-          .eq("role", "coach")
+          .or(COACH_POOL_FILTER)
           .eq("status", "active"),
       ]);
 

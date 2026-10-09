@@ -23,6 +23,7 @@
 //     blank the whole page; the centres pulse uses the same
 //     forgive-and-return-zeros pattern.
 
+import { isInCoachPool } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday, getFriday } from "@/lib/utils/roster";
 import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
@@ -67,7 +68,7 @@ export async function getStaffStatusPulse(): Promise<StaffStatusPulse> {
       await Promise.all([
         supabase
           .from("profiles")
-          .select("id, role")
+          .select("id, role, also_coaches")
           .eq("status", "active"),
         // Don't head:true — we need user_ids to cross-check active status.
         supabase
@@ -99,11 +100,11 @@ export async function getStaffStatusPulse(): Promise<StaffStatusPulse> {
     const activeIdSet = new Set<string>(
       activeProfiles.map((p: { id: string }) => p.id)
     );
-    // Active *coaches* only — admins/ops aren't rostered, so excluding
-    // them from the "not rostered" denominator keeps the count honest.
+    // The coaching pool only — admins and non-coaching ops aren't
+    // rostered, so excluding them keeps the "not rostered" count honest.
     const activeCoachIdSet = new Set<string>(
       activeProfiles
-        .filter((p: { role: string }) => p.role === "coach")
+        .filter((p: { role: string; also_coaches: boolean | null }) => isInCoachPool(p))
         .map((p: { id: string }) => p.id)
     );
 

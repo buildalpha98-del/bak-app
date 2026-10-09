@@ -2,6 +2,8 @@
 
 import { signOut } from "@/lib/auth/actions";
 import { useTransition } from "react";
+import { usePathname } from "next/navigation";
+import { isOpsCoach } from "@/lib/staff/coach-pool";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Loader2, User } from "lucide-react";
+import { ArrowLeftRight, LogOut, Loader2, User } from "lucide-react";
 import { ROLE_LABELS } from "./nav-config";
 import type { Profile } from "@/lib/types/database";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -30,8 +32,10 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function getProfileRoute(role: string): string {
-  if (role === "coach") return "/coach/profile";
+function getProfileRoute(role: string, opsCoach: boolean): string {
+  // The coach profile holds availability — the roster cannot place an
+  // ops member who coaches without it.
+  if (role === "coach" || opsCoach) return "/coach/profile";
   if (role === "admin") return "/admin/settings";
   return "/ops";
 }
@@ -44,6 +48,9 @@ const ROLE_COLORS: Record<string, string> = {
 
 export function UserMenu({ profile }: UserMenuProps) {
   const [signingOut, startTransition] = useTransition();
+  const pathname = usePathname();
+  const opsCoach = isOpsCoach(profile);
+  const onCoachScreens = pathname === "/coach" || pathname.startsWith("/coach/");
 
   return (
     <DropdownMenu>
@@ -64,6 +71,7 @@ export function UserMenu({ profile }: UserMenuProps) {
               <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-[var(--brand-orange-light)] px-2.5 py-0.5 text-xs font-bold text-primary uppercase tracking-wider">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 {ROLE_LABELS[profile.role]}
+                {opsCoach && " · Coach"}
               </span>
             </div>
           </DropdownMenuLabel>
@@ -72,12 +80,23 @@ export function UserMenu({ profile }: UserMenuProps) {
         <DropdownMenuItem
           className="cursor-pointer"
           onSelect={() => {
-            window.location.href = getProfileRoute(profile.role);
+            window.location.href = getProfileRoute(profile.role, opsCoach);
           }}
         >
           <User className="mr-2 h-4 w-4" />
           My Profile
         </DropdownMenuItem>
+        {opsCoach && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={() => {
+              window.location.href = onCoachScreens ? "/ops" : "/coach";
+            }}
+          >
+            <ArrowLeftRight className="mr-2 h-4 w-4" />
+            {onCoachScreens ? "Switch to operations" : "Switch to my coaching"}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <div className="px-1">
           <ThemeToggle />

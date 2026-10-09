@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotification } from "@/lib/notifications/send";
 import type { NotificationEvent } from "@/lib/notifications/events";
@@ -48,7 +49,7 @@ export async function getAnnouncementReadReceipts(
       .eq("status", "active");
 
     if (announcement.audience === "coaches_only") {
-      staffQuery = staffQuery.eq("role", "coach");
+      staffQuery = staffQuery.or(COACH_POOL_FILTER);
     } else if (announcement.audience === "ops_and_coaches") {
       staffQuery = staffQuery.in("role", ["ops", "coach"]);
     }

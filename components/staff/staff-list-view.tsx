@@ -18,6 +18,7 @@
 // refreshes: rounded-2xl containers, restrained brand orange, gap-6
 // between sections, gap-4 within.
 
+import { isInCoachPool } from "@/lib/staff/coach-pool";
 import { useState, useMemo, useCallback, useEffect, type MouseEvent } from "react";
 import Link from "@/components/ui/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -357,7 +358,7 @@ export function StaffListView({
     if (utilisationZero) {
       items = items.filter(
         (i) =>
-          i.role === "coach" &&
+          isInCoachPool(i) &&
           i.status === "active" &&
           i.hours_this_week === 0
       );
@@ -859,7 +860,7 @@ function ComplianceIndicator({
 // ============================================================
 
 function UtilisationCell({ member }: { member: StaffListItem }) {
-  if (member.role !== "coach") {
+  if (!isInCoachPool(member)) {
     return <span className="text-xs text-muted-foreground">—</span>;
   }
   const hours = member.hours_this_week;
@@ -1078,7 +1079,7 @@ function StaffGridView({
                 basePath={basePath}
               />
             </div>
-            {member.role === "coach" && (
+            {isInCoachPool(member) && (
               <div className="mt-3">
                 <UtilisationCell member={member} />
               </div>

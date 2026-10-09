@@ -1,3 +1,4 @@
+import { isInCoachPool } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTasks, getTaskColumns } from "@/lib/tasks/actions";
@@ -16,11 +17,11 @@ export default async function CoachTasksPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, also_coaches")
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "coach") {
+  if (!isInCoachPool(profile)) {
     redirect("/");
   }
 
