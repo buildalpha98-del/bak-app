@@ -14,6 +14,9 @@ const ROSTER_QUERY_FILES = [
   "lib/terms/setup-actions.ts",
 ];
 
+// getCoachesForDropdown (bookable-session new / bulk / edit pages).
+const DROPDOWN_FILE = "lib/bookings/actions.ts";
+
 // Pages whose shift pickers must list everyone rosterable.
 const ROSTER_PAGES = [
   "app/(dashboard)/admin/roster/page.tsx",
@@ -34,6 +37,14 @@ describe("roster pickers include ops and admin staff", () => {
     const src = read(file);
     expect(src).not.toMatch(/\.eq\(\s*["']role["']\s*,\s*["']coach["']\s*\)/);
     expect(src).toContain("ROSTERABLE_ROLES");
+  });
+
+  it("getCoachesForDropdown lists every rosterable role", () => {
+    const src = read(DROPDOWN_FILE);
+    const fn = src.slice(src.indexOf("export async function getCoachesForDropdown"));
+    const body = fn.slice(0, fn.indexOf("\n}\n"));
+    expect(body).toContain("ROSTERABLE_ROLES");
+    expect(body).not.toMatch(/\.eq\(\s*["']role["']\s*,\s*["']coach["']\s*\)/);
   });
 
   it.each(ROSTER_PAGES)("%s loads getRosterableStaff, not getActiveCoaches", (file) => {

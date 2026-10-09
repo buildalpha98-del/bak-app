@@ -7,6 +7,7 @@ import type { BookableSessionType, BookableSessionStatus } from "@/lib/types/enu
 import { sendEmail } from "@/lib/launch/email";
 import { getMarketingUrl } from "@/lib/utils/base-url";
 
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 // ============================================================
 // Types
 // ============================================================
@@ -614,7 +615,8 @@ export async function getCoachesForDropdown(): Promise<{
     const { data, error } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      // Ops/admin run sessions too — same rule as the roster pickers.
+      .in("role", [...ROSTERABLE_ROLES])
       .eq("status", "active")
       .order("name");
 
