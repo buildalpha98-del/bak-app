@@ -22,6 +22,7 @@
 //     for the current user.
 //   - Errors swallow to zeros.
 
+import { isInCoachPool } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
 
@@ -72,7 +73,7 @@ export async function getAnnouncementsStatusPulse(): Promise<AnnouncementsStatus
         .gte("created_at", thirtyDaysAgoIso),
       supabase
         .from("profiles")
-        .select("role")
+        .select("role, also_coaches")
         .eq("status", "active"),
     ]);
 
@@ -82,7 +83,7 @@ export async function getAnnouncementsStatusPulse(): Promise<AnnouncementsStatus
     const activeProfiles = activeProfilesRes.data ?? [];
     const audienceSize: Record<string, number> = {
       all: activeProfiles.length,
-      coaches_only: activeProfiles.filter((p) => p.role === "coach").length,
+      coaches_only: activeProfiles.filter((p) => isInCoachPool(p)).length,
       ops_and_coaches: activeProfiles.filter(
         (p) => p.role === "ops" || p.role === "coach"
       ).length,

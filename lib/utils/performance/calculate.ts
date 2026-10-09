@@ -1,3 +1,4 @@
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CoachMetrics } from "@/lib/types/database";
 
@@ -387,7 +388,7 @@ export async function calculateTeamBenchmarks(
   const { data: coaches } = await supabase
     .from("profiles")
     .select("id")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
 
   const activeCoaches = coaches ?? [];

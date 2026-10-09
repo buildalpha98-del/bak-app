@@ -1,5 +1,7 @@
 "use server";
 
+import { z } from "zod";
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
@@ -948,6 +950,71 @@ export async function setStaffFinancialAccess(
 }
 
 // ============================================================
+/**
+ * Turn "also coaches" on or off for an ops member (migration 101). On,
+ * they join the coaching pool — roster pickers, the AI solver, training,
+ * performance — and can open the coach screens for their own shifts.
+ * Admin or ops may change it; it means nothing for any other role, so
+ * the target must be ops.
+ */
+const AlsoCoachesInput = z.object({
+  staffId: z.string().uuid(),
+  value: z.boolean(),
+});
+
+export async function setStaffAlsoCoaches(
+  staffId: string,
+  value: boolean,
+): Promise<{ error: string | null }> {
+  const parsed = AlsoCoachesInput.safeParse({ staffId, value });
+  if (!parsed.success) return { error: "Invalid request." };
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!actor || (actor.role !== "admin" && actor.role !== "ops")) {
+    return { error: "Only admin and operations can change this." };
+  }
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", parsed.data.staffId)
+    .single();
+  if (!target) return { error: "Staff member not found." };
+  if (target.role !== "ops") {
+    return { error: "Only an operations member can also coach — coaches already do." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      also_coaches: parsed.data.value,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", parsed.data.staffId);
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: parsed.data.value ? "staff_also_coaches_on" : "staff_also_coaches_off",
+    entity_type: "profile",
+    entity_id: parsed.data.staffId,
+    metadata: { also_coaches: parsed.data.value },
+  });
+
+  return { error: null };
+}
+
+// ============================================================
 // Pay rates
 // ============================================================
 
@@ -1121,7 +1188,7 @@ export async function getRateCard(): Promise<{
   const { data: coaches, error: coachError } = await supabase
     .from("profiles")
     .select("id, name")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .order("name");
 
   if (coachError) return { data: null, error: coachError.message };

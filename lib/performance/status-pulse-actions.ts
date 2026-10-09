@@ -22,6 +22,7 @@
 //     blank the whole page.
 //   - `head: true` for the badge count to keep the wire payload tight.
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   normaliseMetrics,
@@ -54,7 +55,7 @@ export async function getPerformanceStatusPulse(
     const { data: activeCoaches } = await supabase
       .from("profiles")
       .select("id")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active");
 
     const coachIds = (activeCoaches ?? []).map((c: { id: string }) => c.id);

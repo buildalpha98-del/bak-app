@@ -61,6 +61,8 @@ export type RoleHint = {
   role: string;
   status: string;
   financialAccess: boolean;
+  /** Ops member who also coaches (profiles.also_coaches, migration 101). */
+  alsoCoaches: boolean;
 };
 
 export const ROLE_HINT_COOKIE = "bak-role";
@@ -69,25 +71,53 @@ export const ROLE_HINT_MAX_AGE = 600;
 /**
  * Parse the routing hint cookie. Returns null for anything unusable —
  * a different user, a missing field, or a hint written before
- * financial_access was part of the format. Null means "go ask the
- * database", which is always safe; a wrong guess is not.
+ * financial_access or also_coaches was part of the format. Null means
+ * "go ask the database", which is always safe; a wrong guess is not.
  */
 export function parseRoleHint(
   raw: string | undefined,
   userId: string
 ): RoleHint | null {
   if (!raw) return null;
-  const [uid, role, status, fin] = raw.split(":");
+  const [uid, role, status, fin, coaches] = raw.split(":");
   if (uid !== userId || !role || !status) return null;
   if (fin !== "0" && fin !== "1") return null;
-  return { role, status, financialAccess: fin === "1" };
+  if (coaches !== "0" && coaches !== "1") return null;
+  return {
+    role,
+    status,
+    financialAccess: fin === "1",
+    alsoCoaches: coaches === "1",
+  };
 }
 
 export function serializeRoleHint(
   userId: string,
   role: string,
   status: string,
-  financialAccess: boolean
+  financialAccess: boolean,
+  alsoCoaches: boolean = false
 ): string {
-  return `${userId}:${role}:${status}:${financialAccess ? "1" : "0"}`;
+  return `${userId}:${role}:${status}:${financialAccess ? "1" : "0"}:${alsoCoaches ? "1" : "0"}`;
+}
+
+// Role → staff route prefixes it may open. Admin opens every portal; an
+// ops member who also coaches opens the coach screens for their own
+// shifts. Parents and clients are routed elsewhere in the middleware.
+const ROLE_ROUTES: Record<string, string[]> = {
+  admin: ["/admin", "/ops", "/coach"],
+  ops: ["/ops"],
+  coach: ["/coach"],
+  parent: ["/parent"],
+};
+
+export function allowedRoutePrefixes(role: string, alsoCoaches: boolean): string[] {
+  const base = ROLE_ROUTES[role] ?? [];
+  return role === "ops" && alsoCoaches ? [...base, "/coach"] : base;
+}
+
+export function canOpenRoute(hint: Pick<RoleHint, "role" | "alsoCoaches">, pathname: string): boolean {
+  return allowedRoutePrefixes(hint.role, hint.alsoCoaches).some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+  );
 }

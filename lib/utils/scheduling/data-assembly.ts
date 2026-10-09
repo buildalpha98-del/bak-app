@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CREW_EMBED, crewOf } from "@/lib/sessions/coach-membership";
 import type {
@@ -44,7 +45,7 @@ export async function assembleSchedulingInput(
       compliance_docs!compliance_docs_user_id_fkey(doc_type, status, expiry_date),
       pay_rates(session_type, rate, rate_unit)
     `)
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
   if (coachErr) throw new Error(`Could not load coaches for scheduling: ${coachErr.message}`);
 

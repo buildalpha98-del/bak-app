@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionStatus, ComplianceDocType, ComplianceStatus, CentreType } from "@/lib/types/enums";
@@ -71,7 +72,7 @@ export async function getCoachAvailabilityForSession(
     const { data: coaches, error: coachError } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active")
       .order("name");
 
@@ -424,7 +425,7 @@ export async function getReplacementSuggestions(
     const { data: allCoaches } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active")
       .order("name");
     const coaches = (allCoaches ?? []).filter((c) => !onShift.has(c.id));

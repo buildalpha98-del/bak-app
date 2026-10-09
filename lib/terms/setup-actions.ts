@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -98,7 +99,7 @@ export async function getTermSetup(termId: string): Promise<{ data: TermSetupDat
         .gte("date", term.start_date)
         .lte("date", term.end_date)
         .neq("status", "cancelled"),
-      supabase.from("profiles").select("id, name").eq("role", "coach").eq("status", "active").order("name"),
+      supabase.from("profiles").select("id, name").or(COACH_POOL_FILTER).eq("status", "active").order("name"),
     ]);
 
     return {

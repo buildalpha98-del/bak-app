@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type {
@@ -923,7 +924,7 @@ export async function bulkAssignTrainingModulesToAllCoaches(
   const { data: coaches, error: coachesError } = await supabase
     .from("profiles")
     .select("id")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
   if (coachesError) {
     return { assignments: 0, errors, error: coachesError.message };

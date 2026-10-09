@@ -3,6 +3,7 @@ import {
   isFinancialRoute,
   parseRoleHint,
   serializeRoleHint,
+  canOpenRoute,
   FINANCIAL_ROUTES,
   isStaffDomainRoot,
 } from "../route-access";
@@ -51,6 +52,7 @@ describe("parseRoleHint", () => {
       role: "admin",
       status: "active",
       financialAccess: true,
+      alsoCoaches: false,
     });
   });
 
@@ -60,7 +62,25 @@ describe("parseRoleHint", () => {
       role: "admin",
       status: "active",
       financialAccess: false,
+      alsoCoaches: false,
     });
+  });
+
+  it("round-trips an ops member who also coaches", () => {
+    const raw = serializeRoleHint(USER, "ops", "active", false, true);
+    expect(parseRoleHint(raw, USER)).toEqual({
+      role: "ops",
+      status: "active",
+      financialAccess: false,
+      alsoCoaches: true,
+    });
+  });
+
+  // A hint written before also_coaches existed must not be read as
+  // "doesn't coach" for ten minutes after the flag is turned on — or as
+  // anything at all. Null sends the middleware to the database.
+  it("rejects a 4-field hint from before also_coaches", () => {
+    expect(parseRoleHint(`${USER}:ops:active:0`, USER)).toBeNull();
   });
 
   it("rejects a hint minted for a different user", () => {
@@ -86,6 +106,21 @@ describe("parseRoleHint", () => {
   it("rejects a non-boolean financial flag instead of coercing it", () => {
     expect(parseRoleHint(`${USER}:admin:active:true`, USER)).toBeNull();
     expect(parseRoleHint(`${USER}:admin:active:2`, USER)).toBeNull();
+  });
+});
+
+describe("canOpenRoute", () => {
+  it("an ops member opens /coach only when they also coach", () => {
+    expect(canOpenRoute({ role: "ops", alsoCoaches: true }, "/coach/schedule")).toBe(true);
+    expect(canOpenRoute({ role: "ops", alsoCoaches: false }, "/coach/schedule")).toBe(false);
+    expect(canOpenRoute({ role: "ops", alsoCoaches: true }, "/ops/roster")).toBe(true);
+    expect(canOpenRoute({ role: "ops", alsoCoaches: true }, "/admin")).toBe(false);
+  });
+
+  it("keeps the existing role boundaries", () => {
+    expect(canOpenRoute({ role: "admin", alsoCoaches: false }, "/coach")).toBe(true);
+    expect(canOpenRoute({ role: "coach", alsoCoaches: true }, "/ops")).toBe(false);
+    expect(canOpenRoute({ role: "coach", alsoCoaches: false }, "/coaching")).toBe(false);
   });
 });
 

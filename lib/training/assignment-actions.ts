@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type {
@@ -211,7 +212,7 @@ export async function bulkAssignModule(
   const { data: coaches, error: coachError } = await supabase
     .from("profiles")
     .select("id")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
 
   if (coachError) {
@@ -318,7 +319,7 @@ export async function bulkAssignPathway(
   const { data: coaches, error: coachError } = await supabase
     .from("profiles")
     .select("id")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active");
 
   if (coachError) {
@@ -645,7 +646,7 @@ export async function getActiveCoaches(): Promise<
   const { data, error } = await supabase
     .from("profiles")
     .select("id, name")
-    .eq("role", "coach")
+    .or(COACH_POOL_FILTER)
     .eq("status", "active")
     .order("name");
 

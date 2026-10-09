@@ -80,6 +80,12 @@ export interface Profile {
    */
   financial_access: boolean;
   /**
+   * An ops member who is also rostered as a coach — in the coaching pool
+   * and able to open the coach screens. Meaningful only for `ops`. Read
+   * it through lib/staff/coach-pool.ts. Added in migration 101.
+   */
+  also_coaches: boolean;
+  /**
    * Opt-in for urgent-tier SMS fallback (see lib/sms/actions.ts). When
    * a push notification can't be delivered to an urgent-tier recipient,
    * the dispatcher checks this flag — false means skip SMS silently and

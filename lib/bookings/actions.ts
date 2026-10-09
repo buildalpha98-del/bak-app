@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { BookableSession, WaitlistEntry } from "@/lib/types/database";
@@ -614,7 +615,7 @@ export async function getCoachesForDropdown(): Promise<{
     const { data, error } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active")
       .order("name");
 

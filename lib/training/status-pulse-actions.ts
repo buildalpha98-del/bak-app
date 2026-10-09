@@ -31,6 +31,7 @@
 //   - We pull the active-coach + completions sets once and bucket
 //     in memory rather than per-row count queries.
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMonday } from "@/lib/utils/roster";
 
@@ -86,7 +87,7 @@ export async function getTrainingStatusPulse(): Promise<TrainingStatusPulse> {
       supabase
         .from("profiles")
         .select("id")
-        .eq("role", "coach")
+        .or(COACH_POOL_FILTER)
         .eq("status", "active"),
       supabase
         .from("training_modules")

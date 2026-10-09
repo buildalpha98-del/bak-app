@@ -1,5 +1,6 @@
 "use server";
 
+import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionStatus, CentreType } from "@/lib/types/enums";
 import type { Session, Profile } from "@/lib/types/database";
@@ -1166,7 +1167,7 @@ export async function suggestCoachesForSession(
     const { data: coaches, error: coachError } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .or(COACH_POOL_FILTER)
       .eq("status", "active")
       .order("name");
 

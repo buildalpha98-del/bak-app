@@ -77,6 +77,7 @@ export function createMockProfile(overrides: Partial<Profile> = {}): Profile {
     status: "active",
     dnd_enabled: false,
     financial_access: false,
+    also_coaches: false,
     sms_opt_in: false,
     credentials_purged_at: null,
     created_at: new Date().toISOString(),

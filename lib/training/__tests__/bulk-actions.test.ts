@@ -1,3 +1,4 @@
+import { withOr } from "@/tests/mock-chain";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -70,7 +71,7 @@ function mockCtx(opts: MockCtxOpts) {
 
   supabaseMock.from.mockImplementation((table: string) => {
     if (table === "profiles") {
-      return {
+      return withOr({
         select: (_cols: string) => ({
           // .eq("id", user.id).single() for the auth gate
           eq: (col: string, value: string) => {
@@ -90,7 +91,7 @@ function mockCtx(opts: MockCtxOpts) {
             void value;
           },
         }),
-      };
+      });
     }
     if (table === "training_modules") {
       return {

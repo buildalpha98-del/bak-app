@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Banknote,
   BanknoteX,
+  ArrowLeftRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ import {
   adminResetStaffPassword,
   sendStaffPasswordResetEmail,
   setStaffFinancialAccess,
+  setStaffAlsoCoaches,
   upsertPayRate,
   upsertComplianceDoc,
   verifyComplianceDoc,
@@ -220,6 +222,8 @@ export function StaffDetailView({
 
   // Financial access toggle
   const [financialBusy, setFinancialBusy] = useState(false);
+  // "Also coaches" — ops members only (migration 101)
+  const [alsoCoachesBusy, setAlsoCoachesBusy] = useState(false);
 
   // SMS test affordance — admin-only triage for verifying the SMS bridge
   // is reachable for this staff member. The send goes through the configured
@@ -243,6 +247,23 @@ export function StaffDetailView({
       return;
     }
     toast.success(`Test SMS sent to ${profile.name}.`);
+  }
+
+  async function handleToggleAlsoCoaches() {
+    const next = !profile.also_coaches;
+    setAlsoCoachesBusy(true);
+    const { error } = await setStaffAlsoCoaches(profile.id, next);
+    setAlsoCoachesBusy(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setProfile((p) => ({ ...p, also_coaches: next }));
+    toast.success(
+      next
+        ? `${profile.name} can now be rostered as a coach.`
+        : `${profile.name} is no longer rostered as a coach.`,
+    );
   }
 
   async function handleToggleFinancialAccess() {
@@ -312,6 +333,12 @@ export function StaffDetailView({
                 Financial access
               </Badge>
             )}
+            {profile.role === "ops" && profile.also_coaches && (
+              <Badge variant="secondary" className="gap-1">
+                <ArrowLeftRight className="h-3 w-3" />
+                Also coaches
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -339,6 +366,22 @@ export function StaffDetailView({
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   SMS test
+                </Button>
+              )}
+              {profile.role === "ops" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleAlsoCoaches}
+                  disabled={alsoCoachesBusy}
+                  title={
+                    profile.also_coaches
+                      ? "Takes them out of the roster's coach list and the coach screens."
+                      : "Lets them be put on shifts and use the coach screens for their own shifts."
+                  }
+                >
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                  {profile.also_coaches ? "Stop coaching" : "Also coaches"}
                 </Button>
               )}
               {canEditFinancialAccess && (
