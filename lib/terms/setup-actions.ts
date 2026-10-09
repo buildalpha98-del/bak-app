@@ -11,6 +11,7 @@ import {
   type SourceSession,
 } from "@/lib/terms/term-setup";
 
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 // ============================================================
 // Term setup — roll a term forward, then generate the whole term
 // ============================================================
@@ -98,7 +99,7 @@ export async function getTermSetup(termId: string): Promise<{ data: TermSetupDat
         .gte("date", term.start_date)
         .lte("date", term.end_date)
         .neq("status", "cancelled"),
-      supabase.from("profiles").select("id, name").eq("role", "coach").eq("status", "active").order("name"),
+      supabase.from("profiles").select("id, name").in("role", [...ROSTERABLE_ROLES]).eq("status", "active").order("name"),
     ]);
 
     return {

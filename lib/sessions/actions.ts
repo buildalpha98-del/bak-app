@@ -19,6 +19,7 @@ import {
   type RecurrenceFrequency,
 } from "@/lib/utils/roster";
 
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 // ============================================================
 // Types
 // ============================================================
@@ -1166,7 +1167,7 @@ export async function suggestCoachesForSession(
     const { data: coaches, error: coachError } = await supabase
       .from("profiles")
       .select("id, name")
-      .eq("role", "coach")
+      .in("role", [...ROSTERABLE_ROLES])
       .eq("status", "active")
       .order("name");
 

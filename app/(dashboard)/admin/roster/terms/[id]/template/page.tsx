@@ -3,7 +3,7 @@ import {
   getTermDetail,
   getTermTemplates,
   getCentresForSelect,
-  getActiveCoaches,
+  getRosterableStaff,
 } from "@/lib/terms/actions";
 import { TemplateBuilder } from "@/components/roster/template-builder";
 
@@ -20,7 +20,7 @@ export default async function AdminTemplatePage({
     getTermDetail(id),
     getTermTemplates(id),
     getCentresForSelect(),
-    getActiveCoaches(),
+    getRosterableStaff(),
   ]);
 
   if (termRes.error || !termRes.data) {

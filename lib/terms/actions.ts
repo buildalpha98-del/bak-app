@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { TermStatus } from "@/lib/types/enums";
 import type { Term, TermTemplate, Session, Centre, Profile } from "@/lib/types/database";
+import { ROSTERABLE_ROLES } from "@/lib/staff/rosterable-roles";
 
 // ============================================================
 // Types
@@ -192,6 +193,34 @@ export async function getTermTemplates(
 // ============================================================
 // 4. getActiveCoaches
 // ============================================================
+
+/**
+ * Everyone who can be put on a shift — coaches plus ops and admin staff
+ * (see ROSTERABLE_ROLES). Roster and scheduling pickers use this so an
+ * ops manager can roster themselves; getActiveCoaches stays coach-only
+ * for coach-specific lists (training assignments).
+ */
+export async function getRosterableStaff(): Promise<{
+  data: Pick<Profile, "id" | "name">[] | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createSupabaseServerClient();
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .in("role", [...ROSTERABLE_ROLES])
+      .eq("status", "active")
+      .order("name");
+
+    if (error) throw error;
+    return { data: data ?? [], error: null };
+  } catch (err) {
+    console.error("getRosterableStaff error:", err);
+    return { data: null, error: "Failed to load staff." };
+  }
+}
 
 export async function getActiveCoaches(): Promise<{
   data: Pick<Profile, "id" | "name">[] | null;

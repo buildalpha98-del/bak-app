@@ -2,7 +2,7 @@ import { RosterPage } from "@/components/roster/roster-page";
 import { getSessionsForWeek } from "@/lib/sessions/actions";
 import {
   getCentresForSelect,
-  getActiveCoaches,
+  getRosterableStaff,
   getActiveTerm,
 } from "@/lib/terms/actions";
 import { getSessionCertWarningsForWeek } from "@/lib/roster/cert-warnings-actions";
@@ -32,6 +32,9 @@ export default async function OpsRosterPage({
   const weekStart = mondayOfIso(weekParam);
 
   const supabase = await createSupabaseServerClient();
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser();
   const [
     sessionsRes,
     centresRes,
@@ -47,7 +50,7 @@ export default async function OpsRosterPage({
   ] = await Promise.all([
     getSessionsForWeek(weekStart),
     getCentresForSelect(),
-    getActiveCoaches(),
+    getRosterableStaff(),
     getActiveTerm(),
     getSessionCertWarningsForWeek(weekStart),
     getUnconfirmedShifts(24),
@@ -101,6 +104,7 @@ export default async function OpsRosterPage({
       unconfirmedShifts={unconfirmedRes.data ?? undefined}
       viewerRole="ops"
       templateCount={templateCount ?? 0}
+      currentUserId={viewer?.id}
     />
   );
 }
