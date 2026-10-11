@@ -139,10 +139,19 @@ export async function middleware(request: NextRequest) {
   // cleared — otherwise the browser re-sends them on every request
   // and the user loops on an error forever (observed 30+ times in
   // production for a single banned user).
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  //
+  // getClaims, not getUser. getUser is an HTTP call to the auth server,
+  // and middleware runs at the edge nearest the USER (syd1) while auth
+  // lives with the database in Mumbai: measured at ~500ms on every
+  // signed-in click, before the page even started rendering. Our tokens
+  // are ES256, so getClaims verifies the signature locally against the
+  // cached JWKS and only touches the network to refresh an expired token
+  // (which is also where a revoked refresh token surfaces as authError).
+  // What it can't see is a ban inside a still-valid token — fine here:
+  // this is routing, and every page re-authenticates with getUser.
+  const { data: claimsData, error: authError } =
+    await supabase.auth.getClaims();
+  const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
 
   // Two independent guards, belt AND braces. Each has already broken
   // production on its own, and they fail in different ways:
