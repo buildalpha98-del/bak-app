@@ -42,6 +42,8 @@
 // Australian English. Plain enough for a parent to read in one go —
 // this is not the place for the marketing voice's swagger.
 
+import { SITE } from "@/lib/marketing/content";
+
 // ------------------------------------------------------------
 // Shared shape
 // ------------------------------------------------------------
@@ -75,7 +77,7 @@ export interface LegalPage {
  * legal page that is a false statement about the document itself.
  * Bump this by hand when the copy below actually changes.
  */
-export const LEGAL_LAST_UPDATED = "15 July 2026";
+export const LEGAL_LAST_UPDATED = "12 October 2026";
 
 /**
  * The banner both pages carry above the copy.
@@ -103,10 +105,11 @@ export const PRIVACY_PAGE: LegalPage = {
       body: [
         "Build Alpha Kids runs multi-sport coaching programs for children across South-West Sydney. To do that we hold personal information about children and about the parents and guardians who enrol them.",
         "We are bound by the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs). This policy is written around those principles and explains how we handle personal information in our booking system and parent portal.",
-        // TODO-CONFIRM: the operating entity's legal name and ABN. SITE.abn
-        // is still a TODO-CONFIRM placeholder and BAK_ABN is a runtime env
-        // var whose value is not in the repo (lib/launch/invoice-actions.ts).
-        "TODO-CONFIRM: the legal entity name and ABN of the business that operates Build Alpha Kids, to be stated here.",
+        // Source: ABN Lookup (abr.business.gov.au), checked 2026-10-12 —
+        // BUILD ALPHA KIDS PTY LTD., ABN 28 680 042 255, ACN 680 042 255,
+        // GST registered from 19 Aug 2024. Owner-confirmed as the operating
+        // entity (Jayden, 2026-10-12). Same ABN as SITE.abn in content.ts.
+        "Build Alpha Kids is operated by Build Alpha Kids Pty Ltd (ABN 28 680 042 255).",
       ],
     },
     {
@@ -152,7 +155,10 @@ export const PRIVACY_PAGE: LegalPage = {
         "Our coaches can upload photos taken during a session. Those photos are stored against the session and are visible to the coach who took them, to our administrators, and to the director of the centre where the session ran.",
         // Honest gap. There is NO consent column anywhere in the schema, so
         // we must not describe a consent process the software does not have.
-        "TODO-CONFIRM: Build Alpha Kids does not currently record a photo or media consent flag against a child in this system. Before launch, confirm how photo consent is obtained and recorded (for example, through the centre's own enrolment forms), how a parent asks for a photo to be removed, and whether photos are ever used for marketing. This section must then describe that actual process, and if photos may be used publicly, that requires its own clear consent and must be stated here.",
+        // Owner-confirmed (Jayden, 2026-10-12): written consent, removal on
+        // request by email. The consent is collected on paper/email, not in
+        // this system (there is still no consent column in the schema).
+        "We only photograph a child, or use a photo of a child in our marketing, with their parent or guardian's written consent. If you want a photo of your child taken down, email us and we will remove it. Our contact details are at the end of this policy.",
       ],
     },
     {
@@ -165,7 +171,12 @@ export const PRIVACY_PAGE: LegalPage = {
         "We think you should know exactly what is sent. When an insight is generated, we send Anthropic: your child's first and last name, their age group and approximate age in years, the name and dates of the school term, their attendance record for each sport, and the skill ratings their coaches recorded. This information identifies your child by name. It is not anonymised or aggregated with other children.",
         "We do not send your child's medical notes, date of birth, gender, photos, your contact details, or any payment information to Anthropic.",
         "Insights are generated when a coach or administrator asks for one, and automatically at the end of a term for children who have skill ratings for that term. The report that comes back is stored in our system and shown to you in your parent account.",
-        "Anthropic processes this information on our behalf as a service provider. TODO-CONFIRM: the applicable Anthropic terms and data-processing commitments (including their retention of API inputs and whether the data may be used for training) should be confirmed and summarised here by the reviewing lawyer, and Jayden should decide whether parents are offered a way to opt out of AI-generated insights. The system does not currently have an opt-out.",
+        // Owner decision (Jayden, 2026-10-12): no opt-out. Training claim
+        // source: Anthropic's commercial terms (anthropic.com/legal/commercial-terms),
+        // which bar training on customer API content by default.
+        // TODO-CONFIRM (lawyer, not rendered): retention of API inputs.
+        "Anthropic processes this information on our behalf as a service provider. Under its commercial terms, information we send through its API is not used to train its AI models.",
+        "Insights are part of how we report on your child's progress, and there is currently no option to switch them off. If you have concerns about this, please contact us.",
       ],
     },
     {
@@ -195,10 +206,12 @@ export const PRIVACY_PAGE: LegalPage = {
         // Source: vercel.json — `"regions": ["syd1"]` (Vercel's Sydney
         // region) and the hosted Supabase project "BAK Sydney"
         // (yyndmywxfxklzaftfhon), region ap-southeast-2 (Sydney) — both
-        // moved from Mumbai in Oct 2026. If either region changes, this
+        // moved from Mumbai in Oct 2026 (#94). If either region changes, this
         // sentence must change in the same deploy.
-        "Our application runs on servers in Sydney, Australia, and our database, where your information and your child's records are stored, is also in Sydney, Australia.",
-        "TODO-CONFIRM: the countries in which Anthropic, Resend, Square and Twilio store and process the information we send them. Each provider is based outside Australia, but the specific countries must be confirmed from each provider's own terms rather than assumed.",
+        "Our application and our database are both hosted in Sydney, Australia, so the information you give us, including information about your child, is stored and processed in Australia.",
+        // Source: each provider's own privacy terms name the United States as
+        // where they are based and process customer data.
+        "Some of our service providers are based overseas. Anthropic (AI insights), Resend (email), Square (payments) and Twilio (SMS) are based in the United States, and the information we send them is processed there.",
       ],
     },
     {
@@ -231,8 +244,11 @@ export const PRIVACY_PAGE: LegalPage = {
         // The honest answer. Verified: no retention, purge, anonymisation
         // or scheduled-deletion logic exists anywhere in the codebase, and
         // no cron in vercel.json does this.
-        "TODO-CONFIRM: our system does not currently delete or anonymise records automatically. In practice this means information about a child is kept until it is removed by hand.",
-        "TODO-CONFIRM: how long Build Alpha Kids intends to keep child records, parent records, booking and payment records (noting the separate record-keeping obligations that apply to financial records), enquiry and newsletter records, and what happens to a child's information after they leave a program. These periods must be decided and stated here. We have deliberately not written a retention period we do not actually honour.",
+        // Owner-confirmed (Jayden, 2026-10-12): five years. Nothing in the
+        // codebase deletes records yet, so this is a manual process and the
+        // page says so rather than implying automation.
+        "We keep information about you and your child, including booking and payment records, for five years after your last booking or session with us, and then delete it.",
+        "Deletion is currently done by hand rather than automatically. If you would like information removed sooner, please contact us.",
       ],
     },
     {
@@ -245,7 +261,9 @@ export const PRIVACY_PAGE: LegalPage = {
         // global CLAUDE.md belongs to a DIFFERENT project — SOLVR — and was
         // verified as absent here.)
         "For anything else, such as a full copy of your child's records, a correction you cannot make yourself, or a request to delete information, please contact us and we will handle it manually. We do not yet have a self-service export or account-deletion button.",
-        "TODO-CONFIRM: the timeframe within which Build Alpha Kids will respond to an access or correction request, and whether any fee applies. (The Privacy Act sets expectations here. This should be confirmed with the reviewing lawyer.)",
+        // Owner-confirmed (Jayden, 2026-10-12): 30 days. APP 12.8: no charge
+        // may be made for making the request.
+        "We will respond to an access or correction request within 30 days. There is no charge to make a request.",
       ],
     },
     {
@@ -261,7 +279,9 @@ export const PRIVACY_PAGE: LegalPage = {
       heading: "Making a complaint",
       body: [
         "If you think we have mishandled your or your child's personal information, please tell us first, and we will look into it and respond to you. Contact details are below.",
-        "TODO-CONFIRM: a named privacy contact (a person or role, with an email address) to receive privacy complaints, and the process and timeframe for responding to one. Do not publish this page without it: a complaints process with nobody at the end of it is worse than none.",
+        // Owner-confirmed (Jayden, 2026-10-12): the site's contact address,
+        // 48-hour response.
+        `Send privacy questions and complaints to ${SITE.email}. We will respond within 48 hours, look into what happened, and tell you the outcome.`,
         "If you are not satisfied with our response, you can take your complaint to the Office of the Australian Information Commissioner (OAIC), which oversees the Privacy Act. You can reach the OAIC at oaic.gov.au or on 1300 363 992.",
       ],
     },
@@ -298,7 +318,7 @@ export const TERMS_PAGE: LegalPage = {
       body: [
         "These terms apply when you use the Build Alpha Kids website, create a parent account, or book and pay for a session. By doing any of those things, you agree to them.",
         "If you do not agree with them, please do not use the site or book with us.",
-        "TODO-CONFIRM: the legal entity name and ABN of the business that operates Build Alpha Kids, to be stated here.",
+        "Build Alpha Kids is operated by Build Alpha Kids Pty Ltd (ABN 28 680 042 255).",
       ],
     },
     {
@@ -307,7 +327,8 @@ export const TERMS_PAGE: LegalPage = {
         "Our programs are for children. The account, the booking and the payment are for the parent or guardian: you book on your child's behalf, and you confirm you are their parent or guardian and are allowed to enrol them.",
         "We also work with childcare centres, schools and other organisations. If you are booking on behalf of an organisation, you confirm you are authorised to do so.",
         // Honest: no age gate is implemented anywhere. Don't claim one.
-        "TODO-CONFIRM: whether Build Alpha Kids requires account holders to be 18 or over. The site does not currently verify a user's age, so no age requirement is stated here. If one is intended, it needs to be stated and enforced rather than only written down.",
+        // Owner-confirmed (Jayden, 2026-10-12): 18+.
+        "You must be 18 or over to create an account or make a booking.",
       ],
     },
     {
@@ -327,8 +348,14 @@ export const TERMS_PAGE: LegalPage = {
         "Card payments are processed by Square. Your card details go directly to Square and we never see or store your card number.",
         // Owner-confirmed per the brief; consistent with content.ts:72-77.
         "NSW Active Kids vouchers are accepted for both our after-school clinics and our school holiday clinics.",
-        "TODO-CONFIRM: how an Active Kids voucher is applied in practice, at the time of booking or as a reimbursement, and what happens to the voucher if a booking is later cancelled. The booking system does not currently record a voucher against a booking, so this process happens outside the software and needs to be described accurately.",
-        "TODO-CONFIRM: whether Build Alpha Kids is registered for GST and whether displayed prices include GST. (The application reads this from an environment variable, so the value is not in our code.)",
+        // Owner-confirmed (Jayden, 2026-10-12): applied at booking. What
+        // happens to the voucher on a cancelled booking is still open, so
+        // this page makes no claim about it.
+        "An Active Kids voucher is applied at the time of booking.",
+        // Source: ABN Lookup — GST registered from 19 Aug 2024. Parent
+        // booking prices are flat amounts (GST is only added on B2B invoices),
+        // so the displayed price is the GST-inclusive total.
+        "Build Alpha Kids Pty Ltd is registered for GST, and the prices shown include GST.",
       ],
     },
     {
@@ -345,9 +372,12 @@ export const TERMS_PAGE: LegalPage = {
         // docs/square-cutover.md confirms refunds are issued by hand from the
         // Square seller dashboard. So we must not imply an automatic refund.
         "Card refunds are processed by us through Square and are returned to the card you paid with. Refunds are not automatic: cancelling releases your spot and records your refund eligibility, and we then action the refund.",
-        "TODO-CONFIRM: how long a refund takes to reach a parent. Our cancellation email currently tells parents to allow 5–10 business days. Because refunds are actioned by hand rather than by the system, confirm that this is a timeframe the business can actually meet, and correct either this page or that email so the two agree.",
-        "If we have to cancel a session for weather, a coach being unavailable, or anything else, we will let you know and you will be offered a refund.",
-        "TODO-CONFIRM: what happens when a session is cancelled by Build Alpha Kids rather than by the parent, such as a refund, credit, or transfer to another session, and whether wet-weather cancellations are treated differently. The system records a cancellation but does not encode this policy.",
+        // Owner-confirmed (Jayden, 2026-10-12): matches the cancellation
+        // email in lib/bookings/booking-emails.ts.
+        "Please allow 5–10 business days for a refund to reach your card.",
+        // Owner-confirmed (Jayden, 2026-10-12): credit or a move, wet
+        // weather included.
+        "If we have to cancel a session, for weather, a coach being unavailable or anything else, we will let you know and offer you a session credit or a place in another session.",
       ],
     },
     {
@@ -355,14 +385,19 @@ export const TERMS_PAGE: LegalPage = {
       body: [
         "Please tell us about any medical condition, allergy or requirement that affects your child's participation, and keep it current. We share it with the coaches running your child's session so they can look after them.",
         "We ask that children and parents treat coaches, other children and the venue with respect. We may ask a child to sit out, or remove them from a program, if their behaviour puts themselves or others at risk.",
-        "TODO-CONFIRM: Build Alpha Kids' policy on drop-off and pick-up, supervision before and after a session, what happens if a child is not collected, and the behaviour and exclusion policy, including whether a refund applies if a child is removed from a program.",
+        // Owner-confirmed (Jayden, 2026-10-12).
+        "We are responsible for your child from the time the session starts until it finishes. Please drop off and collect your child on time.",
+        "If a child is not collected at the end of a session, we will call their parent or guardian and wait with them. If we cannot reach anyone within 30 minutes, we will contact the police.",
+        "Violent behaviour is not tolerated. A child who is removed from a program for their behaviour is not eligible for a refund.",
       ],
     },
     {
       heading: "Photos and media",
       body: [
         "Our coaches may take photos during sessions. How we store them and who can see them is set out in our Privacy Policy.",
-        "TODO-CONFIRM: whether Build Alpha Kids uses photos of children in marketing, and if so how consent is obtained and withdrawn. No photo or media consent is recorded in the booking system today, so this page does not claim any consent has been given.",
+        // Owner-confirmed (Jayden, 2026-10-12): written consent, removal on
+        // request by email.
+        "We only photograph a child, or use a photo of a child in our marketing, with their parent or guardian's written consent. To have a photo of your child taken down, email us and we will remove it.",
       ],
     },
     {
@@ -387,7 +422,10 @@ export const TERMS_PAGE: LegalPage = {
         "Nothing in these terms excludes, restricts or modifies your rights under the Australian Consumer Law. Our services come with guarantees that cannot be excluded, and if we fail to meet them you have remedies under that law.",
         "Beyond those rights, we provide this website as it is. We work to keep the information on it accurate and the site available, but we do not guarantee it will be uninterrupted or error-free.",
         "Sport involves physical activity and a risk of injury. We take safety seriously and our coaches are trained for it, but we cannot guarantee that no one will ever be hurt.",
-        "TODO-CONFIRM: Build Alpha Kids' insurance position (public liability and any personal accident cover), and what limitation of liability, if any, should apply here. This section makes no claim about insurance because none could be established from our records. This is a section for the reviewing lawyer to write.",
+        // Owner-confirmed (Jayden, 2026-10-12): $20 million public liability.
+        // TODO-CONFIRM (lawyer, not rendered): personal accident cover and
+        // any limitation of liability.
+        "We hold public liability insurance with cover of $20 million.",
       ],
     },
     {

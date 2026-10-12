@@ -33,11 +33,13 @@ export interface SiteInfo {
   /** Public contact email (matches email templates + invoicing fallback). */
   email: string;
   /**
-   * ABN, stored spaced for display.
+   * ABN of the operating company, stored spaced for display.
    *
-   * Not derivable from the repo — at runtime invoicing reads the `BAK_ABN`
-   * env var (lib/launch/invoice-actions.ts), and the value itself is not
-   * committed. Owner-supplied: confirmed by Jayden 2026-07-16.
+   * Build Alpha Kids Pty Ltd (ABN Lookup, checked 2026-10-12; owner-
+   * confirmed by Jayden the same day). Replaced 47 262 120 626, Jayden's
+   * sole-trader ABN that still holds the "Build Alpha Kids" business
+   * name. Invoicing reads its own `BAK_ABN` env var
+   * (lib/launch/invoice-actions.ts), so check that matches too.
    */
   abn: string;
   /**
@@ -64,7 +66,7 @@ export const SITE: SiteInfo = {
   url: "https://buildalphakids.com.au",
   phone: "0426 722 003",
   email: "contact@buildalphakids.com.au",
-  abn: "47 262 120 626",
+  abn: "28 680 042 255",
   socials: {
     instagram: "https://instagram.com/buildalphakids",
     /**
