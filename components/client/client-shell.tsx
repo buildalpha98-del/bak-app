@@ -233,7 +233,7 @@ export function ClientShell({
                   <Icon className="h-4 w-4 shrink-0" />
                   {item.label}
                   {showMessagesBadge(item.label) && (
-                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-portal-600 px-1.5 text-[11px] font-semibold text-white">
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-portal-200 px-1.5 text-[11px] font-semibold text-ink">
                       {unreadMessages}
                     </span>
                   )}

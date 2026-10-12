@@ -27,7 +27,7 @@ export default async function ClientSessionPage({
 
       {/* Per-child attendance — who actually attended vs was away. */}
       {(session.attendees ?? []).length > 0 && (
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="sticker-card p-4">
           <h2 className="text-sm font-semibold text-foreground">
             Attendance ({(session.attendees ?? []).filter((a) => a.present).length} of{" "}
             {(session.attendees ?? []).length})
@@ -56,7 +56,7 @@ export default async function ClientSessionPage({
 
       {/* Coach photos from the session — signed URLs, private bucket. */}
       {(session.photos ?? []).length > 0 && (
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="sticker-card p-4">
           <h2 className="text-sm font-semibold text-foreground">Session photos</h2>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {(session.photos ?? []).map((url) => (

@@ -73,12 +73,12 @@ export default async function PlanTermPage({
                   aria-current={on ? "page" : undefined}
                   className={`min-h-[44px] rounded-2xl border px-4 py-2 text-left text-sm transition-colors ${
                     on
-                      ? "border-portal-600 bg-portal-600 text-white"
+                      ? "border-ink bg-cta text-cta-foreground"
                       : "border-portal-200 bg-white text-foreground hover:bg-portal-50"
                   }`}
                 >
                   <span className="block font-medium">{t.name}</span>{" "}
-                  <span className={`block text-xs ${on ? "text-white/80" : "text-muted-foreground"}`}>
+                  <span className={`block text-xs ${on ? "text-cta-foreground/80" : "text-muted-foreground"}`}>
                     {termTiming(t, today)}
                   </span>
                 </Link>

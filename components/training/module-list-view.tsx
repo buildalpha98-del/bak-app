@@ -309,7 +309,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
 
   if (initialModules.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+      <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
         <BookOpen className="mb-3 size-10 text-muted-foreground/50" />
         <p className="text-sm font-medium text-foreground">No modules yet.</p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -318,7 +318,6 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
         <div className="mt-4">
           <Button
             render={<Link href={`${basePath}/modules/new`} />}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Module
@@ -426,7 +425,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
         <div className="sm:ml-auto">
           <Button
             render={<Link href={`${basePath}/modules/new`} />}
-            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[40px]"
           >
             <Plus className="size-4" />
             Create Module
@@ -436,7 +435,7 @@ export function ModuleListView({ initialModules, basePath }: ModuleListViewProps
 
       {/* Results */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+        <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
           <Search className="mb-3 size-10 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">
             No modules match your filters.
@@ -488,7 +487,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       <Icon className="size-3" />
       {label}
       <button
@@ -577,7 +576,7 @@ function ModuleTable({
                       <span className="truncate">{m.title}</span>
                       {m.is_mandatory && (
                         <span
-                          className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                          className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust"
                           title="Required module"
                         >
                           Required
@@ -667,7 +666,7 @@ function ModuleTable({
                       {statusBadge.label}
                     </Badge>
                     {m.is_mandatory && (
-                      <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust">
                         Required
                       </span>
                     )}
@@ -856,7 +855,6 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setArchiveOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <Trash2 className="size-4" />
           Archive
@@ -882,7 +880,6 @@ function BulkActionBar({
                 e.preventDefault();
                 void handleArchive();
               }}
-              className="bg-primary text-white hover:bg-primary/90"
               disabled={archiving}
             >
               {archiving ? (

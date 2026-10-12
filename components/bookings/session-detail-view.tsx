@@ -153,7 +153,7 @@ export function SessionDetailView({
       </div>
 
       {/* Details card */}
-      <div className="rounded-xl border border-orange-100 bg-card p-5">
+      <div className="sticker-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Session Details</h2>
         <dl className="grid gap-4 sm:grid-cols-2">
           <div className="flex items-start gap-3">
@@ -263,7 +263,7 @@ export function SessionDetailView({
       </div>
 
       {/* Capacity card */}
-      <div className="rounded-xl border border-orange-100 bg-card p-5">
+      <div className="sticker-card p-5">
         <div className="mb-3 flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Capacity</h2>
@@ -283,7 +283,7 @@ export function SessionDetailView({
       </div>
 
       {/* Status actions */}
-      <div className="rounded-xl border border-orange-100 bg-card p-5">
+      <div className="sticker-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Actions</h2>
         {error && (
           <p className="mb-3 text-sm text-red-600">{error}</p>
@@ -293,7 +293,6 @@ export function SessionDetailView({
             <Button
               onClick={() => handleStatusChange("open" as BookableSessionStatus)}
               disabled={changingStatus !== null}
-              className="bg-primary hover:bg-[#d4641f]"
             >
               {changingStatus === "open" && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -350,7 +349,7 @@ export function SessionDetailView({
       </div>
 
       {/* Waitlist section */}
-      <div className="rounded-xl border border-orange-100 bg-card p-5">
+      <div className="sticker-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Waitlist</h2>
         {waitlist.length === 0 ? (
           <p className="text-sm text-[#666666]">

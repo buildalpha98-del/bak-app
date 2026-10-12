@@ -132,7 +132,7 @@ const PIPELINE_STAGES: { key: LeadStage; label: string; colour: string }[] = [
   { key: "contacted", label: "Contacted", colour: "bg-blue-100 text-blue-700" },
   { key: "interested", label: "Interested", colour: "bg-amber-100 text-amber-700" },
   { key: "free_trial", label: "Free Trial", colour: "bg-purple-100 text-purple-700" },
-  { key: "proposal_sent", label: "Proposal Sent", colour: "bg-orange-100 text-orange-700" },
+  { key: "proposal_sent", label: "Proposal Sent", colour: "bg-orange-100 text-rust" },
 ];
 
 const CLOSED_STAGES: { key: LeadStage; label: string; colour: string }[] = [
@@ -675,7 +675,6 @@ export function PipelineBoard({
         <div className="flex gap-2">
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Add Lead
@@ -864,7 +863,7 @@ export function PipelineBoard({
             className={
               "inline-flex items-center gap-1 rounded-md px-2 py-1 transition hover:bg-muted/40 " +
               (showClosed
-                ? "text-primary font-medium"
+                ? "text-rust font-medium"
                 : "text-muted-foreground")
             }
           >
@@ -1021,7 +1020,6 @@ export function PipelineBoard({
             <Button
               onClick={handleStageConfirm}
               disabled={isPending}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {isPending ? "Saving..." : "Confirm"}
             </Button>
@@ -1047,7 +1045,7 @@ function SummaryCard({
 }) {
   const ticked = useCountUp(value);
   return (
-    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="size-4" />
         <span className="text-xs font-medium">{label}</span>
@@ -1071,7 +1069,7 @@ function PipelineValueCard({
 
   if (!financialAccess) {
     return (
-      <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+      <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Lock className="size-4" />
           <span className="text-xs font-medium">Pipeline Value</span>
@@ -1085,7 +1083,7 @@ function PipelineValueCard({
   }
 
   return (
-    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5">
       <div className="flex items-center gap-2 text-muted-foreground">
         <DollarSign className="size-4" />
         <span className="text-xs font-medium">Pipeline Value</span>
@@ -1107,7 +1105,7 @@ function SequencesCard({
   const active = useCountUp(summary.activeSequencesCount);
   const sent = useCountUp(summary.emailsSentThisWeek);
   return (
-    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="rounded-2xl p-4 transition hover:-translate-y-0.5">
       <Link href={`${basePath}/sequences`} className="block">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Mail className="size-4 text-primary" />
@@ -1119,7 +1117,7 @@ function SequencesCard({
             active · {sent} sent this week
           </span>
         </div>
-        <p className="mt-1 text-xs text-primary hover:underline">Manage →</p>
+        <p className="mt-1 text-xs text-rust hover:underline">Manage →</p>
       </Link>
     </Card>
   );
@@ -1139,7 +1137,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       <Icon className="size-3" />
       {label}
       <button
@@ -1179,7 +1177,7 @@ function FilterChip({
         className={
           "h-8 w-auto min-w-[120px] rounded-full text-xs " +
           (isActive
-            ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
+            ? "border-primary/40 bg-primary/10 text-rust ring-1 ring-primary/30"
             : "border")
         }
       >
@@ -1321,7 +1319,7 @@ function MobileStageView({
               className={
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition " +
                 (isActive
-                  ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
+                  ? "border-primary/40 bg-primary/10 text-rust ring-1 ring-primary/30"
                   : "bg-background text-muted-foreground hover:bg-muted/40")
               }
             >
@@ -1460,7 +1458,7 @@ function LeadCard({
   return (
     <Card
       className={
-        "group/lead relative rounded-2xl p-3 transition hover:shadow-md " +
+        "group/lead relative rounded-2xl p-3 transition " +
         tint +
         (selected ? " ring-2 ring-primary/60" : "")
       }
@@ -1620,7 +1618,7 @@ function OwnerChip({ ownerName }: { ownerName: string | null }) {
           render={
             <span
               aria-label={`Owner: ${ownerName}`}
-              className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-white"
+              className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-ink"
             >
               {initialsOf(ownerName)}
             </span>
@@ -1744,7 +1742,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} lead{count === 1 ? "" : "s"} selected
@@ -1882,7 +1880,6 @@ function BulkActionBar({
             <Button
               onClick={handleBulkStageConfirm}
               disabled={isPending}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {isPending ? "Saving..." : "Confirm"}
             </Button>

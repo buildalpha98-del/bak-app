@@ -443,7 +443,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
   // under current filters" because the CTAs are different.
   if (programs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+      <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
         <BookOpen className="mb-3 size-10 text-muted-foreground/50" />
         <p className="text-sm font-medium text-foreground">
           No programmes yet.
@@ -454,7 +454,6 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <Button
             render={<Link href={`${basePath}/generate`} />}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Sparkles className="size-4" />
             Generate with AI
@@ -616,7 +615,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Folder view"
             className={
               viewMode === "folder"
-                ? "rounded-r-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-r-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-r-none"
             }
           >
@@ -629,7 +628,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "rounded-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-none"
             }
           >
@@ -642,7 +641,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "rounded-l-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-l-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-l-none"
             }
           >
@@ -673,7 +672,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
           </Button>
           <Button
             render={<Link href={`${basePath}/generate`} />}
-            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[40px]"
           >
             <Sparkles className="size-4" />
             Generate with AI
@@ -683,7 +682,7 @@ export function ProgramLibrary({ programs, basePath }: ProgramLibraryProps) {
 
       {/* Results */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+        <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
           <Search className="mb-3 size-10 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">
             No programmes match your filters.
@@ -744,7 +743,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       <Icon className="size-3" />
       {label}
       <button
@@ -781,7 +780,7 @@ function FolderView({
         return (
           <div
             key={sport}
-            className="rounded-2xl border bg-background transition hover:shadow-sm"
+            className="sticker-card"
           >
             <button
               type="button"
@@ -861,7 +860,7 @@ function ProgramTile({
     <Link
       href={`${basePath}/${program.id}`}
       className={
-        "group relative flex flex-col gap-2 rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-md " +
+        "group relative flex flex-col gap-2 sticker-tile p-4 " +
         (noSkills ? "ring-1 ring-primary/30" : "")
       }
     >
@@ -895,13 +894,13 @@ function ProgramTile({
       {/* Status row */}
       <div className="flex flex-wrap items-center gap-1.5">
         {noSkills && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-rust">
             <AlertTriangle className="size-2.5" />
             No skills
           </span>
         )}
         {unused && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-rust">
             <CircleDashed className="size-2.5" />
             Unused
           </span>
@@ -1037,7 +1036,7 @@ function TableView({
                       <span className="truncate">{p.title}</span>
                       {noSkills && (
                         <span
-                          className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                          className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust"
                           title="No skills defined"
                         >
                           <AlertTriangle className="size-2.5" />
@@ -1065,7 +1064,7 @@ function TableView({
                     {p.session_count > 0 ? (
                       p.session_count
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust">
                         <CircleDashed className="size-2.5" />
                         Unused
                       </span>
@@ -1127,13 +1126,13 @@ function TableView({
                       </Badge>
                     )}
                     {noSkills && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-rust">
                         <AlertTriangle className="size-2.5" />
                         No skills
                       </span>
                     )}
                     {unused && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-rust">
                         <CircleDashed className="size-2.5" />
                         Unused
                       </span>
@@ -1301,7 +1300,6 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setDeleteOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <Trash2 className="size-4" />
           Delete

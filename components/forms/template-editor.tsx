@@ -175,7 +175,6 @@ export function TemplateEditor({ template, basePath }: TemplateEditorProps) {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary hover:bg-primary/90 text-white"
         >
           {saving ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />

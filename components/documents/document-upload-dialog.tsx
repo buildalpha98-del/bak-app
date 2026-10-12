@@ -333,7 +333,6 @@ export function DocumentUploadDialog({
             <Button
               onClick={handleUpload}
               disabled={!file || !title.trim() || uploading}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {uploading && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
               Upload

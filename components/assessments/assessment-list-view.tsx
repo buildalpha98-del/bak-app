@@ -496,7 +496,7 @@ export function AssessmentListView({
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "rounded-r-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-r-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-r-none"
             }
           >
@@ -509,7 +509,7 @@ export function AssessmentListView({
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "rounded-l-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-l-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-l-none"
             }
           >
@@ -529,7 +529,7 @@ export function AssessmentListView({
         )}
 
         <Button
-          className="min-h-[40px] bg-primary text-white hover:bg-primary/90 sm:ml-auto"
+          className="min-h-[40px] sm:ml-auto"
           onClick={() => setDialogOpen(true)}
         >
           <Plus className="size-4" />
@@ -573,7 +573,7 @@ export function AssessmentListView({
                       {AGE_GROUP_LABELS[template.age_group]}
                     </Badge>
                     {template.skill_count === 0 && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-rust">
                         <AlertTriangle className="size-3" />
                         No skills
                       </span>
@@ -679,7 +679,7 @@ export function AssessmentListView({
                           )}
                           {template.skill_count === 0 && (
                             <span
-                              className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                              className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust"
                               title="No skills defined"
                             >
                               <AlertTriangle className="size-2.5" />
@@ -752,7 +752,7 @@ export function AssessmentListView({
                           {AGE_GROUP_LABELS[template.age_group]}
                         </Badge>
                         {template.skill_count === 0 && (
-                          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-rust">
                             <AlertTriangle className="size-2.5" />
                             No skills
                           </span>
@@ -833,7 +833,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       <Icon className="size-3" />
       {label}
       <button
@@ -913,7 +913,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} template{count === 1 ? "" : "s"} selected
@@ -944,7 +944,6 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setDeleteOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <Trash2 className="size-4" />
           Delete
@@ -1261,13 +1260,13 @@ function CreateAssessmentDialog({
           </div>
 
           {potentialDuplicate && (
-            <div className="rounded-2xl border border-amber-300/60 bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
-              <p className="font-medium text-amber-900 dark:text-amber-100">
+            <div className="rounded-2xl border border-amber-300/60 bg-amber-50 p-3 text-sm">
+              <p className="font-medium text-amber-900">
                 A template for {sport} ·{" "}
                 {AGE_GROUP_LABELS[ageGroup as AgeGroup]}
                 {effectiveTermId ? "" : " (no term)"} already exists.
               </p>
-              <p className="mt-1 text-amber-800 dark:text-amber-200">
+              <p className="mt-1 text-amber-800">
                 It has {potentialDuplicate.skill_count} skill
                 {potentialDuplicate.skill_count === 1 ? "" : "s"} and{" "}
                 {potentialDuplicate.ratings_count} rating
@@ -1368,7 +1367,7 @@ function CreateAssessmentDialog({
             Cancel
           </Button>
           <Button
-            className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[44px]"
             onClick={handleSave}
             disabled={isSaving || skills.length === 0}
           >

@@ -407,7 +407,6 @@ export function ProgramDetailView({
             <Button
               onClick={handleApply}
               disabled={applyBusy}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {applyBusy ? <Loader2 className="size-4 animate-spin" /> : null}
               Apply
@@ -466,8 +465,8 @@ export function ProgramDetailView({
                     title={w.title}
                     className={
                       w.id === program.id
-                        ? "rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
-                        : "rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                        ? "rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-ink"
+                        : "rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition hover:border-primary/40 hover:text-rust"
                     }
                   >
                     Wk {w.series_week}
@@ -497,7 +496,7 @@ export function ProgramDetailView({
             <Button
               size="sm"
               onClick={openApplyDialog}
-              className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+              className="min-h-[40px]"
             >
               <CalendarPlus className="size-4" />
               Apply to roster
@@ -561,7 +560,7 @@ export function ProgramDetailView({
               size="sm"
               disabled={savingVersion}
               onClick={handleSaveNewVersion}
-              className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+              className="min-h-[40px]"
             >
               {savingVersion && <Loader2 className="size-4 animate-spin" />}
               Save as v{(program.version_number ?? 0) + 1}
@@ -669,7 +668,7 @@ export function ProgramDetailView({
             </div>
 
             {/* Programme content (read-only or editor) */}
-            <Card className="rounded-2xl">
+            <Card>
               <CardContent className="pt-6">
                 {editing ? (
                   <ProgramEditor
@@ -686,7 +685,7 @@ export function ProgramDetailView({
 
         {/* Sessions tab */}
         <TabsContent value="sessions">
-          <Card className="rounded-2xl">
+          <Card>
             <CardHeader>
               <CardTitle>Centres using this programme</CardTitle>
               <CardDescription>
@@ -732,7 +731,7 @@ export function ProgramDetailView({
 
         {/* Variants tab */}
         <TabsContent value="variants">
-          <Card className="rounded-2xl">
+          <Card>
             <CardHeader>
               <CardTitle>Version history</CardTitle>
               <CardDescription>
@@ -763,7 +762,7 @@ export function ProgramDetailView({
                           <p className="text-sm font-medium text-foreground">
                             v{v.version_number}
                             {v.id === program.id && (
-                              <span className="ml-2 text-xs text-primary">
+                              <span className="ml-2 text-xs text-rust">
                                 current
                               </span>
                             )}
@@ -785,7 +784,7 @@ export function ProgramDetailView({
 
         {/* Linked centres tab */}
         <TabsContent value="centres">
-          <Card className="rounded-2xl">
+          <Card>
             <CardHeader>
               <CardTitle>Centres using this programme</CardTitle>
               <CardDescription>
@@ -850,7 +849,7 @@ function MetaCard({
   rows: { icon: React.ComponentType<{ className?: string }>; text: string }[];
 }) {
   return (
-    <Card className="rounded-2xl">
+    <Card>
       <CardContent className="py-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {label}

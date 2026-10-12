@@ -243,7 +243,7 @@ export function ActiveSessionView({ data }: ActiveSessionViewProps) {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <Timer className="size-4 text-primary" />
-              <span className="text-lg font-bold tabular-nums text-primary">
+              <span className="text-lg font-bold tabular-nums text-rust">
                 {elapsed}
               </span>
             </div>
@@ -372,7 +372,7 @@ export function ActiveSessionView({ data }: ActiveSessionViewProps) {
                   <button
                     type="button"
                     onClick={() => setHeadcount(headcount + 1)}
-                    className="flex size-12 items-center justify-center rounded-full border-2 border-primary text-xl font-bold text-primary active:bg-orange-50 transition-colors"
+                    className="flex size-12 items-center justify-center rounded-full border-2 border-primary text-xl font-bold text-rust active:bg-orange-50 transition-colors"
                     aria-label="Increase headcount"
                   >
                     +
@@ -476,7 +476,7 @@ export function ActiveSessionView({ data }: ActiveSessionViewProps) {
                           Cancel
                         </Button>
                         <Button
-                          className="min-h-[44px] flex-1 bg-primary text-white hover:bg-primary/90"
+                          className="min-h-[44px] flex-1"
                           onClick={handleQuickAdd}
                           disabled={isAddingChild}
                         >

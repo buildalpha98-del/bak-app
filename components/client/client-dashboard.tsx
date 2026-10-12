@@ -152,11 +152,11 @@ export function ClientDashboard({
 
       {/* Next session card */}
       {nextSession ? (
-        <Card className="rounded-2xl border-portal-600/20 bg-gradient-to-br from-portal-50 to-white transition-shadow hover:shadow-md">
+        <Card className="bg-gradient-to-br from-portal-50 to-white">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-portal-600">
+                <p className="eyebrow">
                   Next Session
                 </p>
                 <p className="text-lg font-semibold text-foreground">
@@ -180,7 +180,7 @@ export function ClientDashboard({
                 <NextSessionBroadcastPill sessionId={nextSession.id} />
               </div>
 
-              <div className="flex flex-col items-center rounded-2xl bg-card px-3 py-2 shadow-sm">
+              <div className="flex flex-col items-center rounded-2xl border border-ink/15 bg-card px-3 py-2">
                 {days !== null && days >= 0 ? (
                   <>
                     <span className="text-2xl font-bold tabular-nums text-portal-600">
@@ -210,7 +210,7 @@ export function ClientDashboard({
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-2xl border-dashed">
+        <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
             <CalendarDays className="h-10 w-10 text-muted-foreground/40" />
             <p className="mt-3 text-sm font-medium text-muted-foreground">
@@ -225,7 +225,7 @@ export function ClientDashboard({
 
       {/* Term at a glance — one chip per delivered/planned week. */}
       {data.termWeeks.length > 0 && (
-        <Card className="rounded-2xl transition-shadow hover:shadow-md">
+        <Card>
           <CardContent className="p-4">
             <div className="mb-2.5 flex items-baseline justify-between gap-2">
               <p className="text-sm font-semibold text-foreground">
@@ -241,7 +241,7 @@ export function ClientDashboard({
                   key={w.week}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
                     w.status === "current"
-                      ? "border-portal-600 bg-portal-600 text-white"
+                      ? "border-ink bg-cta text-cta-foreground"
                       : w.status === "completed"
                         ? "border-portal-200 bg-portal-50 text-portal-800"
                         : "border-dashed text-muted-foreground"
@@ -276,7 +276,7 @@ export function ClientDashboard({
       </div>
 
       {/* Recent activity */}
-      <Card className="rounded-2xl transition-shadow hover:shadow-md">
+      <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -300,7 +300,7 @@ export function ClientDashboard({
                 <Link
                   key={session.id}
                   href={`/client/${centreId}/schedule/${session.id}`}
-                  className="flex items-center justify-between rounded-2xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                  className="flex items-center justify-between rounded-2xl border border-ink/15 p-3 transition-colors hover:bg-portal-50"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="hidden shrink-0 text-center sm:block">
@@ -368,7 +368,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-2xl border bg-background p-3 text-sm font-medium text-foreground transition-all hover:-translate-y-0.5 hover:border-portal-600/40 hover:shadow-sm"
+      className="sticker-tile flex items-center gap-2 p-3 text-sm font-medium text-foreground"
     >
       <Icon className="h-4 w-4 shrink-0 text-portal-600" />
       <span className="truncate">{label}</span>
@@ -387,7 +387,7 @@ function SummaryCard({
 }) {
   const ticked = useCountUp(value);
   return (
-    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
           <div className="rounded-2xl bg-portal-600/10 p-2">
@@ -407,7 +407,7 @@ function RatingCard({ rating }: { rating: number | null }) {
   const tenths = Math.round((rating ?? 0) * 10);
   const ticked = useCountUp(tenths);
   return (
-    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
           <div className="rounded-2xl bg-amber-50 p-2">
@@ -426,7 +426,7 @@ function RatingCard({ rating }: { rating: number | null }) {
 function AttendanceCard({ rate }: { rate: number | null }) {
   const ticked = useCountUp(rate ?? 0);
   return (
-    <Card className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
           <div className="rounded-2xl bg-emerald-50 p-2">

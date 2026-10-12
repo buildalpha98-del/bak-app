@@ -191,9 +191,7 @@ export function ParentBookClient({ pulse }: ParentBookClientProps) {
           variant={ageSuitability ? "default" : "outline"}
           size="sm"
           onClick={() => setAgeSuitability(!ageSuitability)}
-          className={`min-h-[44px] rounded-xl ${
-            ageSuitability ? "bg-primary hover:bg-[#d4651f]" : ""
-          }`}
+          className="min-h-[44px]"
         >
           Age suitable
         </Button>
@@ -205,7 +203,7 @@ export function ParentBookClient({ pulse }: ParentBookClientProps) {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : filteredSessions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-card border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 sticker-card">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-primary mb-4">
             <Calendar className="h-8 w-8" />
           </div>
@@ -228,7 +226,7 @@ export function ParentBookClient({ pulse }: ParentBookClientProps) {
             return (
               <div
                 key={session.id}
-                className="rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all flex flex-col"
+                className="sticker-card p-5 flex flex-col"
               >
                 <div className="flex items-start justify-between mb-3 gap-2">
                   <h3 className="font-semibold text-foreground text-base leading-tight">
@@ -236,7 +234,7 @@ export function ParentBookClient({ pulse }: ParentBookClientProps) {
                   </h3>
                   <Badge
                     variant="secondary"
-                    className="shrink-0 bg-orange-50 text-primary border-orange-200"
+                    className="shrink-0 bg-orange-50 text-rust border-orange-200"
                   >
                     {session.sport}
                   </Badge>
@@ -299,14 +297,14 @@ export function ParentBookClient({ pulse }: ParentBookClientProps) {
                   {isFull ? (
                     <Button
                       variant="outline"
-                      className="w-full border-primary text-primary hover:bg-orange-50 rounded-xl min-h-[44px]"
+                      className="w-full min-h-[44px]"
                       render={<Link href={`/parent/book/${session.id}`} />}
                     >
                       Join waitlist
                     </Button>
                   ) : (
                     <Button
-                      className="w-full bg-primary hover:bg-[#d4651f] rounded-xl min-h-[44px]"
+                      className="w-full min-h-[44px]"
                       render={<Link href={`/parent/book/${session.id}`} />}
                     >
                       Book now

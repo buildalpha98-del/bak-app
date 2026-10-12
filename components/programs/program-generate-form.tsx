@@ -592,7 +592,7 @@ export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormPr
               <div className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-primary">
+                  <p className="text-sm font-medium text-rust">
                     {duplicateMatches.length === 1
                       ? "A similar programme already exists"
                       : `${duplicateMatches.length} similar programmes already exist`}
@@ -606,7 +606,7 @@ export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormPr
                       <li key={m.id} className="text-xs">
                         <Link
                           href={`${basePath}/${m.id}`}
-                          className="font-medium text-primary hover:underline"
+                          className="font-medium text-rust hover:underline"
                         >
                           {m.title}
                         </Link>
@@ -626,7 +626,7 @@ export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormPr
           <Button
             onClick={handleGenerate}
             disabled={!isFormValid || !canGenerate || status === "generating"}
-            className="w-full bg-primary hover:bg-primary/90 text-white"
+            className="w-full"
             size="lg"
           >
             {status === "generating" ? (
@@ -671,7 +671,7 @@ export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormPr
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               onClick={handleSave}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              className="flex-1"
             >
               <Save className="mr-2 h-4 w-4" />
               {generatedSeries.length > 1
@@ -708,7 +708,7 @@ export function ProgramGenerateForm({ basePath, initial }: ProgramGenerateFormPr
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               onClick={handleSave}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              className="flex-1"
             >
               <Save className="mr-2 h-4 w-4" />
               Save Programme

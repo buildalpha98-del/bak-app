@@ -149,7 +149,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
 
   if (pathways.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+      <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
         <GitMerge className="mb-3 size-10 text-muted-foreground/50" />
         <p className="text-sm font-medium text-foreground">No pathways yet.</p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -158,7 +158,6 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
         <div className="mt-4">
           <Button
             render={<Link href={`${basePath}/pathways/new`} />}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="size-4" />
             Create Pathway
@@ -213,7 +212,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
         <div className="sm:ml-auto">
           <Button
             render={<Link href={`${basePath}/pathways/new`} />}
-            className="min-h-[40px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[40px]"
           >
             <Plus className="size-4" />
             Create Pathway
@@ -223,7 +222,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border bg-background py-16 text-center">
+        <div className="flex flex-col items-center justify-center sticker-card py-16 text-center">
           <Search className="mb-3 size-10 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">
             No pathways match your filters.
@@ -257,7 +256,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">{pathway.title}</p>
                           {pathway.is_mandatory_onboarding && (
-                            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust">
                               Required
                             </span>
                           )}
@@ -344,7 +343,7 @@ export function PathwayListView({ pathways }: PathwayListViewProps) {
                           {statusBadge.label}
                         </Badge>
                         {pathway.is_mandatory_onboarding && (
-                          <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                          <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust">
                             Required
                           </span>
                         )}

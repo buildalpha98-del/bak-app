@@ -160,7 +160,7 @@ export function PayrollDashboard({
     <div className="space-y-6 animate-fade-up">
       {/* Page header */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+        <p className="eyebrow mb-1">
           Payroll
         </p>
         <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -172,7 +172,7 @@ export function PayrollDashboard({
       </div>
 
       {error && (
-        <Card className="rounded-2xl border-red-500/50">
+        <Card className="border-red-500/50">
           <CardContent className="pt-6">
             <p className="text-sm text-red-600">{error}</p>
           </CardContent>
@@ -181,7 +181,7 @@ export function PayrollDashboard({
 
       {/* Summary + previous-period CTA row */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="rounded-2xl card-hover md:col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Previous Period</CardTitle>
           </CardHeader>
@@ -210,7 +210,6 @@ export function PayrollDashboard({
                 <Button
                   onClick={() => handleCreateBatch(previousPeriod)}
                   disabled={isPending}
-                  className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
                 >
                   <Plus className="size-4 mr-1" />
                   Create Batch
@@ -227,7 +226,7 @@ export function PayrollDashboard({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl card-hover">
+        <Card>
           <CardContent className="pt-6">
             <p className="text-xs text-muted-foreground">Paid YTD</p>
             <p className="text-2xl font-bold tabular-nums">
@@ -275,7 +274,7 @@ export function PayrollDashboard({
       </div>
 
       {/* All batches */}
-      <Card className="rounded-2xl">
+      <Card>
         <CardHeader>
           <CardTitle className="text-base">All Payment Batches</CardTitle>
         </CardHeader>
@@ -293,7 +292,7 @@ export function PayrollDashboard({
                 {filtered.map((b) => (
                   <Card
                     key={b.id}
-                    className="rounded-2xl border p-4 transition card-hover hover:border-primary/40"
+                    className="p-4"
                   >
                     <Link
                       href={`/admin/payroll/${b.id}`}

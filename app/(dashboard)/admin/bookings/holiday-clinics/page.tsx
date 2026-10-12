@@ -429,7 +429,6 @@ export default function HolidayClinicPage() {
         </div>
         {!showCreateForm && (
           <Button
-            className="bg-primary hover:bg-[#D4641F] text-white"
             onClick={() => {
               setShowCreateForm(true);
               setError(null);
@@ -458,7 +457,7 @@ export default function HolidayClinicPage() {
       {showCreateForm && (
         <form
           onSubmit={handleCreatePeriod}
-          className="rounded-xl border border-orange-100 bg-card p-6 space-y-5"
+          className="sticker-card p-6 space-y-5"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[#1A1A1A]">
@@ -696,7 +695,6 @@ export default function HolidayClinicPage() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={creating}
             >
               {creating ? (
@@ -724,7 +722,7 @@ export default function HolidayClinicPage() {
       {duplicateForm && (
         <form
           onSubmit={handleDuplicate}
-          className="rounded-xl border border-blue-100 bg-blue-50/30 p-6 space-y-4"
+          className="sticker-card p-6 space-y-4"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[#1A1A1A]">
@@ -776,7 +774,6 @@ export default function HolidayClinicPage() {
           <div className="flex gap-3">
             <Button
               type="submit"
-              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={duplicating}
             >
               {duplicating ? (
@@ -799,7 +796,7 @@ export default function HolidayClinicPage() {
 
       {/* Periods List */}
       {periods.length === 0 && !showCreateForm ? (
-        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-card border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 sticker-card">
           <Calendar className="h-12 w-12 text-primary mb-3 opacity-50" />
           <p className="text-[#666666] text-sm">
             No holiday clinic periods yet. Create your first one above.
@@ -813,7 +810,7 @@ export default function HolidayClinicPage() {
             return (
               <div
                 key={period.name}
-                className="rounded-xl border border-orange-100 bg-card overflow-hidden"
+                className="sticker-card overflow-hidden"
               >
                 {/* Period Header */}
                 <div

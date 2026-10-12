@@ -319,7 +319,6 @@ export default function InvoicingSettingsPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-primary hover:bg-[#d4651f] text-white"
         >
           {saving ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

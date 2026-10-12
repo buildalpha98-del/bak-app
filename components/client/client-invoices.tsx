@@ -69,7 +69,7 @@ function statusBadge(status: string) {
       );
     case "partially_paid":
       return (
-        <Badge className="bg-orange-50 text-orange-700 border-orange-200">
+        <Badge className="bg-orange-50 text-rust border-orange-200">
           Partially Paid
         </Badge>
       );
@@ -127,7 +127,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
           </p>
         </div>
         {totalOutstanding > 0 && (
-          <div className="rounded-2xl border bg-background px-3 py-2 text-right">
+          <div className="sticker-card px-3 py-2 text-right">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               Outstanding
             </p>
@@ -139,7 +139,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
       </div>
 
       {/* Desktop table */}
-      <div className="mt-6 hidden overflow-hidden rounded-2xl border bg-card sm:block">
+      <div className="mt-6 hidden overflow-hidden sticker-card sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -193,7 +193,7 @@ export function ClientInvoices({ invoices }: ClientInvoicesProps) {
       {/* Mobile card list */}
       <div className="mt-6 space-y-3 sm:hidden">
         {invoices.map((invoice) => (
-          <Card key={invoice.id} className="rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <Card key={invoice.id}>
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
               <CardTitle className="text-sm font-medium text-gray-900">
                 {invoice.invoice_number ?? "Invoice"}

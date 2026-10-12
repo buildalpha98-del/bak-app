@@ -222,7 +222,7 @@ function MetricCard({ metricKey, normValue, teamAvg, snapshot }: MetricCardProps
   const teamDisplay = teamAvgDisplayValue(metricKey, { [metricKey]: teamAvg });
 
   return (
-    <Card className="rounded-2xl border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-sm">
+    <Card>
       <CardContent className="pt-4 pb-3 px-4 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {formatMetricName(metricKey)}
@@ -298,7 +298,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
   return (
     <div className="space-y-6 max-w-2xl">
       {/* ── Score Hero ──────────────────────────────────────────────── */}
-      <Card className="rounded-2xl border-border/60">
+      <Card>
         <CardContent className="pt-2 pb-4">
           {hasSnapshot ? (
             <ScoreHero
@@ -323,7 +323,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
       </Card>
 
       {/* ── Badges ──────────────────────────────────────────────────── */}
-      <Card className="rounded-2xl border-border/60">
+      <Card>
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-base flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />
@@ -366,7 +366,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
 
       {/* ── Monthly Trend Chart ─────────────────────────────────────── */}
       {monthlyTrend.length >= 2 && (
-        <Card className="rounded-2xl border-border/60">
+        <Card>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
@@ -447,7 +447,7 @@ export function CoachSelfView({ data }: { data: CoachSelfPerformanceData }) {
 
       {/* ── Empty state for highlights ───────────────────────────────── */}
       {hasSnapshot && feedbackHighlights.length === 0 && (
-        <Card className="rounded-2xl border-border/60 bg-muted/30">
+        <Card className="bg-muted/30">
           <CardContent className="px-4 py-5 flex items-center gap-3">
             <TrendingDown className="w-8 h-8 text-muted-foreground/40 shrink-0" />
             <div>

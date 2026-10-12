@@ -44,7 +44,7 @@ export function ReportCardCommentForm({
   if (!canEdit) {
     if (!comment.general_comment && !comment.next_steps) return null;
     return (
-      <div className="rounded-2xl border border-portal-200 bg-white p-4">
+      <div className="sticker-card p-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><MessageSquareText className="h-4 w-4 text-portal-600" /> Teacher&apos;s comment · {comment.term_name}</h3>
         {comment.general_comment && <p className="mt-2 whitespace-pre-line text-sm text-foreground">{comment.general_comment}</p>}
         {comment.next_steps && (
@@ -56,7 +56,7 @@ export function ReportCardCommentForm({
   }
 
   return (
-    <div className="space-y-3 rounded-2xl border border-portal-200 bg-white p-4">
+    <div className="sticker-card space-y-3 p-4">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><MessageSquareText className="h-4 w-4 text-portal-600" /> Report card comment · {comment.term_name}</h3>
         <p className="text-xs text-muted-foreground">Printed on the student&apos;s report card under the marks. Write it for the family.</p>

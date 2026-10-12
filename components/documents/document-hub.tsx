@@ -115,7 +115,6 @@ export function DocumentHub({
         {canUpload && (
           <Button
             onClick={() => setUploadOpen(true)}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Upload Document
@@ -139,7 +138,7 @@ export function DocumentHub({
               onClick={() => setSelectedCategory("all")}
               className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm transition-colors ${
                 selectedCategory === "all"
-                  ? "bg-[var(--brand-orange-light)] text-primary font-medium"
+                  ? "bg-[var(--brand-orange-light)] text-rust font-medium"
                   : "text-muted-foreground hover:bg-secondary"
               }`}
             >
@@ -167,7 +166,7 @@ export function DocumentHub({
                   onClick={() => setSelectedCategory(cat)}
                   className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? "bg-[var(--brand-orange-light)] text-primary font-medium"
+                      ? "bg-[var(--brand-orange-light)] text-rust font-medium"
                       : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >

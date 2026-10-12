@@ -171,7 +171,7 @@ export function SchedulingPreferencesView({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+          <p className="eyebrow mb-1">
             Settings
           </p>
           <h1 className="text-2xl font-bold font-heading text-foreground">
@@ -199,7 +199,7 @@ export function SchedulingPreferencesView({
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="sticker-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>

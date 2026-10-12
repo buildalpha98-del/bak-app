@@ -268,7 +268,7 @@ export function ChatPanel({ sessionId, sessionContext }: ChatPanelProps) {
             />
             <Button
               size="icon"
-              className="h-10 w-10 shrink-0 bg-primary hover:bg-[#D4651F]"
+              className="h-10 w-10 shrink-0"
               onClick={() => sendMessage(inputText)}
               disabled={!inputText.trim() || isLoading || isOffline}
             >

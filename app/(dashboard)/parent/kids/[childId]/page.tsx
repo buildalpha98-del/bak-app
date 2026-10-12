@@ -154,7 +154,7 @@ export default function ChildDetailPage() {
       {/* Insights teaser */}
       <Link
         href={`/parent/kids/${child.id}/insights`}
-        className="group flex items-center gap-3 rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+        className="group flex items-center gap-3 sticker-tile p-4"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary flex-shrink-0">
           <Sparkles className="h-5 w-5" />
@@ -170,7 +170,7 @@ export default function ChildDetailPage() {
         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </Link>
 
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm">
+      <div className="sticker-card p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="firstName">First name</Label>
@@ -232,7 +232,7 @@ export default function ChildDetailPage() {
         <Button
           onClick={handleSave}
           disabled={saving || !firstName.trim() || !lastName.trim()}
-          className="w-full h-11 bg-primary text-white hover:bg-[#D4651F] rounded-lg"
+          className="w-full h-11"
         >
           {saving ? (
             <>

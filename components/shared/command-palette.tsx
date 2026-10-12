@@ -222,19 +222,19 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
   function getIconBg(type: DisplayItem["type"]) {
     switch (type) {
       case "staff":
-        return "bg-blue-100 dark:bg-blue-950/40";
+        return "bg-blue-100";
       case "centre":
-        return "bg-emerald-100 dark:bg-emerald-950/40";
+        return "bg-emerald-100";
       case "child":
-        return "bg-purple-100 dark:bg-purple-950/40";
+        return "bg-purple-100";
       case "lead":
-        return "bg-amber-100 dark:bg-amber-950/40";
+        return "bg-amber-100";
       case "session":
-        return "bg-orange-100 dark:bg-orange-950/40";
+        return "bg-orange-100";
       case "program":
-        return "bg-indigo-100 dark:bg-indigo-950/40";
+        return "bg-indigo-100";
       case "document":
-        return "bg-slate-100 dark:bg-slate-800/60";
+        return "bg-slate-100";
       default:
         return "bg-secondary/60";
     }

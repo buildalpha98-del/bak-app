@@ -48,11 +48,9 @@ export function Sidebar({ role, financialAccess = true, opsCoach = false }: Side
         </div>
         {!isCollapsed && (
           <div className="flex flex-col min-w-0">
+            {/* Design system: the name is always "Build Alpha Kids", never BAK. */}
             <span className="font-display text-[15px] font-bold text-sidebar-foreground tracking-tight truncate leading-tight">
-              BAK
-            </span>
-            <span className="text-[10px] text-sidebar-foreground/40 uppercase tracking-[0.15em] leading-tight">
-              Sports Platform
+              Build Alpha Kids
             </span>
           </div>
         )}
@@ -79,10 +77,12 @@ export function Sidebar({ role, financialAccess = true, opsCoach = false }: Side
           ) : null;
 
           const linkClasses = cn(
-            "group flex items-center gap-3 h-10 rounded-lg px-3 text-sm font-medium transition-all duration-200 relative",
+            "group flex items-center gap-3 h-10 rounded-full border-2 px-3 text-sm font-semibold transition-all duration-200 relative",
+            // Active = a yellow sticker. On the charcoal rail an ink shadow
+            // would vanish, so it takes `sticker-orange` (design system).
             active
-              ? "bg-sidebar-accent text-sidebar-primary-foreground"
-              : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/40"
+              ? "border-ink bg-brand-yellow text-ink shadow-sticker-orange-sm"
+              : "border-transparent text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-white/5"
           );
 
           if (isCollapsed) {
@@ -93,17 +93,13 @@ export function Sidebar({ role, financialAccess = true, opsCoach = false }: Side
                   <TooltipTrigger
                     render={<Link href={item.href} prefetch={false} />}
                     className={cn(
-                      "flex items-center justify-center h-10 rounded-lg px-0 text-sm transition-all duration-200 relative",
+                      "flex items-center justify-center h-10 rounded-full border-2 px-0 text-sm transition-all duration-200 relative",
                       active
-                        ? "bg-sidebar-accent text-sidebar-primary"
-                        : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/40"
+                        ? "border-ink bg-brand-yellow text-ink shadow-sticker-orange-sm"
+                        : "border-transparent text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-white/5"
                     )}
                   >
-                    {/* Active left stripe */}
-                    {active && (
-                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
-                    )}
-                    <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
+                    <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "text-ink")} />
                     {isInbox && (
                       <span className="absolute -top-0.5 -right-0.5">
                         <InboxBadge variant="collapsed" />
@@ -122,17 +118,13 @@ export function Sidebar({ role, financialAccess = true, opsCoach = false }: Side
             <div key={item.href}>
               {sectionHeader}
               <Link href={item.href} prefetch={false} className={linkClasses}>
-                {/* Active left stripe */}
-                {active && (
-                  <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-sidebar-primary" />
-                )}
-                <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "scale-110 text-sidebar-primary")} />
+                <Icon className={cn("h-5 w-5 shrink-0 transition-all duration-200", active && "text-ink")} />
                 <span className="truncate">{item.label}</span>
                 {isInbox ? (
                   <InboxBadge variant="expanded" />
                 ) : (
                   active && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse-warm" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-ink" />
                   )
                 )}
               </Link>
@@ -145,8 +137,7 @@ export function Sidebar({ role, financialAccess = true, opsCoach = false }: Side
       <div className="relative border-t border-sidebar-border">
         {!isCollapsed && (
           <div className="px-3 py-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-sidebar-primary/10 px-2 py-1 text-[10px] font-semibold text-sidebar-primary uppercase tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary animate-pulse" />
+            <span className="inline-flex -rotate-1 items-center gap-1.5 rounded-full border-2 border-ink bg-brand-yellow px-2.5 py-0.5 text-[10px] font-bold text-ink uppercase tracking-[0.1em] shadow-sticker-orange-sm">
               {role === "admin" ? "Admin" : role === "ops" ? "Operations" : "Coach"} Portal
             </span>
           </div>

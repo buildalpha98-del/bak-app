@@ -111,10 +111,10 @@ export function InboxView({ items, basePath }: InboxViewProps) {
   return (
     <div className="space-y-5">
       {/* Greeting strip */}
-      <div className="rounded-2xl border bg-background px-4 py-3">
+      <div className="sticker-card px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+            <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-rust">
               <Inbox className="size-4" />
             </span>
             <div>
@@ -314,7 +314,7 @@ function TierChip({ tier }: { tier: InboxTier }) {
     tier === "urgent"
       ? "bg-red-500/10 text-red-600"
       : tier === "important"
-        ? "bg-primary/10 text-primary"
+        ? "bg-primary/10 text-rust"
         : "bg-muted text-muted-foreground";
   return (
     <span

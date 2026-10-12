@@ -57,7 +57,7 @@ export function BulkActionBar({
               className={`min-h-[44px] gap-1.5 ${
                 isDestructive
                   ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                  : "bg-primary/10 text-primary hover:bg-primary/20"
+                  : "bg-primary/10 text-rust hover:bg-primary/20"
               }`}
               onClick={action.onClick}
               disabled={action.loading}

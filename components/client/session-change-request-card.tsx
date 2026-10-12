@@ -101,11 +101,6 @@ export function SessionChangeRequestCard({
                   type="button"
                   size="sm"
                   variant={requestType === t ? "default" : "outline"}
-                  className={
-                    requestType === t
-                      ? "rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
-                      : "rounded-2xl"
-                  }
                   onClick={() => setRequestType(t)}
                 >
                   {t === "reschedule" ? "Reschedule" : "Cancel session"}
@@ -141,7 +136,6 @@ export function SessionChangeRequestCard({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className="rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
                 disabled={isPending}
                 onClick={handleSubmit}
               >

@@ -415,7 +415,7 @@ export default function TestimonialsPage() {
           </div>
 
           {pending.length === 0 ? (
-            <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+            <div className="sticker-card p-6 text-center text-sm text-[#666666]">
               <MessageSquareQuote className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
               No pending feedback to review. High-rated feedback with comments
               will appear here.
@@ -427,7 +427,7 @@ export default function TestimonialsPage() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-2xl border bg-background p-5 space-y-3 hover:shadow-md transition"
+                    className="sticker-card p-5 space-y-3"
                     data-selected={selected || undefined}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -483,7 +483,7 @@ export default function TestimonialsPage() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            className="gap-1 bg-primary hover:bg-[#d4641f]"
+                            className="gap-1"
                             onClick={() => confirmApprove(item)}
                             disabled={actionLoading === item.id}
                           >
@@ -507,7 +507,7 @@ export default function TestimonialsPage() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className="gap-1 bg-primary hover:bg-[#d4641f]"
+                          className="gap-1"
                           onClick={() => startApprove(item)}
                         >
                           <Check className="h-3 w-3" />
@@ -555,7 +555,7 @@ export default function TestimonialsPage() {
           </div>
 
           {approvedVisible.length === 0 ? (
-            <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+            <div className="sticker-card p-6 text-center text-sm text-[#666666]">
               No approved testimonials yet. Approve pending feedback above to
               display them publicly.
             </div>
@@ -564,7 +564,7 @@ export default function TestimonialsPage() {
               {approvedVisible.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border bg-background p-5 space-y-3 hover:shadow-md transition"
+                  className="sticker-card p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -628,7 +628,7 @@ export default function TestimonialsPage() {
             <Badge variant="outline">{rejectedCount}</Badge>
           </div>
           {rejectedList.length === 0 ? (
-            <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+            <div className="sticker-card p-6 text-center text-sm text-[#666666]">
               No rejected feedback yet.
             </div>
           ) : (
@@ -636,7 +636,7 @@ export default function TestimonialsPage() {
               {rejectedList.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border bg-background p-5 space-y-2 hover:shadow-md transition opacity-70"
+                  className="sticker-card p-5 space-y-2 opacity-70"
                 >
                   <p className="text-sm font-medium text-[#1A1A1A]">
                     {item.centre_name || "—"}
@@ -653,7 +653,7 @@ export default function TestimonialsPage() {
 
       {/* Sticky bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} testimonial{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -681,7 +681,6 @@ export default function TestimonialsPage() {
             size="sm"
             onClick={handleBulkApprove}
             disabled={bulkAction !== null}
-            className="bg-primary text-white hover:bg-[#d4641f]"
           >
             <CheckCheck className="size-4" />
             {bulkAction === "approve" ? "Approving…" : "Approve"}
@@ -709,8 +708,8 @@ function FilterChip({
       onClick={onClick}
       className={
         active
-          ? "inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-          : "inline-flex items-center gap-1.5 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+          ? "inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-cta px-3 py-1 text-xs font-medium text-ink shadow-sticker-xs"
+          : "inline-flex items-center gap-1.5 rounded-full border-2 border-ink/15 bg-background px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
       }
     >
       {label}

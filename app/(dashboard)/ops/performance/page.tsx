@@ -43,7 +43,7 @@ export default async function OpsPerformancePage({
   return (
     <div className="space-y-6">
       <div className="animate-fade-up">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
+        <p className="eyebrow mb-1">
           Analytics
         </p>
         <h1 className="page-header-sport text-3xl font-bold font-heading tracking-tight text-foreground">

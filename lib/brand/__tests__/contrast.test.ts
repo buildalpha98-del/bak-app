@@ -39,16 +39,16 @@ function rawToken(body: string, name: string): string {
   return m[1].trim();
 }
 
-/** Resolve a token declared as `oklch(L C H)` to hex. */
+/** Resolve a token declared as `#rrggbb` or `oklch(L C H)` to hex. */
 function tokenHex(body: string, name: string): string {
   const raw = rawToken(body, name);
+  if (/^#[0-9A-Fa-f]{6}$/.test(raw)) return raw;
   const m = raw.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
   if (!m) throw new Error(`Token --${name} is not a plain oklch() value: ${raw}`);
   return oklchToHex(Number(m[1]), Number(m[2]), Number(m[3]));
 }
 
 const root = block(":root");
-const dark = block(".dark");
 
 describe("oklchToHex", () => {
   it("converts the brand orange token", () => {
@@ -110,13 +110,6 @@ describe("globals.css brand token pairs clear WCAG AA", () => {
     expect(ratio).toBeGreaterThanOrEqual(AA_THRESHOLD);
   });
 
-  it(".dark --primary / --primary-foreground clears AA", () => {
-    const ratio = contrastRatio(
-      tokenHex(dark, "primary-foreground"),
-      tokenHex(dark, "primary")
-    );
-    expect(ratio).toBeGreaterThanOrEqual(AA_THRESHOLD);
-  });
 
   // Chunk-2 independence. Chunk 2 reconciles --primary onto the
   // --brand-orange hex (#E8712A). The ink must clear AA on BOTH oranges,
@@ -130,34 +123,28 @@ describe("globals.css brand token pairs clear WCAG AA", () => {
     expect(ratio).toBeGreaterThanOrEqual(AA_THRESHOLD);
   });
 
-  // THE TRIPWIRE. Read this before "fixing" --sidebar-primary-foreground.
-  //
-  // --sidebar-primary-foreground LOOKS like it pairs with
-  // --sidebar-primary, and the token names invite you to flip it to ink
-  // alongside --primary-foreground. It does not pair with it. Measured
-  // against the source: nothing renders text on `bg-sidebar-primary` —
-  // that token only draws 3px active stripes and 1.5px status dots.
-  //
-  // The one and only consumer of --sidebar-primary-foreground is
-  // components/shared/navigation/sidebar.tsx:79, which renders it as the
-  // ACTIVE NAV LABEL on `bg-sidebar-accent` (near-black charcoal).
-  //
-  // So --sidebar-primary-foreground must stay NEAR-WHITE. Flipping it to
-  // ink to "match" the --primary fix takes that label from 17.8:1 to
-  // 1.04:1 — invisible text on the primary navigation. This test is here
-  // to catch exactly that.
-  it("--sidebar-primary-foreground stays legible on --sidebar-accent (its real pair)", () => {
-    for (const [name, body] of [
-      [":root", root],
-      [".dark", dark],
-    ] as const) {
-      const ratio = contrastRatio(
-        tokenHex(body, "sidebar-primary-foreground"),
-        tokenHex(body, "sidebar-accent")
-      );
-      expect(ratio, `${name} sidebar active nav label`).toBeGreaterThanOrEqual(
-        AA_THRESHOLD
-      );
+  // Design system "Build Alpha Kids" (2026-10-12): the CTA is `ink` on
+  // `yellow` — every default Button, Badge and active Tab renders this pair.
+  it(":root --cta-foreground on --cta clears AA", () => {
+    const ratio = contrastRatio(tokenHex(root, "cta-foreground"), tokenHex(root, "cta"));
+    expect(ratio).toBeGreaterThanOrEqual(AA_THRESHOLD);
+  });
+
+  it(":root body text on the page and on cards clears AA", () => {
+    for (const ground of ["background", "card"]) {
+      const ratio = contrastRatio(tokenHex(root, "foreground"), tokenHex(root, ground));
+      expect(ratio, `--foreground on --${ground}`).toBeGreaterThanOrEqual(AA_THRESHOLD);
+    }
+  });
+
+  // Control borders and the focus ring are non-text UI: WCAG 1.4.11's 3:1.
+  // --input was a 1.2:1 hairline before 2026-10-12.
+  it(":root --input and --ring are visible on cards and the page", () => {
+    for (const token of ["input", "ring"]) {
+      for (const ground of ["background", "card"]) {
+        const ratio = contrastRatio(tokenHex(root, token), tokenHex(root, ground));
+        expect(ratio, `--${token} on --${ground}`).toBeGreaterThanOrEqual(3);
+      }
     }
   });
 });
@@ -175,15 +162,13 @@ describe("globals.css brand token pairs clear WCAG AA", () => {
 // the same ratio as the white-on-orange button bug above).
 
 describe("toast state tokens clear WCAG on the --popover ground", () => {
-  const themes = [
-    [":root", root],
-    [".dark", dark],
-  ] as const;
+  // Light only since 2026-10-12 (the sticker design is light-ground).
+  const themes = [[":root", root]] as const;
 
   // The text pair. Identical for every toast state by construction — the
   // point of dropping richColors is that state no longer changes the ground,
   // so there is exactly one pair to keep legible instead of four.
-  it("--popover-foreground on --popover clears AA in both themes", () => {
+  it("--popover-foreground on --popover clears AA", () => {
     for (const [name, body] of themes) {
       const ratio = contrastRatio(
         tokenHex(body, "popover-foreground"),
@@ -196,13 +181,11 @@ describe("toast state tokens clear WCAG on the --popover ground", () => {
   // The accent pairs: toast icons and the state border. These are non-text
   // UI components, so the floor is WCAG 2.1 SC 1.4.11's 3:1, not 4.5:1.
   //
-  // --success/--warning/--info are declared in BOTH blocks and lightened for
-  // dark. If you add a state accent, add it here: the :root values go muddy
-  // on the dark popover (--info measures 3.80:1 there at its light value).
+  // If you add a state accent, add it here.
   const NON_TEXT_THRESHOLD = 3;
 
   it.each(["success", "warning", "info", "destructive"])(
-    "--%s is visible on --popover in both themes",
+    "--%s is visible on --popover",
     (token) => {
       for (const [name, body] of themes) {
         const ratio = contrastRatio(tokenHex(body, token), tokenHex(body, "popover"));

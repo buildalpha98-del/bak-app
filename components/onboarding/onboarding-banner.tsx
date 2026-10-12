@@ -64,7 +64,7 @@ export function OnboardingBanner({
   // Completed
   if (checklist.status === "completed") {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950/30">
+      <div className="rounded-lg border border-green-200 bg-green-50 p-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="size-5 text-green-600" />
           <Badge
@@ -80,7 +80,7 @@ export function OnboardingBanner({
 
   // In progress (or stalled)
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">

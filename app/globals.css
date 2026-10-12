@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+
 
 /* ============================================================
    Build Alpha Kids — "Sports Academy" Design System
@@ -21,12 +21,13 @@
 }
 
 :root {
-    /* Warm off-white backgrounds with a touch of cream */
-    --background: oklch(0.985 0.004 75);
-    --foreground: oklch(0.165 0.014 55);
+    /* Design system: the page sits on `cream`, cards are `white`, text is
+       `charcoal`. (Was a near-neutral off-white with no brand reference.) */
+    --background: #FFF7F2;
+    --foreground: #1A1A1A;
 
-    /* Cards: crisp with subtle warmth */
-    --card: oklch(0.995 0.002 75);
+    /* Cards: white, so they lift off the cream ground */
+    --card: #FFFFFF;
     --card-foreground: oklch(0.165 0.014 55);
 
     --popover: oklch(0.995 0.002 75);
@@ -58,8 +59,17 @@
     --destructive: oklch(0.577 0.245 27.325);
 
     --border: oklch(0.91 0.008 75);
-    --input: oklch(0.91 0.008 75);
-    --ring: oklch(0.65 0.19 42);
+    /* Control borders must reach 3:1 against white (design system
+       checklist; WCAG 1.4.11). The old value matched --border, a 1.2:1
+       hairline: inputs were barely visible. #8C8580 is 3.6:1. */
+    --input: #8C8580;
+    /* Focus is an `ink` outline in the design system, not an orange glow. */
+    --ring: #111111;
+
+    /* The call-to-action fill: `yellow` with `ink` text (13.1:1). The
+       client portal re-points these to its accent tint (.portal-surface). */
+    --cta: #FFD23F;
+    --cta-foreground: #111111;
 
     /* Charts: sport-themed multi-colour palette */
     --chart-1: oklch(0.65 0.19 42);   /* brand orange */
@@ -74,16 +84,6 @@
     --sidebar: oklch(0.14 0.012 45);
     --sidebar-foreground: oklch(0.92 0.005 75);
     --sidebar-primary: oklch(0.65 0.19 42);
-    /* STAYS NEAR-WHITE — do not flip this to ink to match
-       --primary-foreground above. The names imply these two pair up; they
-       do not. Nothing renders text on `bg-sidebar-primary` (it only draws
-       the 3px active stripe and the status dots), and the sole consumer of
-       --sidebar-primary-foreground is navigation/sidebar.tsx:79, which
-       renders it as the ACTIVE NAV LABEL on `bg-sidebar-accent` — a
-       near-black charcoal. Ink here measures 1.04:1 against that: an
-       invisible label on the primary nav. Guarded by
-       lib/brand/__tests__/contrast.test.ts. */
-    --sidebar-primary-foreground: oklch(0.995 0 0);
     --sidebar-accent: oklch(0.20 0.014 45);
     --sidebar-accent-foreground: oklch(0.92 0.005 75);
     --sidebar-border: oklch(0.22 0.012 45);
@@ -176,60 +176,15 @@
     --background: oklch(0.978 0.013 72);
     --card: oklch(0.998 0.002 75);                  /* cards pop off the cream */
     --border: oklch(0.885 0.02 68);                 /* warmer, a touch stronger */
+    /* The portal keeps its teal (owner decision, 2026-07-16 and again
+       2026-10-12) with the sticker shapes: CTAs are a light tint of the
+       centre's accent with ink text, which stays AA (≥4.5:1) for ANY
+       brand colour a centre picks, where the full-strength accent would
+       not (ink on a dark brand fails, white on a light one fails). */
+    --cta: var(--portal-200);
+    --cta-foreground: #111111;
     background-color: var(--portal-canvas);
 }
-.dark .portal-surface {
-    --portal-canvas: oklch(0.145 0.014 45);
-    --background: oklch(0.145 0.014 45);
-    --card: oklch(0.19 0.014 45);
-    --border: oklch(1 0 0 / 10%);
-    background-color: var(--portal-canvas);
-}
-
-.dark {
-    --background: oklch(0.145 0.014 45);
-    --foreground: oklch(0.97 0.003 75);
-    --card: oklch(0.19 0.014 45);
-    --card-foreground: oklch(0.97 0.003 75);
-    --popover: oklch(0.19 0.014 45);
-    --popover-foreground: oklch(0.97 0.003 75);
-    --primary: oklch(0.70 0.19 42);
-    --primary-foreground: oklch(0.14 0.014 45);
-    --secondary: oklch(0.24 0.014 45);
-    --secondary-foreground: oklch(0.97 0.003 75);
-    --muted: oklch(0.24 0.014 45);
-    --muted-foreground: oklch(0.65 0.01 55);
-    --accent: oklch(0.24 0.022 45);
-    --accent-foreground: oklch(0.97 0.003 75);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.70 0.19 42);
-    --chart-1: oklch(0.70 0.19 42);
-    --chart-2: oklch(0.60 0.14 155);
-    --chart-3: oklch(0.62 0.14 250);
-    --chart-4: oklch(0.72 0.16 85);
-    --chart-5: oklch(0.50 0.18 25);
-    --sidebar: oklch(0.12 0.012 45);
-    --sidebar-foreground: oklch(0.92 0.005 75);
-    --sidebar-primary: oklch(0.70 0.19 42);
-    --sidebar-primary-foreground: oklch(0.995 0 0);
-    --sidebar-accent: oklch(0.18 0.014 45);
-    --sidebar-accent-foreground: oklch(0.92 0.005 75);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.70 0.19 42);
-
-    /* Semantic state accents, lightened for the dark ground — the same move
-       --primary makes (0.65 → 0.70) for the same reason. The :root values are
-       tuned against cream and go muddy on the dark --popover; --info in
-       particular drops to 3.80:1 there. Hue and chroma are held constant so
-       the states stay recognisably the same colours across themes.
-       Guarded in both themes by lib/brand/__tests__/contrast.test.ts. */
-    --success: oklch(0.70 0.16 145);
-    --warning: oklch(0.75 0.14 75);
-    --info: oklch(0.65 0.14 250);
-}
-
 @theme inline {
     --font-sans: var(--font-sans);
     --font-heading: var(--font-heading);
@@ -247,7 +202,6 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
@@ -269,6 +223,8 @@
     --color-muted: var(--muted);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-secondary: var(--secondary);
+    --color-cta: var(--cta);
+    --color-cta-foreground: var(--cta-foreground);
     --color-primary-foreground: var(--primary-foreground);
     --color-primary: var(--primary);
     --color-popover-foreground: var(--popover-foreground);
@@ -284,6 +240,84 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* Design system "Build Alpha Kids" (claude.ai design-system artifact,
+       tokens.json) — the sticker vocabulary, as named utilities:
+       bg-brand-yellow, border-ink, shadow-sticker-md, rounded-card… */
+    --color-ink: #111111;
+    --color-brand-yellow: #FFD23F;
+    --color-brand-orange: #E8712A;
+    --color-cream: #FFF7F2;
+    --color-rust: #993C1D;
+    --color-ball-green: #7BC043;
+    --color-ball-red: #D8342C;
+    --color-ball-blue: #2D6FB5;
+    --shadow-sticker-xs: 1px 1px 0 #111111;
+    --shadow-sticker-sm: 2px 2px 0 #111111;
+    --shadow-sticker: 3px 3px 0 #111111;
+    --shadow-sticker-md: 4px 4px 0 #111111;
+    --shadow-sticker-lg: 6px 6px 0 #111111;
+    --shadow-sticker-orange: 4px 4px 0 #E8712A;
+    --shadow-sticker-orange-sm: 2px 2px 0 #E8712A;
+    --shadow-sticker-error: 3px 3px 0 #D8342C;
+    --radius-card: 16px;
+    --radius-tile: 12px;
+}
+
+/* ------------------------------------------------------------
+   Design system "Build Alpha Kids" — sticker utilities for
+   surfaces that are not a <Card>/<Button>/<Badge> (hand-built
+   tiles, strips, eyebrows). Prefer the primitives; reach for these
+   only where markup can't be a primitive. Dense surfaces (table
+   rows, roster cells, boxes nested inside a card) stay flat —
+   owner decision 2026-10-12.
+   ------------------------------------------------------------ */
+
+/* A top-level panel, stat tile or strip: same as <Card>. */
+@utility sticker-card {
+  border-width: 2px;
+  border-color: var(--color-ink);
+  border-radius: var(--radius-card);
+  background-color: var(--color-card);
+  box-shadow: var(--shadow-sticker-md);
+}
+
+/* A smaller pressable tile (quick actions, nav tiles): presses in on
+   hover like a sticker button. */
+@utility sticker-tile {
+  border-width: 2px;
+  border-color: var(--color-ink);
+  border-radius: var(--radius-card);
+  background-color: var(--color-card);
+  box-shadow: var(--shadow-sticker);
+  transition: transform 150ms, box-shadow 150ms;
+  &:hover {
+    transform: translate(1px, 1px);
+    box-shadow: var(--shadow-sticker-xs);
+  }
+}
+
+/* Section/page eyebrow: uppercase, tilted -1deg, on the CTA fill — `yellow`
+   on staff surfaces, the centre's teal tint inside the client portal (which
+   keeps its accent; owner decision 2026-10-12). */
+@utility eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  rotate: -1deg;
+  border-width: 2px;
+  border-color: var(--cta-foreground);
+  border-radius: 9999px;
+  background-color: var(--cta);
+  padding: 0.125rem 0.625rem;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cta-foreground);
+  box-shadow: var(--shadow-sticker-sm);
 }
 
 @layer base {
@@ -697,41 +731,6 @@
   .marquee-track .marquee-group[aria-hidden] {
     display: none;
   }
-}
-
-/* ------------------------------------------------------------
-   Auth light scope (app/(auth)/layout.tsx)
-   The front door renders LIGHT for everyone — the sticker
-   treatment (ink outlines, hard shadows, cream ground) is a
-   light-only design, and the sign-in pages are the brand
-   handshake between the marketing site and the portals.
-   Custom properties cascade, so restating the :root light
-   values here beats `.dark` on <html> inside this subtree
-   without touching the document theme — signing out of a dark
-   dashboard lands on a light login while the dashboard stays
-   dark for the trip back. The auth pages carry zero `dark:`
-   variant utilities (verified 2026-07-16, re-verified
-   2026-07-18), so nothing leaks around the variables.
-   KEEP IN SYNC with :root above — same values, same order.
-   ------------------------------------------------------------ */
-.auth-light-scope {
-  --background: oklch(0.985 0.004 75);
-  --foreground: oklch(0.165 0.014 55);
-  --card: oklch(0.995 0.002 75);
-  --card-foreground: oklch(0.165 0.014 55);
-  --popover: oklch(0.995 0.002 75);
-  --popover-foreground: oklch(0.165 0.014 55);
-  --primary: oklch(0.65 0.19 42);
-  --primary-foreground: oklch(0.216 0.006 56);
-  --secondary: oklch(0.955 0.006 75);
-  --secondary-foreground: oklch(0.28 0.012 55);
-  --muted: oklch(0.955 0.006 75);
-  --muted-foreground: oklch(0.50 0.012 55);
-  --accent: oklch(0.94 0.022 60);
-  --accent-foreground: oklch(0.28 0.012 55);
-  --border: oklch(0.91 0.008 75);
-  --input: oklch(0.91 0.008 75);
-  --ring: oklch(0.65 0.19 42);
 }
 
 /* Touch devices: every control inside a page is at least 44px tall.

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { BookOpen, CalendarDays, CalendarRange, Download, ListChecks } from "lucide-react";
 import Link from "@/components/ui/app-link";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import { getCurrentClientUser } from "@/lib/client/actions";
 import { getScopeAndSequence } from "@/lib/client/curriculum-actions";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -68,7 +70,7 @@ export default async function CurriculumPage({
         {centreType === "school" && (
           <Link
             href={`/client/${centreId}/curriculum/plan`}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl bg-portal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-portal-700"
+            className={cn(buttonVariants(), "min-h-[44px] gap-1.5 px-3 py-2")}
           >
             <CalendarRange className="h-4 w-4" />
             <span className="hidden sm:inline">Plan the term</span>

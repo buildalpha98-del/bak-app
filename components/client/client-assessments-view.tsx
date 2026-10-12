@@ -63,7 +63,7 @@ export function ClientAssessmentsView({
   return (
     <div className="space-y-6">
       {!scopedToClasses && tasks.length > 1 && (
-        <div className="overflow-x-auto rounded-xl border border-portal-200 bg-white">
+        <div className="sticker-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-portal-50 text-xs uppercase tracking-wide text-portal-800">
               <tr>

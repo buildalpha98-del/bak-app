@@ -623,7 +623,7 @@ export function CentreDetailView({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {data.equipment_kits.map((kit) => (
-                <Card key={kit.id} size="sm" className="rounded-2xl transition hover:shadow-md hover:-translate-y-0.5">
+                <Card key={kit.id} size="sm" className="rounded-2xl transition hover:-translate-y-0.5">
                   <CardHeader>
                     <CardTitle>{kit.name}</CardTitle>
                     <CardDescription>

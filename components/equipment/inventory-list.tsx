@@ -88,8 +88,8 @@ const CONDITION_COLOURS: Record<InventoryCondition, string> = {
   good: "bg-green-100 text-green-800",
   fair: "bg-yellow-100 text-yellow-800",
   // Restrained brand orange tint for poor / retired
-  poor: "bg-primary/10 text-primary",
-  retired: "bg-primary/10 text-primary",
+  poor: "bg-primary/10 text-rust",
+  retired: "bg-primary/10 text-rust",
 };
 
 const LOCATION_OPTIONS = [
@@ -506,7 +506,6 @@ export function InventoryList({
         </Select>
         <Button
           onClick={openAdd}
-          className="bg-primary hover:bg-primary/90"
         >
           <Plus className="mr-1.5 h-4 w-4" />
           Add Item
@@ -719,7 +718,7 @@ export function InventoryList({
 
       {/* Sticky bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-background/95 px-4 py-3 shadow-lg backdrop-blur">
+        <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 sticker-card px-4 py-3">
           <div className="text-sm font-medium text-foreground">
             {selectedIds.size} selected
           </div>
@@ -808,7 +807,6 @@ export function InventoryList({
             <Button
               onClick={handleBulkMove}
               disabled={bulkActing || !moveLocation}
-              className="bg-primary hover:bg-primary/90"
             >
               {bulkActing ? "Moving..." : "Move"}
             </Button>
@@ -833,7 +831,6 @@ export function InventoryList({
             <Button
               onClick={handleCreate}
               disabled={saving || !formName.trim()}
-              className="bg-primary hover:bg-primary/90"
             >
               {saving ? "Adding..." : "Add Item"}
             </Button>
@@ -872,7 +869,6 @@ export function InventoryList({
             <Button
               onClick={handleUpdate}
               disabled={saving || !formName.trim()}
-              className="bg-primary hover:bg-primary/90"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>

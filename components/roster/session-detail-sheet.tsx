@@ -505,7 +505,7 @@ export function SessionDetailSheet({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary hover:underline"
+                  className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-rust hover:underline"
                 >
                   <MapPin className="size-3.5 shrink-0" />
                   <span className="truncate">{session.centre_address}</span>
@@ -656,7 +656,7 @@ export function SessionDetailSheet({
                         title={cls.teacher_name ?? undefined}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60 ${
                           selected
-                            ? "border-primary/40 bg-primary/10 text-primary"
+                            ? "border-primary/40 bg-primary/10 text-rust"
                             : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
                       >
@@ -818,11 +818,11 @@ export function SessionDetailSheet({
                               type="button"
                               disabled={saving}
                               onClick={() => handleAssignProgram(p.id)}
-                              className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-rust transition hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                             >
                               {p.title}
                               {p.usedAtCentre > 0 && (
-                                <span className="text-primary/70">
+                                <span className="text-rust/70">
                                   · used here ×{p.usedAtCentre}
                                 </span>
                               )}
@@ -983,7 +983,7 @@ export function SessionDetailSheet({
                           className="flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={() => handleReplacementPick(r.coachId)}
                         >
-                          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)] text-xs font-semibold text-primary">
+                          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)] text-xs font-semibold text-rust">
                             {i + 1}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -1290,7 +1290,6 @@ export function SessionDetailSheet({
                     size="sm"
                     disabled={startingReroster}
                     onClick={handleStartRerostering}
-                    className="bg-primary text-white hover:bg-primary/90"
                   >
                     {startingReroster ? (
                       <Loader2 className="mr-1.5 size-3.5 animate-spin" />

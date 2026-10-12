@@ -136,7 +136,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                       </p>
                     </div>
                     {t.unread_count > 0 && (
-                      <span className="mt-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
+                      <span className="mt-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-ink">
                         {t.unread_count}
                       </span>
                     )}
@@ -178,7 +178,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                   className={cn(
                     "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
                     m.sender_type === "staff"
-                      ? "self-end rounded-br-md bg-primary text-white"
+                      ? "self-end rounded-br-md bg-primary text-ink"
                       : "self-start rounded-bl-md border bg-card text-foreground"
                   )}
                 >
@@ -187,7 +187,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                     className={cn(
                       "mt-1 text-[10px]",
                       m.sender_type === "staff"
-                        ? "text-white/75"
+                        ? "text-ink/70"
                         : "text-muted-foreground"
                     )}
                   >
@@ -220,7 +220,7 @@ export function CentreInbox({ threads, selectedCentreId, thread }: Props) {
                 onClick={handleSend}
                 disabled={isPending || !draft.trim()}
                 aria-label="Send reply"
-                className="h-11 bg-primary text-white hover:bg-primary/90"
+                className="h-11"
               >
                 {isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

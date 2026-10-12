@@ -22,6 +22,7 @@ import { Download, Mail } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getNewsletterSubscribers } from "@/lib/marketing/subscribers";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { LoadError } from "@/components/ui/load-error";
 import {
   Table,
@@ -100,17 +101,14 @@ export default async function SubscribersPage() {
             the Content-Disposition filename. Disabled-looking when
             there is nothing to export, since an empty CSV helps no one. */}
         {subscribers.length > 0 ? (
-          <a
-            href="/api/admin/subscribers/export"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-white transition hover:bg-[#d4641f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-          >
+          <Button nativeButton={false} render={<a href="/api/admin/subscribers/export" />}>
             <Download className="h-4 w-4" />
             Export CSV
-          </a>
+          </Button>
         ) : (
           <span
             aria-disabled="true"
-            className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-lg border bg-muted px-3 text-sm font-medium text-muted-foreground"
+            className="inline-flex h-8 cursor-not-allowed items-center gap-1.5 rounded-full border-2 border-ink/15 bg-muted px-3.5 text-sm font-medium text-muted-foreground"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -134,13 +132,13 @@ export default async function SubscribersPage() {
           </div>
 
           {subscribers.length === 0 ? (
-            <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+            <div className="sticker-card p-6 text-center text-sm text-[#666666]">
               <Mail className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
               No subscribers yet. Signups from the website newsletter form
               will appear here.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border bg-background">
+            <div className="overflow-x-auto sticker-card">
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -68,7 +68,7 @@ export interface CoachPulseItem {
 
 export function CoachPulseStrip({ items }: { items: CoachPulseItem[] }) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         {items.map((item, i) => (
           <li
@@ -107,7 +107,7 @@ function PulseStat({ item }: { item: CoachPulseItem }) {
       <span
         className={
           active
-            ? "text-base font-semibold tabular-nums text-primary"
+            ? "text-base font-semibold tabular-nums text-rust"
             : "text-base font-semibold tabular-nums text-muted-foreground"
         }
       >

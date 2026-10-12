@@ -151,7 +151,7 @@ export function TermPlanCard({
   }
 
   return (
-    <div className="rounded-2xl border border-portal-200 bg-portal-50/40">
+    <div className="sticker-card">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

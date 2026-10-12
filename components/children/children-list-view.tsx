@@ -181,21 +181,21 @@ function assessmentBadge(status: AssessmentStatus) {
         label: "Done this term",
         icon: CheckCircle2,
         className:
-          "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300",
+          "border-emerald-300/60 bg-emerald-50 text-emerald-700",
       };
     case "pending":
       return {
         label: "Pending",
         icon: Clock,
         className:
-          "border-amber-300/60 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
+          "border-amber-300/60 bg-amber-50 text-amber-700",
       };
     case "overdue":
       return {
         label: "Overdue",
         icon: AlertTriangle,
         className:
-          "border-primary/40 bg-primary/10 text-primary",
+          "border-primary/40 bg-primary/10 text-rust",
       };
     case "no_term":
     default:
@@ -584,7 +584,7 @@ export default function ChildrenListView({
             Import CSV
           </Button>
           <Button
-            className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[44px]"
             onClick={() => setDialogOpen(true)}
           >
             <Plus className="size-4" />
@@ -730,7 +730,7 @@ export default function ChildrenListView({
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "rounded-r-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-r-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-r-none"
             }
           >
@@ -743,7 +743,7 @@ export default function ChildrenListView({
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "rounded-l-none bg-primary/10 text-primary hover:bg-primary/15"
+                ? "rounded-l-none bg-primary/10 text-rust hover:bg-primary/15"
                 : "rounded-l-none"
             }
           >
@@ -829,7 +829,7 @@ export default function ChildrenListView({
                   {child.has_recent_insight && (
                     <Link
                       href={`${basePath}/${child.id}?tab=insights`}
-                      className="relative z-20 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+                      className="relative z-20 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-medium text-rust hover:bg-primary/20"
                       title="Insight ready"
                     >
                       <Sparkles className="size-3" />
@@ -912,7 +912,7 @@ export default function ChildrenListView({
                   <span
                     className={
                       last.stale
-                        ? "text-primary"
+                        ? "text-rust"
                         : "text-muted-foreground"
                     }
                   >
@@ -988,7 +988,7 @@ export default function ChildrenListView({
                         <span>{childName}</span>
                         {child.has_recent_insight && (
                           <span
-                            className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                            className="inline-flex items-center gap-0.5 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-rust"
                             title="Insight ready"
                           >
                             <Sparkles className="size-2.5" />
@@ -1091,7 +1091,7 @@ export default function ChildrenListView({
                       <span
                         className={
                           last.stale && child.last_attended_at !== null
-                            ? "text-xs text-primary"
+                            ? "text-xs text-rust"
                             : !child.last_attended_at
                               ? "text-xs text-muted-foreground"
                               : "text-xs text-foreground"
@@ -1348,11 +1348,11 @@ export default function ChildrenListView({
             )}
 
             {potentialDuplicate && (
-              <div className="rounded-2xl border border-amber-300/60 bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
-                <p className="font-medium text-amber-900 dark:text-amber-100">
+              <div className="rounded-2xl border border-amber-300/60 bg-amber-50 p-3 text-sm">
+                <p className="font-medium text-amber-900">
                   Possible duplicate
                 </p>
-                <p className="mt-1 text-amber-800 dark:text-amber-200">
+                <p className="mt-1 text-amber-800">
                   A child named{" "}
                   <span className="font-medium">
                     {potentialDuplicate.first_name}{" "}
@@ -1390,7 +1390,7 @@ export default function ChildrenListView({
               Cancel
             </Button>
             <Button
-              className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
+              className="min-h-[44px]"
               onClick={handleSubmit}
               disabled={isPending}
             >
@@ -1429,7 +1429,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       <Icon className="size-3" />
       {label}
       <button
@@ -1555,7 +1555,7 @@ function BulkActionBar({
     <>
       <div
         className={
-          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6"
+          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6"
         }
       >
         <div className="flex items-center gap-3 pr-2 text-sm">
@@ -1602,7 +1602,7 @@ function BulkActionBar({
                 size="sm"
                 onClick={handleLinkConfirm}
                 disabled={linkWorking || !linkCentreId}
-                className="w-full bg-primary text-white hover:bg-primary/90"
+                className="w-full"
               >
                 {linkWorking ? "Linking…" : "Link"}
               </Button>
@@ -1632,7 +1632,6 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -1676,7 +1675,6 @@ function BulkActionBar({
                 void handleStatusConfirm();
               }}
               disabled={statusWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {statusWorking ? "Saving…" : "Apply"}
             </AlertDialogAction>
@@ -1781,7 +1779,6 @@ function BulkMessageSheet({
           <Button
             onClick={handleSend}
             disabled={working || !title.trim() || !body.trim()}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>
@@ -1891,7 +1888,6 @@ function InviteParentSheet({
           <Button
             onClick={handleInvite}
             disabled={working}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send invite"}
           </Button>

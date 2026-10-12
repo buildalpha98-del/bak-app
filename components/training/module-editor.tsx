@@ -370,7 +370,6 @@ export function ModuleEditor({ mode, module }: Props) {
         <Button
           onClick={handleSave}
           disabled={saving || publishing}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Save Draft

@@ -129,13 +129,13 @@ const RISK_COLOURS: Record<RiskLevel, string> = {
 const RISK_BADGE_STYLES: Record<RiskLevel, string> = {
   low: "bg-green-100 text-green-800 border-green-200",
   medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  high: "bg-orange-100 text-orange-800 border-orange-200",
+  high: "bg-orange-100 text-rust border-orange-200",
   critical: "bg-red-100 text-red-800 border-red-200",
 };
 
 const EVENT_BADGE_STYLES: Record<string, string> = {
   churned: "bg-red-100 text-red-800 border-red-200",
-  at_risk: "bg-orange-100 text-orange-800 border-orange-200",
+  at_risk: "bg-orange-100 text-rust border-orange-200",
   recovered: "bg-green-100 text-green-800 border-green-200",
 };
 
@@ -437,7 +437,7 @@ export default function AdminChurnPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-b-2 border-primary text-rust"
                   : "text-[#666666] hover:text-[#1A1A1A]"
               }`}
             >
@@ -453,7 +453,7 @@ export default function AdminChurnPage() {
           {/* Risk Distribution Chart + Recent Alerts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pie Chart */}
-            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+            <div className="sticker-card p-5">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Risk Distribution
               </h3>
@@ -486,7 +486,7 @@ export default function AdminChurnPage() {
             </div>
 
             {/* Recent Alerts */}
-            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+            <div className="sticker-card p-5">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Recent Alerts
               </h3>
@@ -529,7 +529,7 @@ export default function AdminChurnPage() {
 
           {/* Risk Score Bar Chart */}
           {centreRisks.length > 0 && (
-            <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+            <div className="sticker-card p-5">
               <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
                 Risk Scores by Centre
               </h3>
@@ -571,7 +571,7 @@ export default function AdminChurnPage() {
       )}
 
       {activeTab === "At Risk" && (
-        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+        <div className="sticker-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -620,7 +620,7 @@ export default function AdminChurnPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
-                          className="inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold text-white"
+                          className="inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold text-ink"
                           style={{
                             backgroundColor:
                               RISK_COLOURS[centre.risk_level],
@@ -665,7 +665,7 @@ export default function AdminChurnPage() {
       {activeTab === "Events" && (
         <div className="space-y-4">
           {!filteredEvents.length ? (
-            <div className="rounded-2xl border bg-background p-12 text-center hover:shadow-md transition">
+            <div className="sticker-card p-12 text-center">
               <Clock className="h-8 w-8 text-[#666666] mx-auto mb-3" />
               <p className="text-sm text-[#666666]">
                 {periodFilter === "this_week"
@@ -678,7 +678,7 @@ export default function AdminChurnPage() {
               {filteredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-2xl border bg-background p-4 hover:shadow-md transition flex items-start gap-4"
+                  className="sticker-card p-4 flex items-start gap-4"
                 >
                   {/* Timeline dot */}
                   <div className="flex-shrink-0 mt-1">
@@ -745,7 +745,7 @@ export default function AdminChurnPage() {
       {activeTab === "Trends" && (
         <div className="space-y-6">
           {/* Average Risk Over Time */}
-          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+          <div className="sticker-card p-5">
             <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
               Average Risk Score Over Time
             </h3>
@@ -781,7 +781,7 @@ export default function AdminChurnPage() {
           </div>
 
           {/* Distribution Over Time (Stacked Area) */}
-          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+          <div className="sticker-card p-5">
             <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">
               Centres by Risk Level Over Time
             </h3>
@@ -857,7 +857,7 @@ function KpiCard({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+    <div className="sticker-card p-5">
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`h-4 w-4 ${iconTone}`} />
         <span className="text-xs font-medium text-[#666666]">{label}</span>
@@ -878,12 +878,12 @@ function FilterClearChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
         aria-label="Clear filter"
       >
         <X className="h-3 w-3" />

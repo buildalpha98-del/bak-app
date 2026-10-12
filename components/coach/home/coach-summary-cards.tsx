@@ -82,12 +82,7 @@ function SummaryCard({
   return (
     <Link
       href={href}
-      className={[
-        "group flex min-h-[88px] flex-col justify-between rounded-2xl border bg-background p-3 transition hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0",
-        accent
-          ? "border-primary/40 hover:border-primary/60"
-          : "hover:border-border",
-      ].join(" ")}
+      className="group sticker-tile flex min-h-[88px] flex-col justify-between p-3"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground group-hover:text-foreground">

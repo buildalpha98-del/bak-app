@@ -481,12 +481,12 @@ export default function BookingFlowPage() {
             </h1>
           </div>
 
-          <div className="rounded-xl border bg-card p-6 space-y-4">
+          <div className="sticker-card p-6 space-y-4">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-semibold text-foreground">
                 {session.title}
               </h2>
-              <Badge className="bg-orange-50 text-primary border-orange-200">
+              <Badge className="bg-orange-50 text-rust border-orange-200">
                 {session.sport}
               </Badge>
             </div>
@@ -549,7 +549,7 @@ export default function BookingFlowPage() {
           </div>
 
           <Button
-            className="w-full bg-primary hover:bg-[#d4651f] h-11"
+            className="w-full h-11"
             onClick={() => setStep(2)}
           >
             Continue to Select Children
@@ -575,7 +575,7 @@ export default function BookingFlowPage() {
 
           <div className="space-y-3">
             {children.length === 0 ? (
-              <div className="rounded-xl border bg-card p-6 text-center">
+              <div className="sticker-card p-6 text-center">
                 <p className="text-muted-foreground">
                   No children found. Please add your children first.
                 </p>
@@ -632,7 +632,7 @@ export default function BookingFlowPage() {
                           }`}
                         >
                           {selected && (
-                            <Check className="h-4 w-4 text-white" />
+                            <Check className="h-4 w-4 text-ink" />
                           )}
                         </div>
                       </div>
@@ -644,7 +644,7 @@ export default function BookingFlowPage() {
           </div>
 
           {selectedChildIds.length > 0 && (
-            <div className="rounded-xl border bg-card p-4">
+            <div className="sticker-card p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   {selectedChildIds.length} child
@@ -665,7 +665,7 @@ export default function BookingFlowPage() {
               </div>
             ) : (
               <Button
-                className="w-full bg-primary hover:bg-[#d4651f] h-11"
+                className="w-full h-11"
                 disabled={selectedChildIds.length === 0 || joiningWaitlist}
                 onClick={handleJoinWaitlist}
               >
@@ -678,7 +678,7 @@ export default function BookingFlowPage() {
             )
           ) : (
             <Button
-              className="w-full bg-primary hover:bg-[#d4651f] h-11"
+              className="w-full h-11"
               disabled={selectedChildIds.length === 0}
               onClick={() => setStep(3)}
             >
@@ -703,7 +703,7 @@ export default function BookingFlowPage() {
           </div>
 
           {/* Order summary */}
-          <div className="rounded-xl border bg-card p-5 space-y-3">
+          <div className="sticker-card p-5 space-y-3">
             <h3 className="font-semibold text-foreground">Order Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -757,7 +757,7 @@ export default function BookingFlowPage() {
 
           {/* Discount code input */}
           {!discountApplied && (
-            <div className="rounded-xl border bg-card p-5 space-y-3">
+            <div className="sticker-card p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">Have a discount code?</h3>
@@ -775,7 +775,6 @@ export default function BookingFlowPage() {
                   size="sm"
                   onClick={handleApplyDiscount}
                   disabled={discountLoading || !discountCode.trim()}
-                  className="border-primary text-primary hover:bg-orange-50"
                 >
                   {discountLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                 </Button>
@@ -843,7 +842,7 @@ export default function BookingFlowPage() {
           )}
 
           {/* Payment option: Card */}
-          <div className="rounded-xl border bg-card p-5 space-y-4">
+          <div className="sticker-card p-5 space-y-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-foreground">Pay with Card</h3>
@@ -888,7 +887,7 @@ export default function BookingFlowPage() {
 
           {/* Payment option: Session Pack */}
           {packageBalances.length > 0 && (
-            <div className="rounded-xl border bg-card p-5 space-y-4">
+            <div className="sticker-card p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <PackageIcon className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-foreground">
@@ -913,7 +912,6 @@ export default function BookingFlowPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-primary text-primary hover:bg-orange-50"
                       disabled={
                         submitting ||
                         pkg.remaining_sessions < selectedChildIds.length
@@ -949,7 +947,7 @@ export default function BookingFlowPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border bg-card p-5 text-left space-y-3">
+          <div className="sticker-card p-5 text-left space-y-3">
             <h3 className="font-semibold text-foreground">{session.title}</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -986,7 +984,7 @@ export default function BookingFlowPage() {
               Download Calendar Invite
             </Button>
             <Button
-              className="bg-primary hover:bg-[#d4651f] gap-2"
+              className="gap-2"
               render={<Link href="/parent/book" />}
             >
               Book Another Session

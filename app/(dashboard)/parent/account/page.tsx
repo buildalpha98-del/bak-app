@@ -237,7 +237,7 @@ export default function ParentAccountPage() {
       )}
 
       {/* ── Profile Details ── */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-4">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Your Details
         </h2>
@@ -298,7 +298,7 @@ export default function ParentAccountPage() {
         <Button
           onClick={handleSave}
           disabled={saving || !firstName.trim() || !lastName.trim()}
-          className="w-full h-11 bg-primary text-white hover:bg-[#D4651F] rounded-lg"
+          className="w-full h-11"
         >
           {saving ? (
             <>
@@ -316,7 +316,7 @@ export default function ParentAccountPage() {
 
       {/* ── Children ── */}
       <Link href="/parent/kids" className="block">
-        <div className="rounded-2xl border border-orange-100 bg-card p-5 flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/40 transition-all">
+        <div className="sticker-tile p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
               <Users className="h-5 w-5 text-primary" />
@@ -330,21 +330,21 @@ export default function ParentAccountPage() {
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="border-orange-200 text-primary">
+          <Badge variant="outline" className="border-orange-200 text-rust">
             {childrenCount}
           </Badge>
         </div>
       </Link>
 
       {/* ── Packages ── */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Packages
           </h2>
           <Link
             href="/parent/packages"
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-rust hover:underline"
           >
             Browse Packages
           </Link>
@@ -402,7 +402,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Payment History ── */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-4">
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -462,7 +462,7 @@ export default function ParentAccountPage() {
       </div>
 
       {/* ── Settings ── */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-4">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Settings
         </h2>
@@ -538,7 +538,7 @@ export default function ParentAccountPage() {
       <Button
         variant="outline"
         onClick={handleSignOut}
-        className="w-full h-11 rounded-lg text-muted-foreground"
+        className="w-full h-11 text-muted-foreground"
       >
         <LogOut className="mr-2 h-4 w-4" />
         Sign Out

@@ -164,7 +164,7 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
   }, [expiresAt]);
 
   return (
-    <span className="font-mono text-sm font-semibold text-primary">
+    <span className="font-mono text-sm font-semibold text-rust">
       {remaining}
     </span>
   );
@@ -372,7 +372,7 @@ export default function ParentBookingsClient() {
             onClick={() => changeTab(tab.key)}
             className={`flex-1 min-w-[80px] min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.key
-                ? "bg-card text-primary shadow-sm"
+                ? "bg-card text-rust shadow-sm"
                 : "text-[#666666] hover:text-[#1A1A1A]"
             }`}
           >
@@ -381,7 +381,7 @@ export default function ParentBookingsClient() {
               <span
                 className={`ml-1.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs ${
                   activeTab === tab.key
-                    ? "bg-orange-100 text-primary"
+                    ? "bg-orange-100 text-rust"
                     : "bg-gray-200 text-[#666666]"
                 }`}
               >
@@ -408,7 +408,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="sticker-card p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -476,7 +476,7 @@ export default function ParentBookingsClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="min-h-[44px] rounded-xl"
+                      className="min-h-[44px]"
                       render={<Link href={`/parent/bookings/${booking.id}`} />}
                     >
                       View details
@@ -484,7 +484,7 @@ export default function ParentBookingsClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="min-h-[44px] rounded-xl"
+                      className="min-h-[44px]"
                       onClick={() => downloadICS(session)}
                     >
                       <Download className="h-4 w-4 mr-1" />
@@ -494,7 +494,7 @@ export default function ParentBookingsClient() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="min-h-[44px] rounded-xl"
+                        className="min-h-[44px]"
                         onClick={() => setShowCancelDialog(booking.id)}
                       >
                         Cancel
@@ -542,7 +542,7 @@ export default function ParentBookingsClient() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          className="min-h-[44px] rounded-xl"
+                          className="min-h-[44px]"
                           disabled={cancellingId === booking.id}
                           onClick={() => handleCancel(booking.id)}
                         >
@@ -554,7 +554,7 @@ export default function ParentBookingsClient() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="min-h-[44px] rounded-xl"
+                          className="min-h-[44px]"
                           onClick={() => {
                             setShowCancelDialog(null);
                             setCancelReason("");
@@ -587,7 +587,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="sticker-card p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -641,7 +641,7 @@ export default function ParentBookingsClient() {
                             key={child.child_id}
                             variant="outline"
                             size="sm"
-                            className="min-h-[44px] text-primary border-primary/40 hover:bg-orange-50 rounded-xl"
+                            className="min-h-[44px]"
                             render={
                               <Link
                                 href={`/parent/kids/${child.child_id}/insights`}
@@ -675,7 +675,7 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm"
+                  className="sticker-card p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-[#1A1A1A]">
@@ -770,14 +770,14 @@ export default function ParentBookingsClient() {
               return (
                 <div
                   key={entry.id}
-                  className={`rounded-2xl border p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow ${
+                  className={`rounded-card border-2 border-ink p-5 space-y-3 ${
                     isOffered
-                      ? "border-primary bg-orange-50"
-                      : "border-orange-100 bg-card"
+                      ? "bg-orange-50 shadow-sticker-orange"
+                      : "bg-card shadow-sticker-md"
                   }`}
                 >
                   {isOffered && (
-                    <div className="flex flex-wrap items-center gap-2 text-primary font-semibold text-sm">
+                    <div className="flex flex-wrap items-center gap-2 text-rust font-semibold text-sm">
                       <AlertTriangle className="h-4 w-4" />
                       <span>Spot available! Offer expires in:</span>
                       {entry.offer_expires_at && (
@@ -792,11 +792,6 @@ export default function ParentBookingsClient() {
                     </h3>
                     <Badge
                       variant={isOffered ? "default" : "secondary"}
-                      className={
-                        isOffered
-                          ? "bg-primary text-white hover:bg-primary"
-                          : ""
-                      }
                     >
                       {isOffered ? "Offered" : `#${entry.position} in queue`}
                     </Badge>
@@ -832,7 +827,7 @@ export default function ParentBookingsClient() {
                     {isOffered && (
                       <Button
                         size="sm"
-                        className="min-h-[44px] bg-primary hover:bg-[#d4651f] text-white rounded-xl"
+                        className="min-h-[44px]"
                         render={
                           <Link
                             href={`/parent/book/${entry.bookable_session_id}?waitlist=${entry.id}`}
@@ -845,7 +840,7 @@ export default function ParentBookingsClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="min-h-[44px] rounded-xl"
+                      className="min-h-[44px]"
                       disabled={cancellingWaitlistId === entry.id}
                       onClick={() => handleCancelWaitlist(entry.id)}
                     >
@@ -877,7 +872,7 @@ function EmptyTab({
   cta?: { label: string; href: string };
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-card border border-orange-100">
+    <div className="flex flex-col items-center justify-center py-16 sticker-card">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-primary mb-4">
         <Icon className="h-8 w-8" />
       </div>
@@ -885,7 +880,7 @@ function EmptyTab({
       <p className="text-sm text-[#666666] mt-1 text-center max-w-sm">{body}</p>
       {cta && (
         <Button
-          className="mt-4 bg-primary hover:bg-[#d4651f] text-white rounded-xl min-h-[44px]"
+          className="mt-4 min-h-[44px]"
           render={<Link href={cta.href} />}
         >
           {cta.label}

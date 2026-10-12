@@ -492,7 +492,7 @@ function CoachAvatar({
           className="h-full w-full object-cover"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-bold text-primary">
+        <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-bold text-rust">
           {name.charAt(0).toUpperCase()}
         </div>
       )}
@@ -879,7 +879,7 @@ export function TeamPerformanceView({
               aria-label="Table view"
               className={
                 viewMode === "table"
-                  ? "rounded-2xl bg-primary/10 text-primary hover:bg-primary/15"
+                  ? "rounded-2xl bg-primary/10 text-rust hover:bg-primary/15"
                   : ""
               }
             >
@@ -892,7 +892,7 @@ export function TeamPerformanceView({
               aria-label="Card view"
               className={
                 viewMode === "cards"
-                  ? "rounded-2xl bg-primary/10 text-primary hover:bg-primary/15"
+                  ? "rounded-2xl bg-primary/10 text-rust hover:bg-primary/15"
                   : ""
               }
             >
@@ -904,7 +904,6 @@ export function TeamPerformanceView({
             size="sm"
             onClick={handleExport}
             disabled={isExporting || data.coaches.length === 0}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Download className="mr-1 size-4" />
             {isExporting ? "Exporting…" : "Export CSV"}
@@ -922,7 +921,7 @@ export function TeamPerformanceView({
       {feedbackJump && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
             Coaches with no feedback this period
             <button
               type="button"
@@ -961,7 +960,7 @@ export function TeamPerformanceView({
                     size="lg"
                   />
                   {i === 0 && (
-                    <span className="absolute -top-1 -right-1 rounded-full bg-primary p-1 text-white">
+                    <span className="absolute -top-1 -right-1 rounded-full bg-primary p-1 text-ink">
                       <Trophy className="size-3" />
                     </span>
                   )}
@@ -1007,7 +1006,7 @@ export function TeamPerformanceView({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Team avg score */}
         <Card
-          className={`rounded-2xl border-primary/30 bg-primary/5 ${scoreBorder(avgScore)}`}
+          className={`border-primary/30 bg-primary/5 ${scoreBorder(avgScore)}`}
         >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -1028,7 +1027,7 @@ export function TeamPerformanceView({
         </Card>
 
         {/* Total sessions */}
-        <Card className="rounded-2xl">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <FileText className="h-4 w-4" />
@@ -1050,7 +1049,7 @@ export function TeamPerformanceView({
         </Card>
 
         {/* Avg feedback rating */}
-        <Card className="rounded-2xl">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Star className="h-4 w-4" />
@@ -1070,7 +1069,7 @@ export function TeamPerformanceView({
         </Card>
 
         {/* Avg form completion */}
-        <Card className="rounded-2xl">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <FileText className="h-4 w-4" />
@@ -1402,7 +1401,7 @@ function CoachLeaderboardCard({
     coach.region_name ??
     (coach.region_id ? (regionsById.get(coach.region_id) ?? null) : null);
   return (
-    <div className="group rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group sticker-card p-4">
       <div className="flex items-start gap-3">
         <CoachAvatar
           name={coach.name}
@@ -1486,7 +1485,7 @@ function CoachLeaderboardCard({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 bg-primary text-xs text-white hover:bg-primary/90"
+          className="flex-1 h-8 text-xs"
           render={<Link href={`${basePath}/${coach.id}`} />}
         >
           View detail
@@ -1516,7 +1515,7 @@ function MobileCoachCard({
   return (
     <Link
       href={`${basePath}/${coach.id}`}
-      className="block rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+      className="block sticker-tile p-4"
     >
       <div className="flex items-start gap-3">
         <CoachAvatar

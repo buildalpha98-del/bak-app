@@ -71,7 +71,7 @@ function getStatusBadge(status: string) {
     expired: "bg-gray-100 text-gray-500 border-gray-200",
     sent: "bg-blue-50 text-blue-700 border-blue-200",
     registered: "bg-green-50 text-green-700 border-green-200",
-    converted: "bg-primary/10 text-primary border-primary/20",
+    converted: "bg-primary/10 text-rust border-primary/20",
   };
   return (
     <Badge
@@ -220,7 +220,7 @@ export default function ParentReferralsPage() {
 
       {/* Referral Code Card */}
       {code && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="sticker-card p-6">
           <p className="text-sm font-medium text-[#666666] mb-2">
             Your referral code
           </p>
@@ -233,10 +233,8 @@ export default function ParentReferralsPage() {
             <Button
               onClick={handleCopy}
               className={`min-h-[44px] text-sm ${
-                copied
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-primary hover:bg-[#d4651f]"
-              } text-white`}
+                copied ? "bg-green-600 text-white hover:bg-green-700" : ""
+              }`}
             >
               {copied ? (
                 <>
@@ -253,7 +251,7 @@ export default function ParentReferralsPage() {
             <Button
               onClick={handleEmailShare}
               variant="outline"
-              className="min-h-[44px] text-sm border-primary text-primary hover:bg-orange-50"
+              className="min-h-[44px] text-sm"
             >
               <Mail className="h-4 w-4 mr-1.5" />
               Share via Email
@@ -261,7 +259,7 @@ export default function ParentReferralsPage() {
             <Button
               onClick={handleSmsShare}
               variant="outline"
-              className="min-h-[44px] text-sm border-primary text-primary hover:bg-orange-50"
+              className="min-h-[44px] text-sm"
             >
               <MessageSquare className="h-4 w-4 mr-1.5" />
               Share via SMS
@@ -272,7 +270,7 @@ export default function ParentReferralsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="sticker-card p-4 text-center">
           <div className="flex justify-center mb-2">
             <Users className="h-5 w-5 text-primary" />
           </div>
@@ -281,7 +279,7 @@ export default function ParentReferralsPage() {
           </p>
           <p className="text-xs text-[#666666] mt-1">Referred</p>
         </div>
-        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="sticker-card p-4 text-center">
           <div className="flex justify-center mb-2">
             <UserCheck className="h-5 w-5 text-primary" />
           </div>
@@ -290,7 +288,7 @@ export default function ParentReferralsPage() {
           </p>
           <p className="text-xs text-[#666666] mt-1">Registered</p>
         </div>
-        <div className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center">
+        <div className="sticker-card p-4 text-center">
           <div className="flex justify-center mb-2">
             <Trophy className="h-5 w-5 text-primary" />
           </div>
@@ -302,7 +300,7 @@ export default function ParentReferralsPage() {
       </div>
 
       {/* Milestone Progress */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5">
         <h2 className="text-sm font-semibold text-[#1A1A1A] mb-3">
           Milestone Progress
         </h2>
@@ -335,7 +333,7 @@ export default function ParentReferralsPage() {
           {availableRewards.map((reward) => (
             <div
               key={reward.id}
-              className="rounded-2xl border-2 border-primary bg-orange-50 p-5 shadow-sm"
+              className="rounded-card border-2 border-ink bg-orange-50 p-5 shadow-sticker-orange"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -366,7 +364,7 @@ export default function ParentReferralsPage() {
             {rewards.map((reward) => (
               <div
                 key={reward.id}
-                className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
+                className="rounded-tile border border-ink/15 bg-card p-4 flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A] truncate">
@@ -394,7 +392,7 @@ export default function ParentReferralsPage() {
             {referrals.map((referral) => (
               <div
                 key={referral.id}
-                className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3"
+                className="rounded-tile border border-ink/15 bg-card p-4 flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[#1A1A1A]">
@@ -413,7 +411,7 @@ export default function ParentReferralsPage() {
       )}
 
       {referrals.length === 0 && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-8 shadow-sm text-center">
+        <div className="sticker-card p-8 text-center">
           <Gift className="h-10 w-10 text-orange-200 mx-auto mb-3" />
           <p className="text-[#1A1A1A] font-medium">No referrals yet</p>
           <p className="text-sm text-[#666666] mt-1">

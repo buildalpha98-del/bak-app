@@ -28,6 +28,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FileText, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listPostsForAdmin } from "@/lib/blog/admin-actions";
 import { Badge } from "@/components/ui/badge";
@@ -101,13 +102,10 @@ export default async function AdminBlogPage() {
           </p>
         </div>
 
-        <Link
-          href="/admin/marketing/blog/new"
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-white transition hover:bg-[#d4641f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-        >
+        <Button nativeButton={false} render={<Link href="/admin/marketing/blog/new" />}>
           <Plus className="h-4 w-4" />
           New post
-        </Link>
+        </Button>
       </div>
 
       {error ? (
@@ -126,12 +124,12 @@ export default async function AdminBlogPage() {
           </div>
 
           {posts.length === 0 ? (
-            <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+            <div className="sticker-card p-6 text-center text-sm text-[#666666]">
               <FileText className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
               No posts yet. Create your first post to get started.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border bg-background">
+            <div className="overflow-x-auto sticker-card">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -146,7 +144,7 @@ export default async function AdminBlogPage() {
                       <TableCell className="font-medium text-[#1A1A1A]">
                         <Link
                           href={`/admin/marketing/blog/${p.id}`}
-                          className="hover:text-primary hover:underline"
+                          className="hover:text-rust hover:underline"
                         >
                           {p.title}
                         </Link>

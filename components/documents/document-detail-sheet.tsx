@@ -372,7 +372,6 @@ export function DocumentDetailSheet({
                     size="sm"
                     disabled={saving}
                     onClick={handleSaveEdits}
-                    className="bg-primary text-white hover:bg-primary/90"
                   >
                     {saving && (
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -444,7 +443,7 @@ export function DocumentDetailSheet({
                         key={v.id}
                         className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-xs ${
                           v.id === doc.id
-                            ? "bg-[var(--brand-orange-light)] text-primary"
+                            ? "bg-[var(--brand-orange-light)] text-rust"
                             : "text-muted-foreground"
                         }`}
                       >

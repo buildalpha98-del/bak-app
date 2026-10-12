@@ -135,7 +135,7 @@ export default function ParentPackagesPage() {
               return (
                 <div
                   key={balance.id}
-                  className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                  className="sticker-card p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <h3 className="font-semibold text-foreground">
@@ -194,7 +194,7 @@ export default function ParentPackagesPage() {
         </h2>
 
         {packages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 rounded-2xl bg-card border border-orange-100 shadow-sm">
+          <div className="flex flex-col items-center justify-center py-12 sticker-card">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-primary mb-3">
               <PackageIcon className="h-7 w-7" />
             </div>
@@ -207,7 +207,7 @@ export default function ParentPackagesPage() {
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 flex flex-col shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                className="sticker-card p-5 space-y-4 flex flex-col"
               >
                 <div className="flex items-start justify-between">
                   <h3 className="font-semibold text-foreground">{pkg.name}</h3>
@@ -233,7 +233,7 @@ export default function ParentPackagesPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Price</span>
-                    <span className="text-xl font-bold text-primary">
+                    <span className="text-xl font-bold text-rust">
                       ${(pkg.price_cents / 100).toFixed(2)}
                     </span>
                   </div>
@@ -245,7 +245,7 @@ export default function ParentPackagesPage() {
 
                 <div className="mt-auto pt-2">
                   <Button
-                    className="w-full bg-primary hover:bg-[#D4641F] text-white rounded-xl min-h-[44px]"
+                    className="w-full min-h-[44px]"
                     onClick={() => {
                       setSelectedPackage(pkg);
                       setError(null);
@@ -265,7 +265,7 @@ export default function ParentPackagesPage() {
       {/* Payment modal */}
       {selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 space-y-4">
+          <div className="w-full max-w-md sticker-card p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-foreground">
                 Purchase {selectedPackage.name}
@@ -292,7 +292,7 @@ export default function ParentPackagesPage() {
               </div>
               <div className="flex justify-between mt-2 pt-2 border-t border-orange-200">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-primary">
+                <span className="font-bold text-rust">
                   ${(selectedPackage.price_cents / 100).toFixed(2)}
                 </span>
               </div>

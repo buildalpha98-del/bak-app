@@ -192,7 +192,7 @@ export default function WidgetsPage() {
         {WIDGETS.map((widget, idx) => (
           <div
             key={widget.name}
-            className="rounded-xl border bg-card overflow-hidden"
+            className="sticker-card overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b p-5">

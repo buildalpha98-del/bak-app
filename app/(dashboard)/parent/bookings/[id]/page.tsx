@@ -180,7 +180,7 @@ export default function BookingDetailPage() {
             Back to bookings
           </Button>
         </Link>
-        <div className="flex flex-col items-center justify-center py-16 rounded-2xl bg-card border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 sticker-card">
           <AlertTriangle className="h-10 w-10 text-primary mb-3" />
           <h2 className="text-lg font-semibold text-[#1A1A1A]">
             {error ?? "Booking not found"}
@@ -225,7 +225,7 @@ export default function BookingDetailPage() {
       </div>
 
       {/* Session Info */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-4">
         <h2 className="font-semibold text-[#1A1A1A]">Session Details</h2>
 
         {session.description && (
@@ -255,7 +255,7 @@ export default function BookingDetailPage() {
                   href={buildMapsUrl(mapsAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline text-xs"
+                  className="text-rust hover:underline text-xs"
                 >
                   {session.location_address}
                   {session.suburb ? `, ${session.suburb}` : ""} — View on Maps
@@ -271,7 +271,7 @@ export default function BookingDetailPage() {
               </div>
               <Badge
                 variant="outline"
-                className="border-primary text-primary"
+                className="border-ink text-rust"
               >
                 {session.sport}
               </Badge>
@@ -282,7 +282,7 @@ export default function BookingDetailPage() {
 
       {/* Status timeline (coach broadcasts) */}
       {session.session_id && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm">
+        <div className="sticker-card p-5 space-y-3">
           <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-primary" />
             Status updates
@@ -293,7 +293,7 @@ export default function BookingDetailPage() {
 
       {/* Children Attending */}
       {booking.children_json && booking.children_json.length > 0 && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
+        <div className="sticker-card p-5 space-y-3">
           <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
             Children Attending
@@ -317,7 +317,7 @@ export default function BookingDetailPage() {
       )}
 
       {/* Payment Details */}
-      <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
+      <div className="sticker-card p-5 space-y-3">
         <h2 className="font-semibold text-[#1A1A1A] flex items-center gap-2">
           {booking.payment_type === "package_redemption" ? (
             <Package className="h-5 w-5 text-primary" />
@@ -352,7 +352,7 @@ export default function BookingDetailPage() {
 
       {/* Status-specific sections */}
       {upcoming && isConfirmed && !showCancelSection && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow">
+        <div className="sticker-card p-5 space-y-3">
           <h2 className="font-semibold text-[#1A1A1A]">
             Cancel This Booking
           </h2>
@@ -441,7 +441,7 @@ export default function BookingDetailPage() {
       )}
 
       {booking.status === "cancelled" && (
-        <div className="rounded-xl border border-orange-100 bg-card p-5 space-y-2">
+        <div className="sticker-card p-5 space-y-2">
           <p className="text-sm font-medium text-[#1A1A1A]">
             This booking was cancelled
           </p>

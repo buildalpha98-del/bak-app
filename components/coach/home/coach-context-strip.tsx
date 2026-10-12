@@ -44,12 +44,12 @@ export function CoachContextStrip({
     <div className="sticky top-0 z-30 -mx-4 mb-2 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:-mx-6 sm:px-6">
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+          <p className="eyebrow">
             {dateLabel}
           </p>
           <p className="text-base font-medium text-foreground">
             {greeting},{" "}
-            <span className="text-primary">{firstName}</span>
+            <span className="text-rust">{firstName}</span>
           </p>
         </div>
 
@@ -125,7 +125,7 @@ function PulseStat({
         <span
           className={
             active
-              ? "text-base font-semibold tabular-nums text-primary"
+              ? "text-base font-semibold tabular-nums text-rust"
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >

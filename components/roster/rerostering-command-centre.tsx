@@ -133,7 +133,7 @@ export function RerosteringCommandCentre({ events }: Props) {
 
   if (sorted.length === 0) {
     return (
-      <Card className="rounded-2xl">
+      <Card>
         <CardContent className="flex flex-col items-center gap-2 py-14 text-center">
           <CheckCircle2 className="h-9 w-9 text-emerald-500" />
           <p className="font-medium text-foreground">All shifts covered</p>
@@ -170,7 +170,7 @@ export function RerosteringCommandCentre({ events }: Props) {
         }
 
         return (
-          <Card key={event.id} className="overflow-hidden rounded-2xl">
+          <Card key={event.id} className="overflow-hidden">
             {/* Summary row */}
             <button
               type="button"
@@ -293,11 +293,6 @@ export function RerosteringCommandCentre({ events }: Props) {
                           <Button
                             size="sm"
                             variant={isLapsed ? "outline" : "default"}
-                            className={
-                              isLapsed
-                                ? ""
-                                : "bg-primary text-white hover:bg-primary/90"
-                            }
                             disabled={disableSend}
                             onClick={() =>
                               handleSendOffer(event.id, s.coach_id, s.coach_name)

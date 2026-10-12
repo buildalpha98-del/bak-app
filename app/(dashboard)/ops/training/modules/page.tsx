@@ -7,7 +7,7 @@ export default async function OpsTrainingModulesPage() {
   return (
     <div className="space-y-6">
       <div className="animate-fade-up">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+        <p className="eyebrow mb-1">
           Training
         </p>
         <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight page-header-sport">

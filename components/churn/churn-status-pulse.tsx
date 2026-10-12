@@ -19,7 +19,7 @@ export function ChurnStatusPulseStrip({
   basePath,
 }: ChurnStatusPulseStripProps) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <PulseStat
           icon={ShieldAlert}
@@ -84,7 +84,7 @@ function PulseStat({
       ? "text-red-600"
       : tone === "green"
         ? "text-green-600"
-        : "text-primary";
+        : "text-rust";
   return (
     <li>
       <Link

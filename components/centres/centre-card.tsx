@@ -105,7 +105,7 @@ function healthDotClass(score: number): string {
 function typeTileClass(type: string): string {
   return type === "childcare_centre"
     ? "bg-primary/12 text-primary"
-    : "bg-indigo-500/12 text-indigo-600 dark:text-indigo-400";
+    : "bg-indigo-500/12 text-indigo-600";
 }
 
 function healthEdgeClass(score: number | null): string {

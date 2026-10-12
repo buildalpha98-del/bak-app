@@ -21,7 +21,7 @@ export default async function ReferralLandingPage({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="rounded-xl bg-card p-8 shadow-lg border border-gray-200">
+          <div className="sticker-card p-8">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
               <span className="text-3xl text-red-400">!</span>
             </div>
@@ -33,7 +33,7 @@ export default async function ReferralLandingPage({
               with the person who shared it with you.
             </p>
             <Link href="/">
-              <Button className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px]">
+              <Button className="min-h-[44px]">
                 Visit Build Alpha Kids
               </Button>
             </Link>
@@ -48,17 +48,17 @@ export default async function ReferralLandingPage({
   return (
     <div className="min-h-screen bg-card">
       {/* Hero Header */}
-      <div className="bg-primary text-white">
+      <div className="bg-primary text-ink">
         <div className="max-w-lg mx-auto px-6 py-12 text-center">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold tracking-wide uppercase opacity-90">
+            <h2 className="eyebrow">
               Build Alpha Kids
             </h2>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">
             You&apos;ve been invited by {referrerName}!
           </h1>
-          <p className="text-white/90 text-lg">
+          <p className="text-ink/90 text-lg">
             Join South-West Sydney&apos;s favourite multi-sport programme for
             kids
           </p>
@@ -136,7 +136,7 @@ export default async function ReferralLandingPage({
         {/* CTA */}
         <div className="mt-10 text-center">
           <Link href={`/parent-login?next=${encodeURIComponent(`/parent/register?ref=${code}`)}`}>
-            <Button className="bg-primary hover:bg-[#d4651f] text-white min-h-[52px] px-8 text-base font-semibold w-full sm:w-auto">
+            <Button className="min-h-[52px] px-8 text-base font-semibold w-full sm:w-auto">
               Sign Up Now
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
@@ -150,7 +150,7 @@ export default async function ReferralLandingPage({
       {/* Footer */}
       <div className="border-t border-gray-100 bg-gray-50">
         <div className="max-w-lg mx-auto px-6 py-8 text-center">
-          <p className="text-sm font-semibold text-primary">
+          <p className="text-sm font-semibold text-rust">
             Build Alpha Kids
           </p>
           <p className="text-xs text-[#666666] mt-1">

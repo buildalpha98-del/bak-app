@@ -29,7 +29,7 @@ function formatDate(dateStr: string): string {
 function sportColour(sport: string): string {
   const colours: Record<string, string> = {
     Soccer: "bg-green-50 text-green-700 border-green-200",
-    Basketball: "bg-orange-50 text-orange-700 border-orange-200",
+    Basketball: "bg-orange-50 text-rust border-orange-200",
     Athletics: "bg-red-50 text-red-700 border-red-200",
     Cricket: "bg-yellow-50 text-yellow-700 border-yellow-200",
     Tennis: "bg-lime-50 text-lime-700 border-lime-200",
@@ -74,7 +74,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
         {programs.map((program) => (
           <Card
             key={program.id}
-            className="group rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md"
+            className="group"
           >
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
@@ -110,7 +110,7 @@ export function ClientPrograms({ programs, centreId }: ClientProgramsProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full rounded-2xl border-portal-600/30 text-portal-600 hover:bg-portal-600/10"
+                className="w-full"
                 render={(props) => (
                   <Link
                     {...props}

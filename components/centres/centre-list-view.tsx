@@ -418,7 +418,7 @@ export function CentreListView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {riskOnly && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <AlertTriangle className="size-3" />
               At risk only
               <button
@@ -432,7 +432,7 @@ export function CentreListView({
             </span>
           )}
           {onboardingBehind && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <Compass className="size-3" />
               Behind on onboarding
               <button
@@ -785,7 +785,7 @@ function BulkActionBar({
           // Fixed positioning + brand-orange ring lifts the bar above
           // the page so the operator's next move is unmissable, while
           // staying out of the way of normal list browsing.
-          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6"
+          "fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6"
         }
       >
         <div className="flex items-center gap-3 pr-2 text-sm">
@@ -826,7 +826,6 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -881,7 +880,6 @@ function BulkActionBar({
                 void handleStatusConfirm();
               }}
               disabled={statusWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {statusWorking ? "Saving…" : "Apply"}
             </AlertDialogAction>
@@ -970,7 +968,6 @@ function BulkAnnouncementSheet({
           <Button
             onClick={handleSend}
             disabled={working || !content.trim()}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>

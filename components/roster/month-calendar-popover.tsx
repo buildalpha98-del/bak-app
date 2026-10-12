@@ -363,7 +363,7 @@ export function MonthCalendarPopover({
                   setOpen(false);
                   onPresetSelect?.(p.months);
                 }}
-                className="rounded-full border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground transition hover:border-primary hover:text-primary"
+                className="rounded-full border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground transition hover:border-primary hover:text-rust"
               >
                 {p.label}
               </button>

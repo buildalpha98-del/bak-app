@@ -391,7 +391,6 @@ export function FormTemplateList({
         {tab === "templates" && (
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-white"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Create Template
@@ -411,7 +410,7 @@ export function FormTemplateList({
           onClick={() => setParam({ tab: null })}
           className={`px-4 py-1.5 text-sm rounded-xl transition-colors ${
             tab === "templates"
-              ? "bg-primary text-white"
+              ? "bg-cta text-cta-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -426,7 +425,7 @@ export function FormTemplateList({
           onClick={() => setParam({ tab: "submissions" })}
           className={`px-4 py-1.5 text-sm rounded-xl transition-colors ${
             tab === "submissions"
-              ? "bg-primary text-white"
+              ? "bg-cta text-cta-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -517,7 +516,6 @@ export function FormTemplateList({
               <Button
                 onClick={handleCreate}
                 disabled={creating}
-                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {creating && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
                 Create
@@ -574,7 +572,6 @@ export function FormTemplateList({
               <Button
                 onClick={handleDuplicate}
                 disabled={duplicating}
-                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {duplicating && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -704,7 +701,7 @@ function TemplatesTab({
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="sticky top-2 z-10 mt-4 flex flex-wrap items-center gap-2 rounded-2xl border bg-background px-4 py-3 shadow-md">
+        <div className="sticky top-2 z-10 mt-4 flex flex-wrap items-center gap-2 sticker-card px-4 py-3">
           <span className="text-sm font-medium text-foreground">
             {selected.size} selected
           </span>
@@ -823,7 +820,7 @@ function TemplateCard({
   const ticked = useCountUp(submissionCount);
 
   return (
-    <Card className="rounded-2xl transition-shadow hover:shadow-md card-hover">
+    <Card className="rounded-2xl card-hover">
       <CardContent className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Checkbox
@@ -843,7 +840,7 @@ function TemplateCard({
                   {displayName(template.name)}
                 </span>
                 {template.is_default && (
-                  <Badge className="bg-primary text-white text-[10px]">
+                  <Badge className="text-[10px]">
                     Default
                   </Badge>
                 )}
@@ -1018,7 +1015,7 @@ function SubmissionsTab({
           submissions.map((sub) => (
             <Card
               key={sub.id}
-              className="rounded-2xl transition-shadow hover:shadow-md card-hover"
+              className="rounded-2xl card-hover"
             >
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3 min-w-0">

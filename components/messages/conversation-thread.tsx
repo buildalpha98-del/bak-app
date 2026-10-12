@@ -247,7 +247,7 @@ export function ConversationThread({
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
         )}
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-rust text-sm font-medium">
           {getInitials(otherUserName)}
         </div>
         <h2 className="text-sm font-semibold text-foreground">
@@ -271,7 +271,7 @@ export function ConversationThread({
                 <button
                   onClick={handleLoadOlder}
                   disabled={loadingMore}
-                  className="text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50 min-h-[44px] px-4"
+                  className="text-xs font-medium text-rust hover:text-rust/80 disabled:opacity-50 min-h-[44px] px-4"
                 >
                   {loadingMore ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -92,7 +92,7 @@ export function AdminFeedbackClient({
 
       {/* Stats row + sentiment distribution */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
+        <div className="sticker-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Star className="size-4 text-primary" />
             <span>Average rating</span>
@@ -105,7 +105,7 @@ export function AdminFeedbackClient({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
+        <div className="sticker-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MessageSquare className="size-4 text-primary" />
             <span>Total responses</span>
@@ -115,7 +115,7 @@ export function AdminFeedbackClient({
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
+        <div className="sticker-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {trendDirection === "up" ? (
               <TrendingUp className="size-4 text-emerald-600" />

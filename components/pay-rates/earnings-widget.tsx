@@ -39,7 +39,7 @@ export function EarningsWidget({ earnings }: EarningsWidgetProps) {
 
   return (
     <Card
-      className="cursor-pointer card-hover"
+      className="cursor-pointer"
       onClick={() => setExpanded(!expanded)}
     >
       <CardContent className="p-4 space-y-3">
@@ -126,7 +126,7 @@ export function EarningsWidget({ earnings }: EarningsWidgetProps) {
             {/* Total */}
             <div className="flex items-center justify-between pt-2 border-t">
               <p className="text-xs font-semibold text-muted-foreground">Total</p>
-              <p className="text-sm font-bold text-primary">
+              <p className="text-sm font-bold text-rust">
                 {formatAmount(earnings.totalEarnings)}
               </p>
             </div>

@@ -117,7 +117,7 @@ export function WeekView({ sessions, weekStart }: WeekViewProps) {
               >
                 <span
                   className={`text-sm font-medium ${
-                    isToday ? "text-primary" : "text-muted-foreground"
+                    isToday ? "text-rust" : "text-muted-foreground"
                   }`}
                 >
                   {formatDayHeader(dateStr)}
@@ -148,7 +148,7 @@ export function WeekView({ sessions, weekStart }: WeekViewProps) {
               >
                 <span
                   className={`text-sm font-semibold ${
-                    isToday ? "text-primary" : "text-foreground"
+                    isToday ? "text-rust" : "text-foreground"
                   }`}
                 >
                   {formatDayHeader(dateStr)}

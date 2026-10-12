@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Printer, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { saveQuizResult, type QuizMarkingSheet, type QuizStudentRow } from "@/lib/client/quiz-actions";
 import { scoreQuiz, isFullyMarked, quizBand, type QuizMarks } from "@/lib/quizzes/quiz-model";
@@ -104,10 +106,10 @@ export function QuizMarking({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a href={`/api/client/${centreId}/quiz-pdf?quizId=${quiz.id}`} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-input px-3 text-sm">
+          <a href={`/api/client/${centreId}/quiz-pdf?quizId=${quiz.id}`} className={cn(buttonVariants({ variant: "outline" }), "min-h-[44px] gap-1.5")}>
             <Printer className="h-4 w-4" /> Student copy
           </a>
-          <a href={`/api/client/${centreId}/quiz-pdf?quizId=${quiz.id}&key=1`} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-input px-3 text-sm">
+          <a href={`/api/client/${centreId}/quiz-pdf?quizId=${quiz.id}&key=1`} className={cn(buttonVariants({ variant: "outline" }), "min-h-[44px] gap-1.5")}>
             <Printer className="h-4 w-4" /> Answer key
           </a>
           <Button onClick={saveAll} disabled={dirty.size === 0 || saving.size > 0} className="min-h-[44px]">
@@ -117,7 +119,7 @@ export function QuizMarking({
         </div>
       </div>
 
-      <details className="rounded-xl border border-portal-200 bg-white p-4">
+      <details className="sticker-card p-4">
         <summary className="cursor-pointer text-sm font-medium">Questions and answers</summary>
         <ol className="mt-3 space-y-2 text-sm">
           {quiz.questions.map((q, i) => (
@@ -133,7 +135,7 @@ export function QuizMarking({
         </ol>
       </details>
 
-      <div className="overflow-x-auto rounded-xl border border-portal-200 bg-white">
+      <div className="sticker-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-portal-50 text-xs uppercase tracking-wide text-portal-800">
             <tr>

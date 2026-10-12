@@ -108,7 +108,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <PWAProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
             <TooltipProvider delay={300}>{children}</TooltipProvider>
             {/* Do NOT add `richColors` back. It looks harmless and it is not:
                 it swaps the themed --normal-* vars that components/ui/sonner.tsx

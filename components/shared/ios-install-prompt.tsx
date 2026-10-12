@@ -92,7 +92,7 @@ export function IosInstallPrompt() {
       role="dialog"
       aria-modal="false"
       aria-labelledby="ios-install-title"
-      className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-md rounded-2xl border border-orange-100 bg-card p-4 shadow-2xl ring-1 ring-black/5 animate-fade-up"
+      className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-md sticker-card p-4 animate-fade-up"
       style={{
         // Keep the banner above the home indicator on devices with a
         // bottom safe-area inset (iPhone X+).
@@ -122,12 +122,12 @@ export function IosInstallPrompt() {
           </p>
           <div className="mt-2 flex items-center gap-2 text-xs text-[#1A1A1A]">
             <span>Tap</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-rust">
               <Share className="h-3.5 w-3.5" />
               Share
             </span>
             <span>then</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFF3EB] px-1.5 py-0.5 font-medium text-rust">
               <Plus className="h-3.5 w-3.5" />
               Add to Home Screen
             </span>

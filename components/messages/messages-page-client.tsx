@@ -143,7 +143,7 @@ export function MessagesPageClient({
       {statusFilter && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
             {statusFilter === "unread"
               ? "Unread only"
               : statusFilter === "awaiting"
@@ -165,7 +165,7 @@ export function MessagesPageClient({
         </div>
       )}
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition">
+      <div className="sticker-card overflow-hidden">
         {/* Desktop: side-by-side layout */}
         <div className="hidden md:flex h-[calc(100vh-14rem)]">
           {/* Sidebar — 320px conversation list */}

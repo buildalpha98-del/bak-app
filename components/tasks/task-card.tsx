@@ -70,7 +70,7 @@ function TaskCardInner({
     low: "bg-muted text-muted-foreground",
     medium: "bg-blue-50 text-blue-700",
     high: "bg-amber-50 text-amber-700",
-    urgent: "bg-primary/10 text-primary",
+    urgent: "bg-primary/10 text-rust",
   };
   const p = priorityClass[task.priority] ?? priorityClass.medium;
 
@@ -131,7 +131,7 @@ function TaskCardInner({
                     className="w-5 h-5 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-primary text-ink text-[10px] font-semibold flex items-center justify-center">
                     {task.assignee.name.charAt(0).toUpperCase()}
                   </div>
                 )}

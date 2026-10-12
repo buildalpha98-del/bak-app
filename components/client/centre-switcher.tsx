@@ -71,7 +71,7 @@ export function CentreSwitcher({ centres, currentCentreId }: CentreSwitcherProps
         render={
           <button
             type="button"
-            className="inline-flex max-w-[260px] items-center gap-2 rounded-2xl border border-transparent bg-gray-50 px-3 py-1.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-portal-600/40 data-[state=open]:bg-gray-100"
+            className="inline-flex max-w-[260px] items-center gap-2 rounded-full border border-transparent bg-gray-50 px-3 py-1.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-portal-600/40 data-[state=open]:bg-gray-100"
             aria-label="Switch centre"
           >
             <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

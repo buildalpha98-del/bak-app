@@ -188,7 +188,7 @@ export function BookableSessionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-orange-100 bg-card p-6"
+      className="sticker-card p-6"
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {/* Title — full width */}
@@ -503,7 +503,6 @@ export function BookableSessionForm({
         type="submit"
         disabled={submitting}
         className="mt-6 w-full"
-        style={{ backgroundColor: "#E8712A" }}
       >
         {submitting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

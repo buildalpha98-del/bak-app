@@ -44,7 +44,7 @@ export function WidgetWrapper({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className={className}>
-      <Card className="rounded-2xl border bg-background transition hover:-translate-y-0.5 hover:shadow-md">
+      <Card>
         <CollapsibleTrigger className="w-full cursor-pointer lg:cursor-default">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -75,7 +75,7 @@ export function WidgetWrapper({
 function WidgetCountPill({ count }: { count: number }) {
   const ticked = useCountUp(count);
   return (
-    <span className="ml-0.5 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+    <span className="ml-0.5 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-rust">
       {ticked}
     </span>
   );

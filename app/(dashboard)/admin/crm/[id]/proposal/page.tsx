@@ -325,7 +325,6 @@ export default function ProposalPage() {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="bg-primary hover:bg-[#D4651F] text-white"
         >
           {generating ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -354,7 +353,7 @@ export default function ProposalPage() {
           onClick={() => setActiveTab("editor")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "editor"
-              ? "border-primary text-primary"
+              ? "border-primary text-rust"
               : "border-transparent text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -364,7 +363,7 @@ export default function ProposalPage() {
           onClick={() => setActiveTab("list")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "list"
-              ? "border-primary text-primary"
+              ? "border-primary text-rust"
               : "border-transparent text-[#666666] hover:text-[#1A1A1A]"
           }`}
         >
@@ -376,7 +375,7 @@ export default function ProposalPage() {
       {activeTab === "editor" && activeProposal && editedContent ? (
         <div className="space-y-6">
           {/* Proposal header */}
-          <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+          <div className="flex items-center justify-between sticker-card p-4">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
               <div>
@@ -431,7 +430,6 @@ export default function ProposalPage() {
                 size="sm"
                 onClick={handleSend}
                 disabled={sending || activeProposal.status === "sent"}
-                className="bg-primary hover:bg-[#D4651F] text-white"
               >
                 {sending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -451,7 +449,7 @@ export default function ProposalPage() {
                 return (
                   <div
                     key={key}
-                    className="rounded-lg border bg-gray-50 p-4"
+                    className="rounded-card border-2 border-ink/15 bg-gray-50 p-4"
                   >
                     <h3 className="mb-1 text-sm font-semibold text-[#666666]">
                       {label}
@@ -463,7 +461,7 @@ export default function ProposalPage() {
                 );
               }
               return (
-                <div key={key} className="rounded-lg border bg-card p-4">
+                <div key={key} className="sticker-card p-4">
                   <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                     {label}
                   </h3>
@@ -478,7 +476,7 @@ export default function ProposalPage() {
             })}
 
             {/* Pricing section */}
-            <div className="rounded-lg border bg-card p-4">
+            <div className="sticker-card p-4">
               <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                 Pricing
               </h3>
@@ -520,7 +518,7 @@ export default function ProposalPage() {
             </div>
 
             {/* Testimonial quotes */}
-            <div className="rounded-lg border bg-card p-4">
+            <div className="sticker-card p-4">
               <h3 className="mb-2 text-sm font-semibold text-[#1A1A1A]">
                 Testimonial Quotes
               </h3>
@@ -528,7 +526,7 @@ export default function ProposalPage() {
                 <div className="space-y-2">
                   {editedContent.testimonial_quotes.map((quote, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <span className="mt-2 text-sm text-primary font-bold">
+                      <span className="mt-2 text-sm text-rust font-bold">
                         &ldquo;
                       </span>
                       <textarea
@@ -560,7 +558,6 @@ export default function ProposalPage() {
           <Button
             onClick={handleGenerate}
             disabled={generating}
-            className="bg-primary hover:bg-[#D4651F] text-white"
           >
             {generating ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

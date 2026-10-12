@@ -3,7 +3,8 @@
 import { useState, useCallback } from "react";
 import Link from "@/components/ui/app-link";
 import { CheckCircle2, FileText, Download } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
