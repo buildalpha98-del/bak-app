@@ -73,12 +73,12 @@ export function PayslipView({ invoice, coach }: Props) {
       </div>
 
       <div id="payslip-print">
-        <Card className="rounded-2xl">
+        <Card>
           <CardContent className="p-6 sm:p-8 space-y-6">
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                <p className="eyebrow">
                   Build Alpha Kids
                 </p>
                 <h1 className="text-2xl font-bold font-heading text-foreground">

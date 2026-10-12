@@ -404,7 +404,7 @@ export function SessionDetailView({
               href={mapsUrl(session.centre_address)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start gap-3 text-sm text-primary hover:underline"
+              className="flex items-start gap-3 text-sm text-rust hover:underline"
             >
               <MapPin className="mt-0.5 size-4 shrink-0" />
               <span>{session.centre_address}</span>
@@ -414,7 +414,7 @@ export function SessionDetailView({
           {session.centre_contact_phone && (
             <a
               href={`tel:${session.centre_contact_phone}`}
-              className="flex items-center gap-3 text-sm text-primary hover:underline"
+              className="flex items-center gap-3 text-sm text-rust hover:underline"
             >
               <Phone className="size-4 shrink-0" />
               <span>
@@ -565,7 +565,7 @@ export function SessionDetailView({
               <Button
                 onClick={handleStart}
                 disabled={isPending || !canStart}
-                className="flex-1 min-h-[44px] bg-primary hover:bg-primary/90"
+                className="flex-1 min-h-[44px]"
               >
                 {isPending ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -606,7 +606,7 @@ export function SessionDetailView({
       {session.status === "in_progress" && (
         <Card>
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-center gap-2 text-sm text-primary">
+            <div className="flex items-center justify-center gap-2 text-sm text-rust">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-primary" />
@@ -614,7 +614,7 @@ export function SessionDetailView({
               Session in progress
             </div>
             <Button
-              className="w-full min-h-[44px] bg-primary hover:bg-primary/90 text-white"
+              className="w-full min-h-[44px]"
               nativeButton={false}
               render={
                 <Link href={`/coach/schedule/${session.id}/active`} />
@@ -739,7 +739,7 @@ function CoachProgramContent({
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors min-h-[44px]"
+        className="flex items-center gap-1.5 text-xs font-medium text-rust hover:text-rust/80 transition-colors min-h-[44px]"
       >
         {expanded ? (
           <ChevronUp className="size-3.5" />
@@ -853,7 +853,7 @@ function ProgramFeedbackRow({
             onClick={() => submit(opt.value)}
             className={`min-h-[44px] rounded-full border px-3.5 text-xs font-medium transition ${
               rating === opt.value
-                ? "border-primary bg-primary text-white"
+                ? "border-primary bg-primary text-ink"
                 : "bg-background text-foreground hover:bg-secondary"
             }`}
           >

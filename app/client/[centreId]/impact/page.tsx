@@ -143,7 +143,7 @@ export default async function ImpactDashboardPage({
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="rounded-2xl bg-card transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <Card key={stat.label}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div
@@ -181,10 +181,7 @@ export default async function ImpactDashboardPage({
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {classRollups.map((cls) => (
-              <Card
-                key={cls.id}
-                className="rounded-2xl bg-card transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
+              <Card key={cls.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-bold text-foreground">{cls.name}</p>
@@ -247,7 +244,7 @@ export default async function ImpactDashboardPage({
       {/* Charts section */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Attendance Trend — full width on mobile, spans 1 col on lg */}
-        <Card className="rounded-2xl bg-card transition-shadow hover:shadow-md">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Attendance Trend
@@ -266,7 +263,7 @@ export default async function ImpactDashboardPage({
         </Card>
 
         {/* Session Ratings */}
-        <Card className="rounded-2xl bg-card transition-shadow hover:shadow-md">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Session Ratings
@@ -285,7 +282,7 @@ export default async function ImpactDashboardPage({
         </Card>
 
         {/* Sport Breakdown — full width */}
-        <Card className="rounded-2xl bg-card transition-shadow hover:shadow-md lg:col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold text-gray-900">
               Sport Breakdown

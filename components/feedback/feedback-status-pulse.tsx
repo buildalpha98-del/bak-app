@@ -33,7 +33,7 @@ export function FeedbackStatusPulseStrip({
   basePath,
 }: FeedbackStatusPulseStripProps) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <PulseStat
           icon={MessageSquare}
@@ -94,7 +94,7 @@ function PulseStat({
   const active = count > 0;
   const ticked = useCountUp(count);
   const accent =
-    tone === "alarm" ? "text-red-500" : "text-primary";
+    tone === "alarm" ? "text-red-500" : "text-rust";
   return (
     <li>
       <Link

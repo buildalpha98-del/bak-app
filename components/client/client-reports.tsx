@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import type { ClientReport } from "@/lib/client/portal-actions";
 import type { ReportContentJson } from "@/lib/types/database";
 import { stageSummaryFromClasses } from "@/lib/schools/stage-summary";
@@ -73,7 +75,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
           <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
           <a
             href={`/api/client/${centreId}/calendar`}
-            className="inline-flex items-center gap-2 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
+            className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
           >
             <Calendar className="h-4 w-4" />
             Sync Calendar
@@ -99,7 +101,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
         <h1 className="text-2xl font-bold font-heading text-foreground">Reports</h1>
         <a
           href={`/api/client/${centreId}/calendar`}
-          className="inline-flex items-center gap-2 rounded-lg border border-portal-200 bg-portal-50 px-3 py-2 text-sm font-medium text-portal-700 hover:bg-portal-100 transition-colors"
+          className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
         >
           <Calendar className="h-4 w-4" />
           Sync Calendar
@@ -118,7 +120,7 @@ export function ClientReports({ reports, centreId, frameworkKey }: ClientReports
           };
 
           return (
-            <Card key={report.id} className="overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <Card key={report.id} className="overflow-hidden">
               <button
                 type="button"
                 className="w-full text-left"

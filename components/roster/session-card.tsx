@@ -151,7 +151,7 @@ export function SessionCard({
 
       {otherCount && otherCount > 0 ? (
         <span
-          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-white"
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-ink"
           title={`Plus ${otherCount} other coach${otherCount === 1 ? "" : "es"}`}
         >
           +{otherCount}

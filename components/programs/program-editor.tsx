@@ -68,7 +68,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       {/* Title & Overview */}
       <Card>
         <CardHeader>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
             Overview
           </h4>
         </CardHeader>
@@ -98,7 +98,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       {/* Warm Up */}
       <Card>
         <CardHeader>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
             {labels.warmUp}
           </h4>
         </CardHeader>
@@ -166,7 +166,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
               {labels.skillDevelopment}
             </h4>
             <Button type="button" variant="outline" size="sm" onClick={addDrill}>
@@ -258,7 +258,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       {/* Modified Game */}
       <Card>
         <CardHeader>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
             {labels.modifiedGame}
           </h4>
         </CardHeader>
@@ -362,7 +362,7 @@ export function ProgramEditor({ content, onChange }: ProgramEditorProps) {
       {/* Cool Down */}
       <Card>
         <CardHeader>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
             {labels.coolDown}
           </h4>
         </CardHeader>

@@ -32,7 +32,7 @@ export function DeliveryLogPanel({ centreId }: { centreId: string }) {
   const t = state?.log.totals;
   const hours = t ? Math.round((t.minutes_delivered / 60) * 10) / 10 : 0;
   return (
-    <div className="mb-4 rounded-2xl border bg-card p-4 space-y-3">
+    <div className="mb-4 sticker-card p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 text-sm font-medium text-foreground">
           <FileSpreadsheet className="size-4 text-primary" /> Delivery log

@@ -114,7 +114,7 @@ export default function ParentKidsClient({
         {!showAdd && (
           <Button
             onClick={() => setShowAdd(true)}
-            className="bg-primary text-white hover:bg-[#D4651F] rounded-xl min-h-[44px]"
+            className="min-h-[44px]"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add child
@@ -156,7 +156,7 @@ export default function ParentKidsClient({
 
       {/* Add child form */}
       {showAdd && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-5 space-y-4 shadow-sm">
+        <div className="sticker-card p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Add a child</h2>
             <Button
@@ -183,7 +183,7 @@ export default function ParentKidsClient({
               !newChild.last_name.trim() ||
               !newChild.date_of_birth
             }
-            className="w-full h-12 bg-primary text-white hover:bg-[#D4651F] rounded-xl"
+            className="w-full h-12"
           >
             {adding ? (
               <>
@@ -203,7 +203,7 @@ export default function ParentKidsClient({
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : children.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl bg-card border border-orange-100 shadow-sm">
+        <div className="text-center py-12 sticker-card">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-primary mx-auto mb-3">
             <Plus className="h-7 w-7" />
           </div>
@@ -232,7 +232,7 @@ function KidPhotoCard({ child }: { child: Child }) {
   return (
     <Link
       href={`/parent/kids/${child.id}`}
-      className="group rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all flex flex-col gap-4"
+      className="group sticker-tile p-5 flex flex-col gap-4"
     >
       <div className="flex items-center justify-between">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-orange-50 text-primary text-2xl font-bold border-2 border-transparent group-hover:border-primary/40 transition-all">
@@ -263,7 +263,7 @@ function KidPhotoCard({ child }: { child: Child }) {
           <Sparkles className="h-3 w-3 text-primary" />
           Insights
         </span>
-        <span className="text-xs font-medium text-primary inline-flex items-center justify-center gap-1">
+        <span className="text-xs font-medium text-rust inline-flex items-center justify-center gap-1">
           View profile
           <ChevronRight className="h-3 w-3" />
         </span>

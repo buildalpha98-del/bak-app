@@ -136,7 +136,7 @@ export function ClientSettings({
         <h1 className="text-2xl font-bold font-heading text-foreground">Settings</h1>
         <YourDetailsCard initialName={currentUserName} />
         <LinkedCentresCard centres={linkedCentres} currentCentreId={centreId} />
-        <Card className="rounded-2xl">
+        <Card>
           <CardContent className="flex flex-col items-center py-12 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               <ShieldAlert className="h-6 w-6 text-muted-foreground" />
@@ -181,7 +181,7 @@ export function ClientSettings({
       </div>
 
       {/* Shared Links */}
-      <Card className="mt-6 rounded-2xl transition-shadow hover:shadow-md">
+      <Card className="mt-6">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <Link2 className="h-4 w-4 text-portal-600" />
@@ -191,7 +191,6 @@ export function ClientSettings({
             onClick={handleCreate}
             disabled={isCreating}
             size="sm"
-            className="rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
           >
             <Plus className="mr-1.5 h-4 w-4" />
             {isCreating ? "Creating..." : "Create New Link"}
@@ -302,7 +301,7 @@ function LinkedCentresCard({
   if (centres.length === 0) return null;
 
   return (
-    <Card className="rounded-2xl transition-shadow hover:shadow-md">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <Building2 className="h-4 w-4 text-portal-600" />
@@ -373,7 +372,7 @@ function YourDetailsCard({ initialName }: { initialName: string }) {
   }
 
   return (
-    <Card className="rounded-2xl transition-shadow hover:shadow-md">
+    <Card>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <UserRound className="h-4 w-4 text-portal-600" />
@@ -391,7 +390,7 @@ function YourDetailsCard({ initialName }: { initialName: string }) {
           <Button
             onClick={handleSave}
             disabled={!dirty || isSaving}
-            className="min-h-[44px] rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
+            className="min-h-[44px]"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
@@ -479,7 +478,7 @@ function TeamAccessCard({
   }
 
   return (
-    <Card className="rounded-2xl transition-shadow hover:shadow-md">
+    <Card>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <UsersRound className="h-4 w-4 text-portal-600" />
@@ -552,9 +551,9 @@ function TeamAccessCard({
                     role="radio"
                     aria-checked={inviteRole === value}
                     onClick={() => setInviteRole(value)}
-                    className={`min-h-[44px] rounded-xl border px-3 text-sm ${
+                    className={`min-h-[44px] rounded-full border px-3 text-sm ${
                       inviteRole === value
-                        ? "border-portal-600 bg-portal-50 text-portal-800"
+                        ? "border-ink bg-cta text-cta-foreground"
                         : "border-input bg-card text-muted-foreground"
                     }`}
                   >
@@ -574,7 +573,7 @@ function TeamAccessCard({
                         onClick={() => toggleClass(cls.id)}
                         className={`min-h-[36px] rounded-full border px-3 text-xs font-medium ${
                           on
-                            ? "border-portal-600 bg-portal-600 text-white"
+                            ? "border-ink bg-cta text-cta-foreground"
                             : "border-input bg-card text-foreground"
                         }`}
                       >
@@ -611,7 +610,7 @@ function TeamAccessCard({
                 !inviteEmail.trim() ||
                 (inviteRole === "teacher" && inviteClassIds.length === 0)
               }
-              className="min-h-[44px] shrink-0 rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
+              className="min-h-[44px] shrink-0"
             >
               {isInviting ? "Sending..." : "Send invite"}
             </Button>

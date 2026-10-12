@@ -258,7 +258,7 @@ function EmptyState({ search, basePath }: { search: string; basePath: string }) 
       {search && (
         <Link
           href={basePath}
-          className="mt-2 text-xs text-primary underline"
+          className="mt-2 text-xs text-rust underline"
         >
           Clear filters
         </Link>
@@ -296,7 +296,7 @@ function OnboardingCard({ row }: { row: OnboardingListItem }) {
   return (
     <Link
       href={`/admin/centres/${row.centreId}/onboarding`}
-      className="group block rounded-2xl border bg-background p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+      className="group block sticker-tile p-4"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -475,7 +475,7 @@ function StatusBadge({
     return (
       <Badge
         variant="secondary"
-        className="gap-1 rounded-full bg-primary/10 text-primary"
+        className="gap-1 rounded-full bg-primary/10 text-rust"
       >
         <AlertTriangle className="size-3" /> Behind
       </Badge>

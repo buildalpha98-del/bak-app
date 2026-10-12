@@ -701,7 +701,7 @@ export function RosterPage({
           >
             Rerostering
             {rosterPulse && rosterPulse.unassignedCount > 0 && (
-              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
+              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-ink">
                 {rosterPulse.unassignedCount}
               </span>
             )}
@@ -897,7 +897,6 @@ export function RosterPage({
           <Button
             size="sm"
             onClick={() => setPublishConfirmOpen(true)}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             <Send className="size-4" />
             Publish week ({draftsCount})
@@ -1275,7 +1274,6 @@ export function RosterPage({
                 void handlePublishWeek();
               }}
               disabled={publishWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {publishWorking ? "Publishing…" : "Publish drafts"}
             </AlertDialogAction>
@@ -1305,7 +1303,6 @@ export function RosterPage({
                 void handleConfirmWeek();
               }}
               disabled={confirmWeekWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {confirmWeekWorking ? "Confirming…" : "Confirm sessions"}
             </AlertDialogAction>
@@ -1346,7 +1343,7 @@ function SportFilterChip({
             className={[
               "inline-flex h-8 items-center gap-1 rounded-full border px-3 text-xs font-medium transition",
               active
-                ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/30"
+                ? "border-primary/40 bg-primary/10 text-rust ring-1 ring-primary/30"
                 : "border-border bg-background text-muted-foreground hover:bg-muted",
             ].join(" ")}
             aria-label={`Sport filter — ${active ? `${selected.size} selected` : "none"}`}

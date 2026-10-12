@@ -198,8 +198,8 @@ export function SwapRequestDialog({
                         <span
                           className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                             isSelected
-                              ? "bg-primary text-white"
-                              : "bg-primary/10 text-primary"
+                              ? "bg-primary text-ink"
+                              : "bg-primary/10 text-rust"
                           }`}
                         >
                           {idx + 1}
@@ -261,7 +261,7 @@ export function SwapRequestDialog({
                 Replacement Coach
               </p>
               <div className="flex items-center gap-3">
-                <span className="flex size-8 items-center justify-center rounded-full bg-primary text-white text-sm font-bold">
+                <span className="flex size-8 items-center justify-center rounded-full bg-primary text-ink text-sm font-bold">
                   {selectedCoach.coachName.charAt(0)}
                 </span>
                 <div>
@@ -308,7 +308,7 @@ export function SwapRequestDialog({
                   setStep("confirm");
                 }}
                 disabled={!selectedCoach}
-                className="min-h-[44px] bg-primary hover:bg-primary/90"
+                className="min-h-[44px]"
               >
                 Next
               </Button>
@@ -329,7 +329,7 @@ export function SwapRequestDialog({
               <Button
                 onClick={handleSubmit}
                 disabled={isPending}
-                className="min-h-[44px] bg-primary hover:bg-primary/90"
+                className="min-h-[44px]"
               >
                 {isPending ? (
                   <>

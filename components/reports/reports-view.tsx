@@ -320,7 +320,7 @@ export function ReportsView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {overdueOnly && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <Clock className="size-3" />
               Overdue drafts only
               <button
@@ -334,7 +334,7 @@ export function ReportsView({
             </span>
           )}
           {missingReport && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <Building2 className="size-3" />
               Centres without report
               <button
@@ -351,7 +351,7 @@ export function ReportsView({
       )}
 
       {/* Generate New Report */}
-      <div className="rounded-2xl border bg-background p-4 transition hover:shadow-sm">
+      <div className="sticker-card p-4">
         <div className="mb-3 flex items-center gap-2">
           <Plus className="size-4 text-muted-foreground" />
           <h2 className="text-sm font-semibold">Generate new report</h2>
@@ -395,7 +395,6 @@ export function ReportsView({
           <Button
             onClick={handleGenerate}
             disabled={!centreId || !termId || generating}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {generating ? (
               <Loader2 className="size-4 animate-spin" />
@@ -413,7 +412,7 @@ export function ReportsView({
 
       {/* Missing-report list mode */}
       {missingReport ? (
-        <div className="rounded-2xl border bg-background">
+        <div className="sticker-card">
           <div className="border-b p-4">
             <h2 className="text-sm font-semibold">
               Centres without a report for the active term
@@ -579,7 +578,7 @@ export function ReportsView({
                             {overdue && (
                               <Badge
                                 variant="outline"
-                                className="border-primary/40 text-primary"
+                                className="border-primary/40 text-rust"
                               >
                                 <Clock className="size-3" />
                                 Overdue
@@ -694,7 +693,6 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setSendOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <Send className="size-4" />
           Mark as sent
@@ -830,7 +828,6 @@ function BulkSendSheet({
           <Button
             onClick={handleSend}
             disabled={working || !recipients.trim() || eligibleCount === 0}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Marking…" : "Mark as sent"}
           </Button>

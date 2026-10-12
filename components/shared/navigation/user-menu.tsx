@@ -17,7 +17,6 @@ import {
 import { ArrowLeftRight, LogOut, Loader2, User } from "lucide-react";
 import { ROLE_LABELS } from "./nav-config";
 import type { Profile } from "@/lib/types/database";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface UserMenuProps {
   profile: Profile;
@@ -41,9 +40,9 @@ function getProfileRoute(role: string, opsCoach: boolean): string {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-gradient-to-br from-primary to-[#D84315]",
-  ops: "bg-gradient-to-br from-[#2962FF] to-[#1565C0]",
-  coach: "bg-gradient-to-br from-[#4CAF50] to-[#2E7D32]",
+  admin: "bg-gradient-to-br from-primary to-[#D84315] text-ink",
+  ops: "bg-gradient-to-br from-[#2962FF] to-[#1565C0] text-white",
+  coach: "bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] text-white",
 };
 
 export function UserMenu({ profile }: UserMenuProps) {
@@ -57,7 +56,7 @@ export function UserMenu({ profile }: UserMenuProps) {
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-secondary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" aria-label="User menu">
         <Avatar>
           {profile.photo_url && <AvatarImage src={profile.photo_url} alt={profile.name} />}
-          <AvatarFallback className={`${ROLE_COLORS[profile.role] ?? ROLE_COLORS.admin} text-xs font-bold text-white`}>
+          <AvatarFallback className={`${ROLE_COLORS[profile.role] ?? ROLE_COLORS.admin} text-xs font-bold`}>
             {getInitials(profile.name)}
           </AvatarFallback>
         </Avatar>
@@ -68,7 +67,7 @@ export function UserMenu({ profile }: UserMenuProps) {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-1.5">
               <p className="text-sm font-bold text-foreground">{profile.name}</p>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-[var(--brand-orange-light)] px-2.5 py-0.5 text-xs font-bold text-primary uppercase tracking-wider">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-[var(--brand-orange-light)] px-2.5 py-0.5 text-xs font-bold text-rust uppercase tracking-wider">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 {ROLE_LABELS[profile.role]}
                 {opsCoach && " · Coach"}
@@ -98,10 +97,6 @@ export function UserMenu({ profile }: UserMenuProps) {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <div className="px-1">
-          <ThemeToggle />
-        </div>
-        <div className="h-px bg-border my-1" />
         <DropdownMenuItem
           className="cursor-pointer text-destructive"
           disabled={signingOut}

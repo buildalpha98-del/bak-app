@@ -211,7 +211,6 @@ export function SessionCardMenu({
             <Button
               onClick={handleRepeat}
               disabled={repeating}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {repeating ? <Loader2 className="size-4 animate-spin" /> : null}
               Create shifts

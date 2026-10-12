@@ -106,7 +106,7 @@ const AUDIENCE_CONFIG: Record<
   },
   untrained_coaches: {
     label: "Untrained Coaches",
-    colour: "text-orange-700",
+    colour: "text-rust",
     bg: "bg-orange-100",
   },
 };
@@ -411,7 +411,7 @@ export default function AdminCampaignsPage() {
 
       {/* Header */}
       <div className="animate-fade-up">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+        <p className="eyebrow mb-1">
           Re-engagement
         </p>
         <div className="flex items-center gap-3">
@@ -520,7 +520,7 @@ export default function AdminCampaignsPage() {
 
       {/* Sticky bulk-action bar */}
       {tab === "campaigns" && selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} campaign{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -547,7 +547,6 @@ export default function AdminCampaignsPage() {
             size="sm"
             onClick={() => handleBulkUpdate("activate")}
             disabled={bulkAction !== null}
-            className="bg-primary text-white hover:bg-[#d4641f]"
           >
             <Play className="mr-1 h-3.5 w-3.5" />
             {bulkAction === "activate" ? "Activating…" : "Activate"}
@@ -570,7 +569,7 @@ function SummaryCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+    <div className="sticker-card p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-[#666666]">
         {label}
       </p>
@@ -592,12 +591,12 @@ function FilterClearChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
         aria-label="Clear filter"
       >
         <X className="h-3 w-3" />
@@ -646,7 +645,7 @@ function CampaignsTab({
     <>
       {/* Desktop Table */}
       <div className="hidden md:block">
-        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+        <div className="sticker-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

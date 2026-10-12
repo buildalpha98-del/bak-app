@@ -49,7 +49,7 @@ export function ParentHomePulseStrip({ pulse }: ParentHomePulseStripProps) {
   const nextSessionLabel = formatNextSessionLabel(pulse.nextSessionDays);
 
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3 transition-shadow hover:shadow-sm">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <LabelStat
           icon={CalendarClock}
@@ -129,7 +129,7 @@ export function ParentBookingPulseStrip({
   const nextLabel = formatNextAvailableLabel(pulse.nextAvailableDays);
 
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3 transition-shadow hover:shadow-sm">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <PulseStat
           icon={CalendarClock}
@@ -186,7 +186,7 @@ interface ParentPulseStripProps {
 
 export function ParentPulseStrip({ stats }: ParentPulseStripProps) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3 transition-shadow hover:shadow-sm">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         {stats.map((stat, idx) => (
           <Fragment key={stat.label}>
@@ -242,7 +242,7 @@ function PulseStat({
       <span
         className={
           active
-            ? "text-base font-semibold tabular-nums text-primary"
+            ? "text-base font-semibold tabular-nums text-rust"
             : "text-base font-semibold tabular-nums text-muted-foreground"
         }
       >

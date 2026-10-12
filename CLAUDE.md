@@ -139,6 +139,40 @@ A school is a `centres` row with `centre_type = 'school'`; classes are `school_c
 - **Coach session screen** (Sept 2026): Programme (plan open by default, every band the programme covers named) and Equipment come before the centre card — a coach on the field opens the screen for the plan. A school's Scope & Sequence and its PDF drop the EYLF lines of multi-band programmes (`schoolOutcomes` in `curriculum-actions.ts`); the programme content itself is untouched. The five AI routes set `maxDuration = 180` — a lesson generation on production once ran past three minutes under Vercel's default. `ProgramView`'s collapsible headers must not render a button inside `CollapsibleTrigger` (button-in-button broke hydration and toggled twice).
 - **Rehearsal school** "Rollout Rehearsal Public School (TEST)" is live in prod for demos; `scripts/.rehearsal-*.mjs` (untracked) drive every phase, `npx tsx scripts/.rehearsal-cleanup.mjs` removes it. Vercel previews point at a *different* Supabase env, so seam-check a branch on the local dev server against prod data, not on the preview URL.
 
+## Design system (dashboard)
+
+The source of truth is the **Build Alpha Kids** design-system artifact
+(claude.ai, `KeeudtPwdFUh8wcwCgR3aS`; its `tokens.json` + README) — the
+marketing site's "sticker" look. Applied across the dashboard and portal on
+12 Oct 2026, with three owner decisions (do not re-open without Jayden):
+**branded, but dense surfaces stay calm** (stickers on buttons, top-level
+cards/tiles, pills, eyebrows; table rows, roster cells, inputs and boxes
+nested inside a card stay flat); **light only** (`forcedTheme="light"`, no
+toggle, no `.dark` tokens, no `dark:` classes — the sticker's ink outline
+vanishes on dark grounds); **the client portal keeps teal** with the sticker
+shapes.
+
+- **Use the primitives** — `Button`, `Card`, `Badge`, `Tabs` already carry it.
+  Never colour a Button by className (`bg-primary text-white …`): pick a
+  variant. A `<Link>` styled as a button: `buttonVariants()` from
+  `@/components/ui/button-variants` (server-safe; it is NOT exported from
+  `button.tsx`, which is a client module — a server page calling it threw).
+- **Tokens** (globals.css `@theme`): `ink`, `brand-yellow`, `brand-orange`,
+  `cream`, `rust`, `ball-*`, `cta`/`cta-foreground` (yellow+ink; the portal
+  re-points them to its teal tint in `.portal-surface`), `shadow-sticker-*`,
+  `rounded-card`/`rounded-tile`. **Utilities** for hand-built markup:
+  `sticker-card` (top-level panel), `sticker-tile` (pressable tile),
+  `eyebrow` (section kicker; follows `--cta`, so teal in the portal).
+- **Contrast rules**: no white text on orange (3.1:1) or on the portal teal
+  (3.7:1) — use ink. Small orange text on light grounds is `text-rust`.
+  Control borders (`--input`) and the focus ring are ≥3:1. All guarded in
+  `lib/brand/__tests__/contrast.test.ts`.
+- Deliberate exceptions: the CRM embed form and marketing widget snippets
+  (code centres paste onto their own sites) keep their own styling.
+- Turbopack can serve a stale stylesheet after `globals.css` edits even on a
+  fresh `next dev` — delete `.next/dev` and restart before believing a token
+  "doesn't apply".
+
 ## Page speed
 
 **Hosting region: Sydney** (since 12 Oct 2026). Supabase project **BAK Sydney**

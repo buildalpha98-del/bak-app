@@ -308,7 +308,7 @@ export default function ChildDetailView({
             </AlertDialogContent>
           </AlertDialog>
           <Button
-            className="min-h-[44px] bg-primary text-white hover:bg-primary/90"
+            className="min-h-[44px]"
             onClick={handleSave}
             disabled={isPending}
           >

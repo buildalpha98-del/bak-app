@@ -3,7 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import Link from "@/components/ui/app-link";
 import { CheckCircle2, XCircle, AlertTriangle, Trophy } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

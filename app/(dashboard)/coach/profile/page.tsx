@@ -42,7 +42,7 @@ export default async function CoachProfilePage() {
       <AvailabilityEditor initial={availability ?? []} />
 
       {/* Basic info */}
-      <div className="rounded-2xl border border-border bg-card p-4 space-y-3 stagger-1 transition-shadow hover:shadow-sm">
+      <div className="sticker-card p-4 space-y-3 stagger-1">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Personal Details
@@ -98,7 +98,7 @@ export default async function CoachProfilePage() {
 
       {/* Pay Rates */}
       <div className="space-y-3 stagger-2">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="eyebrow">
           Pay Rates
         </h2>
         <CoachPayRates

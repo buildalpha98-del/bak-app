@@ -436,7 +436,6 @@ export function StaffListView({
         </div>
         <Button
           render={<Link href={`${basePath}/new`} />}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <Plus className="size-4" />
           Add Staff
@@ -467,7 +466,7 @@ export function StaffListView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {complianceFilter !== "all" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <AlertTriangle className="size-3" />
               {complianceFilter === "expired"
                 ? "Expired certs"
@@ -485,7 +484,7 @@ export function StaffListView({
             </span>
           )}
           {utilisationZero && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <CalendarClock className="size-3" />
               Not rostered this week
               <button
@@ -591,7 +590,7 @@ export function StaffListView({
             aria-label="Grid view"
             className={
               viewMode === "grid"
-                ? "bg-primary/10 text-primary hover:bg-primary/15"
+                ? "bg-primary/10 text-rust hover:bg-primary/15"
                 : ""
             }
           >
@@ -604,7 +603,7 @@ export function StaffListView({
             aria-label="Table view"
             className={
               viewMode === "table"
-                ? "bg-primary/10 text-primary hover:bg-primary/15"
+                ? "bg-primary/10 text-rust hover:bg-primary/15"
                 : ""
             }
           >
@@ -696,7 +695,7 @@ export function StaffListView({
                               alt={member.name}
                             />
                           )}
-                          <AvatarFallback className="bg-primary text-[10px] font-semibold text-white">
+                          <AvatarFallback className="bg-primary text-[10px] font-semibold text-ink">
                             {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -724,7 +723,7 @@ export function StaffListView({
                         {member.financial_access && (
                           <Badge
                             variant="secondary"
-                            className="hidden gap-1 border-primary/40 bg-primary/10 text-primary lg:inline-flex"
+                            className="hidden gap-1 border-primary/40 bg-primary/10 text-rust lg:inline-flex"
                           >
                             <Banknote className="size-3" />
                             Finance
@@ -1021,14 +1020,14 @@ function StaffGridView({
           <Link
             key={member.id}
             href={`${basePath}/${member.id}`}
-            className="group rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group sticker-tile p-4"
           >
             <div className="flex items-start gap-3">
               <Avatar size="lg">
                 {member.photo_url && (
                   <AvatarImage src={member.photo_url} alt={member.name} />
                 )}
-                <AvatarFallback className="bg-primary text-sm font-semibold text-white">
+                <AvatarFallback className="bg-primary text-sm font-semibold text-ink">
                   {getInitials(member.name)}
                 </AvatarFallback>
               </Avatar>
@@ -1057,7 +1056,7 @@ function StaffGridView({
                   {member.financial_access && (
                     <Badge
                       variant="secondary"
-                      className="gap-1 border-primary/40 bg-primary/10 text-[10px] text-primary"
+                      className="gap-1 border-primary/40 bg-primary/10 text-[10px] text-rust"
                     >
                       <Banknote className="size-3" />
                       Finance
@@ -1242,7 +1241,6 @@ function BulkActionBar({
           size="sm"
           onClick={handleExport}
           disabled={csvWorking}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <FileDown className="size-4" />
           {csvWorking ? "Exporting…" : "Export CSV"}
@@ -1274,7 +1272,6 @@ function BulkActionBar({
                 void handleReset();
               }}
               disabled={resetWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {resetWorking ? "Resetting…" : "Reset"}
             </AlertDialogAction>
@@ -1306,7 +1303,6 @@ function BulkActionBar({
                 void handleArchive();
               }}
               disabled={archiveWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {archiveWorking ? "Deleting…" : "Delete"}
             </AlertDialogAction>
@@ -1406,7 +1402,6 @@ function BulkAnnouncementSheet({
           <Button
             onClick={handleSend}
             disabled={working || !title.trim() || !body.trim()}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Sending…" : "Send"}
           </Button>

@@ -100,7 +100,6 @@ export function EditProfileDialog({
           <Button
             onClick={handleSave}
             disabled={isPending}
-            className="bg-primary hover:bg-[#d4650f] text-white"
           >
             {isPending && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
             Save Changes

@@ -90,7 +90,7 @@ function getStatusBadge(status: string) {
     pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
     sent: "bg-blue-50 text-blue-700 border-blue-200",
     registered: "bg-green-50 text-green-700 border-green-200",
-    converted: "bg-primary/10 text-primary border-primary/20",
+    converted: "bg-primary/10 text-rust border-primary/20",
     awarded: "bg-green-100 text-green-800 border-green-200",
     redeemed: "bg-blue-100 text-blue-800 border-blue-200",
     expired: "bg-gray-100 text-gray-500 border-gray-200",
@@ -126,7 +126,7 @@ function CountTile({
 }) {
   const ticked = useCountUp(value);
   return (
-    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+    <div className="sticker-card p-5">
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4 text-muted-foreground" />
         <span className="text-xs font-medium text-[#666666]">{label}</span>
@@ -357,7 +357,7 @@ export default function AdminReferralsPage() {
             value={stats.totalReferrals}
             icon={Users}
           />
-          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+          <div className="sticker-card p-5">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-[#666666]">
@@ -368,7 +368,7 @@ export default function AdminReferralsPage() {
               {stats.conversionRate.toFixed(1)}%
             </p>
           </div>
-          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+          <div className="sticker-card p-5">
             <div className="flex items-center gap-2 mb-2">
               <Gift className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-medium text-[#666666]">
@@ -390,12 +390,12 @@ export default function AdminReferralsPage() {
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {rangeFilter === "this_week" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
               This week
               <button
                 type="button"
                 onClick={() => clearJumpFilter("range")}
-                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
                 aria-label="Clear range filter"
               >
                 <X className="h-3 w-3" />
@@ -403,12 +403,12 @@ export default function AdminReferralsPage() {
             </span>
           )}
           {rewardStatusFilter && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
               Status: {rewardStatusFilter}
               <button
                 type="button"
                 onClick={() => clearJumpFilter("status")}
-                className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
                 aria-label="Clear status filter"
               >
                 <X className="h-3 w-3" />
@@ -427,7 +427,7 @@ export default function AdminReferralsPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-b-2 border-primary text-rust"
                   : "text-[#666666] hover:text-[#1A1A1A]"
               }`}
             >
@@ -439,7 +439,7 @@ export default function AdminReferralsPage() {
 
       {/* Tab Content */}
       {activeTab === "Parent Referrals" && (
-        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+        <div className="sticker-card overflow-hidden">
           {filteredParentReferrals.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-10 w-10 text-orange-200 mx-auto mb-3" />
@@ -503,7 +503,7 @@ export default function AdminReferralsPage() {
       )}
 
       {activeTab === "Centre Referrals" && (
-        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+        <div className="sticker-card overflow-hidden">
           {centreReferrals.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-10 w-10 text-orange-200 mx-auto mb-3" />
@@ -559,7 +559,7 @@ export default function AdminReferralsPage() {
       )}
 
       {activeTab === "Rewards" && (
-        <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+        <div className="sticker-card overflow-hidden">
           {filteredRewards.length === 0 ? (
             <div className="p-8 text-center">
               <Gift className="h-10 w-10 text-orange-200 mx-auto mb-3" />
@@ -625,7 +625,7 @@ export default function AdminReferralsPage() {
           {config.map((item) => (
             <div
               key={item.id}
-              className="rounded-2xl border bg-background p-5 hover:shadow-md transition"
+              className="sticker-card p-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -684,7 +684,7 @@ export default function AdminReferralsPage() {
           ))}
 
           {config.length === 0 && (
-            <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
+            <div className="sticker-card p-8 text-center">
               <p className="text-[#666666] text-sm">
                 No configuration items found
               </p>
@@ -692,7 +692,7 @@ export default function AdminReferralsPage() {
           )}
 
           {/* Generate Centre Codes */}
-          <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+          <div className="sticker-card p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-[#1A1A1A] text-sm">
@@ -706,7 +706,7 @@ export default function AdminReferralsPage() {
               <Button
                 onClick={handleGenerateCodes}
                 disabled={generatingCodes}
-                className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px]"
+                className="min-h-[44px]"
               >
                 {generatingCodes ? (
                   <>

@@ -169,7 +169,7 @@ export function NotificationsList({
               onClick={() => setFilter(tier)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 filter === tier
-                  ? "bg-primary text-white"
+                  ? "bg-cta text-cta-foreground"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }`}
             >
@@ -198,7 +198,7 @@ export function NotificationsList({
             return (
               <Card
                 key={notification.id}
-                className={`card-hover cursor-pointer transition-colors hover:bg-secondary ${
+                className={`cursor-pointer transition-colors hover:bg-secondary ${
                   !notification.read ? "border-l-2 border-l-primary" : ""
                 }`}
               >

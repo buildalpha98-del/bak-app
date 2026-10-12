@@ -100,11 +100,7 @@ export function ClientChildren({
                 variant={ageFilter === group ? "default" : "outline"}
                 size="sm"
                 onClick={() => setAgeFilter(group)}
-                className={
-                  ageFilter === group
-                    ? "rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90"
-                    : "rounded-2xl text-muted-foreground"
-                }
+                className={ageFilter === group ? undefined : "text-muted-foreground"}
               >
                 {group === "All" ? "All Ages" : `${group} yrs`}
               </Button>

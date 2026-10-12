@@ -64,7 +64,6 @@ export function AISummaryBar({
           size="sm"
           onClick={handlePublish}
           disabled={publishing}
-          className="bg-primary hover:bg-[#d4651f] text-white"
         >
           {publishing && <Loader2 className="size-4 animate-spin" />}
           {publishing ? "Publishing..." : "Publish Week"}

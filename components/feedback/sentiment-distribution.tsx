@@ -46,7 +46,7 @@ export function SentimentDistribution({
   // doesn't read as "broken".
   if (total === 0) {
     return (
-      <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
+      <div className="sticker-card p-5">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Star className="size-4" />
           <span>Sentiment distribution</span>
@@ -69,7 +69,7 @@ export function SentimentDistribution({
     }));
 
   return (
-    <div className="rounded-2xl border bg-background p-5 transition hover:shadow-md">
+    <div className="sticker-card p-5">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Star className="size-4 text-primary" />
         <span>Sentiment distribution</span>

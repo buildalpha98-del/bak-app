@@ -242,7 +242,6 @@ export default function AdminPackagesPage() {
         </div>
         {!showForm && (
           <Button
-            className="bg-primary hover:bg-[#D4641F] text-white"
             onClick={openCreateForm}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -262,7 +261,7 @@ export default function AdminPackagesPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-orange-100 bg-card p-6 space-y-5"
+          className="sticker-card p-6 space-y-5"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
@@ -418,7 +417,6 @@ export default function AdminPackagesPage() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              className="bg-primary hover:bg-[#D4641F] text-white"
               disabled={saving}
             >
               {saving ? (
@@ -437,13 +435,13 @@ export default function AdminPackagesPage() {
 
       {/* Table */}
       {packages.length === 0 && !showForm ? (
-        <div className="flex flex-col items-center justify-center py-16 rounded-xl bg-card border border-orange-100">
+        <div className="flex flex-col items-center justify-center py-16 sticker-card">
           <p className="text-sm text-muted-foreground">
             No packages yet. Create your first session pack.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-orange-100 bg-card overflow-hidden">
+        <div className="sticker-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>

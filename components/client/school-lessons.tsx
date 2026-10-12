@@ -46,7 +46,7 @@ export function SchoolLessons({
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {lessons.map((l) => (
-            <li key={l.id} className="rounded-xl border border-portal-200 bg-white p-4">
+            <li key={l.id} className="sticker-card p-4">
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/client/${centreId}/programs/${l.id}`} className="font-medium text-foreground hover:underline">
                   {l.title}
@@ -60,18 +60,22 @@ export function SchoolLessons({
                 {l.planned_for ? ` · on the Scope & Sequence, week of ${fmtDate(`${l.planned_for}T12:00:00Z`)}` : ""}
               </p>
               <div className="mt-3 flex gap-2">
-                <Link
-                  href={`/client/${centreId}/programs/${l.id}`}
-                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-input px-3 text-sm"
+                <Button
+                  variant="outline"
+                  className="min-h-[40px] gap-1.5"
+                  nativeButton={false}
+                  render={<Link href={`/client/${centreId}/programs/${l.id}`} />}
                 >
                   <BookOpenCheck className="h-4 w-4" /> Open
-                </Link>
-                <a
-                  href={`/api/client/${centreId}/lesson-pdf?programId=${l.id}`}
-                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-input px-3 text-sm"
+                </Button>
+                <Button
+                  variant="outline"
+                  className="min-h-[40px] gap-1.5"
+                  nativeButton={false}
+                  render={<a href={`/api/client/${centreId}/lesson-pdf?programId=${l.id}`} />}
                 >
                   <Download className="h-4 w-4" /> PDF
-                </a>
+                </Button>
               </div>
             </li>
           ))}

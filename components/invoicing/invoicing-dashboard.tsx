@@ -124,7 +124,7 @@ export function InvoicingDashboard({
           </Card>
           <Card className="p-3 text-center">
             <DollarSign className="mx-auto mb-1 h-4 w-4 text-primary" />
-            <p className="text-lg font-bold text-primary">
+            <p className="text-lg font-bold text-rust">
               ${totalEarnings.toFixed(2)}
             </p>
             <p className="text-xs text-muted-foreground">Total</p>
@@ -179,7 +179,7 @@ export function InvoicingDashboard({
               </Card>
 
               <Button
-                className="w-full bg-primary hover:bg-primary/90 text-white"
+                className="w-full"
                 onClick={handleGenerate}
                 disabled={generating}
               >

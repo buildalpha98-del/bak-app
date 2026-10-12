@@ -172,7 +172,7 @@ export function ClientMessages({
                 <div
                   className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 ${
                     own
-                      ? "bg-portal-600 text-white rounded-br-md"
+                      ? "bg-portal-200 text-ink rounded-br-md"
                       : "bg-card border border-gray-200 text-foreground rounded-bl-md"
                   }`}
                 >
@@ -181,12 +181,12 @@ export function ClientMessages({
                       {msg.sender_name}
                     </p>
                   )}
-                  <p className={`text-sm whitespace-pre-wrap break-words ${own ? "text-white" : "text-foreground"}`}>
+                  <p className={`text-sm whitespace-pre-wrap break-words ${own ? "text-ink" : "text-foreground"}`}>
                     {msg.content}
                   </p>
                   <p
                     className={`text-[11px] mt-1 ${
-                      own ? "text-white/80" : "text-muted-foreground"
+                      own ? "text-ink/70" : "text-muted-foreground"
                     }`}
                   >
                     {formatRelativeTime(msg.created_at)}
@@ -214,7 +214,7 @@ export function ClientMessages({
           onClick={handleSend}
           disabled={isPending || !content.trim()}
           size="icon"
-          className="h-11 w-11 shrink-0 rounded-2xl bg-portal-600 hover:bg-portal-600/90 text-white"
+          className="h-11 w-11 shrink-0"
           aria-label="Send message"
         >
           <Send className="h-4 w-4" />

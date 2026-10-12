@@ -93,7 +93,7 @@ export default function SettingsPage() {
           <Link
             key={section.href}
             href={section.href}
-            className="group rounded-2xl border bg-background p-5 transition hover:shadow-md hover:-translate-y-0.5"
+            className="group block sticker-tile p-5"
           >
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 transition group-hover:bg-primary/10">

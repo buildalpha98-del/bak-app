@@ -529,7 +529,7 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
       {label}
       <button
         type="button"
@@ -936,7 +936,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} document{count === 1 ? "" : "s"} selected
@@ -1061,7 +1061,6 @@ function BulkActionBar({
             <Button
               onClick={handleTag}
               disabled={tagging || !tagValue.trim()}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {tagging && <Loader2 className="mr-1.5 size-4 animate-spin" />}
               Apply tag
@@ -1103,7 +1102,6 @@ function BulkActionBar({
             <Button
               onClick={handleVisibility}
               disabled={visChanging}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {visChanging && (
                 <Loader2 className="mr-1.5 size-4 animate-spin" />

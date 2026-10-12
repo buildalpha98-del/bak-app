@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SUBJECTS, SUBJECT_KEYS } from "@/lib/curriculum/subjects";
 import { frameworkOf } from "@/lib/curriculum/frameworks";
 import { yearGroupLabel } from "@/lib/schools/year-groups";
@@ -38,7 +39,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
   const { term, planCounts, assessments, release, quizzes, thisWeek } = data;
   const pct = assessments.total > 0 ? Math.round((assessments.done / assessments.total) * 100) : 0;
   const base = `/client/${centreId}`;
-  const tile = "rounded-2xl border border-portal-200 bg-white p-4";
+  const tile = "sticker-tile p-4";
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -54,25 +55,25 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
             {!data.isTeacher && ` · ${data.students} students`}
           </p>
         </div>
-        <Link href={`${base}/curriculum/plan`} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl bg-portal-600 px-4 py-2 text-sm font-medium text-white hover:bg-portal-700">
+        <Button nativeButton={false} className="min-h-[44px] gap-1.5 px-4" render={<Link href={`${base}/curriculum/plan`} />}>
           <CalendarRange className="h-4 w-4" /> Plan the term
-        </Link>
+        </Button>
       </div>
 
       {/* Status tiles */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href={`${base}/curriculum`} className={`${tile} hover:bg-portal-50`}>
+        <Link href={`${base}/curriculum`} className={tile}>
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><CalendarRange className="h-4 w-4 text-portal-600" /> Term plans</div>
           <p className="mt-2 text-2xl font-bold text-foreground">{planCounts.approved} <span className="text-base font-medium text-muted-foreground">approved</span></p>
           <p className="text-xs text-muted-foreground">{planCounts.draft} draft · {planCounts.missing} not yet planned</p>
         </Link>
-        <Link href={`${base}/assessments`} className={`${tile} hover:bg-portal-50`}>
+        <Link href={`${base}/assessments`} className={tile}>
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><ClipboardCheck className="h-4 w-4 text-portal-600" /> Assessments</div>
           <p className="mt-2 text-2xl font-bold text-foreground">{pct}% <span className="text-base font-medium text-muted-foreground">complete</span></p>
           <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-portal-100"><div className="h-full bg-emerald-500" style={{ width: `${pct}%` }} /></div>
           <p className="mt-1 text-xs text-muted-foreground">{assessments.done} of {assessments.total} student assessments</p>
         </Link>
-        <Link href={`${base}/assessments`} className={`${tile} hover:bg-portal-50`}>
+        <Link href={`${base}/assessments`} className={tile}>
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><FileCheck2 className="h-4 w-4 text-portal-600" /> Report cards</div>
           <p className="mt-2 text-2xl font-bold text-foreground">{release?.released_at ? "Released" : "Not released"}</p>
           <p className="text-xs text-muted-foreground">
@@ -83,7 +84,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
                 : "No due date set"}
           </p>
         </Link>
-        <Link href={`${base}/assessments`} className={`${tile} hover:bg-portal-50`}>
+        <Link href={`${base}/assessments`} className={tile}>
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><ListChecks className="h-4 w-4 text-portal-600" /> Knowledge checks</div>
           <p className="mt-2 text-2xl font-bold text-foreground">{quizzes.count}</p>
           <p className="text-xs text-muted-foreground">{quizzes.marked} student results marked</p>
@@ -100,7 +101,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
               <Link href={`${base}/programs/generate`} className="text-portal-700 underline">Write a lesson</Link>.
             </div>
           ) : (
-            <ul className="divide-y divide-portal-100 rounded-2xl border border-portal-200 bg-white">
+            <ul className="sticker-card divide-y divide-portal-100 overflow-hidden">
               {thisWeek.lessons.map((l) => (
                 <li key={l.id}>
                   <Link href={`${base}/programs/${l.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-portal-50">
@@ -134,7 +135,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
           {assessments.behind.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-foreground">Assessments still open</h3>
-              <ul className="divide-y divide-portal-100 rounded-2xl border border-portal-200 bg-white">
+              <ul className="sticker-card divide-y divide-portal-100 overflow-hidden">
                 {assessments.behind.map((b) => (
                   <li key={`${b.class_id}#${b.template_id}`}>
                     <Link
@@ -160,7 +161,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
           {data.planMatrix.length === 0 ? (
             <p className="text-sm text-muted-foreground">No classes yet.</p>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-portal-200 bg-white">
+            <div className="sticker-card overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-portal-100 text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -203,7 +204,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
 
           {/* Assessment progress by subject */}
           {assessments.bySubject.length > 0 && (
-            <div className="space-y-2 rounded-2xl border border-portal-200 bg-white p-4">
+            <div className="sticker-card space-y-2 p-4">
               <h3 className="text-sm font-semibold text-foreground">Assessment progress by subject</h3>
               {assessments.bySubject.map((s) => {
                 const p = s.total ? Math.round((s.done / s.total) * 100) : 0;
@@ -227,7 +228,7 @@ export function SchoolDashboard({ data, centreId, firstName }: { data: SchoolDas
           { href: `${base}/curriculum`, label: "Scope & Sequence", icon: BookOpen },
           { href: `${base}/children`, label: "Students", icon: Users },
         ].map((a) => (
-          <Link key={a.href} href={a.href} className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-portal-200 bg-white px-4 py-3 text-sm font-medium text-foreground hover:bg-portal-50">
+          <Link key={a.href} href={a.href} className="sticker-tile flex min-h-[44px] items-center gap-2 px-4 py-3 text-sm font-medium text-foreground">
             <a.icon className="h-4 w-4 text-portal-600" /> {a.label}
           </Link>
         ))}

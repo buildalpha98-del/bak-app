@@ -144,7 +144,7 @@ export function LaunchDashboard({
     <div className="space-y-6">
       {/* Eyebrow + title */}
       <div>
-        <p className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">
+        <p className="eyebrow mb-1">
           Launch dashboard
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -233,7 +233,7 @@ export function LaunchDashboard({
         }
       >
         {showFinancial && (
-          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base">Monthly Revenue</CardTitle>
             </CardHeader>
@@ -245,7 +245,7 @@ export function LaunchDashboard({
           </Card>
         )}
 
-        <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Centre &amp; School Growth</CardTitle>
           </CardHeader>
@@ -260,7 +260,7 @@ export function LaunchDashboard({
       {/* ROW 3 — Revenue Split + Top Earners, or Programme Mix */}
       {showFinancial ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base">Revenue Split</CardTitle>
             </CardHeader>
@@ -288,7 +288,7 @@ export function LaunchDashboard({
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base">Top Earners This Term</CardTitle>
             </CardHeader>
@@ -331,7 +331,7 @@ export function LaunchDashboard({
           </Card>
         </div>
       ) : (
-        <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="size-4 text-muted-foreground" />
@@ -378,7 +378,7 @@ export function LaunchDashboard({
       )}
 
       {/* ROW 4 — Coach Overview */}
-      <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+      <Card>
         <CardHeader>
           <CardTitle className="text-base">Coach Overview</CardTitle>
         </CardHeader>
@@ -401,7 +401,7 @@ export function LaunchDashboard({
                       <td className="py-3">
                         <Link
                           href={`/admin/staff/${c.id}`}
-                          className="flex min-h-[44px] items-center font-medium hover:text-primary hover:underline"
+                          className="flex min-h-[44px] items-center font-medium hover:text-rust hover:underline"
                         >
                           {c.name}
                         </Link>
@@ -420,7 +420,7 @@ export function LaunchDashboard({
       </Card>
 
       {/* ROW 5 — Activity timeline */}
-      <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Activity className="size-4 text-muted-foreground" />
@@ -487,7 +487,7 @@ function MetricCard({
     : displayValue ?? ticked.toLocaleString("en-AU");
 
   return (
-    <Card className="group/card relative rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="group/card relative">
       {editor && (
         <div className="absolute right-2 top-2 z-10">{editor}</div>
       )}
@@ -540,7 +540,7 @@ function CoachesCard({ coaches }: { coaches: DashboardMetrics["coaches"] }) {
   const active = useCountUp(coaches.active);
 
   return (
-    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="py-4">
         <div className="mb-2 flex items-start justify-between">
           <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
@@ -573,7 +573,7 @@ function CoachesCard({ coaches }: { coaches: DashboardMetrics["coaches"] }) {
 function CentresHealthCard({ activeWeek, totalCentres }: { activeWeek: number; totalCentres: number }) {
   const ticked = useCountUp(activeWeek);
   return (
-    <Card className="rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="py-4">
         <div className="mb-2 flex items-start justify-between">
           <div className="flex size-10 items-center justify-center rounded-xl bg-muted">

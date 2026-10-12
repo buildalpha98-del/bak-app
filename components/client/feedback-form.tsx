@@ -131,7 +131,7 @@ export function FeedbackForm({ session, centreId, onSubmitted }: FeedbackFormPro
       <Button
         type="submit"
         disabled={rating === 0 || submitting}
-        className="w-full rounded-2xl bg-portal-600 text-white hover:bg-portal-600/90 disabled:opacity-50"
+        className="w-full"
       >
         {submitting ? "Saving…" : isEditing ? "Update Feedback" : "Submit Feedback"}
       </Button>

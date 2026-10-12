@@ -29,7 +29,7 @@ function getInitials(name: string): string {
 
 const SPORT_COLOURS: Record<string, string> = {
   Soccer: "bg-green-100 text-green-800",
-  Basketball: "bg-orange-100 text-orange-800",
+  Basketball: "bg-orange-100 text-rust",
   Athletics: "bg-yellow-100 text-yellow-800",
   Yoga: "bg-purple-100 text-purple-800",
   Pilates: "bg-pink-100 text-pink-800",
@@ -62,7 +62,7 @@ function SportBadge({ sport }: { sport: string }) {
 
 export function StaffCard({ coach }: StaffCardProps) {
   return (
-    <Card className="rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card>
       <CardContent className="p-5 space-y-4">
         {/* Header: photo + name + DOB */}
         <div className="flex items-center gap-4">

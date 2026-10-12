@@ -241,7 +241,7 @@ export default function BlogEditorPage() {
     return (
       <div className="space-y-6">
         <BackLink />
-        <div className="rounded-2xl border bg-background p-6 text-center text-sm text-[#666666]">
+        <div className="sticker-card p-6 text-center text-sm text-[#666666]">
           That post does not exist. It may have been deleted.
         </div>
       </div>
@@ -312,7 +312,7 @@ export default function BlogEditorPage() {
               size="sm"
               onClick={handlePublish}
               disabled={busy}
-              className="gap-1.5 bg-primary hover:bg-[#d4641f]"
+              className="gap-1.5"
             >
               {statusChanging ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -328,7 +328,7 @@ export default function BlogEditorPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Body */}
         <div className="space-y-4 lg:col-span-2">
-          <div className="space-y-2 rounded-2xl border bg-background p-5">
+          <div className="space-y-2 sticker-card p-5">
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
@@ -368,7 +368,7 @@ export default function BlogEditorPage() {
           </div>
 
           {/* Markdown body with live preview */}
-          <div className="rounded-2xl border bg-background p-5">
+          <div className="sticker-card p-5">
             <Tabs defaultValue="edit">
               <div className="flex items-center justify-between gap-3">
                 <Label>Content</Label>
@@ -408,7 +408,7 @@ export default function BlogEditorPage() {
 
         {/* Sidebar: presentation + SEO */}
         <div className="space-y-4">
-          <div className="space-y-2 rounded-2xl border bg-background p-5">
+          <div className="space-y-2 sticker-card p-5">
             <h2 className="text-sm font-semibold text-[#1A1A1A]">
               Presentation
             </h2>
@@ -435,7 +435,7 @@ export default function BlogEditorPage() {
             <p className="text-xs text-[#666666]">Separate tags with commas.</p>
           </div>
 
-          <div className="space-y-2 rounded-2xl border bg-background p-5">
+          <div className="space-y-2 sticker-card p-5">
             <h2 className="text-sm font-semibold text-[#1A1A1A]">SEO</h2>
             <p className="text-xs text-[#666666]">
               Leave blank to fall back to the title and excerpt.

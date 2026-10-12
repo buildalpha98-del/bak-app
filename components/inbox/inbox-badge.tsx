@@ -66,7 +66,7 @@ export function InboxBadge({
   const colour =
     counts.urgent > 0
       ? "bg-red-500 text-white"
-      : "bg-primary text-white";
+      : "bg-primary text-ink";
 
   return (
     <span

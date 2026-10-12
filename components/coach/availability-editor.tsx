@@ -52,7 +52,7 @@ export function AvailabilityEditor({ initial }: { initial: DayWindow[] }) {
   }
 
   return (
-    <div id="availability" className="rounded-2xl border border-border bg-card p-4 space-y-3 transition-shadow hover:shadow-sm">
+    <div id="availability" className="sticker-card p-4 space-y-3">
       <div>
         <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">
           <CalendarCheck className="size-4" /> My Availability

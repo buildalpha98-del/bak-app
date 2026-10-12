@@ -53,10 +53,10 @@ export default async function CurriculumOutcomesPage({
     return `/client/${centreId}/curriculum/outcomes?${p.toString()}`;
   };
   const chip = (active: boolean) =>
-    `inline-flex min-h-[44px] items-center rounded-2xl border px-3 py-2 text-sm font-medium transition-colors ${
+    `inline-flex min-h-[44px] items-center rounded-full border-2 px-3 py-2 text-sm font-medium transition-colors ${
       active
-        ? "border-portal-600 bg-portal-600 text-white"
-        : "border-portal-200 bg-white text-portal-800 hover:bg-portal-50"
+        ? "border-ink bg-cta text-cta-foreground shadow-sticker-sm"
+        : "border-ink/15 bg-white text-portal-800 hover:bg-portal-50"
     }`;
 
   return (
@@ -105,7 +105,7 @@ export default async function CurriculumOutcomesPage({
               {(byBand.get(b) ?? []).length} {framework.outcomeNoun}s
             </span>
           </h2>
-          <ul className="divide-y divide-portal-100 rounded-2xl border border-portal-200 bg-white">
+          <ul className="sticker-card divide-y divide-portal-100 overflow-hidden">
             {(byBand.get(b) ?? []).map((o) => (
               <li key={o.code} className="grid gap-1 px-4 py-3 sm:grid-cols-[9rem_1fr] sm:gap-4">
                 <code className="text-sm font-semibold text-portal-800">{o.code}</code>

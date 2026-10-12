@@ -232,7 +232,7 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+          <p className="eyebrow mb-2">
             Funding
           </p>
           <h1 className="text-3xl font-bold font-heading text-foreground tracking-tight">
@@ -244,7 +244,6 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
         >
           <Plus className="size-4 mr-1" />
           New Application
@@ -446,17 +445,17 @@ export function GrantsDashboard({ overview, applications, grants, schools }: Pro
           {hasActiveJumpFilter && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {expiringFilter === "30" && (
-                <Badge className="bg-primary/10 text-primary hover:bg-primary/15">
+                <Badge className="bg-primary/10 text-rust hover:bg-primary/15">
                   Expiring within 30 days
                 </Badge>
               )}
               {staleFilter === "14" && (
-                <Badge className="bg-primary/10 text-primary hover:bg-primary/15">
+                <Badge className="bg-primary/10 text-rust hover:bg-primary/15">
                   Stuck in planning (14+ days)
                 </Badge>
               )}
               {approvedThisWeek && (
-                <Badge className="bg-primary/10 text-primary hover:bg-primary/15">
+                <Badge className="bg-primary/10 text-rust hover:bg-primary/15">
                   Approved this week
                 </Badge>
               )}

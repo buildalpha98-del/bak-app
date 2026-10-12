@@ -197,7 +197,6 @@ export function ColumnSettingsDialog({
           <Button
             onClick={handleAddColumn}
             disabled={!newName.trim() || saving}
-            className="bg-primary hover:bg-primary/90 text-white"
           >
             <Plus className="w-4 h-4 mr-1" /> Add
           </Button>

@@ -73,11 +73,6 @@ export function TaskFilters({
         variant={filters.myTasksOnly ? "default" : "outline"}
         size="sm"
         onClick={() => update({ myTasksOnly: !filters.myTasksOnly })}
-        className={
-          filters.myTasksOnly
-            ? "bg-primary hover:bg-primary/90 text-white"
-            : ""
-        }
       >
         My Tasks
       </Button>
@@ -161,7 +156,7 @@ export function TaskFilters({
           onClick={() => onViewModeChange("board")}
           className={`p-1.5 rounded ${
             viewMode === "board"
-              ? "bg-primary text-white"
+              ? "bg-cta text-cta-foreground"
               : "text-muted-foreground hover:bg-secondary"
           }`}
         >
@@ -171,7 +166,7 @@ export function TaskFilters({
           onClick={() => onViewModeChange("list")}
           className={`p-1.5 rounded ${
             viewMode === "list"
-              ? "bg-primary text-white"
+              ? "bg-cta text-cta-foreground"
               : "text-muted-foreground hover:bg-secondary"
           }`}
         >

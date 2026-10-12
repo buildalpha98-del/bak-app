@@ -95,7 +95,7 @@ function SessionFeedbackCard({
   const isRated = session.existingRating !== null;
 
   return (
-    <Card className="overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="overflow-hidden">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
@@ -121,7 +121,7 @@ function SessionFeedbackCard({
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
                   <CheckCircle className="h-3 w-3" />
                   {session.acknowledgedAt
-                    ? "Rated · Seen by the BAK team"
+                    ? "Rated · Seen by the Build Alpha Kids team"
                     : "Rated"}
                 </span>
               </div>
@@ -142,7 +142,6 @@ function SessionFeedbackCard({
               <Button
                 size="sm"
                 onClick={onToggle}
-                className="bg-portal-600 text-white hover:bg-portal-600/90"
               >
                 {expanded ? "Close" : "Rate this session"}
               </Button>
@@ -230,7 +229,7 @@ export function FeedbackPageClient({
       />
 
       {/* Summary card */}
-      <Card className="rounded-2xl transition-shadow hover:shadow-md">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">Feedback Summary</CardTitle>
         </CardHeader>
@@ -263,7 +262,7 @@ export function FeedbackPageClient({
 
       {/* Recent submissions — proves the loop closed */}
       {recentSubmissions.length > 0 && (
-        <Card className="rounded-2xl transition-shadow hover:shadow-md">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <CheckCircle className="h-4 w-4 text-portal-600" />
@@ -323,7 +322,7 @@ export function FeedbackPageClient({
         <div className="space-y-6">
           {sortedWeeks.map(([weekKey, weekSessions]) => (
             <div key={weekKey} className="space-y-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h2 className="eyebrow">
                 Week of {formatWeekOf(weekSessions[0].date)}
               </h2>
               <div className="space-y-3">

@@ -30,7 +30,7 @@ export function BookingsStatusPulseStrip({
   basePath,
 }: BookingsStatusPulseStripProps) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <PulseStat
           icon={Calendar}
@@ -110,7 +110,7 @@ function PulseStat({
         <span
           className={
             active
-              ? "text-base font-semibold tabular-nums text-primary"
+              ? "text-base font-semibold tabular-nums text-rust"
               : "text-base font-semibold tabular-nums text-muted-foreground"
           }
         >

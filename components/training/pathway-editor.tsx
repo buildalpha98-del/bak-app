@@ -635,7 +635,6 @@ export function PathwayEditor({ mode, pathway }: Props) {
           <Button
             onClick={handleSave}
             disabled={isPending}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

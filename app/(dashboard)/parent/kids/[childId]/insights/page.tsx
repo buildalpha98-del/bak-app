@@ -111,7 +111,7 @@ export default function ChildInsightsPage() {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="h-11 bg-primary text-white hover:bg-[#D4651F] rounded-lg"
+          className="h-11"
         >
           {generating ? (
             <>
@@ -136,7 +136,7 @@ export default function ChildInsightsPage() {
 
       {/* Empty state */}
       {insights.length === 0 && !error && (
-        <div className="rounded-2xl border border-orange-100 bg-card p-8 text-center shadow-sm">
+        <div className="sticker-card p-8 text-center">
           <Sparkles className="mx-auto h-10 w-10 text-primary mb-3" />
           <h3 className="text-lg font-semibold text-[#1A1A1A]">
             No insights yet
@@ -177,7 +177,7 @@ function InsightCard({
     )?.sport_highlights ?? [];
 
   return (
-    <div className="rounded-2xl border border-orange-100 bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div className="sticker-card overflow-hidden">
       {/* Card header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -275,7 +275,7 @@ function InsightCard({
                     key={i}
                     className="text-sm text-[#666666] flex items-start gap-2"
                   >
-                    <span className="text-primary mt-1 flex-shrink-0">
+                    <span className="text-rust mt-1 flex-shrink-0">
                       &bull;
                     </span>
                     {rec}

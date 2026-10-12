@@ -144,7 +144,7 @@ export function CoachComparison({
             <div className="flex flex-wrap gap-2">
               <Badge
                 style={{ backgroundColor: COMPARISON_COLOURS[0] }}
-                className="text-white gap-1 px-3 py-1"
+                className="text-ink gap-1 px-3 py-1"
               >
                 {currentCoach.name}
               </Badge>

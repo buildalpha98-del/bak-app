@@ -325,7 +325,6 @@ export function TaskDetailSheet({
               {!task.column?.is_final && (
                 <Button
                   onClick={handleMarkComplete}
-                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-1" /> Mark Complete
                 </Button>
@@ -413,7 +412,7 @@ export function TaskDetailSheet({
               <Button
                 onClick={handleAddComment}
                 disabled={!comment.trim() || submitting}
-                className="bg-primary hover:bg-primary/90 text-white self-end"
+                className="self-end"
               >
                 Add
               </Button>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Star } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 interface FeedbackFormProps {
   feedbackId: string;
@@ -69,7 +71,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
 
   if (submitted) {
     return (
-      <div className="rounded-lg bg-card p-8 text-center shadow-sm">
+      <div className="sticker-card p-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
           <svg
             className="h-8 w-8 text-green-600"
@@ -109,7 +111,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
   }
 
   return (
-    <div className="rounded-lg bg-card shadow-sm">
+    <div className="sticker-card">
       {/* Session details */}
       <div className="border-b border-border p-6">
         <h2 className="text-lg font-semibold text-foreground">
@@ -209,7 +211,7 @@ export function FeedbackForm({ feedbackId, token, sessionInfo }: FeedbackFormPro
           type="button"
           onClick={handleSubmit}
           disabled={loading || rating === 0}
-          className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className={cn(buttonVariants({ size: "lg" }), "w-full h-11")}
         >
           {loading ? "Submitting..." : "Submit Feedback"}
         </button>

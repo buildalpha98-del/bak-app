@@ -146,13 +146,13 @@ export function LessonGenerateForm({
 
   const chip = (on: boolean) =>
     `min-h-[40px] rounded-full border px-3 text-sm ${
-      on ? "border-portal-600 bg-portal-600 text-white" : "border-input bg-card text-foreground"
+      on ? "border-ink bg-cta text-cta-foreground" : "border-input bg-card text-foreground"
     }`;
 
   if (status === "preview" && content) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-portal-200 bg-white p-4 sm:p-6">
+        <div className="sticker-card p-4 sm:p-6">
           <ProgramView content={content} />
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -186,8 +186,8 @@ export function LessonGenerateForm({
               role="radio"
               aria-checked={subject === k}
               onClick={() => changeSubject(k)}
-              className={`min-h-[44px] rounded-xl border px-4 text-sm ${
-                subject === k ? "border-portal-600 bg-portal-50 text-portal-800" : "border-input bg-card"
+              className={`min-h-[44px] rounded-full border px-4 text-sm ${
+                subject === k ? "border-ink bg-cta text-cta-foreground" : "border-input bg-card"
               }`}
             >
               {lessonSubjectDef(k).label}

@@ -229,23 +229,23 @@ export default async function ParentDashboard() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/parent/book"
-          className="group flex items-center gap-3 rounded-2xl bg-primary p-4 text-white shadow-sm hover:shadow-md transition-all min-h-[44px]"
+          className="group flex items-center gap-3 rounded-card border-2 border-ink bg-cta p-4 text-cta-foreground shadow-sticker transition-[transform,box-shadow] duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-sticker-xs min-h-[44px]"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card/15 flex-shrink-0">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm">Book a session</p>
-            <p className="text-xs text-white/80">Browse what&apos;s on</p>
+            <p className="text-xs text-cta-foreground/80">Browse what&apos;s on</p>
           </div>
           <ArrowRight className="h-4 w-4 flex-shrink-0" />
         </Link>
 
         <Link
           href="/parent/bookings"
-          className="group flex items-center gap-3 rounded-2xl bg-card p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-primary/30 transition-all min-h-[44px]"
+          className="group flex items-center gap-3 sticker-tile p-4 min-h-[44px]"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors flex-shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-ink transition-colors flex-shrink-0">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -257,9 +257,9 @@ export default async function ParentDashboard() {
 
         <Link
           href="/parent/kids"
-          className="group flex items-center gap-3 rounded-2xl bg-card p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-primary/30 transition-all min-h-[44px]"
+          className="group flex items-center gap-3 sticker-tile p-4 min-h-[44px]"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors flex-shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-ink transition-colors flex-shrink-0">
             <Users className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -271,9 +271,9 @@ export default async function ParentDashboard() {
 
         <Link
           href="/parent/packages"
-          className="group flex items-center gap-3 rounded-2xl bg-card p-4 border border-orange-100 shadow-sm hover:shadow-md hover:border-primary/30 transition-all min-h-[44px]"
+          className="group flex items-center gap-3 sticker-tile p-4 min-h-[44px]"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors flex-shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary group-hover:bg-primary group-hover:text-ink transition-colors flex-shrink-0">
             <Package className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -287,7 +287,7 @@ export default async function ParentDashboard() {
       {/* Waitlist Offers — urgent surface */}
       {waitlistOffers.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-primary">
+          <h2 className="eyebrow">
             <AlertCircle className="inline h-4 w-4 mr-1 -mt-0.5" />
             Spots available — act fast
           </h2>
@@ -298,7 +298,7 @@ export default async function ParentDashboard() {
             return (
               <div
                 key={entry.id}
-                className="rounded-2xl border-2 border-primary bg-orange-50 p-5 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-card border-2 border-ink bg-orange-50 p-5 shadow-sticker-orange"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="space-y-1">
@@ -316,14 +316,14 @@ export default async function ParentDashboard() {
                         {formatTime(session.end_time)}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-primary">
+                    <p className="text-xs font-medium text-rust">
                       {entry.offer_expires_at
                         ? timeUntil(entry.offer_expires_at)
                         : "Limited time"}
                     </p>
                   </div>
                   <Button
-                    className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px] min-w-[44px]"
+                    className="min-h-[44px] min-w-[44px]"
                     render={
                       <Link
                         href={`/parent/book/${session.id}?waitlist=${entry.id}`}
@@ -348,14 +348,14 @@ export default async function ParentDashboard() {
           </h2>
           <Link
             href="/parent/bookings"
-            className="text-sm text-primary hover:underline font-medium"
+            className="text-sm text-rust hover:underline font-medium"
           >
             View all
           </Link>
         </div>
 
         {upcomingBookings.length === 0 ? (
-          <div className="rounded-2xl border border-orange-100 bg-card p-8 shadow-sm text-center">
+          <div className="sticker-card p-8 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-primary mx-auto mb-3">
               <Calendar className="h-7 w-7" />
             </div>
@@ -364,7 +364,7 @@ export default async function ParentDashboard() {
               Browse available sessions and book a spot for your kids.
             </p>
             <Button
-              className="bg-primary hover:bg-[#d4651f] text-white min-h-[44px]"
+              className="min-h-[44px]"
               render={<Link href="/parent/book" />}
             >
               Browse &amp; book
@@ -383,7 +383,7 @@ export default async function ParentDashboard() {
                 <Link
                   key={booking.id}
                   href={`/parent/bookings/${booking.id}`}
-                  className="group rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+                  className="group sticker-tile p-5"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="space-y-1 flex-1 min-w-0">
@@ -393,7 +393,7 @@ export default async function ParentDashboard() {
                       {session.sport && (
                         <Badge
                           variant="secondary"
-                          className="bg-orange-50 text-primary border-orange-200 text-xs"
+                          className="bg-orange-50 text-rust border-orange-200 text-xs"
                         >
                           {session.sport}
                         </Badge>
@@ -402,9 +402,9 @@ export default async function ParentDashboard() {
                     <span
                       className={`text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap ml-2 ${
                         days === 0
-                          ? "bg-primary text-white"
+                          ? "bg-primary text-ink"
                           : days <= 2
-                            ? "bg-orange-100 text-primary"
+                            ? "bg-orange-100 text-rust"
                             : "bg-gray-100 text-[#666666]"
                       }`}
                     >
@@ -442,7 +442,7 @@ export default async function ParentDashboard() {
                     )}
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-orange-50 flex items-center justify-end text-xs font-medium text-primary group-hover:underline">
+                  <div className="mt-3 pt-3 border-t border-orange-50 flex items-center justify-end text-xs font-medium text-rust group-hover:underline">
                     View details
                     <ArrowRight className="h-3.5 w-3.5 ml-1" />
                   </div>
@@ -468,7 +468,7 @@ export default async function ParentDashboard() {
               return (
                 <div
                   key={booking.id}
-                  className="rounded-2xl border border-orange-100 bg-card p-4 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow"
+                  className="sticker-card p-4 flex items-center gap-4"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary flex-shrink-0">
                     <Trophy className="h-5 w-5" />
@@ -498,7 +498,7 @@ export default async function ParentDashboard() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Link
           href="/parent/referrals"
-          className="group flex items-start gap-3 rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+          className="group flex items-start gap-3 sticker-tile p-5"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary flex-shrink-0">
             <Gift className="h-5 w-5" />
@@ -517,7 +517,7 @@ export default async function ParentDashboard() {
         {children.length > 0 && (
           <Link
             href={`/parent/kids/${children[0].id}/insights`}
-            className="group flex items-start gap-3 rounded-2xl border border-orange-100 bg-card p-5 shadow-sm hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+            className="group flex items-start gap-3 sticker-tile p-5"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-primary flex-shrink-0">
               <Sparkles className="h-5 w-5" />

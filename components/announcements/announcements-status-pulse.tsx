@@ -19,7 +19,7 @@ export function AnnouncementsStatusPulseStrip({
   basePath,
 }: AnnouncementsStatusPulseStripProps) {
   return (
-    <div className="rounded-2xl border bg-background px-4 py-3">
+    <div className="sticker-card px-4 py-3">
       <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <PulseStat
           icon={Megaphone}
@@ -78,7 +78,7 @@ function PulseStat({
 }) {
   const active = count > 0;
   const ticked = useCountUp(count);
-  const activeText = tone === "red" ? "text-red-600" : "text-primary";
+  const activeText = tone === "red" ? "text-red-600" : "text-rust";
   return (
     <li>
       <Link

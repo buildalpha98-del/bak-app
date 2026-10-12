@@ -77,7 +77,7 @@ export function TermPlanGenerator({
 
   const chip = (on: boolean) =>
     `min-h-[40px] rounded-full border px-3 text-sm ${
-      on ? "border-portal-600 bg-portal-600 text-white" : "border-input bg-card text-foreground"
+      on ? "border-ink bg-cta text-cta-foreground" : "border-input bg-card text-foreground"
     }`;
 
   if (status !== "idle" && status !== "generating" && result) {

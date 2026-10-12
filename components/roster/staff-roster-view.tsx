@@ -380,7 +380,7 @@ function StaffSessionCard({
 
       {otherCount && otherCount > 0 ? (
         <span
-          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-white"
+          className="pointer-events-none absolute right-1 top-1 z-10 rounded bg-orange-500 px-1 text-[9px] font-medium text-ink"
           title={`Plus ${otherCount} other coach${otherCount === 1 ? "" : "es"}`}
         >
           +{otherCount}
@@ -944,7 +944,7 @@ function StaffRow({
       <td className="sticky left-0 z-10 w-[160px] min-w-[160px] border-r bg-card px-3 py-2 group-hover/row:bg-muted/20 transition-colors">
         <div className="flex items-center gap-2">
           <div
-            className={`flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white ${
+            className={`flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-ink ${
               isUnassigned
                 ? "bg-muted-foreground/40"
                 : "bg-primary"

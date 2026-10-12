@@ -187,7 +187,7 @@ export function EndSessionDialog({
                 Cancel
               </Button>
               <Button
-                className="min-h-[44px] flex-1 bg-primary hover:bg-primary/90 text-white"
+                className="min-h-[44px] flex-1"
                 onClick={() => setStep("feedback")}
               >
                 Continue
@@ -454,7 +454,7 @@ export function EndSessionDialog({
             <Button
               onClick={handleSubmit}
               disabled={isPending || !feedbackValid || !incidentValid}
-              className="w-full min-h-[48px] bg-primary hover:bg-primary/90 text-white text-base"
+              className="w-full min-h-[48px] text-base"
             >
               {isPending ? (
                 <>

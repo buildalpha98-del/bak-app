@@ -268,7 +268,7 @@ export function StatusBroadcastSheet({
                       className={cn(
                         "min-h-[36px] rounded-full border px-3 text-xs font-medium transition-colors",
                         audience.includes(a)
-                          ? "border-primary bg-primary/10 text-primary"
+                          ? "border-primary bg-primary/10 text-rust"
                           : "border-border bg-background text-muted-foreground hover:border-primary/40",
                       )}
                       aria-pressed={audience.includes(a)}
@@ -285,7 +285,7 @@ export function StatusBroadcastSheet({
           <Button
             onClick={handleSend}
             disabled={!status || audience.length === 0 || isPending}
-            className="min-h-[48px] w-full rounded-xl bg-primary text-base font-medium text-white hover:bg-[#d05f1f]"
+            className="min-h-[48px] w-full text-base font-medium"
           >
             {isPending ? (
               <>

@@ -26,7 +26,7 @@ export function TopBar({ profile }: TopBarProps) {
         <div className="flex md:hidden items-center gap-2.5 shrink-0">
           <AppLogo size="xs" />
           <span className="font-display text-sm font-bold text-foreground tracking-tight">
-            BAK
+            Build Alpha Kids
           </span>
         </div>
         <Breadcrumbs />

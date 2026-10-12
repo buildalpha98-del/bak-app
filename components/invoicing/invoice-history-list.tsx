@@ -4,7 +4,7 @@ import Link from "@/components/ui/app-link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Receipt } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { INVOICE_STATUS_CONFIG } from "@/lib/utils/invoicing";
 import type { CoachInvoice } from "@/lib/types/database";

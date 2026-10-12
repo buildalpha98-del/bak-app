@@ -243,7 +243,7 @@ export function NotificationBell({
             <button
               type="button"
               onClick={handleMarkAllRead}
-              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
+              className="text-xs font-semibold text-rust hover:text-rust/80 transition-colors duration-200"
             >
               Mark all read
             </button>
@@ -269,7 +269,7 @@ export function NotificationBell({
                   <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-light)]">
                     <Icon className="h-4 w-4 text-primary" />
                     {group.notifications.length > 1 && (
-                      <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-white">
+                      <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-ink">
                         {group.notifications.length}
                       </span>
                     )}
@@ -307,7 +307,7 @@ export function NotificationBell({
                 setOpen(false);
                 router.push(`/${userRole}/notifications`);
               }}
-              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors duration-200"
+              className="text-xs font-semibold text-rust hover:text-rust/80 transition-colors duration-200"
             >
               View all notifications
             </button>

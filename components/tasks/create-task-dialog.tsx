@@ -208,7 +208,6 @@ export function CreateTaskDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-primary hover:bg-primary/90 text-white"
             >
               {loading ? "Creating..." : "Create Task"}
             </Button>

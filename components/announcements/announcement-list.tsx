@@ -221,7 +221,6 @@ export function AnnouncementList({
         </h1>
         {canCreate && (
           <Button
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setCreateOpen(true)}
           >
             <Plus className="w-4 h-4 mr-1.5" />
@@ -421,7 +420,7 @@ export function AnnouncementList({
 
       {/* Sticky bulk-action bar */}
       {canCreate && selectedIds.size > 0 && (
-        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
           <div className="flex items-center gap-3 pr-2 text-sm">
             <span className="font-medium text-foreground">
               {selectedIds.size} announcement{selectedIds.size === 1 ? "" : "s"}{" "}
@@ -491,7 +490,7 @@ function FilterChip({
   const activeClasses =
     tone === "red"
       ? "border-red-600/40 bg-red-600/10 text-red-600"
-      : "border-primary/40 bg-primary/10 text-primary";
+      : "border-primary/40 bg-primary/10 text-rust";
   return (
     <button
       type="button"

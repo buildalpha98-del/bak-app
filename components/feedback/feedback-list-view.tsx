@@ -545,7 +545,7 @@ export function FeedbackListView({
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Filtered:</span>
           {ackFilter === "unread" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <AlertTriangle className="size-3" />
               Unacknowledged only
               <button
@@ -559,7 +559,7 @@ export function FeedbackListView({
             </span>
           )}
           {pendingFilter && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-rust">
               <Clock className="size-3" />
               No response (24h+)
               <button
@@ -916,7 +916,7 @@ function BulkFeedbackActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} feedback{count === 1 ? "" : " items"} selected
@@ -941,7 +941,6 @@ function BulkFeedbackActionBar({
         <Button
           size="sm"
           onClick={() => setAckOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <MessageSquarePlus className="size-4" />
           Acknowledge
@@ -1033,7 +1032,6 @@ function BulkAcknowledgeSheet({
           <Button
             onClick={handleAck}
             disabled={working}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {working ? "Saving..." : "Acknowledge"}
           </Button>

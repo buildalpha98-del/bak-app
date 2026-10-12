@@ -123,7 +123,7 @@ export function SyncIssuesCard() {
                   variant="outline"
                   disabled={isPending}
                   onClick={() => handleRetry(it.id)}
-                  className="h-8 rounded-lg"
+                  className="h-8"
                 >
                   {isPending ? (
                     <Loader2 className="size-3.5 animate-spin" />
@@ -138,7 +138,7 @@ export function SyncIssuesCard() {
                   variant="ghost"
                   disabled={isPending}
                   onClick={() => handleDiscard(it.id)}
-                  className="h-8 rounded-lg text-muted-foreground hover:text-red-600"
+                  className="h-8 text-muted-foreground hover:text-red-600"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

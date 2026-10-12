@@ -191,7 +191,7 @@ export function OutboundInvoiceList({ invoices, basePath }: Props) {
                   <td className="px-4 py-3">
                     <Link
                       href={`${basePath}/${invoice.id}`}
-                      className="text-primary hover:underline font-medium"
+                      className="text-rust hover:underline font-medium"
                     >
                       {invoice.invoice_number ?? "—"}
                     </Link>

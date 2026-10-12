@@ -97,7 +97,7 @@ export function ProgramContent({ contentJson, sport }: ProgramContentProps) {
     <div className="space-y-4">
       {sections.map(({ key, label, value }) => (
         <div key={key}>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-rust mb-1">
             {label}
           </h4>
           {renderValue(value)}

@@ -185,7 +185,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
   // ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-orange-100 bg-card p-6">
+    <div className="sticker-card p-6">
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* ── Session Details ──────────────────────────────────── */}
         <section className="space-y-4">
@@ -331,7 +331,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
               <CalendarRange className="size-4 shrink-0 text-primary" />
               <span>
                 This will create{" "}
-                <strong className="text-primary">{sessionCount}</strong>{" "}
+                <strong className="text-rust">{sessionCount}</strong>{" "}
                 session{sessionCount !== 1 ? "s" : ""} from{" "}
                 {formatDateDisplay(startDate)} to {formatDateDisplay(endDate)}
               </span>
@@ -525,7 +525,7 @@ export function BulkCreateForm({ coaches, onSubmit }: BulkCreateFormProps) {
         <Button
           type="submit"
           disabled={submitting || sessionCount === 0}
-          className="w-full bg-primary text-white hover:bg-[#d4641f]"
+          className="w-full"
         >
           {submitting ? (
             <>

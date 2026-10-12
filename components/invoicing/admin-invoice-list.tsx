@@ -15,7 +15,8 @@ import { useState, useTransition, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
@@ -224,7 +225,7 @@ export function AdminInvoiceList({
     <div className="space-y-4">
       {/* Summary + filter chip row */}
       <div className="flex flex-wrap items-center gap-3">
-        <Card className="rounded-2xl border bg-background px-4 py-2 text-sm">
+        <Card className="px-4 py-2 text-sm">
           <span className="text-muted-foreground">Total: </span>
           <span className="font-semibold text-foreground tabular-nums">
             ${totalAnimated.toLocaleString()}
@@ -289,7 +290,6 @@ export function AdminInvoiceList({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-2xl"
             onClick={handleExportCsv}
             disabled={bulkPending}
           >
@@ -301,14 +301,13 @@ export function AdminInvoiceList({
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-2xl border bg-background/95 backdrop-blur px-4 py-2 shadow-sm">
+        <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 sticker-card px-4 py-2">
           <span className="text-sm font-medium text-foreground">
             {selected.size} selected
           </span>
           {showMarkPaid && (
             <Button
               size="sm"
-              className="rounded-2xl bg-primary hover:bg-primary/90 text-white"
               onClick={handleBulkMarkPaid}
               disabled={bulkPending}
             >
@@ -320,7 +319,6 @@ export function AdminInvoiceList({
             <Button
               size="sm"
               variant="outline"
-              className="rounded-2xl"
               onClick={handleBulkResolve}
               disabled={bulkPending}
             >
@@ -346,7 +344,7 @@ export function AdminInvoiceList({
           return (
             <Card
               key={inv.id}
-              className="rounded-2xl border p-4 transition card-hover hover:border-primary/40"
+              className="rounded-2xl p-4 transition card-hover"
             >
               <div className="flex items-start gap-3">
                 <Checkbox

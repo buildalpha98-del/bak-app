@@ -26,6 +26,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import type { ChildDetail } from "@/lib/client/portal-actions";
 
 interface ChildDetailViewProps {
@@ -230,7 +232,7 @@ export function ChildDetailView({
         {child.assessments.length > 0 && reportCardAccess.open && (
           <a
             href={`/api/client/${centreId}/student-report-pdf?childId=${child.id}`}
-            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-portal-600/30 bg-portal-600/5 px-3 py-2 text-sm font-medium text-portal-600 transition-colors hover:bg-portal-600/10"
+            className={cn(buttonVariants({ variant: "outline" }), "min-h-[44px] gap-1.5")}
           >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">
@@ -241,7 +243,7 @@ export function ChildDetailView({
         )}
         {child.assessments.length > 0 && !reportCardAccess.open && (
           <span
-            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border border-dashed px-3 py-2 text-sm text-muted-foreground"
             title={`${reportCardAccess.termName} report cards open once the principal releases them.`}
           >
             <Download className="h-4 w-4" />
@@ -252,7 +254,7 @@ export function ChildDetailView({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border bg-muted/50 p-1">
+      <div className="flex gap-1 rounded-full border-2 border-ink bg-muted p-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -261,10 +263,10 @@ export function ChildDetailView({
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-full border-[1.5px] px-3 py-2 text-sm font-semibold transition-colors ${
                 isActive
-                  ? "bg-card text-portal-700 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "border-ink bg-cta text-cta-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -287,7 +289,7 @@ export function ChildDetailView({
           )}
           <AssessmentsTab terms={assessmentsByTerm} />
           {child.quizResults && child.quizResults.length > 0 && (
-            <div className="mt-4 rounded-2xl border bg-card p-4">
+            <div className="mt-4 sticker-card p-4">
               <h3 className="text-sm font-semibold text-foreground">Knowledge checks</h3>
               <ul className="mt-2 divide-y">
                 {child.quizResults.map((q) => (

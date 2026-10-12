@@ -3,6 +3,7 @@
 import { ListChecks } from "lucide-react";
 import Link from "@/components/ui/app-link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { subjectOf } from "@/lib/curriculum/subjects";
 import type { SchoolQuiz } from "@/lib/client/quiz-actions";
 
@@ -23,7 +24,7 @@ export function SchoolQuizzes({ centreId, quizzes }: { centreId: string; quizzes
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {quizzes.map((q) => (
-            <li key={q.id} className="rounded-xl border border-portal-200 bg-white p-4">
+            <li key={q.id} className="sticker-card p-4">
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/client/${centreId}/quizzes/${q.id}`} className="font-medium text-foreground hover:underline">
                   {q.title}
@@ -34,12 +35,14 @@ export function SchoolQuizzes({ centreId, quizzes }: { centreId: string; quizzes
                 {q.focus} · ages {q.age_band} · {q.question_count} questions · {q.marked_count} marked
                 {q.author_name ? ` · ${q.author_name}` : ""}
               </p>
-              <Link
-                href={`/client/${centreId}/quizzes/${q.id}`}
-                className="mt-3 inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-input px-3 text-sm"
+              <Button
+                variant="outline"
+                className="mt-3 min-h-[40px] gap-1.5"
+                nativeButton={false}
+                render={<Link href={`/client/${centreId}/quizzes/${q.id}`} />}
               >
                 <ListChecks className="h-4 w-4" /> Open marking sheet
-              </Link>
+              </Button>
             </li>
           ))}
         </ul>

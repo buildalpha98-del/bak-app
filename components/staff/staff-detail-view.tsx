@@ -457,7 +457,7 @@ export function StaffDetailView({
         {/* Tab 1: Overview */}
         <TabsContent value="overview">
           <div className="mt-4 space-y-4">
-            <div className="rounded-lg border bg-card p-6">
+            <div className="sticker-card p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <InfoRow label="Email" value={profile.email} />
                 <InfoRow label="Phone" value={profile.phone} />

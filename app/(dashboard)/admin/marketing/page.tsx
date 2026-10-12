@@ -116,7 +116,7 @@ function CountTile({
   const ticked = useCountUp(value);
   const isNumeric = /^[0-9,]+$/.test(formatted);
   return (
-    <div className="flex items-center gap-4 rounded-2xl border bg-background p-5 hover:shadow-md transition">
+    <div className="flex items-center gap-4 sticker-card p-5">
       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/40">
         {icon}
       </div>
@@ -332,7 +332,7 @@ export default function AdminMarketingPage() {
               </Button>
             </Link>
           </div>
-          <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
+          <div className="sticker-card p-8 text-center">
             <MessageSquareQuote className="mx-auto h-12 w-12 text-primary opacity-50" />
             <p className="mt-3 text-sm text-[#666666]">
               Review pending feedback and approve testimonials for your marketing
@@ -343,7 +343,7 @@ export default function AdminMarketingPage() {
               {pulse.approvedThisWeekCount} approved this week
             </p>
             <Link href="/admin/marketing/testimonials">
-              <Button className="mt-4 bg-primary hover:bg-[#d4641f]">
+              <Button className="mt-4">
                 Go to Testimonials
               </Button>
             </Link>
@@ -374,7 +374,7 @@ export default function AdminMarketingPage() {
               (widget) => (
                 <div
                   key={widget}
-                  className="rounded-2xl border bg-background p-5 hover:shadow-md transition"
+                  className="sticker-card p-5"
                 >
                   <div className="flex items-center gap-2">
                     <Code2 className="h-5 w-5 text-primary" />
@@ -416,14 +416,14 @@ export default function AdminMarketingPage() {
               </Button>
             </Link>
           </div>
-          <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
+          <div className="sticker-card p-8 text-center">
             <Mail className="mx-auto h-12 w-12 text-primary opacity-50" />
             <p className="mt-3 text-sm text-[#666666]">
               Everyone who has signed up through the website newsletter form,
               newest first. Export the list as a CSV.
             </p>
             <Link href="/admin/marketing/subscribers">
-              <Button className="mt-4 bg-primary hover:bg-[#d4641f]">
+              <Button className="mt-4">
                 Go to Subscribers
               </Button>
             </Link>
@@ -451,14 +451,14 @@ export default function AdminMarketingPage() {
               </Button>
             </Link>
           </div>
-          <div className="rounded-2xl border bg-background p-8 text-center hover:shadow-md transition">
+          <div className="sticker-card p-8 text-center">
             <FileText className="mx-auto h-12 w-12 text-primary opacity-50" />
             <p className="mt-3 text-sm text-[#666666]">
               Draft posts in Markdown with a live preview, then publish them
               to the website when they are ready.
             </p>
             <Link href="/admin/marketing/blog">
-              <Button className="mt-4 bg-primary hover:bg-[#d4641f]">
+              <Button className="mt-4">
                 Go to Blog
               </Button>
             </Link>

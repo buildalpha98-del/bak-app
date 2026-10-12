@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getClientPortalPulse } from "@/lib/client/status-pulse-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { ClientPortalPulseStrip } from "@/components/client/client-status-pulse";
 import { cn } from "@/lib/utils";
 import {
@@ -155,7 +155,7 @@ export default async function ResourcesPage({
                 ) : (
                   <div className="space-y-3">
                     {sectionDocs.map((doc) => (
-                      <Card key={doc.id} className="rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                      <Card key={doc.id}>
                         <CardHeader className="pb-2 pt-4 px-4">
                           <div className="flex items-start justify-between gap-4">
                             <CardTitle className="text-base font-medium leading-snug">

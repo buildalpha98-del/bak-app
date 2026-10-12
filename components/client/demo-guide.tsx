@@ -12,6 +12,8 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Compass, Check, ChevronDown, X, ArrowRight } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "bak-demo-guide-v1";
 
@@ -169,7 +171,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
       <button
         type="button"
         onClick={toggleCollapsed}
-        className="fixed bottom-20 right-4 z-40 flex min-h-[44px] items-center gap-2 rounded-full bg-portal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 md:bottom-6"
+        className={cn(buttonVariants(), "fixed bottom-20 right-4 z-40 min-h-[44px] gap-2 px-4 py-2.5 md:bottom-6")}
         aria-label="Open the demo guide"
       >
         <Compass className="h-4 w-4" />
@@ -180,10 +182,10 @@ export function DemoGuide({ centreId }: { centreId: string }) {
 
   return (
     <aside
-      className="fixed bottom-20 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-2xl border border-portal-600/20 bg-card shadow-2xl md:bottom-6"
+      className="sticker-card fixed bottom-20 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm overflow-hidden md:bottom-6"
       aria-label="Demo guide"
     >
-      <div className="flex items-center justify-between gap-2 bg-portal-600 px-4 py-3 text-white">
+      <div className="flex items-center justify-between gap-2 border-b-2 border-ink bg-cta px-4 py-3 text-cta-foreground">
         <div className="flex items-center gap-2">
           <Compass className="h-4 w-4 shrink-0" />
           <p className="text-sm font-semibold">
@@ -194,7 +196,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
           <button
             type="button"
             onClick={toggleCollapsed}
-            className="rounded-full p-1.5 hover:bg-white/15"
+            className="rounded-full p-1.5 hover:bg-ink/10"
             aria-label="Minimise the demo guide"
           >
             <ChevronDown className="h-4 w-4" />
@@ -202,7 +204,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-full p-1.5 hover:bg-white/15"
+            className="rounded-full p-1.5 hover:bg-ink/10"
             aria-label="Close the demo guide"
           >
             <X className="h-4 w-4" />
@@ -263,7 +265,7 @@ export function DemoGuide({ centreId }: { centreId: string }) {
             </p>
             <a
               href="https://buildalphakids.app/enquire"
-              className="mt-2 inline-flex min-h-[40px] items-center gap-1.5 rounded-2xl bg-portal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-portal-600/90"
+              className={cn(buttonVariants(), "mt-2 min-h-[40px] gap-1.5 px-4 py-2")}
             >
               Talk to Build Alpha Kids
               <ArrowRight className="h-4 w-4" />

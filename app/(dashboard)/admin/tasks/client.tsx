@@ -402,7 +402,7 @@ export function AdminTasksClient({
       )}
 
       {/* Filter bar */}
-      <div className="flex flex-col gap-3 rounded-2xl border bg-background p-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="flex flex-col gap-3 rounded-2xl border border-ink/15 bg-background p-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
           value={priorityFilter}
           onValueChange={(v) => replaceParam("priority", v === "all" ? null : v)}
@@ -538,13 +538,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
         aria-label={`Clear ${label} filter`}
       >
         <X className="size-3" />
@@ -645,7 +645,7 @@ function BulkActionBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} task{count === 1 ? "" : "s"} selected
@@ -677,7 +677,6 @@ function BulkActionBar({
         <Button
           size="sm"
           onClick={() => setCompleteOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <CheckCircle2 className="size-4" />
           Mark complete
@@ -726,7 +725,6 @@ function BulkActionBar({
             <Button
               onClick={handleReassign}
               disabled={reassignWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {reassignWorking ? "Saving…" : "Reassign"}
             </Button>
@@ -776,7 +774,6 @@ function BulkActionBar({
             <Button
               onClick={handleChangePriority}
               disabled={priorityWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {priorityWorking ? "Saving…" : "Apply"}
             </Button>
@@ -806,7 +803,6 @@ function BulkActionBar({
                 void handleComplete();
               }}
               disabled={completeWorking}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {completeWorking ? "Saving…" : "Mark complete"}
             </AlertDialogAction>

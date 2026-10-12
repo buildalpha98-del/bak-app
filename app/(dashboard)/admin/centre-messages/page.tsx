@@ -29,7 +29,7 @@ export default async function AdminCentreMessagesPage({ searchParams }: Props) {
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
+        <p className="eyebrow mb-1">
           Communication
         </p>
         <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">

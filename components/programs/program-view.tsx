@@ -74,7 +74,7 @@ function SectionHeader({
           <ChevronRight className="h-4 w-4 text-primary" />
         )
       )}
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
         {title}
       </h4>
       {duration != null && <DurationBadge minutes={duration} />}
@@ -100,7 +100,7 @@ function CoachingTip({ text, label = "Coaching tip" }: { text: string; label?: s
   if (!text) return null;
   return (
     <div className="mt-2 rounded-lg bg-[var(--brand-orange-light)] px-3 py-2">
-      <p className="text-xs font-medium text-primary">{label}</p>
+      <p className="text-xs font-medium text-rust">{label}</p>
       <p className="text-xs text-foreground">{text}</p>
     </div>
   );
@@ -113,7 +113,7 @@ function BulletList({ items, className }: { items: string[]; className?: string 
       {items.map((item, i) => (
         <li
           key={i}
-          className="text-sm text-foreground list-disc marker:text-primary"
+          className="text-sm text-foreground list-disc marker:text-rust"
         >
           {item}
         </li>
@@ -311,7 +311,7 @@ export function ProgramView({
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <Target className="h-3.5 w-3.5 text-primary" />
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
               Objectives
             </h4>
           </div>
@@ -324,7 +324,7 @@ export function ProgramView({
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <Package className="h-3.5 w-3.5 text-primary" />
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-primary">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-rust">
               {labels.equipment} needed
             </h4>
           </div>

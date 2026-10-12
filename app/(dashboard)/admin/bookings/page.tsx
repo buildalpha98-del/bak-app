@@ -586,7 +586,6 @@ export default function AdminBookingsDashboard() {
         </div>
         <Button
           render={<Link href="/admin/bookings/sessions/new" />}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <CalendarDays className="size-4" />
           Create Session
@@ -662,7 +661,7 @@ export default function AdminBookingsDashboard() {
           )}
 
           {/* Filter bar */}
-          <div className="flex flex-col gap-3 rounded-2xl border bg-background p-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3 rounded-2xl border border-ink/15 bg-background p-3 sm:flex-row sm:items-center">
             <Select
               value={sessionStatusFilter}
               onValueChange={(v) =>
@@ -718,7 +717,7 @@ export default function AdminBookingsDashboard() {
             </Select>
           </div>
 
-          <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+          <div className="sticker-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -882,7 +881,7 @@ export default function AdminBookingsDashboard() {
           )}
 
           {/* Filters */}
-          <div className="rounded-2xl border bg-background p-4">
+          <div className="rounded-2xl border border-ink/15 bg-background p-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <Select
                 value={bookingFilters.session_id ?? "all"}
@@ -976,7 +975,7 @@ export default function AdminBookingsDashboard() {
           </div>
 
           {/* Bookings Table */}
-          <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+          <div className="sticker-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -1122,7 +1121,7 @@ export default function AdminBookingsDashboard() {
               </div>
 
               {/* Package Balances Table */}
-              <div className="rounded-2xl border bg-background overflow-hidden hover:shadow-md transition">
+              <div className="sticker-card overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1214,7 +1213,7 @@ export default function AdminBookingsDashboard() {
                 />
               </div>
 
-              <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+              <div className="sticker-card p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="size-5 text-muted-foreground" />
@@ -1231,11 +1230,6 @@ export default function AdminBookingsDashboard() {
                         }
                         size="sm"
                         onClick={() => setRevenueChartView(v)}
-                        className={
-                          revenueChartView === v
-                            ? "bg-primary text-white hover:bg-primary/90"
-                            : ""
-                        }
                       >
                         {v === "session_type"
                           ? "By Type"
@@ -1335,7 +1329,7 @@ function SummaryCard({
   smaller?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border bg-background p-5 hover:shadow-md transition">
+    <div className="sticker-card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <Icon className="size-5 text-muted-foreground" />
@@ -1363,13 +1357,13 @@ function JumpChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-cta px-2.5 py-1 text-xs font-medium text-ink shadow-sticker-xs">
       <Icon className="size-3" />
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+        className="ml-1 rounded-full p-0.5 hover:bg-ink/10"
         aria-label="Clear filter"
       >
         <X className="size-3" />
@@ -1429,7 +1423,7 @@ function SessionsBulkBar({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
       <div className="flex items-center gap-3 pr-2 text-sm">
         <span className="font-medium text-foreground">
           {count} session{count === 1 ? "" : "s"} selected
@@ -1455,7 +1449,6 @@ function SessionsBulkBar({
         size="sm"
         onClick={handleActivate}
         disabled={working !== null}
-        className="bg-primary text-white hover:bg-primary/90"
       >
         <CircleCheck className="size-4" />
         {working === "activate" ? "Activating…" : "Activate"}
@@ -1503,7 +1496,7 @@ function BookingsBulkBar({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-2xl border border-primary/40 bg-background px-4 py-3 shadow-lg ring-1 ring-primary/20 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 sticker-card px-4 py-3 sm:bottom-6 sm:right-6">
         <div className="flex items-center gap-3 pr-2 text-sm">
           <span className="font-medium text-foreground">
             {count} booking{count === 1 ? "" : "s"} selected
@@ -1519,7 +1512,6 @@ function BookingsBulkBar({
         <Button
           size="sm"
           onClick={() => setCancelOpen(true)}
-          className="bg-primary text-white hover:bg-primary/90"
         >
           <CircleSlash className="size-4" />
           Cancel bookings
@@ -1557,7 +1549,6 @@ function BookingsBulkBar({
             <Button
               onClick={handleCancel}
               disabled={working}
-              className="bg-primary text-white hover:bg-primary/90"
             >
               {working ? "Cancelling…" : "Cancel bookings"}
             </Button>

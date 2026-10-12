@@ -143,7 +143,6 @@ export function Y1TargetEditPopover({
             size="sm"
             onClick={handleSave}
             disabled={saving || draft === String(current)}
-            className="bg-primary text-white hover:bg-primary/90"
           >
             {saving ? <Loader2 className="size-3.5 animate-spin" /> : "Save"}
           </Button>

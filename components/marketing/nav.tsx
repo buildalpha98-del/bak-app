@@ -9,7 +9,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/marketing/content";
 import { StickerButton } from "@/components/marketing/sticker-button";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Sheet,
   SheetClose,

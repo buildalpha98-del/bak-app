@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Flag, Send, Download, CheckCircle, Loader2 } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
         {/* From / To */}
         <div className="grid grid-cols-2 gap-4 text-xs">
           <div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">
+            <p className="text-[10px] font-bold text-rust uppercase tracking-wider mb-1">
               From
             </p>
             <p className="font-medium text-foreground">{coachProfile.name}</p>
@@ -128,7 +129,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
             <p className="text-muted-foreground">{coachProfile.email}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">
+            <p className="text-[10px] font-bold text-rust uppercase tracking-wider mb-1">
               To
             </p>
             <p className="font-medium text-foreground">Build Alpha Kids</p>
@@ -231,7 +232,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
           )}
           <div className="flex justify-end pt-2 border-t border-primary">
             <span className="w-24 text-right font-bold text-sm">Total</span>
-            <span className="w-24 text-right font-bold text-sm text-primary">
+            <span className="w-24 text-right font-bold text-sm text-rust">
               ${invoice.total_amount.toFixed(2)}
             </span>
           </div>
@@ -242,7 +243,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
       <div className="space-y-2">
         {invoice.status === "draft" && !hasPendingFlags && (
           <Button
-            className="w-full bg-primary hover:bg-primary/90 text-white"
+            className="w-full"
             onClick={handleSend}
             disabled={sending}
           >
@@ -284,7 +285,7 @@ export function InvoicePreview({ invoice, coachProfile, gstRegistered }: Props) 
 
         {invoice.status === "ready" && (
           <Button
-            className="w-full bg-primary hover:bg-primary/90 text-white"
+            className="w-full"
             onClick={handleSend}
             disabled={sending}
           >

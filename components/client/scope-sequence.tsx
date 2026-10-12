@@ -213,7 +213,7 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
               aria-checked={subjectFilter === k}
               onClick={() => setSubjectFilter(k)}
               className={`min-h-[40px] rounded-full border px-3 text-sm ${
-                subjectFilter === k ? "border-portal-600 bg-portal-600 text-white" : "border-input bg-card text-foreground"
+                subjectFilter === k ? "border-ink bg-cta text-cta-foreground" : "border-input bg-card text-foreground"
               }`}
             >
               {k === "all" ? "All subjects" : SUBJECTS[k as SubjectKey].label}
@@ -243,7 +243,7 @@ export function ScopeSequenceView({ weeks, centreType }: ScopeSequenceViewProps)
                   {formatWeekRange(week.weekStartDate)}
                 </span>
                 {current && (
-                  <Badge className="bg-portal-500 text-white text-xs">Current</Badge>
+                  <Badge className="bg-portal-200 text-ink text-xs">Current</Badge>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">

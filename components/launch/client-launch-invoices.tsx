@@ -127,7 +127,7 @@ export function LaunchClientInvoices({
               <div className="pt-1">
                 <button
                   onClick={() => handlePdf(inv.id)}
-                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm text-rust hover:underline"
                 >
                   <FileDown className="h-3.5 w-3.5" />
                   Download PDF
@@ -144,7 +144,7 @@ export function LaunchClientInvoices({
         <p>Please use your invoice number as the payment reference when making bank transfers.</p>
         <p className="mt-1 text-xs text-gray-500">
           Payment is due within 14 days of the invoice date. Contact us at{" "}
-          <a href="mailto:contact@buildalphakids.com.au" className="text-primary hover:underline">
+          <a href="mailto:contact@buildalphakids.com.au" className="text-rust hover:underline">
             contact@buildalphakids.com.au
           </a>{" "}
           if you have any questions.
