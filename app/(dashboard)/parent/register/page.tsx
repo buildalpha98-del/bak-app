@@ -42,6 +42,7 @@ export default function ParentRegistrationPage() {
 
   // Step 3: Terms
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [over18, setOver18] = useState(false);
 
   function updateChild(index: number, child: ChildInput) {
     setChildren((prev) => prev.map((c, i) => (i === index ? child : c)));
@@ -67,7 +68,7 @@ export default function ParentRegistrationPage() {
   }
 
   async function handleSubmit() {
-    if (!termsAccepted) return;
+    if (!termsAccepted || !over18) return;
 
     setError(null);
     setLoading(true);
@@ -79,6 +80,7 @@ export default function ParentRegistrationPage() {
       suburb: suburb.trim() || undefined,
       children,
       terms_accepted: true,
+      confirmed_over_18: true,
       referral_code: referralCode,
     });
 
@@ -302,7 +304,19 @@ export default function ParentRegistrationPage() {
             ))}
           </div>
 
-          {/* Terms */}
+          {/* Age + terms */}
+          <div className="flex items-start gap-3 rounded-2xl bg-orange-50 p-4">
+            <Checkbox
+              id="over18"
+              checked={over18}
+              onCheckedChange={(checked) => setOver18(checked === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="over18" className="text-sm leading-relaxed cursor-pointer">
+              I am 18 or over, and the parent or guardian of the children above.
+            </Label>
+          </div>
+
           <div className="flex items-start gap-3 rounded-2xl bg-orange-50 p-4">
             <Checkbox
               id="terms"
@@ -327,7 +341,7 @@ export default function ParentRegistrationPage() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!termsAccepted || loading}
+              disabled={!termsAccepted || !over18 || loading}
               className="h-12 bg-primary text-white hover:bg-[#D4651F] rounded-lg flex-[2] text-base"
             >
               {loading ? (

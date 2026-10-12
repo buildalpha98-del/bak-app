@@ -35,6 +35,8 @@ export interface RegistrationData {
   suburb?: string;
   children: ChildInput[];
   terms_accepted: boolean;
+  /** Account holders must be 18 or over (Terms of Use, "Who this service is for"). */
+  confirmed_over_18: boolean;
   referral_code?: string;
 }
 
@@ -124,6 +126,15 @@ export async function getParentProfile(): Promise<{
 export async function completeParentRegistration(
   data: RegistrationData
 ): Promise<{ error: string | null }> {
+  // Enforced here, not only by the disabled button: a server action can
+  // be called directly, and the Terms of Use state the 18+ rule.
+  if (data.terms_accepted !== true) {
+    return { error: "Please accept the terms to continue." };
+  }
+  if (data.confirmed_over_18 !== true) {
+    return { error: "You must be 18 or over to create an account." };
+  }
+
   try {
     const supabase = await createSupabaseServerClient();
     const adminClient = createSupabaseAdmin();
