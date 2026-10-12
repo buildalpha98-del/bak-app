@@ -1,4 +1,6 @@
 import { ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BallHem } from "@/components/marketing/ball-hem";
 import { StickerButton } from "@/components/marketing/sticker-button";
 
 /**
@@ -16,6 +18,10 @@ import { StickerButton } from "@/components/marketing/sticker-button";
  * `label` is optional on purpose — a band that renders more than once
  * on a page must NOT be labelled, or the a11y tree gets two
  * identically-named landmarks. Its <h2> names it either way.
+ *
+ * `hem` sets the coach-uniform ball hem flush along the band's bottom
+ * edge. Only the B2B band uses it; the content gets extra bottom
+ * padding so the heading and button never touch the balls.
  */
 export function CtaBand({
   label,
@@ -24,6 +30,7 @@ export function CtaBand({
   body,
   href,
   cta,
+  hem = false,
 }: {
   label?: string;
   eyebrow: string;
@@ -31,10 +38,16 @@ export function CtaBand({
   body: React.ReactNode;
   href: string;
   cta: string;
+  hem?: boolean;
 }) {
   return (
     <section aria-label={label} className="bg-[#1A1A1A]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl flex-col items-start gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8",
+          hem && "pb-10 sm:pb-12"
+        )}
+      >
         <div className="max-w-2xl">
           <p className="inline-block -rotate-1 rounded-full border-2 border-[#111] bg-[#FFD23F] px-3.5 py-1 font-heading text-xs font-bold uppercase tracking-widest text-[#111] shadow-[2px_2px_0_#E8712A]">
             {eyebrow}
@@ -52,6 +65,7 @@ export function CtaBand({
           <ArrowRight className="size-5" aria-hidden="true" />
         </StickerButton>
       </div>
+      {hem && <BallHem />}
     </section>
   );
 }
