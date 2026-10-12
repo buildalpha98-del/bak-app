@@ -148,9 +148,30 @@ of that was the database.
   `<Link>`, and a prefetch of an App Router route is a full server render
   of it, queries included: /admin/staff fired **42** — one per coach row.
   `components/ui/app-link.tsx` wraps next/link with `prefetch={false}`;
-  **import Link from `@/components/ui/app-link`, not `next/link`**. Hover
-  still prefetches, so navigation stays snappy. Pass `prefetch` to
-  override where a link genuinely is always-next.
+  **import Link from `@/components/ui/app-link`, not `next/link`**. Pass
+  `prefetch` to override where a link genuinely is always-next.
+- **…but they prefetch on intent** (Oct 2026). On next/link,
+  `prefetch={false}` also kills *hover* prefetch (App Router `link.js`
+  returns early on mouseenter) — the old note here claiming hover still
+  prefetched was wrong, and for months every click sat on a frozen page
+  for ~1s (up to 3s) until the server's first byte, with the
+  `loading.tsx` skeletons never shown in time. `AppLink` now calls
+  `router.prefetch(href)` on mouseenter / touchstart / focus: the route
+  down to its nearest `loading.tsx`, not the page's queries. Click →
+  skeleton in ~50ms, page streams in behind it.
+- **Middleware verifies the session locally.** Middleware runs at the
+  edge nearest the *user* (syd1); auth lives in Mumbai. `getUser()` there
+  cost ~500ms on every signed-in navigation before rendering began. Tokens
+  are ES256, so middleware uses `getClaims()` (signature checked against
+  the cached JWKS; network only to refresh an expired token). Pages still
+  call `getUser()` — the authoritative check. If the project is ever
+  switched back to a symmetric (HS256) JWT secret, getClaims silently
+  falls back to getUser and the 500ms returns.
+  `__tests__/middleware-revoked-session.test.ts` fails if middleware calls
+  getUser. Measure clicks with `e2e/perf-clicks.spec.ts` and the
+  per-hop split with `e2e/perf-ttfb.spec.ts`
+  (`E2E_BASE_URL=https://buildalphakids.app`); prefetch is off in
+  `next dev`, so verify on `next build && next start`.
 - **One auth round-trip per request.** `supabase.auth.getUser()` is an
   HTTP call to the auth server, not a local verify, and ~350 call sites
   each made their own. `createSupabaseServerClient` is wrapped in React

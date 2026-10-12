@@ -21,7 +21,19 @@ import { NextRequest, NextResponse } from "next/server";
 // isRevokedSessionError() (already covered in lib/auth/__tests__), so
 // they keep holding if the block is refactored again.
 
+// Fixtures stay in getUser's shape ({ data: { user }, error }); the mock
+// client serves them through getClaims, which is what middleware calls.
+// getUser itself is a spy that must never be hit — it is a network round
+// trip to the auth server on every navigation.
 const getUser = vi.fn();
+const networkGetUser = vi.fn();
+async function getClaims() {
+  const { data, error } = await getUser();
+  return {
+    data: data?.user ? { claims: { sub: data.user.id } } : null,
+    error: error ?? null,
+  };
+}
 
 vi.mock("@/lib/supabase/middleware", () => ({
   createSupabaseMiddlewareClient: (request: NextRequest) => ({
@@ -29,7 +41,7 @@ vi.mock("@/lib/supabase/middleware", () => ({
     // may attach cookies to.
     response: NextResponse.next({ request }),
     supabase: {
-      auth: { getUser },
+      auth: { getClaims, getUser: networkGetUser },
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -72,6 +84,7 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://project.supabase.co");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon-key");
   getUser.mockReset();
+  networkGetUser.mockReset();
 });
 
 describe("middleware — anonymous visitors are never treated as revoked", () => {
@@ -205,5 +218,13 @@ describe("middleware — unauthenticated route gating still applies", () => {
     const res = await middleware(request("/client/centre-1"));
 
     expect(redirectTarget(res)).toBe("/client-login");
+  });
+});
+
+describe("middleware — no auth-server round trip per request", () => {
+  it("verifies the session locally (getClaims) and never calls getUser", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+    await middleware(request("/ops/roster", { "sb-project-auth-token": "x" }));
+    expect(networkGetUser).not.toHaveBeenCalled();
   });
 });
