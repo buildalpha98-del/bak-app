@@ -203,9 +203,11 @@ export const PRIVACY_PAGE: LegalPage = {
       heading: "Information sent overseas",
       body: [
         "Some of your information is held or processed outside Australia. Under APP 8 we have to tell you that plainly, so:",
-        // Owner-confirmed (Jayden, 2026-10-12): the October 2026 move puts
-        // both the app (Vercel syd1) and the database (Supabase BAK Sydney,
-        // ap-southeast-2) in Sydney. Do not publish before that cutover lands.
+        // Source: vercel.json — `"regions": ["syd1"]` (Vercel's Sydney
+        // region) and the hosted Supabase project "BAK Sydney"
+        // (yyndmywxfxklzaftfhon), region ap-southeast-2 (Sydney) — both
+        // moved from Mumbai in Oct 2026 (#94). If either region changes, this
+        // sentence must change in the same deploy.
         "Our application and our database are both hosted in Sydney, Australia, so the information you give us, including information about your child, is stored and processed in Australia.",
         // Source: each provider's own privacy terms name the United States as
         // where they are based and process customer data.

@@ -217,6 +217,11 @@ test.describe("client portal", () => {
 
     await signInAs(page, client!.email, baseURL!);
     await page.goto(`/client/${client!.centreId}`);
+    // Wait for the streamed page, not the loading skeleton. Reading
+    // innerText straight after goto only passed while the server sat in
+    // Mumbai and the page took ~11s; from Sydney the skeleton is what's
+    // on screen at that instant.
+    await expect(page.getByRole("main").getByRole("heading").first()).toBeVisible();
 
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(/Application error|something went wrong/i);
