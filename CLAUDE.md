@@ -14,7 +14,7 @@ Progressive Web App for **Build Alpha Kids**, a multi-sport coaching business in
 - **Assign, publish and chase a whole term** (Sept 2026, no migration) — the term board's action strip: **AI assign** (one `/api/scheduling/generate` run per remaining week, `keepExisting`, so every run is on the record), **Publish** (`lib/roster/term-actions.ts` `publishTerm`), **Remind** (`remindUnconfirmed`, one message per coach, `getUnconfirmedByCoach` names who). Two production bugs fixed on the way, both of the "query errors, code reads `data ?? []`" class: (1) **the AI solver never had any coaches** — `compliance_docs` has two FKs to `profiles` (coach + verifier), so `profiles.select("…, compliance_docs(…)")` was refused by PostgREST as ambiguous, `coaches` was null, and every run since launch said "No coaches available"; it now names `compliance_docs!compliance_docs_user_id_fkey` and throws on error. **Name the FK on any embed of `compliance_docs`, `session_coaches`, `attendance` or anything else with two paths to `profiles`.** (2) **Published shifts could not be confirmed** — the status model is `draft → published → pending_confirmation → confirmed` and `confirmShift` accepts only `pending_confirmation`, but nothing ever moved a shift there: every publish path (week, term, scheduling run) left shifts at `published`, coaches were told "you have N shifts to confirm" and could not, and ops bulk-confirmed on their behalf. Publishing now sends a shift **with a coach** to `pending_confirmation` (coach notified) and one **without** to `published` (visible to the centre, nothing to confirm yet) — `publishTerm`, `publishDraftSessionsForWeek` and `publishSchedulingRun` all agree. Also true of the data: **most real coaches have no `availability_slots` rows** (P1's Mon–Fri default only seeded coaches created after it — Abz has 1, Rami/Carla/Amani none), so the solver rightly finds them ineligible; seed or capture availability before expecting AI assign to place the real team.
 - **Term setup + term board** (Sept 2026, no migration). The usage numbers before this: Term 3 2026 was rostered by hand (~75 real sessions, typed in one at a time) and attached to the *Term 1* row because that was the current term when they were created; nothing was programmed, the AI was never run, Term 4 was empty 18 days out. So: **read the roster by date window, never by `term_id`** — `lib/terms/term-setup.ts` `inferWeeklyPattern` groups last term's sessions (centre × weekday × time × sport × length; usual coach = mode; regular = ran ≥40% of weeks, else occasional; flags `odd_time` (a 02:30 that was 14:30), `weekend`, `long` (all-day carnival)), and `plannedSessionDates` is the whole-term calendar (clipped to the term, minus skip dates — `NSW_PUBLIC_HOLIDAYS` is a hand-kept map, extend per year — minus what exists). `/{admin,ops}/roster/terms/[id]/setup` (`getTermSetup` finds the last *earlier term that ran anything*; `applyTermSetup` dedupes on centre+weekday+time+sport; `generateSessionsForTerm` makes every week as drafts in one go, idempotent). The roster's **Generate Week was inert** — `templateCount={0}` hard-coded — now the real count, and its empty state links to Set up. **Term board** `/{admin,ops}/roster/coverage?term=`: `lib/roster/coverage-model.ts` `buildCoverageBoard` (pure) — centre × week cells `none | unassigned | draft | unconfirmed | ready | cancelled` (worst thing first), programmed dot, a centre that ran last term with nothing this term sorts first as a gap, and one number: **readiness = % of live sessions both confirmed and programmed**. Cells link to `roster?week=&centre=`. Still true and worth fixing when convenient: the Term-3-dated sessions carry `term_id` = Term 1 2026 (reports/RLS by term_id see them wrongly); a `UPDATE sessions SET term_id = <T3> WHERE date BETWEEN '2026-07-20' AND '2026-09-25' AND term_id = <T1>` would put them right.
 
-**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + Mumbai region, workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`).
+**Beta-readiness (Wave A — pre-launch):** 8 of 9 items closed (cron schedule verified in `vercel.json`, training RLS confirmed, CLAUDE.md updated, parent bulk-invite shipped at `/admin/parents/import`, magic-link callback + Resend wired per `docs/auth-magic-link-setup.md`, dashboard streaming + co-located region (Sydney since Oct 2026, see Page speed), workflow audit + cron hardening per `docs/workflow-audit.md`, Square env-flag plumbing per `docs/square-cutover.md`). Last item: **Square live credential flip** in Vercel env (code is ready; just paste prod keys + set `SQUARE_ENV=production`).
 
 **Email (verified working 2026-07-15):** sending on `hello@buildalphakids.app`,
 both domains verified in Resend, test message delivered to inbox. Two failures
@@ -141,6 +141,29 @@ A school is a `centres` row with `centre_type = 'school'`; classes are `school_c
 
 ## Page speed
 
+**Hosting region: Sydney** (since 12 Oct 2026). Supabase project **BAK Sydney**
+`yyndmywxfxklzaftfhon` (ap-southeast-2) and Vercel functions `syd1`
+(`vercel.json`). The old Mumbai project `yhairjbwqvmrbbvatrze` (ap-south-1,
+with Vercel `bom1`) is retired. Use the Sydney ref for the Supabase MCP and
+CLI. Functions and database must always share a region, and the privacy
+policy (`lib/marketing/legal.ts`, "Information sent overseas") names the
+region: change both in the same deploy. Measured at the move: health check
+330–500ms → 100ms, page server time 0.8–1.3s → 160–335ms, director portal
+10.9s → <1s. The move itself: `supabase db dump --linked` (schema /
+`--data-only --use-copy`; the CLI's login role needs no DB password),
+psql restore over the **aws-0** session pooler, `session_replication_role =
+replica` around the data. The schema dump skips storage.objects policies
+(recreate from `pg_policies`), and the data dump includes Supabase-internal
+storage tables that must be stripped. Auth settings (URL config, Resend
+SMTP, email templates) don't travel with the data — copy them in the
+dashboard. **A restore silently re-grants privileges**: the new project's
+defaults gave anon EXECUTE on `set_session_coaches` /
+`resolve_session_pay_rate` / `nextval_invoice_number` and ALL on
+`activity_log`, undoing 073/074 — migration 102 re-asserts them. After any
+dump/restore, diff `pg_proc.proacl` / `pg_class.relacl`, not just row
+counts. `supabase_migrations.schema_migrations` is not in a data dump
+either; copy it with `--schema supabase_migrations`.
+
 The dashboard was 6.7s median (worst 15s). It is now ~2.3s. Almost none
 of that was the database.
 
@@ -160,8 +183,9 @@ of that was the database.
   down to its nearest `loading.tsx`, not the page's queries. Click →
   skeleton in ~50ms, page streams in behind it.
 - **Middleware verifies the session locally.** Middleware runs at the
-  edge nearest the *user* (syd1); auth lives in Mumbai. `getUser()` there
-  cost ~500ms on every signed-in navigation before rendering began. Tokens
+  edge nearest the *user* (syd1); auth lived in Mumbai until the Oct 2026
+  move. `getUser()` there cost ~500ms on every signed-in navigation before
+  rendering began. Tokens
   are ES256, so middleware uses `getClaims()` (signature checked against
   the cached JWKS; network only to refresh an expired token). Pages still
   call `getUser()` — the authoritative check. If the project is ever
@@ -180,7 +204,7 @@ of that was the database.
   `getUser()` would replay the pre-login answer and break login.
 
 **Measuring it from here is the hard part** (`e2e/perf-ab.spec.ts`):
-- Total load time from Sydney to a Mumbai deployment is mostly the
+- (Pre-Oct 2026, Mumbai hosting) total load time from Sydney to a Mumbai deployment was mostly the
   Pacific; its variance exceeds the effect. Every old deployment stays
   live at its own URL — measure before/after builds interleaved, same
   machine, same minutes.

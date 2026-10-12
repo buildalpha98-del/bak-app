@@ -8,7 +8,7 @@ correspondence.
 
 ## How to install
 
-1. Open [Supabase Dashboard → Authentication → Email Templates](https://supabase.com/dashboard/project/yhairjbwqvmrbbvatrze/auth/templates)
+1. Open [Supabase Dashboard → Authentication → Email Templates](https://supabase.com/dashboard/project/yyndmywxfxklzaftfhon/auth/templates)
 2. Click the template you want to replace (Magic Link, Invite User, Reset Password, etc.)
 3. Switch from "Visual" to "Source" (HTML view) — usually a toggle at the top
 4. Paste the full contents of the matching `.html` file in this folder
