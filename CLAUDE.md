@@ -156,7 +156,13 @@ replica` around the data. The schema dump skips storage.objects policies
 (recreate from `pg_policies`), and the data dump includes Supabase-internal
 storage tables that must be stripped. Auth settings (URL config, Resend
 SMTP, email templates) don't travel with the data — copy them in the
-dashboard.
+dashboard. **A restore silently re-grants privileges**: the new project's
+defaults gave anon EXECUTE on `set_session_coaches` /
+`resolve_session_pay_rate` / `nextval_invoice_number` and ALL on
+`activity_log`, undoing 073/074 — migration 102 re-asserts them. After any
+dump/restore, diff `pg_proc.proacl` / `pg_class.relacl`, not just row
+counts. `supabase_migrations.schema_migrations` is not in a data dump
+either; copy it with `--schema supabase_migrations`.
 
 The dashboard was 6.7s median (worst 15s). It is now ~2.3s. Almost none
 of that was the database.
