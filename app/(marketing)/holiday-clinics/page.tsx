@@ -50,7 +50,7 @@ export default async function HolidayClinicsPage() {
         intro={
           <>
             Full-throttle multi-sport days run by the coaches kids already
-            know. Pick a date, book and pay online in about 60 seconds —{" "}
+            know. Pick a date, book and pay online in about 60 seconds.{" "}
             {ACTIVE_KIDS_BLURB}.
           </>
         }

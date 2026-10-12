@@ -144,10 +144,19 @@ export const TRUST_POINTS = {
 export const BRAND = {
   /** Crest logo, raster — use with next/image (1604×1060). */
   logo: "/images/brand/logo.png",
-  /** Illustrated ball row strip (viewBox 298×96, ~3.1:1). */
+  /**
+   * Illustrated ball row strip (~3.1:1). Rebuilt October 2026 as flat
+   * vectors (viewBox 1400×451) — the old Illustrator export's masks
+   * rendered as white boxes in Chrome. Same ratio, so sizes still hold.
+   */
   ballsRow: "/images/brand/balls-row.svg",
   /** Mirrored ball row variant. */
   ballsRowAlt: "/images/brand/balls-row-alt.svg",
+  /**
+   * The coach-uniform hem: balls along a bottom edge, full width and
+   * cropped by it (viewBox 5440×340, 16:1). See <BallHem />.
+   */
+  ballsHemWide: "/images/brand/balls-hem-wide.svg",
 } as const;
 
 /**
@@ -249,7 +258,7 @@ export const IMPACT_STATS = [
   { value: "10+", label: "Partner schools" },
   { value: "50+", label: "Childcare centres & ELCs" },
   { value: "5,000+", label: "Kids coached" },
-  { value: "10+", label: "Years on the ground" },
+  { value: "10+", label: "Years coaching" },
 ] as const;
 
 /**
@@ -257,20 +266,26 @@ export const IMPACT_STATS = [
  * strip. Owner-supplied (Jayden, 2026-07-18); spellings verified
  * against each organisation's own site. Text names only until logo
  * files and written permission to use them are collected.
+ *
+ * October 2026 brand update: Arrahman College is off the list until it
+ * re-engages; MFIS Beaumont Hills, Al Noori High School and Al Bayan
+ * College added (owner-supplied).
  */
 export const PARTNERS: string[] = [
   "Bexley Public School",
   "Al-Faisal College",
-  "Arrahman College",
   "Clever Little Muslims",
   "First Grammar",
+  "MFIS Beaumont Hills",
+  "Al Noori High School",
+  "Al Bayan College",
 ];
 
 /** Homepage-specific copy shared between components and metadata. */
 export const HOMEPAGE = {
   /** Hero sub copy — also the homepage meta description (≤160 chars). */
   heroSub:
-    "Multi-sport coaching for schools and childcare centres across South-West Sydney. 18 sports, equipment supplied — and holiday clinics parents book online.",
+    "Multi-sport coaching for schools and childcare centres across South-West Sydney. 18 sports, equipment supplied, and holiday clinics parents book online.",
   /** Hero eyebrow — the strongest trust claim we hold, owner-sourced. */
   heroEyebrow: "Trusted by 10+ schools & 50+ childcare centres",
 } as const;
@@ -352,22 +367,22 @@ export const PROGRAMS: Program[] = [
     eyebrow: "In your centre",
     accent: BALL_COLORS.green,
     description: [
-      "Little kids are wired to move — we turn that energy into skills. Build Alpha Kids brings fun, fast-paced multi-sport sessions straight into your childcare centre, building coordination, confidence and a genuine love of active play from the very first session.",
-      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch — and they're laughing the whole way through. More than fifty childcare centres and early learning centres across South-West Sydney trust Build Alpha Kids — and we'd love yours to be next.",
+      "Little kids are wired to move. We turn that energy into skills. Build Alpha Kids brings fun, fast-paced multi-sport sessions straight into your childcare centre, building coordination, confidence and a genuine love of active play from the very first session.",
+      "Every session is run by qualified coaches in a safe, nurturing environment, with games designed for growing bodies and short attention spans. Kids learn to run, jump, throw, kick and catch, and they're laughing the whole way through. More than fifty childcare centres and early learning centres across South-West Sydney trust Build Alpha Kids, and we'd love yours to be next.",
       // Pricing model — owner-supplied (Jayden, 2026-07-18): centres
       // either pay a flat fee, or families opt in on a session package.
-      "There are two simple ways to run it. Your centre can book us on a flat fee, so sport becomes part of the program for every child — or we run it as an opt-in program where families pay a simple session-package rate. Either way, our coaches handle the sessions end to end and your educators don't lift a thing.",
+      "There are two simple ways to run it. Your centre can book us on a flat fee, so sport becomes part of the program for every child, or we run it as an opt-in program where families pay a simple session-package rate. Either way, our coaches handle the sessions end to end and your educators don't lift a thing.",
     ],
     ages: "Ages 2–5 (preschool and kindy-ready)",
     highlights: [
-      "Fundamental movement skills — running, jumping, throwing, catching",
+      "Fundamental movement skills: running, jumping, throwing, catching",
       "Social skills and confidence through team games",
       "Sessions built for short attention spans and big imaginations",
       "Safe, nurturing coaching from qualified, kid-first coaches",
-      "Delivered in-centre — zero extra admin for your team",
+      "Delivered in-centre: zero extra admin for your team",
     ],
     sessionShape: [
-      "Coaches arrive at your centre with every bit of equipment and set up before the kids come out — your educators don't lift a thing.",
+      "Coaches arrive at your centre with every bit of equipment and set up before the kids come out. Your educators don't lift a thing.",
       "The session runs as games: a warm-up chase, skill stations for kicking, throwing, catching and balancing, then a whole-group game to finish.",
       "Rotations are short and everything is scaled for two- to five-year-olds, so every child is in the game the whole way through.",
     ],
@@ -381,29 +396,29 @@ export const PROGRAMS: Program[] = [
       TRUST_POINTS.wwcc,
       TRUST_POINTS.firstAid,
       "EYLF-aligned session plans that fit your centre's day",
-      "All equipment supplied — no extra admin for your educators",
+      "All equipment supplied, no extra admin for your educators",
     ],
     heroImage: "/images/marketing/childcare-hero.jpg",
     faqs: [
       {
-        q: "Who pays — the centre or the families?",
-        a: "Either works. Your centre can book us on a flat fee so every child takes part as part of the program, or we run it as an opt-in program where families pay a simple session-package rate. Most centres pick whichever fits their community — we'll talk it through when you enquire.",
+        q: "Who pays: the centre or the families?",
+        a: "Either works. Your centre can book us on a flat fee so every child takes part as part of the program, or we run it as an opt-in program where families pay a simple session-package rate. Most centres pick whichever fits their community. We'll talk it through when you enquire.",
       },
       {
         q: "Do our educators need to run or supervise anything?",
-        a: "No. Our coaches arrive with every bit of equipment, set up before the kids come out, run the session and pack down after. Your educators stay in ratio as normal — that's the only thing we ask.",
+        a: "No. Our coaches arrive with every bit of equipment, set up before the kids come out, run the session and pack down after. Your educators stay in ratio as normal. That's the only thing we ask.",
       },
       {
         q: "How do sessions fit the EYLF?",
-        a: "Session plans are EYLF-aligned and built around fundamental movement skills — running, jumping, throwing, catching and balancing — with turn-taking and group play woven through. We're happy to walk your director through how the sessions map to your program.",
+        a: "Session plans are EYLF-aligned and built around fundamental movement skills: running, jumping, throwing, catching and balancing, with turn-taking and group play woven through. We're happy to walk your director through how the sessions map to your program.",
       },
       {
         q: "What ages do you coach in centres?",
-        a: "Ages two to five. Rotations are short, games are scaled for growing bodies and short attention spans, and every child is in the game the whole way through — it's coaching, not spectating.",
+        a: "Ages two to five. Rotations are short, games are scaled for growing bodies and short attention spans, and every child is in the game the whole way through. It's coaching, not spectating.",
       },
       {
         q: "What do you need from us to start?",
-        a: "A space to play — indoors or out — and your preferred day and time. Tell us your centre, your ages and roughly how many kids, and we'll come back with a quote within one business day.",
+        a: "A space to play, indoors or out, and your preferred day and time. Tell us your centre, your ages and roughly how many kids, and we'll come back with a quote within one business day.",
       },
     ],
   },
@@ -416,24 +431,24 @@ export const PROGRAMS: Program[] = [
     eyebrow: "On your grounds",
     accent: BALL_COLORS.blue,
     description: [
-      "Primary school is where kids decide whether sport is for them. Build Alpha Kids makes the answer a loud yes — dynamic multi-sport programs that sharpen physical skills, build real teamwork and get every kid in the class moving, not just the sporty ones.",
+      "Primary school is where kids decide whether sport is for them. Build Alpha Kids makes the answer a loud yes: dynamic multi-sport programs that sharpen physical skills, build real teamwork and get every kid in the class moving, not just the sporty ones.",
       "Our coaches deliver structured, curriculum-friendly sessions across footy, soccer, basketball, athletics and more, laying the foundation for lifelong fitness and personal growth. Schools across South-West Sydney trust us to run sport their teachers rave about and their students count down to.",
       // Engagement model — owner-supplied (Jayden, 2026-07-18): the
       // school engages and pays Build Alpha Kids directly.
-      "Working with us is deliberately simple: your school engages Build Alpha Kids directly, we build the program around your bell times and term dates, and our coaches deliver it on your grounds with every bit of equipment supplied. One provider, one invoice, no collection from parents — and a decade of school partnerships behind every session plan.",
+      "Working with us is deliberately simple: your school engages Build Alpha Kids directly, we build the program around your bell times and term dates, and our coaches deliver it on your grounds with every bit of equipment supplied. One provider, one invoice, no collection from parents, and a decade of school partnerships behind every session plan.",
     ],
     ages: "Kindergarten to Year 6 (ages 5–12)",
     highlights: [
-      "Multi-sport skill development — not just one code",
+      "Multi-sport skill development, not just one code",
       "Teamwork, sportsmanship and leadership baked into every game",
-      "Every kid involved — sessions scaled to all abilities",
+      "Every kid involved: sessions scaled to all abilities",
       "Curriculum-friendly structure that schools love",
       "Foundations for lifelong fitness and personal growth",
     ],
     sessionShape: [
       "Coaches turn up to your grounds with the gear and the session plan, and run sessions during sport time or straight after the bell.",
       "Each session moves from skill drills into fast games across footy, soccer, basketball, athletics and more, progressing week on week.",
-      "Games are scaled to all abilities, so every student is involved — not just the sporty ones.",
+      "Games are scaled to all abilities, so every student is involved, not just the sporty ones.",
     ],
     outcomes: [
       "Skills that transfer across codes",
@@ -458,14 +473,14 @@ export const PROGRAMS: Program[] = [
     eyebrow: "On your grounds",
     accent: BALL_COLORS.red,
     description: [
-      "High schoolers don't want babysitting — they want to be challenged. Build Alpha Kids runs advanced sports programs that push students harder, sharpen athletic skills and get them match-ready for competitive sport.",
-      "From strength and conditioning fundamentals to game-day tactics and team culture, our coaches treat students like athletes. The result: fitter, more confident young people with habits that outlast the school bell — and school sport programs that actually go somewhere.",
-      "Like all our school programs, it's the school that engages us: we design the program around your timetable and sport structure, deliver it on your grounds with all equipment supplied, and invoice the school directly. Your sport coordinator gets a program that runs itself — and students who turn up.",
+      "High schoolers don't want babysitting. They want to be challenged. Build Alpha Kids runs advanced sports programs that push students harder, sharpen athletic skills and get them match-ready for competitive sport.",
+      "From strength and conditioning fundamentals to game-day tactics and team culture, our coaches treat students like athletes. The result: fitter, more confident young people with habits that outlast the school bell, and school sport programs that actually go somewhere.",
+      "Like all our school programs, it's the school that engages us: we design the program around your timetable and sport structure, deliver it on your grounds with all equipment supplied, and invoice the school directly. Your sport coordinator gets a program that runs itself, and students who turn up.",
     ],
     ages: "Years 7–12 (ages 12–18)",
     highlights: [
       "Advanced skill and athletic development",
-      "Competition preparation — tactics, pressure, game sense",
+      "Competition preparation: tactics, pressure, game sense",
       "Strength, conditioning and injury-smart training habits",
       "Teamwork and leadership under real pressure",
       "Pathways towards competitive sport and lifelong fitness",
@@ -492,29 +507,29 @@ export const PROGRAMS: Program[] = [
   {
     slug: "after-school",
     title: "After School Clinics",
-    tagline: "The best hour of their school day — after it ends.",
+    tagline: "The best hour of their school day: after it ends.",
     metaDescription:
       "After school multi-sport clinics across South-West Sydney. Capped numbers, qualified coaches and real skill progression. NSW Active Kids vouchers accepted.",
     eyebrow: "After the bell",
     accent: BALL_COLORS.yellow,
     description: [
-      "The bell rings and the fun starts. Build Alpha Kids after school clinics are exciting, structured sessions that turn the after-school slump into the highlight of the week — kids build physical skills, sharpen teamwork and burn energy in a fun, supportive environment.",
+      "The bell rings and the fun starts. Build Alpha Kids after school clinics are exciting, structured sessions that turn the after-school slump into the highlight of the week. Kids build physical skills, sharpen teamwork and burn energy in a fun, supportive environment.",
       "Each clinic mixes skill drills with fast-paced games, so kids improve every week without ever feeling like they're training. Parents get a kid who's active, confident and happily worn out; schools and centres get a program that runs itself.",
       // Payment model — owner-supplied (Jayden, 2026-07-18): after-school
       // is parent-paid, and Active Kids vouchers apply.
-      "After-school clinics are parent-paid: families sign up directly, and NSW Active Kids vouchers can go towards the cost. For the school there's nothing to fund and nothing to run — we handle sign-ups, payments and the coaching, on your grounds, straight after the bell.",
+      "After-school clinics are parent-paid: families sign up directly, and NSW Active Kids vouchers can go towards the cost. For the school there's nothing to fund and nothing to run: we handle sign-ups, payments and the coaching, on your grounds, straight after the bell.",
     ],
     ages: "Primary-aged kids (ages 5–12)",
     highlights: [
       "Structured weekly sessions with real skill progression",
-      "Fast, fun games — kids improve without noticing the work",
+      "Fast, fun games: kids improve without noticing the work",
       "Teamwork and confidence in a supportive environment",
-      "Runs on-site straight after the bell — easy for parents",
+      "Runs on-site straight after the bell, easy for parents",
       "Qualified coaches, every session",
     ],
     sessionShape: [
       "Coaches are set up on site before the bell goes, so kids walk straight from the classroom into the session.",
-      "Each clinic mixes skill drills with fast-paced games — kids improve every week without ever feeling like they're training.",
+      "Each clinic mixes skill drills with fast-paced games. Kids improve every week without ever feeling like they're training.",
       "Numbers are capped, so every kid gets coached rather than supervised, and parents collect a kid who's active, confident and happily worn out.",
     ],
     outcomes: [
@@ -526,7 +541,7 @@ export const PROGRAMS: Program[] = [
     trustPoints: [
       TRUST_POINTS.wwcc,
       TRUST_POINTS.firstAid,
-      "Capped numbers — every kid gets coached, not supervised",
+      "Capped numbers: every kid gets coached, not supervised",
       ACTIVE_KIDS_BLURB,
     ],
     heroImage: "/images/marketing/after-school-hero.jpg",
@@ -540,19 +555,19 @@ export const PROGRAMS: Program[] = [
     eyebrow: "School holidays",
     accent: BALL_COLORS.orange,
     description: [
-      "Forget screen-time marathons — our holiday clinics are full-throttle multi-sport days packed with games, challenges and new mates. Kids rotate through footy, soccer, basketball, athletics and more, coached by the same crew they love during term.",
-      "Booking is easy: pick a day, book and pay online in about 60 seconds, and you're done. NSW Active Kids vouchers accepted. Spots are capped so every kid gets coached, not just supervised — and the best days sell out fast.",
+      "Forget screen-time marathons. Our holiday clinics are full-throttle multi-sport days packed with games, challenges and new mates. Kids rotate through footy, soccer, basketball, athletics and more, coached by the same crew they love during term.",
+      "Booking is easy: pick a day, book and pay online in about 60 seconds, and you're done. NSW Active Kids vouchers accepted. Spots are capped so every kid gets coached, not just supervised, and the best days sell out fast.",
     ],
     ages: "Primary-aged kids (ages 5–12)",
     highlights: [
-      "Multi-sport days — footy, soccer, basketball, athletics and more",
+      "Multi-sport days: footy, soccer, basketball, athletics and more",
       "Book and pay online in about 60 seconds",
       ACTIVE_KIDS_BLURB,
-      "Capped numbers — every kid gets coached, not supervised",
+      "Capped numbers: every kid gets coached, not supervised",
       "Run by the qualified coaches kids already know",
     ],
     sessionShape: [
-      "Full-throttle multi-sport days in the school holidays — kids rotate through footy, soccer, basketball, athletics and more, with games and challenges between.",
+      "Full-throttle multi-sport days in the school holidays. Kids rotate through footy, soccer, basketball, athletics and more, with games and challenges between.",
       "The crew running the day is the same crew kids know from term-time sessions.",
       "Pick a day, book and pay online in about 60 seconds; numbers are capped, so every kid gets coached rather than supervised.",
     ],
@@ -565,7 +580,7 @@ export const PROGRAMS: Program[] = [
     trustPoints: [
       TRUST_POINTS.wwcc,
       TRUST_POINTS.firstAid,
-      "Capped numbers — every kid gets coached, not supervised",
+      "Capped numbers: every kid gets coached, not supervised",
       ACTIVE_KIDS_BLURB,
     ],
     heroImage: "/images/marketing/holiday-programs-hero.jpg",
@@ -609,7 +624,7 @@ export const PROGRAM_PAGE = {
   clinicsCta: "See all clinic dates",
   /** Cross-link label for /holiday-clinics on every program page. */
   clinicsLinkLabel: "School holiday clinics",
-  sessionShapeEyebrow: "On the ground",
+  sessionShapeEyebrow: "In action",
   sessionShapeTitle: "What a session actually looks like",
   outcomesEyebrow: "The payoff",
   outcomesTitle: "What kids walk away with",
@@ -621,7 +636,7 @@ export const PROGRAM_PAGE = {
   quoteEyebrow: "Schools & centres",
   quoteTitle: "Want this running at your place?",
   quoteBody:
-    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote.",
+    "Tell us your site, your ages and the timeslot you have in mind, and we'll come back with a quote.",
   clinicsSectionEyebrow: "Book direct",
   clinicsSectionTitle: "The next clinic dates",
   clinicsSectionIntro:
@@ -637,7 +652,7 @@ export const HOMEPAGE_CLINICS = {
   eyebrow: "Book direct",
   title: "School holiday clinics",
   intro:
-    "The next dates on the calendar — book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
+    "The next dates on the calendar. Book and pay online in about 60 seconds. Spots are capped and the best days sell out fast.",
 } as const;
 
 /**
@@ -651,7 +666,7 @@ export const HOMEPAGE_CLINICS = {
  */
 export const HOLIDAY_CLINICS_PAGE = {
   description:
-    "Multi-sport school holiday clinics across South-West Sydney. Pick a date and book online in about 60 seconds — NSW Active Kids vouchers accepted.",
+    "Multi-sport school holiday clinics across South-West Sydney. Pick a date and book online in about 60 seconds. NSW Active Kids vouchers accepted.",
 } as const;
 
 /** Copy for the /programs index page (also its meta description). */
@@ -659,9 +674,9 @@ export const PROGRAMS_INDEX = {
   eyebrow: "Programs",
   title: "A program for every age and stage",
   intro:
-    "From first steps on the grass to game-day tactics — five programs that grow with your kids, run by the same coaches across South-West Sydney childcare centres, schools and holiday clinics.",
+    "From first steps on the grass to game-day tactics: five programs that grow with your kids, run by the same coaches across South-West Sydney childcare centres, schools and holiday clinics.",
   description:
-    "Multi-sport programs from Build Alpha Kids — childcare, primary school, high school, after school clinics and school holiday programs across South-West Sydney.",
+    "Multi-sport programs from Build Alpha Kids: childcare, primary school, high school, after school clinics and school holiday programs across South-West Sydney.",
 } as const;
 
 // ------------------------------------------------------------
@@ -691,7 +706,7 @@ export const ABOUT_PAGE = {
   /** The brand's existing line, carried over from the old site. */
   title: "Growing stronger, together",
   intro:
-    "Build Alpha Kids is a multi-sport coaching crew for kids across South-West Sydney — in childcare centres, on school grounds and at holiday clinics. Same coaches, same energy, wherever kids already are.",
+    "Build Alpha Kids is a multi-sport coaching crew for kids across South-West Sydney: in childcare centres, on school grounds and at holiday clinics. Same coaches, same energy, wherever kids already are.",
   /** Meta description (≤160 chars). */
   description:
     "Build Alpha Kids brings multi-sport coaching to childcare centres, schools and holiday clinics across South-West Sydney. Meet the crew and our standards.",
@@ -699,15 +714,15 @@ export const ABOUT_PAGE = {
   storyEyebrow: "Our story",
   storyTitle: "We go to where the kids are",
   story: [
-    "Kids are wired to move. Build Alpha Kids exists to turn that energy into skills — and to make sure the kid who would never put their hand up for a rep team gets coached just as hard as the one who would.",
+    "Kids are wired to move. Build Alpha Kids exists to turn that energy into skills, and to make sure the kid who would never put their hand up for a rep team gets coached just as hard as the one who would.",
     "So we go to where kids already are. Our coaches turn up at childcare centres with every bit of equipment and build sessions into the day. They run curriculum-friendly sessions on school grounds during sport time or straight after the bell. And in the school holidays they run full-throttle multi-sport days that parents book online in about 60 seconds.",
-    "Nothing we run is a one-code academy — kids rotate through the lot. From two-year-olds learning to kick and catch through to Year 12 students working on conditioning and game sense, the thread never changes: real coaching, scaled so every kid is in the game.",
+    "Nothing we run is a one-code academy. Kids rotate through the lot. From two-year-olds learning to kick and catch through to Year 12 students working on conditioning and game sense, the thread never changes: real coaching, scaled so every kid is in the game.",
   ],
 
   beliefsTitle: "What we back",
   beliefs: [
     "Every kid gets coached, not supervised",
-    "Play first — kids learn most when they're laughing",
+    "Play first: kids learn most when they're laughing",
     "Sport should meet kids where they already are",
     "Eighteen sports beats specialising early",
     "Habits that outlast the school bell",
@@ -720,7 +735,7 @@ export const ABOUT_PAGE = {
    */
   standardsTitle: "The standards behind every session",
   standardsIntro:
-    "The bits parents, educators and sport coordinators ask about first — and the answers we hold every coach to.",
+    "The bits parents, educators and sport coordinators ask about first, and the answers we hold every coach to.",
 } as const;
 
 export const COACH_STANDARDS: CoachStandard[] = [
@@ -741,7 +756,7 @@ export const COACH_STANDARDS: CoachStandard[] = [
   },
   {
     title: "The same crew, term and holidays",
-    body: "The coaches running our holiday clinics are the same crew kids know from term-time sessions — so kids walk in already knowing who is coaching them.",
+    body: "The coaches running our holiday clinics are the same crew kids know from term-time sessions, so kids walk in already knowing who is coaching them.",
     ball: BALL_COLORS.red,
   },
 ];
@@ -762,10 +777,10 @@ export const SCHOOLS_PAGE = {
   eyebrow: "For schools",
   title: "School sport your students count down to",
   intro:
-    "Build Alpha Kids has spent over a decade running multi-sport programs on school grounds across South-West Sydney — primary, high school and after-school. Qualified coaches, 18 sports, all equipment supplied, built around your bell times.",
+    "Build Alpha Kids has spent over a decade running multi-sport programs on school grounds across South-West Sydney: primary, high school and after-school. Qualified coaches, 18 sports, all equipment supplied, built around your bell times.",
   /** Meta description (≤160 chars). */
   description:
-    "Multi-sport school programs across South-West Sydney — primary, high school and after-school. Coaches, equipment and session plans supplied. Get a quote.",
+    "Multi-sport school programs across South-West Sydney: primary, high school and after-school. Coaches, equipment and session plans supplied. Get a quote.",
 
   whyEyebrow: "Why schools pick us",
   whyTitle: "A partner, not just a provider",
@@ -776,11 +791,11 @@ export const SCHOOLS_PAGE = {
     },
     {
       title: "Zero lift for your staff",
-      body: "Coaches arrive with every bit of equipment and a session plan that fits your timetable. Teachers stay teachers — nobody on your staff has to run a drill or pump up a ball.",
+      body: "Coaches arrive with every bit of equipment and a session plan that fits your timetable. Teachers stay teachers. Nobody on your staff has to run a drill or pump up a ball.",
     },
     {
       title: "Safety you can show parents",
-      body: "Every coach holds a current Working With Children Check and first-aid certification — both tracked per coach in our own system — and sessions are risk-assessed and scaled by age.",
+      body: "Every coach holds a current Working With Children Check and first-aid certification, both tracked per coach in our own system, and sessions are risk-assessed and scaled by age.",
     },
     {
       title: "A decade on school grounds",
@@ -796,15 +811,15 @@ export const SCHOOLS_PAGE = {
   steps: [
     {
       title: "Tell us about your school",
-      body: "Your site, your year groups and the timeslot you have in mind — sport time, lunchtime or after the bell. Two minutes, one form.",
+      body: "Your site, your year groups and the timeslot you have in mind: sport time, lunchtime or after the bell. Two minutes, one form.",
     },
     {
       title: "We design the program",
-      body: "We come back within one business day and build the program around your bell times, term dates and facilities — sports, session structure and coach allocation included.",
+      body: "We come back within one business day and build the program around your bell times, term dates and facilities: sports, session structure and coach allocation included.",
     },
     {
       title: "We deliver, you get one invoice",
-      body: "Your school engages us directly: our coaches run the sessions on your grounds and the school pays one provider, one invoice. After-school clinics are the exception — parents pay, and NSW Active Kids vouchers are accepted.",
+      body: "Your school engages us directly: our coaches run the sessions on your grounds and the school pays one provider, one invoice. After-school clinics are the exception: parents pay, and NSW Active Kids vouchers are accepted.",
     },
   ],
 
@@ -813,11 +828,11 @@ export const SCHOOLS_PAGE = {
   faqs: [
     {
       q: "Who pays for the program?",
-      a: "For in-school programs — sport time, PE support, lunchtime clinics — the school engages Build Alpha Kids and pays us directly. One invoice, no collecting from parents. After-school clinics flip that: parents sign up and pay directly, and NSW Active Kids vouchers can go towards the cost.",
+      a: "For in-school programs, such as sport time, PE support and lunchtime clinics, the school engages Build Alpha Kids and pays us directly. One invoice, no collecting from parents. After-school clinics flip that: parents sign up and pay directly, and NSW Active Kids vouchers can go towards the cost.",
     },
     {
       q: "Do you supply the equipment?",
-      a: "Yes — all of it. Coaches arrive with the gear and the session plan for every session, so there's nothing for your school to buy, store or maintain.",
+      a: "Yes, all of it. Coaches arrive with the gear and the session plan for every session, so there's nothing for your school to buy, store or maintain.",
     },
     {
       q: "How do you keep sessions safe?",
@@ -825,11 +840,11 @@ export const SCHOOLS_PAGE = {
     },
     {
       q: "Can the program fit our timetable?",
-      a: "That's the point of designing it with you. We build around your bell times, term dates and facilities — during sport time, at lunch, or straight after the bell — and progress the program week on week.",
+      a: "That's the point of designing it with you. We build around your bell times, term dates and facilities, during sport time, at lunch or straight after the bell, and progress the program week on week.",
     },
     {
       q: "Which sports can our students do?",
-      a: "Eighteen and counting — soccer, basketball, cricket, netball, AFL, rugby league, athletics, gymnastics, dodgeball, oztag and more. Most schools run a multi-sport rotation so every student finds a sport that clicks.",
+      a: "Eighteen and counting: soccer, basketball, cricket, netball, AFL, rugby league, athletics, gymnastics, dodgeball, oztag and more. Most schools run a multi-sport rotation so every student finds a sport that clicks.",
     },
   ],
 } as const;
@@ -860,10 +875,10 @@ export const CONTACT_PAGE = {
   eyebrow: "Contact",
   title: "Get in touch",
   intro:
-    "Booking a clinic, chasing a quote for your centre or school, or just after a chat about what we run — here's how to reach us.",
+    "Booking a clinic, chasing a quote for your centre or school, or just after a chat about what we run: here's how to reach us.",
   /** Meta description (≤160 chars). */
   description:
-    "Get in touch with Build Alpha Kids — phone, email and where we coach across South-West Sydney. Book a clinic or request a quote for your centre.",
+    "Get in touch with Build Alpha Kids: phone, email and where we coach across South-West Sydney. Book a clinic or request a quote for your centre.",
 
   detailsEyebrow: "The details",
   detailsTitle: "How to reach us",
@@ -877,13 +892,13 @@ export const CONTACT_PAGE = {
   routesEyebrow: "Fastest route",
   routesTitle: "Which door do you need?",
   routesIntro:
-    "Two paths, depending on why you're here — both land straight with the people who can help.",
+    "Two paths, depending on why you're here. Both land straight with the people who can help.",
 } as const;
 
 export const CONTACT_ROUTES: ContactRoute[] = [
   {
     title: "I'm a parent",
-    body: "Holiday clinic dates go up as soon as they're locked in. Pick a day, book and pay online in about 60 seconds — NSW Active Kids vouchers accepted, and numbers are capped.",
+    body: "Holiday clinic dates go up as soon as they're locked in. Pick a day, book and pay online in about 60 seconds. NSW Active Kids vouchers accepted, and numbers are capped.",
     href: "/holiday-clinics",
     cta: PROGRAM_PAGE.clinicsCta,
     ball: BALL_COLORS.yellow,
@@ -922,7 +937,7 @@ export const ENQUIRE_PAGE = {
   eyebrow: "Schools & centres",
   title: "Request a quote",
   intro:
-    "Tell us your site, your ages and the timeslot you have in mind — we'll come back with a quote for multi-sport coaching run on your grounds by our coaches, with all equipment supplied.",
+    "Tell us your site, your ages and the timeslot you have in mind, and we'll come back with a quote for multi-sport coaching run on your grounds by our coaches, with all equipment supplied.",
   /** Meta description (≤160 chars). */
   description:
     "Request a quote for Build Alpha Kids multi-sport coaching at your childcare centre or school across South-West Sydney. All equipment supplied.",
@@ -935,7 +950,7 @@ export const ENQUIRE_PAGE = {
   nextEyebrow: "What happens next",
   nextTitle: "How this goes from here",
   nextIntro:
-    "No call centre and no drip campaign — a real reply from the people who run the coaching.",
+    "No call centre and no drip campaign: a real reply from the people who run the coaching.",
 
   trustEyebrow: "Every coach, every session",
   trustTitle: "What you're getting either way",
@@ -944,7 +959,7 @@ export const ENQUIRE_PAGE = {
 export const ENQUIRE_STEPS: EnquireStep[] = [
   {
     title: "It lands with our team",
-    body: "Your enquiry goes straight to the crew who run the coaching — nobody in between, no queue.",
+    body: "Your enquiry goes straight to the crew who run the coaching. Nobody in between, no queue.",
     ball: BALL_COLORS.green,
   },
   {
@@ -1001,7 +1016,7 @@ export const ENQUIRE_FORM = {
   programsHint: "Pick as many as you like.",
   messageLabel: "Anything else we should know?",
   messageHint:
-    "Your ages, the timeslot you have in mind, how many kids — whatever you've got.",
+    "Your ages, the timeslot you have in mind, how many kids: whatever you've got.",
   /** Honeypot field label — off-screen, only bots and nobody else read it. */
   honeypotLabel: "Website",
   submitLabel: "Request a quote",
@@ -1010,19 +1025,19 @@ export const ENQUIRE_FORM = {
   errors: {
     orgNameRequired: "Please tell us the name of your school or centre.",
     emailRequired: "Please add an email address so we can reply.",
-    emailInvalid: "That email address doesn't look right — please check it.",
+    emailInvalid: "That email address doesn't look right. Please check it.",
     orgTypeRequired: "Please pick the option that fits best.",
     /** Heading above the server's own 4xx message. */
     serverTitle: "We couldn't send that",
   },
 
-  successTitle: "Got it — thanks!",
+  successTitle: "Got it, thanks!",
   successBody: "We'll be in touch within one business day.",
   successCta: "Have a look at what we run",
 
   failureTitle: "That didn't send",
   failureBody:
-    "Something went wrong at our end and your details didn't reach us. Give it another go — or call us and we'll take it down over the phone.",
+    "Something went wrong at our end and your details didn't reach us. Give it another go, or call us and we'll take it down over the phone.",
   failureRetry: "Try again",
   failurePhonePrefix: "Call us on",
 } as const;
@@ -1053,12 +1068,12 @@ export const NEWSLETTER = {
 
   errors: {
     emailRequired: "Please add an email address.",
-    emailInvalid: "That email address doesn't look right — please check it.",
+    emailInvalid: "That email address doesn't look right. Please check it.",
     rateLimited: "That's a few too many tries. Give it a minute and go again.",
   },
 
   successTitle: "You're on the list",
-  successBody: "Thanks — we'll be in touch.",
+  successBody: "Thanks, we'll be in touch.",
 
   failureTitle: "That didn't send",
   failureBody:
@@ -1143,9 +1158,9 @@ export const BLOG_INDEX = {
   eyebrow: "From the sideline",
   title: "News, tips and coaching notes",
   intro:
-    "What we're learning on the grass and in the gym — how sport builds skills, confidence and character in kids.",
+    "What we're learning on the grass and in the gym: how sport builds skills, confidence and character in kids.",
   description:
-    "Coaching notes and news from Build Alpha Kids — how multi-sport programs build skills, confidence and character in kids across South-West Sydney.",
+    "Coaching notes and news from Build Alpha Kids: how multi-sport programs build skills, confidence and character in kids across South-West Sydney.",
   /** Shown when nothing is published yet — never a blank page. */
   emptyTitle: "Nothing posted just yet",
   emptyBody:

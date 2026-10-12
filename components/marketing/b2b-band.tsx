@@ -14,12 +14,13 @@ export function B2bBand() {
       title="Bring Build Alpha Kids to your school or centre"
       body={
         <>
-          Qualified coaches, curriculum-friendly sessions and zero extra admin
-          — trusted by schools and centres across {SITE.serviceArea}.
+          Qualified coaches, curriculum-friendly sessions and zero extra admin,
+          trusted by schools and centres across {SITE.serviceArea}.
         </>
       }
       href={SITE.enquiryUrl}
       cta="Enquire now"
+      hem
     />
   );
 }

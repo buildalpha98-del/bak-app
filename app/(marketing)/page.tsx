@@ -33,7 +33,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   // `absolute` opts out of the layout's "%s | Build Alpha Kids"
   // template — the brand already leads this title.
-  title: { absolute: `${SITE.name} — ${SITE.tagline}` },
+  title: { absolute: `${SITE.name}: ${SITE.tagline}` },
   description: HOMEPAGE.heroSub,
   alternates: { canonical: "/" },
 };
@@ -71,7 +71,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow={PROGRAMS_INDEX.eyebrow}
           title={PROGRAMS_INDEX.title}
-          intro="From first steps on the grass to game-day tactics — five programs that grow with your kids."
+          intro="From first steps on the grass to game-day tactics: five programs that grow with your kids."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {PROGRAMS.map((program) => (

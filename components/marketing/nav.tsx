@@ -78,10 +78,11 @@ export function MarketingNav() {
           />
         </Link>
 
-        {/* Desktop links */}
+        {/* Desktop links. From lg up: six links plus the two CTAs
+            overflow the viewport between 768 and 1024px. */}
         <nav
           aria-label="Primary"
-          className="hidden items-center gap-1 md:flex"
+          className="hidden items-center gap-1 lg:flex"
         >
           {LINKS.map((link) => (
             <Link
@@ -95,7 +96,7 @@ export function MarketingNav() {
         </nav>
 
         {/* Desktop CTAs */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <Link
             href={accountHref}
             className="flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#FFF7F2] hover:text-[#993C1D]"
@@ -108,7 +109,7 @@ export function MarketingNav() {
         </div>
 
         {/* Mobile menu */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               // Explicit stable id: base-ui otherwise assigns a

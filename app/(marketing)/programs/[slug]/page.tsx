@@ -478,7 +478,7 @@ function SportProgramPage({ page }: { page: SportPage }) {
 
       <Section aria-label={`What a ${page.sport} unit looks like`} className="bg-white">
         <SectionHeading
-          eyebrow="On the ground"
+          eyebrow="In action"
           title={`What a ${page.sport.toLowerCase()} unit looks like`}
         />
         <div className="mx-auto mt-10 max-w-3xl space-y-5">
