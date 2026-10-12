@@ -192,16 +192,12 @@ export const PRIVACY_PAGE: LegalPage = {
       heading: "Information sent overseas",
       body: [
         "Some of your information is held or processed outside Australia. Under APP 8 we have to tell you that plainly, so:",
-        // Source: vercel.json — `"regions": ["bom1"]`. bom1 is Vercel's
-        // Mumbai region. This is the compute region, which is NOT the same
-        // thing as where the database sits — hence the separate line below.
-        "Our application runs on servers in Mumbai, India. This means information you enter — including information about your child — is processed in India.",
-        // Deliberately unresolved. The repo only pins the LOCAL Supabase
-        // (supabase/config.toml, NEXT_PUBLIC_SUPABASE_URL=127.0.0.1 in
-        // .env.local.example). The hosted project's region is a dashboard
-        // setting and cannot be read from the code. Guessing it would be
-        // guessing the single most important sentence on this page.
-        "TODO-CONFIRM: the country in which our Supabase database physically stores data. This could not be determined from our code — it is set on the hosted Supabase project. This is the sentence that tells a parent where their child's records actually live, so it must be confirmed in the Supabase dashboard and stated here exactly, before this page goes live.",
+        // Source: vercel.json — `"regions": ["syd1"]` (Vercel's Sydney
+        // region) and the hosted Supabase project "BAK Sydney"
+        // (yyndmywxfxklzaftfhon), region ap-southeast-2 (Sydney) — both
+        // moved from Mumbai in Oct 2026. If either region changes, this
+        // sentence must change in the same deploy.
+        "Our application runs on servers in Sydney, Australia, and our database — where your information and your child's records are stored — is also in Sydney, Australia.",
         "TODO-CONFIRM: the countries in which Anthropic, Resend, Square and Twilio store and process the information we send them. Each provider is based outside Australia, but the specific countries must be confirmed from each provider's own terms rather than assumed.",
       ],
     },
