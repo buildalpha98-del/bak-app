@@ -206,3 +206,20 @@ describe("sports roster and partners (owner-supplied 2026-07-18)", () => {
     ]);
   });
 });
+
+// Every TODO-CONFIRM on the legal pages was answered by the owner on
+// 2026-10-12. Open questions now live in code comments only; a note
+// written into the copy itself would be printed to the public.
+describe("legal pages", () => {
+  it.each(LEGAL_PAGES)(
+    "%s renders no TODO-CONFIRM note",
+    (_name, page) => {
+      const copy = page.sections.flatMap((s) => [
+        s.heading,
+        ...s.body,
+        ...(s.bullets ?? []),
+      ]);
+      expect(copy.filter((line) => line.includes("TODO-CONFIRM"))).toEqual([]);
+    }
+  );
+});
