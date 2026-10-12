@@ -26,9 +26,9 @@ export const dynamic = "force-dynamic";
 // content streams in as queries resolve. The slowest widget no
 // longer dictates time-to-first-byte for the whole page.
 //
-// Vercel region is pinned to bom1 (matching Supabase ap-south-1)
-// in vercel.json so each query is sub-50ms instead of the ~250ms
-// trans-Pacific round-trip we had on the iad1 default.
+// Vercel region is pinned to syd1 (matching Supabase ap-southeast-2)
+// in vercel.json so each query stays in-region. Functions and database
+// must always share a region; the users are in Sydney too.
 
 export default async function AdminDashboard() {
   const supabase = await createSupabaseServerClient();
