@@ -997,7 +997,7 @@ function EditCentreDialog({
                 </Label>
                 <input
                   type="color"
-                  value={brandColour ?? "#0891B2"}
+                  value={brandColour ?? "#E8712A"}
                   onChange={(e) => setBrandColour(e.target.value)}
                   className="h-8 w-12 cursor-pointer rounded border bg-transparent p-0.5"
                   aria-label="Portal accent colour"
