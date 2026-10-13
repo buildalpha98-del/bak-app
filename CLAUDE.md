@@ -60,7 +60,7 @@ expect exactly one.
 
 - **Name:** Build Alpha Kids (never abbreviated)
 - **Primary:** #E8712A (orange). Dark text: #1A1A1A. Secondary: #666666
-- **Client portal:** teal/blue accent. Parent portal: warmer consumer design
+- **Client portal:** the same Build Alpha Kids design system as the staff side (teal dropped 2026-10-13; white-label centres still get their own colour). Parent portal: warmer consumer design
 - **Language:** Australian English
 
 ## User Roles
@@ -149,8 +149,12 @@ marketing site's "sticker" look. Applied across the dashboard and portal on
 cards/tiles, pills, eyebrows; table rows, roster cells, inputs and boxes
 nested inside a card stay flat); **light only** (`forcedTheme="light"`, no
 toggle, no `.dark` tokens, no `dark:` classes — the sticker's ink outline
-vanishes on dark grounds); **the client portal keeps teal** with the sticker
-shapes.
+vanishes on dark grounds); and, since 13 Oct, **the client (school /
+childcare) portal is full brand too** — teal dropped from the portal, its
+login page and its emails. The `--portal-*` scale now defaults to brand
+values with AA-safe text steps (600 `#B5521A`, 700 `rust`); a
+**white-label** centre's inline `--portal-brand` + `.portal-brand-scope`
+still recompute the scale and point `--cta` at their own tint.
 
 - **Use the primitives** — `Button`, `Card`, `Badge`, `Tabs` already carry it.
   Never colour a Button by className (`bg-primary text-white …`): pick a
@@ -158,13 +162,12 @@ shapes.
   `@/components/ui/button-variants` (server-safe; it is NOT exported from
   `button.tsx`, which is a client module — a server page calling it threw).
 - **Tokens** (globals.css `@theme`): `ink`, `brand-yellow`, `brand-orange`,
-  `cream`, `rust`, `ball-*`, `cta`/`cta-foreground` (yellow+ink; the portal
-  re-points them to its teal tint in `.portal-surface`), `shadow-sticker-*`,
+  `cream`, `rust`, `ball-*`, `cta`/`cta-foreground` (yellow+ink; a
+  white-label centre's scope re-points them to its own tint), `shadow-sticker-*`,
   `rounded-card`/`rounded-tile`. **Utilities** for hand-built markup:
   `sticker-card` (top-level panel), `sticker-tile` (pressable tile),
-  `eyebrow` (section kicker; follows `--cta`, so teal in the portal).
-- **Contrast rules**: no white text on orange (3.1:1) or on the portal teal
-  (3.7:1) — use ink. Small orange text on light grounds is `text-rust`.
+  `eyebrow` (section kicker; follows `--cta`).
+- **Contrast rules**: no white text on orange (3.1:1) — use ink. Small orange text on light grounds is `text-rust`.
   Control borders (`--input`) and the focus ring are ≥3:1. All guarded in
   `lib/brand/__tests__/contrast.test.ts`.
 - Deliberate exceptions: the CRM embed form and marketing widget snippets
