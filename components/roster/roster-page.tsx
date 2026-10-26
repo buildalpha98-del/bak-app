@@ -721,6 +721,16 @@ export function RosterPage({
             size="sm"
             className="hidden sm:inline-flex"
             nativeButton={false}
+            render={<Link href={`${basePath.replace(/\/roster$/, "")}/monthly-bookings`} />}
+          >
+            <CalendarDays className="size-4" />
+            Month
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+            nativeButton={false}
             render={<Link href={`${basePath}/terms`} />}
           >
             View Terms
@@ -979,6 +989,10 @@ export function RosterPage({
               <DropdownMenuItem nativeButton={false} render={<Link href={`${basePath}/coverage`} />}>
                 <CalendarRange className="mr-2 size-4" />
                 Term board
+              </DropdownMenuItem>
+              <DropdownMenuItem nativeButton={false} render={<Link href={`${basePath.replace(/\/roster$/, "")}/monthly-bookings`} />}>
+                <CalendarDays className="mr-2 size-4" />
+                Monthly bookings
               </DropdownMenuItem>
               <DropdownMenuItem nativeButton={false} render={<Link href={`${basePath}/terms`} />}>
                 <CalendarDays className="mr-2 size-4" />
