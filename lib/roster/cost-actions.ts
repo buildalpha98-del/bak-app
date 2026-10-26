@@ -14,6 +14,7 @@ import {
 import type { CentreType } from "@/lib/types/enums";
 import { toLocalIso } from "@/lib/utils/roster";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 // (No type re-exports in "use server" modules — import CostProjection
 // from @/lib/utils/roster/cost-projection.)
 
@@ -73,10 +74,10 @@ export async function getWeekCostProjection(
 
     const { data: actor } = await supabase
       .from("profiles")
-      .select("financial_access")
+      .select("role, financial_access")
       .eq("id", user.id)
       .single();
-    if (!actor?.financial_access) {
+    if (!canSeeFinancials(actor)) {
       return { data: null, error: null };
     }
 

@@ -74,14 +74,16 @@ describe("requireFinancialAccess", () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
-  it("does NOT redirect when financial_access is true (ops with grant)", async () => {
+  // Oct 2026: money is Admin-only. An ops account is refused even with
+  // the flag on (lib/auth/financial-rule.ts).
+  it("redirects ops even when financial_access is true", async () => {
     supabaseMock.auth.getUser.mockResolvedValue({
       data: { user: { id: "ops-1" } },
     });
     mockProfile({ role: "ops", financial_access: true });
 
-    await expect(requireFinancialAccess()).resolves.toBeUndefined();
-    expect(redirectMock).not.toHaveBeenCalled();
+    await expect(requireFinancialAccess()).rejects.toThrow();
+    expect(redirectMock).toHaveBeenCalledWith("/ops?denied=financial");
   });
 
   it("redirects ops with financial_access=false to /ops?denied=financial", async () => {

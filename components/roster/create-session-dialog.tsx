@@ -50,6 +50,9 @@ interface CreateSessionDialogProps {
   defaultCoachId?: string;
   editSession?: SessionWithRelations;
   onSuccess: () => void;
+  /** Admin + financial access only (lib/auth/financial-rule.ts). Without
+   *  it the pay override is hidden and never written. Defaults closed. */
+  showPay?: boolean;
 }
 
 // ============================================================
@@ -67,6 +70,7 @@ export function CreateSessionDialog({
   defaultCoachId,
   editSession,
   onSuccess,
+  showPay = false,
 }: CreateSessionDialogProps) {
   const isEdit = !!editSession;
 
@@ -171,9 +175,9 @@ export function CreateSessionDialog({
         sport,
         coach_id: coachId || null,
         school_class_ids: classIds.length > 0 ? classIds : null,
-        pay_rate_override: payRateOverride
-          ? parseFloat(payRateOverride)
-          : null,
+        // A viewer who can't see pay was sent null — never write it back
+        // over a real override.
+        ...(showPay ? { pay_rate_override: payRateOverride ? parseFloat(payRateOverride) : null } : {}),
       });
       if (err) {
         setError(err);
@@ -442,18 +446,20 @@ export function CreateSessionDialog({
             disabled={saving}
           />
 
-          {/* Pay Rate Override (optional) */}
-          <div className="space-y-1.5">
-            <Label htmlFor="pay-override">Pay Rate Override ($)</Label>
-            <Input
-              id="pay-override"
-              type="number"
-              step="0.01"
-              value={payRateOverride}
-              onChange={(e) => setPayRateOverride(e.target.value)}
-              placeholder="Leave empty for default rate"
-            />
-          </div>
+          {/* Pay Rate Override (optional) — admin + financial access only */}
+          {showPay && (
+            <div className="space-y-1.5">
+              <Label htmlFor="pay-override">Pay Rate Override ($)</Label>
+              <Input
+                id="pay-override"
+                type="number"
+                step="0.01"
+                value={payRateOverride}
+                onChange={(e) => setPayRateOverride(e.target.value)}
+                placeholder="Leave empty for default rate"
+              />
+            </div>
+          )}
 
           {/* Recurrence — create mode only; edits touch a single shift */}
           {!isEdit && !rotateSports && (

@@ -720,7 +720,7 @@ export function StaffListView({
                         <Badge variant="outline" className="text-xs">
                           {ROLE_LABELS[member.role]}
                         </Badge>
-                        {member.financial_access && (
+                        {member.financial_access && member.role === "admin" && (
                           <Badge
                             variant="secondary"
                             className="hidden gap-1 border-primary/40 bg-primary/10 text-rust lg:inline-flex"
@@ -1053,7 +1053,7 @@ function StaffGridView({
                       {statusStyle.label}
                     </span>
                   )}
-                  {member.financial_access && (
+                  {member.financial_access && member.role === "admin" && (
                     <Badge
                       variant="secondary"
                       className="gap-1 border-primary/40 bg-primary/10 text-[10px] text-rust"

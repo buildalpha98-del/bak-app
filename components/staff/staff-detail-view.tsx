@@ -327,7 +327,7 @@ export function StaffDetailView({
                 {statusStyle.label}
               </span>
             )}
-            {profile.financial_access && (
+            {profile.financial_access && profile.role === "admin" && (
               <Badge variant="secondary" className="gap-1">
                 <Banknote className="h-3 w-3" />
                 Financial access
@@ -384,7 +384,8 @@ export function StaffDetailView({
                   {profile.also_coaches ? "Stop coaching" : "Also coaches"}
                 </Button>
               )}
-              {canEditFinancialAccess && (
+              {/* Grant is Admin accounts only; a leftover flag on anyone else can still be revoked. */}
+              {canEditFinancialAccess && (profile.role === "admin" || profile.financial_access) && (
                 <Button
                   variant="outline"
                   size="sm"

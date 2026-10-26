@@ -23,8 +23,8 @@ export function AddStaffForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("coach");
-  // financial_access is admin/ops-only; if the operator flips the
-  // dropdown to coach we drop the bit silently rather than leak it
+  // financial_access is Admin-only; if the operator flips the
+  // dropdown to another role we drop the bit silently rather than leak it
   // through. Default off so a forgetful add doesn't grant payroll.
   const [grantFinancialAccess, setGrantFinancialAccess] = useState(false);
   const [created, setCreated] = useState<{
@@ -60,8 +60,8 @@ export function AddStaffForm() {
       phone,
       role,
       default_pay_rate,
-      financial_access:
-        (role === "admin" || role === "ops") && grantFinancialAccess,
+      // Money is Admin-only (lib/auth/financial-rule.ts).
+      financial_access: role === "admin" && grantFinancialAccess,
     });
 
     if (result.error) {
@@ -236,7 +236,7 @@ export function AddStaffForm() {
          * disable it; the server action also drops the bit defensively
          * for non-admin/ops roles.
          */}
-        {(role === "admin" || role === "ops") && (
+        {role === "admin" && (
           <div className="flex items-start gap-3 rounded-2xl border bg-muted/30 p-3">
             <Checkbox
               id="financial_access"

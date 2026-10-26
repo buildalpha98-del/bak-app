@@ -393,13 +393,21 @@ export async function getCentreDetail(
         .eq("centre_id", id),
     ]);
 
+    // Money never leaves the server for a viewer who can't see it
+    // (Admin + financial_access only — lib/auth/financial-rule.ts).
+    // Hiding it in the component isn't enough: the props are readable
+    // in the browser.
+    const money = await getFinancialAccess();
+
     return {
       data: {
-        centre,
+        centre: money ? centre : { ...centre, agreed_rate: null },
         notes,
-        sessions,
+        sessions: money
+          ? sessions
+          : sessions.map((s) => ({ ...s, pay_rate_override: null, pay_rate_resolved: null })),
         equipment_kits: equipmentKits ?? [],
-        outbound_invoices: invoices ?? [],
+        outbound_invoices: money ? invoices ?? [] : [],
         sessions_count: sessions.length,
         feedback_count: feedbackRes.count ?? 0,
         children_count: childrenRes.count ?? 0,

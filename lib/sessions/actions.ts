@@ -2,6 +2,7 @@
 
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getFinancialAccess } from "@/lib/auth/financial-access";
 import type { SessionStatus, CentreType } from "@/lib/types/enums";
 import type { Session, Profile } from "@/lib/types/database";
 import {
@@ -125,6 +126,8 @@ export async function getSessionsForWeek(
       .order("time");
 
     if (error) throw error;
+    // Pay is Admin + financial access only; nobody else is sent it.
+    const money = await getFinancialAccess();
 
     const sessions: SessionWithRelations[] = (raw ?? []).map((s) => ({
       id: s.id,
@@ -139,8 +142,8 @@ export async function getSessionsForWeek(
       program_id: s.program_id,
       equipment_kit_id: s.equipment_kit_id,
       status: s.status as SessionStatus,
-      pay_rate_override: s.pay_rate_override,
-      pay_rate_resolved: s.pay_rate_resolved,
+      pay_rate_override: money ? s.pay_rate_override : null,
+      pay_rate_resolved: money ? s.pay_rate_resolved : null,
       cancellation_reason: s.cancellation_reason,
       actual_duration_minutes: (s as Record<string, unknown>).actual_duration_minutes as number | null ?? null,
       headcount: (s as Record<string, unknown>).headcount as number | null ?? null,

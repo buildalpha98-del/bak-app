@@ -15,6 +15,7 @@ import {
   type RoleHint,
 } from "@/lib/auth/route-access";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 // Hard-down tripwire. A redirect whose destination is the path we are
 // already on is an infinite loop — which is exactly how production login
 // went down (a signed-out visitor to /login redirected to /login). It
@@ -252,7 +253,7 @@ export async function middleware(request: NextRequest) {
             user.id,
             profile.role,
             profile.status,
-            !!profile.financial_access
+            canSeeFinancials(profile)
           );
           const portalUrl = request.nextUrl.clone();
           portalUrl.pathname = ROLE_PORTAL[profile.role] || "/login";
@@ -463,7 +464,7 @@ export async function middleware(request: NextRequest) {
         hint = {
           role: profile.role,
           status: profile.status,
-          financialAccess: !!profile.financial_access,
+          financialAccess: canSeeFinancials(profile),
           alsoCoaches: !!profile.also_coaches,
         };
         setRoleHint(

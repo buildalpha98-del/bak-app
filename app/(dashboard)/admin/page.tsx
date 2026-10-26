@@ -14,6 +14,7 @@ import {
 } from "@/components/admin/dashboard-async";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 export const dynamic = "force-dynamic";
 
 // ============================================================
@@ -46,7 +47,7 @@ export default async function AdminDashboard() {
   if (!profile) redirect("/login");
 
   const firstName = (profile.name ?? "").split(" ")[0] || "there";
-  const hasFinancial = !!profile.financial_access;
+  const hasFinancial = canSeeFinancials(profile);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -57,7 +58,7 @@ export default async function AdminDashboard() {
       <QuickActionsRow />
 
       <Suspense fallback={<LaunchDashboardSkeleton />}>
-        <LaunchDashboardAsync profile={profile} />
+        <LaunchDashboardAsync profile={{ ...profile, financial_access: hasFinancial }} />
       </Suspense>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

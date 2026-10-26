@@ -361,11 +361,9 @@ export async function createStaffMember(
 
   if (authError) return { data: null, error: authError.message };
 
-  // Insert profile row. financial_access only meaningful for
-  // admin/ops — defaults to false everywhere else regardless of input.
-  const financialAccess =
-    (data.role === "admin" || data.role === "ops") &&
-    data.financial_access === true;
+  // Insert profile row. Money is Admin-only (lib/auth/financial-rule.ts):
+  // financial_access is never stored for any other role, whatever the input.
+  const financialAccess = data.role === "admin" && data.financial_access === true;
   const { error: profileError } = await admin.from("profiles").insert({
     id: authUser.user.id,
     email: data.email,
@@ -927,6 +925,14 @@ export async function setStaffFinancialAccess(
     .single();
   if (!actor || actor.role !== "admin") {
     return { error: "Only admins can change financial access." };
+  }
+  // Granting is Admin accounts only — Ops and below never see money
+  // (lib/auth/financial-rule.ts). Revoking is always allowed.
+  if (value) {
+    const { data: target } = await supabase.from("profiles").select("role").eq("id", staffId).single();
+    if (!target || target.role !== "admin") {
+      return { error: "Financial access is for Admin accounts only." };
+    }
   }
 
   const { error } = await supabase
