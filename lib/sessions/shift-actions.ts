@@ -1,4 +1,5 @@
 "use server";
+import { transitionCoachSession } from "./coach-lifecycle";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -83,10 +84,7 @@ export async function confirmShift(
     }
 
     // Update status
-    const { error: updateErr } = await supabase
-      .from("sessions")
-      .update({ status: "confirmed" })
-      .eq("id", sessionId);
+    const { error: updateErr } = await transitionCoachSession(sessionId, "confirm");
 
     if (updateErr) throw updateErr;
 
@@ -165,12 +163,13 @@ export async function declineShift(
     });
     if (clearErr) return { error: clearErr };
 
-    const { error: statusErr } = await supabase
+    const { data: declined, error: statusErr } = await createSupabaseAdmin()
       .from("sessions")
       .update({ status: "published" })
-      .eq("id", sessionId);
+      .eq("id", sessionId).eq("status", "needs_replacement")
+      .is("coach_id", null).select("id").maybeSingle();
 
-    if (statusErr) return { error: "Failed to update shift." };
+    if (statusErr || !declined) return { error: statusErr?.message ?? "Shift changed. Refresh and try again." };
 
     const centre = session.centres as unknown as Record<string, unknown> | null;
     const centreName = (centre?.name as string) ?? "Unknown";
@@ -244,13 +243,10 @@ export async function bulkConfirmShifts(
       return { data: { confirmed: 0, skipped }, error: null };
     }
 
-    // Bulk update
-    const { error: updateErr } = await supabase
-      .from("sessions")
-      .update({ status: "confirmed" })
-      .in("id", validIds);
-
-    if (updateErr) throw updateErr;
+    for (const session of validSessions) {
+      const result = await transitionCoachSession(session.id, "confirm");
+      if (result.error) return { data: null, error: result.error };
+    }
 
     // Log each confirmation
     const logRows = validSessions.map((s) => {

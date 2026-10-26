@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { updateSessionStatus } from "./actions";
+import { transitionCoachSession } from "./coach-lifecycle";
 import { revalidatePath } from "next/cache";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
 import { getBaseUrl } from "@/lib/utils/base-url";
@@ -107,15 +107,8 @@ export async function startSession(
       return { error: "Session must be confirmed before starting." };
     }
 
-    // Verify within 30-minute window
-    const sessionDT = new Date(`${session.date}T${session.time}`);
-    const diffMs = sessionDT.getTime() - Date.now();
-    if (diffMs > 30 * 60 * 1000) {
-      return { error: "Too early to start. You can start within 30 minutes of the session time." };
-    }
-
-    // Transition to in_progress
-    const result = await updateSessionStatus(sessionId, "in_progress");
+    // The narrow writer verifies the Sydney start window and row version.
+    const result = await transitionCoachSession(sessionId, "start");
     if (result.error) return result;
 
     // Activity log
@@ -228,29 +221,11 @@ export async function completeSession(
     if (!session.started_at)
       return { error: "Session has no start time." };
 
-    // Calculate duration
-    const now = new Date();
-    const startedAt = new Date(session.started_at);
-    const elapsedMinutes = (now.getTime() - startedAt.getTime()) / 60_000;
-    const rounded = Math.round(elapsedMinutes / 15) * 15;
-    const needsReview = rounded > session.duration_minutes + 15;
-    const actualDuration = needsReview
-      ? rounded
-      : Math.min(rounded, session.duration_minutes);
-
-    // Update session — complete it
-    const { error: updateError } = await supabase
-      .from("sessions")
-      .update({
-        status: "completed",
-        completed_at: now.toISOString(),
-        actual_duration_minutes: actualDuration,
-        headcount: data.headcount,
-        needs_ops_review: needsReview,
-      })
-      .eq("id", sessionId);
-
-    if (updateError) throw updateError;
+    const result = await transitionCoachSession(sessionId, "complete", data.headcount);
+    if (result.error) return { error: result.error };
+    if (!result.changed || !result.completion) return { error: null };
+    const actualDuration = result.completion.reportedMinutes;
+    const needsReview = result.completion.needsReview;
 
     // Get centre details for notifications and feedback
     const { data: centre } = await supabase

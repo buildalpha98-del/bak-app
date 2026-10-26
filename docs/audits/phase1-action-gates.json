@@ -36,7 +36,9 @@
   "lib/pay-rates/actions.ts": [
     "requireStaff",
     "approveHoursAdjustment",
-    "rejectHoursAdjustment"
+    "rejectHoursAdjustment",
+    "setSessionRateOverride",
+    "removeSessionRateOverride"
   ],
   "lib/regions/actions.ts": [
     "requireAdmin",
@@ -134,5 +136,11 @@
   "lib/churn/actions.ts": [
     "requireStaff",
     "recordChurnEvent"
+  ],
+  "lib/sessions/actions.ts": [
+    "requireStaff",
+    "updateSession",
+    "updateSessionStatus",
+    "bulkUpdateSessionStatus"
   ]
 }

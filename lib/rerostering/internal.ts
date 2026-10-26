@@ -1,4 +1,5 @@
 import "server-only";
+import { requireRole } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -18,18 +19,16 @@ export async function cancelSessionAsCoach(
   reason: CancellationReasonType,
   details?: string
 ) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
+  const { supabase, user } = await requireRole(["admin", "ops", "coach"]);
 
   // Verify coach owns this session
-  const { data: session } = await supabase
+  const { data: session, error: sessionError } = await supabase
     .from("sessions")
-    .select("id, coach_id, centre_id, date, time, sport, status, duration_minutes, centres(name)")
+    .select("id, coach_id, centre_id, date, time, sport, status, duration_minutes, updated_at, centres(name)")
     .eq("id", sessionId)
     .single();
 
-  if (!session || session.coach_id !== user.id) {
+  if (sessionError || !session || session.coach_id !== user.id) {
     return { error: "Session not found or not your session" };
   }
 
@@ -37,17 +36,14 @@ export async function cancelSessionAsCoach(
     return { error: "Can only cancel confirmed or pending sessions" };
   }
 
-  // Write the cancellation reason FIRST, while the coach still matches
-  // the sessions UPDATE policy — after setSessionCoaches clears them,
-  // the RLS qual no longer matches and the update zero-rows silently
-  // (the reason was being discarded for every coach cancellation).
-  const { error: patchErr } = await supabase
+  // Preserve the reason before clearing the crew; reject a concurrent edit.
+  const { data: patched, error: patchErr } = await createSupabaseAdmin()
     .from("sessions")
     .update({
       cancellation_reason: `Coach cancelled: ${reason}${details ? ` - ${details}` : ""}`,
     })
-    .eq("id", sessionId);
-  if (patchErr) return { error: "Failed to cancel session." };
+    .eq("id", sessionId).eq("updated_at", session.updated_at).select("id").maybeSingle();
+  if (patchErr || !patched) return { error: "Failed to cancel session." };
 
   // Clear the coach through the helper — the sync trigger then flips
   // status to needs_replacement (if status was published/pending/confirmed),
@@ -56,7 +52,7 @@ export async function cancelSessionAsCoach(
     sessionId,
     coaches: [],
     assignedBy: user.id,
-      client: createSupabaseAdmin(),
+    client: createSupabaseAdmin(),
   });
   if (clearErr) return { error: clearErr };
 
@@ -64,7 +60,7 @@ export async function cancelSessionAsCoach(
   const suggestions = await suggestReplacements(sessionId);
 
   // Create rerostering event
-  const { data: event } = await supabase
+  const { data: event, error: eventError } = await createSupabaseAdmin()
     .from("rerostering_events")
     .insert({
       session_id: sessionId,
@@ -76,6 +72,8 @@ export async function cancelSessionAsCoach(
     })
     .select()
     .single();
+
+  if (eventError) return { error: eventError.message };
 
   // Get coach name for notification
   const { data: coachProfile } = await supabase
@@ -274,9 +272,7 @@ export async function respondToReplacementOffer(
   eventId: string,
   accept: boolean
 ) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
+  const { supabase, user } = await requireRole(["admin", "ops", "coach"]);
 
   const { data: event, error: eventError } = await supabase
     .from("rerostering_events")
@@ -303,10 +299,11 @@ export async function respondToReplacementOffer(
     // by the time we get here.
     const { data: targetSession, error: targetError } = await createSupabaseAdmin()
       .from("sessions")
-      .select("date")
+      .select("date, status")
       .eq("id", event.session_id)
       .single();
     if (targetError || !targetSession) return { error: targetError?.message ?? "Session not found." };
+    if (!["needs_replacement", "published", "pending_confirmation"].includes(targetSession.status)) return { error: "Session is no longer available for replacement." };
     if (targetSession.date) {
       const certCheck = await checkCoachCertsForSession(user.id, targetSession.date);
       if (!certCheck.ok) return { error: certCheck.message };
@@ -321,20 +318,21 @@ export async function respondToReplacementOffer(
     });
     if (writeErr) return { error: writeErr };
 
-    const { error: patchErr } = await supabase
+    const { data: confirmed, error: patchErr } = await createSupabaseAdmin()
       .from("sessions")
       .update({ status: "confirmed", cancellation_reason: null })
-      .eq("id", event.session_id);
-    if (patchErr) return { error: "Failed to confirm session." };
+      .eq("id", event.session_id).in("status", ["needs_replacement", "published", "pending_confirmation"]).select("id").maybeSingle();
+    if (patchErr || !confirmed) return { error: "Failed to confirm session." };
 
     // Resolve event
-    await supabase
+    const { data: accepted, error: acceptError } = await createSupabaseAdmin()
       .from("rerostering_events")
       .update({
         offer_status: "accepted",
         resolved_at: new Date().toISOString(),
       })
-      .eq("id", eventId);
+      .eq("id", eventId).eq("selected_replacement_id", user.id).eq("offer_status", "offer_sent").select("id").maybeSingle();
+    if (acceptError || !accepted) return { error: acceptError?.message ?? "Offer changed. Refresh and try again." };
 
     // Notify ops
     const { data: coachProfile } = await supabase
@@ -407,10 +405,11 @@ export async function respondToReplacementOffer(
     }
   } else {
     // Declined
-    await supabase
+    const { data: declined, error: declineError } = await createSupabaseAdmin()
       .from("rerostering_events")
       .update({ offer_status: "declined" })
-      .eq("id", eventId);
+      .eq("id", eventId).eq("selected_replacement_id", user.id).eq("offer_status", "offer_sent").select("id").maybeSingle();
+    if (declineError || !declined) return { error: declineError?.message ?? "Offer changed. Refresh and try again." };
 
     // Notify ops to try next suggestion
     await triggerNotificationForOps({

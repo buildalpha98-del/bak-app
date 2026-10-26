@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 import { adminClient, mintSession, signInAs } from "./fixtures/auth";
 
-// Run only after Jayden applies 103–108. Never applies migrations. Every write
+// Run only after Jayden applies 103–112. Never applies migrations. Every write
 // targets fixtures created here; cleanup runs even when a regression is found.
 // For action IDs, run against the local webpack production build being tested.
 test("Phase 1: real coach/client sessions cannot cross authorisation boundaries", async ({ page, baseURL }) => {
@@ -60,6 +60,46 @@ test("Phase 1: real coach/client sessions cannot cross authorisation boundaries"
     const { data: crew, error: crewError } = await admin.from("session_coaches").select("user_id").eq("session_id", session);
     expect(crewError).toBeNull();
     expect(crew).toEqual([]);
+
+    // §2.9: prove the restrictions on a row the coach really CAN update.
+    const { error: assignError } = await admin.rpc("set_session_coaches", { p_session_id: session, p_coaches: [{ user_id: coach.id, is_primary: true }], p_assigned_by: coach.id });
+    expect(assignError).toBeNull();
+    const { data: ownSession, error: ownReadError } = await coachDb.from("sessions").select("id").eq("id", session).single();
+    expect(ownReadError).toBeNull();
+    expect(ownSession?.id).toBe(session);
+    const { data: noteWrite, error: noteWriteError } = await coachDb.from("sessions").update({ coach_notes: run }).eq("id", session).select("id");
+    expect(noteWriteError).toBeNull();
+    expect(noteWrite).toHaveLength(1);
+    for (const patch of [
+      { pay_rate_override: 999 }, { pay_rate_resolved: 999 }, { duration_minutes: 999 },
+      { actual_duration_minutes: 999 }, { reported_duration_minutes: 999 }, { needs_ops_review: false },
+      { date: "2031-02-13" }, { time: "12:00" }, { centre_id: otherCentre },
+      { coach_id: null }, { status: "completed" }, { started_at: "2031-02-12T00:00:00Z" },
+    ]) {
+      // Ensure the review flag really changes in the probe below.
+      const { error: flagError } = await admin.from("sessions").update({ needs_ops_review: true }).eq("id", session);
+      expect(flagError).toBeNull();
+      const { error } = await coachDb.from("sessions").update(patch).eq("id", session);
+      expect(error, `§2.9 protected session field ${Object.keys(patch)[0]}`).not.toBeNull();
+    }
+    const rate = await insert("pay_rates", { user_id: coach.id, session_type: "school", rate: 50, rate_unit: "per_session", effective_from: "2031-01-01" });
+    const { error: rateInsertError } = await coachDb.from("pay_rates").insert({ user_id: coach.id, session_type: "school", rate: 999, rate_unit: "per_session", effective_from: "2031-01-01" });
+    expect(rateInsertError?.code, "§2.9 coach cannot create a payroll rate").toBe("42501");
+    const { data: rateWrite, error: rateWriteError } = await coachDb.from("pay_rates").update({ rate: 999 }).eq("id", rate).select("id");
+    expect(rateWriteError === null && rateWrite?.length !== 0, "§2.9 update denied or zero rows").toBe(false);
+    const { data: storedRate, error: storedRateError } = await admin.from("pay_rates").select("rate").eq("id", rate).single();
+    expect(storedRateError).toBeNull();
+    expect(Number(storedRate?.rate)).toBe(50);
+    const { error: resolverError } = await coachDb.rpc("resolve_session_pay_rate", { p_session_id: session });
+    expect(resolverError, "§2.9 coach cannot resolve arbitrary payroll rates").not.toBeNull();
+    const otherSession = await insert("sessions", { centre_id: otherCentre, date: "2031-02-12", time: "10:00", duration_minutes: 45, sport: "Netball", status: "draft" });
+    const event = await insert("rerostering_events", { session_id: session, original_coach_id: coach.id, selected_replacement_id: coach.id, cancellation_reason: "other", offer_status: "offer_sent" });
+    const { error: offerError, data: offerWrite } = await coachDb.from("rerostering_events").update({ session_id: otherSession, offer_status: "accepted" }).eq("id", event).select("id");
+    expect(offerError === null && offerWrite?.length !== 0, "§2.8 offer integrity is server-managed").toBe(false);
+    const { data: storedOffer, error: storedOfferError } = await admin.from("rerostering_events").select("session_id, offer_status").eq("id", event).single();
+    expect(storedOfferError).toBeNull();
+    expect(storedOffer?.offer_status).toBe("offer_sent");
+    expect(storedOffer?.session_id).toBe(session);
 
     await signInAs(page, coach.email, baseURL!);
     await page.context().addCookies([{ name: "bak-role", value: `${coach.id}:admin:active:1:0`, url: baseURL! }]);
