@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { DashboardShell } from "@/components/shared/dashboard-shell";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 export default async function DashboardLayout({
   children,
 }: {
@@ -45,5 +46,10 @@ export default async function DashboardLayout({
     redirect("/set-password");
   }
 
-  return <DashboardShell profile={profile}>{children}</DashboardShell>;
+  // Nav + everything the shell hands down reads the Admin-only money rule.
+  return (
+    <DashboardShell profile={{ ...profile, financial_access: canSeeFinancials(profile) }}>
+      {children}
+    </DashboardShell>
+  );
 }

@@ -98,6 +98,7 @@ import type {
 
 import { CHANNEL_STYLE, INVOICE_CHANNEL_OPTIONS, PAYER_STYLE, channelOf, payerLabel, payerOf } from "@/lib/centres/billing";
 import type { InvoiceChannel } from "@/lib/types/enums";
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 // ============================================================
 // Helpers
 // ============================================================
@@ -242,7 +243,7 @@ export function CentreDetailView({
   const [archiving, setArchiving] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
 
-  const hasFinancial = !!profile?.financial_access;
+  const hasFinancial = canSeeFinancials(profile);
 
   async function handleArchive() {
     setArchiving(true);
@@ -746,6 +747,7 @@ export function CentreDetailView({
       {/* Edit Centre Dialog */}
       <EditCentreDialog
         centre={centre}
+        showMoney={hasFinancial}
         open={editOpen}
         onOpenChange={setEditOpen}
         onSuccess={() => router.refresh()}
@@ -798,11 +800,14 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 
 function EditCentreDialog({
   centre,
+  showMoney,
   open,
   onOpenChange,
   onSuccess,
 }: {
   centre: CentreDetail["centre"];
+  /** Admin + financial access only (lib/auth/financial-rule.ts). */
+  showMoney: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -872,7 +877,9 @@ function EditCentreDialog({
       primary_contact_email: contactEmail.trim() || null,
       primary_contact_role: contactRole.trim() || null,
       pricing_model: pricingModel,
-      agreed_rate: agreedRate ? parseFloat(agreedRate) : null,
+      // A viewer who can't see money was sent agreed_rate: null — never
+      // write that back over the real rate.
+      ...(showMoney ? { agreed_rate: agreedRate ? parseFloat(agreedRate) : null } : {}),
       contract_status: contractStatus,
       group_size: groupSize ? parseInt(groupSize, 10) : null,
       colour,
@@ -1089,15 +1096,17 @@ function EditCentreDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Agreed Rate ($)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={agreedRate}
-                onChange={(e) => setAgreedRate(e.target.value)}
-              />
-            </div>
+            {showMoney && (
+              <div className="space-y-2">
+                <Label>Agreed Rate ($)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={agreedRate}
+                  onChange={(e) => setAgreedRate(e.target.value)}
+                />
+              </div>
+            )}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

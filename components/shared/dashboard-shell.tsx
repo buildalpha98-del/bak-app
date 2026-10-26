@@ -17,6 +17,7 @@ import { CommandPalette } from "./command-palette";
 import { QuickActions } from "./quick-actions";
 import { DeniedToast } from "./denied-toast";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 interface DashboardShellProps {
   profile: Profile;
   children: React.ReactNode;
@@ -32,7 +33,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
   return (
     <SidebarProvider>
       <div className="grain-overlay flex min-h-screen bg-background">
-        <Sidebar role={navRole} financialAccess={profile.financial_access} opsCoach={opsCoach} />
+        <Sidebar role={navRole} financialAccess={canSeeFinancials(profile)} opsCoach={opsCoach} />
         <div className="flex flex-1 flex-col min-w-0">
           <TopBar profile={profile} />
           <SyncStatusIndicator />
@@ -40,7 +41,7 @@ export function DashboardShell({ profile, children }: DashboardShellProps) {
             {children}
           </main>
         </div>
-        <BottomTabs role={navRole} financialAccess={profile.financial_access} />
+        <BottomTabs role={navRole} financialAccess={canSeeFinancials(profile)} />
         <QuickActions role={navRole} />
         <CommandPalette userRole={profile.role} />
         <InstallPrompt />

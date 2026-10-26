@@ -2,13 +2,14 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 /**
  * Server-side guard for financial routes (/admin|ops/invoicing,
  * /admin/payroll, /admin/analytics, /admin/grants, /admin/intelligence,
  * and the Financial tab of any compound dashboard).
  *
- * Reads `profiles.financial_access` (added in migration 050; admins
- * default true, everyone else default false). When the current user
+ * Admin accounts with `profiles.financial_access` only — see
+ * lib/auth/financial-rule.ts (ops never, even with the flag). When the current user
  * is denied, redirects to the role's portal root with a `denied=financial`
  * query param so the destination can surface a toast — keeping the
  * 404-vs-403 ambiguity light so we don't leak that the route exists.
@@ -36,7 +37,7 @@ export async function requireFinancialAccess(): Promise<void> {
     redirect("/login");
   }
 
-  if (!profile.financial_access) {
+  if (!canSeeFinancials(profile)) {
     const root =
       profile.role === "admin"
         ? "/admin"
@@ -64,9 +65,9 @@ export async function getFinancialAccess(): Promise<boolean> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("financial_access")
+    .select("role, financial_access")
     .eq("id", user.id)
     .single();
 
-  return !!profile?.financial_access;
+  return canSeeFinancials(profile);
 }

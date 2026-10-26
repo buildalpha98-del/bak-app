@@ -1194,6 +1194,7 @@ export function RosterPage({
         defaultCoachId={createDefaults.coachId}
         editSession={editSession ?? undefined}
         onSuccess={handleRefresh}
+        showPay={hasFinancialAccess}
       />
 
       {/* Generate Sessions Dialog */}

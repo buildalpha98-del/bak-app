@@ -66,6 +66,7 @@ import { Y1TargetEditPopover } from "@/components/admin/y1-target-edit-popover";
 import { ComparisonBadge } from "@/components/shared/comparison-badge";
 import { useCountUp } from "@/components/launch/use-count-up";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 // ========================
 // Palette
 // ========================
@@ -116,7 +117,7 @@ export function LaunchDashboard({
   const [metrics, setMetrics] = useState(initialMetrics);
 
   const isAdmin = profile.role === "admin";
-  const showFinancial = !!profile.financial_access;
+  const showFinancial = canSeeFinancials(profile);
 
   // Auto-refresh activity every 60 seconds (matches prior behaviour).
   useEffect(() => {

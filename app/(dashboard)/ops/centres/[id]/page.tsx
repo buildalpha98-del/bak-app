@@ -3,6 +3,7 @@ import { getCentreDetail } from "@/lib/centres/actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CentreDetailView } from "@/components/centres/centre-detail-view";
 
+import { canSeeFinancials } from "@/lib/auth/financial-rule";
 interface OpsCentreDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -37,7 +38,7 @@ export default async function OpsCentreDetailPage({
     <CentreDetailView
       data={detail.data}
       basePath="/ops/centres"
-      profile={profile ?? null}
+      profile={profile ? { ...profile, financial_access: canSeeFinancials(profile) } : null}
     />
   );
 }
