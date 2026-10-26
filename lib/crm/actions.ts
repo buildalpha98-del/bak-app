@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -200,6 +201,9 @@ export async function createLead(input: {
   notes?: string;
   owner_id?: string;
 }): Promise<{ data: Lead | null; error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -286,6 +290,9 @@ export async function updateLead(
   leadId: string,
   updates: Partial<Pick<Lead, "centre_name" | "type" | "contact_name" | "contact_email" | "contact_phone" | "address" | "estimated_value" | "notes" | "owner_id" | "trial_start_date" | "trial_end_date">>
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -315,6 +322,9 @@ export async function changeLeadStage(
   newStage: LeadStage,
   reason?: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -458,6 +468,9 @@ export async function addLeadActivity(input: {
   content: string;
   metadata?: Record<string, unknown>;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -495,6 +508,9 @@ export async function addLeadActivity(input: {
 // ============================================================
 
 export async function deleteLead(leadId: string): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -520,6 +536,9 @@ export async function bulkChangeStage(
   leadIds: string[],
   newStage: LeadStage
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -561,6 +580,9 @@ export async function bulkAssignOwner(
   leadIds: string[],
   ownerId: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -584,6 +606,9 @@ export async function bulkAssignOwner(
 export async function bulkDeleteLeads(
   leadIds: string[]
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -724,6 +749,9 @@ export async function importLeadsFromCsv(
   data: { created: number; skipped: number; errors: number };
   error: string | null;
 }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {

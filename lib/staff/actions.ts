@@ -1,4 +1,6 @@
 "use server";
+import { idSchema, staffUpdateSchema, payRateSchema } from "@/lib/auth/action-schemas";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 import { z } from "zod";
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
@@ -346,6 +348,9 @@ export async function createStaffMember(
   data: { id: string; tempPassword: string; emailSent: boolean } | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   const admin = createSupabaseAdmin();
 
   // Create auth user with a temporary password
@@ -832,43 +837,27 @@ async function purgeStaffCredentials(
 // Admin: reset staff password
 // ============================================================
 
-export async function adminResetStaffPassword(
-  userId: string,
-  newPassword?: string
-): Promise<{ data: { tempPassword: string } | null; error: string | null }> {
+export async function adminResetStaffPassword(userId: string): Promise<{ error: string | null }> {
+  await requireAdmin();
+
+  z.uuid().parse(userId);
   const admin = createSupabaseAdmin();
-
-  const tempPassword = newPassword || `BAK-${crypto.randomUUID().slice(0, 8)}`;
-
-  const { error } = await admin.auth.admin.updateUserById(userId, {
-    password: tempPassword,
-  });
-
-  if (error) return { data: null, error: error.message };
-
-  return { data: { tempPassword }, error: null };
+  const { data, error } = await admin.auth.admin.getUserById(userId);
+  if (error || !data.user?.email) return { error: error?.message ?? "Staff member not found." };
+  return sendStaffPasswordResetEmail(data.user.email);
 }
 
 // ============================================================
 // Admin: send password reset email to staff
 // ============================================================
 
-export async function sendStaffPasswordResetEmail(
-  email: string
-): Promise<{ error: string | null }> {
-  const admin = createSupabaseAdmin();
-
-  const { error } = await admin.auth.admin.generateLink({
-    type: "recovery",
-    email,
-    options: {
-      redirectTo: getAuthCallbackUrl("/update-password"),
-    },
+export async function sendStaffPasswordResetEmail(email: string): Promise<{ error: string | null }> {
+  const { supabase } = await requireAdmin();
+  z.email().parse(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: getAuthCallbackUrl("/update-password"),
   });
-
-  if (error) return { error: error.message };
-
-  return { error: null };
+  return { error: error?.message ?? null };
 }
 
 // ============================================================
@@ -879,11 +868,17 @@ export async function updateStaffMember(
   id: string,
   data: UpdateStaffData
 ): Promise<{ error: string | null }> {
+  await requireAdmin();
+
+  idSchema.parse(id);
+  data = staffUpdateSchema.parse(data);
+
+
   const supabase = await createSupabaseServerClient();
 
   const { error } = await supabase
     .from("profiles")
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update(staffUpdateSchema.parse(data))
     .eq("id", id);
 
   return { error: error?.message ?? null };
@@ -1027,6 +1022,12 @@ export async function setStaffAlsoCoaches(
 export async function upsertPayRate(
   data: UpsertPayRateData
 ): Promise<{ error: string | null }> {
+  await requireAdmin();
+
+
+  data = payRateSchema.parse(data);
+
+
   const supabase = await createSupabaseServerClient();
 
   if (data.id) {

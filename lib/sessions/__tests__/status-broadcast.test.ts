@@ -40,7 +40,7 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdmin: () => adminMock,
 }));
-vi.mock("@/lib/sms/actions", () => ({
+vi.mock("@/lib/sms/internal", () => ({
   sendUrgentNotificationViaSms: smsMock,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));

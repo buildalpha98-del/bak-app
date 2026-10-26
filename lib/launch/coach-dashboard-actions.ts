@@ -1,4 +1,6 @@
 "use server";
+import { transitionCoachSession } from "@/lib/sessions/coach-lifecycle";
+import { requireRole } from "@/lib/auth/require-role";
 
 // ============================================================
 // Coach Dashboard — Server actions for "today first" experience
@@ -309,6 +311,9 @@ export async function markAttendance(params: {
   attendanceRecords: Array<{ childId: string; status: "present" | "absent" }>;
   walkIns?: Array<{ childName: string; parentName: string; parentPhone: string }>;
 }): Promise<{ success: boolean; error?: string }> {
+  await requireRole(["admin", "ops", "coach"]);
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -438,6 +443,11 @@ export async function saveSessionNotes(params: {
   /** Coach opted to share this save's observations with the centre/school portal. */
   shareObservationsWithCentre?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
+  const { user } = await requireRole(["admin", "ops", "coach"]);
+  params = { ...params, coachId: user.id };
+  const completion = await transitionCoachSession(params.sessionId, "complete");
+  if (completion.error) return { success: false, error: completion.error };
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -483,22 +493,12 @@ export async function saveSessionNotes(params: {
       }
     }
 
-    // 3. Mark session as completed
-    await supabase
-      .from("sessions")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", params.sessionId);
-
-    // 4. Send notifications to parents of present children (fire-and-forget)
-    void notifyParentsSessionComplete(params.sessionId).catch(console.error);
-
-    // 5. Send feedback request email to centre director (fire-and-forget)
-    void sendCentreFeedbackRequest(params.sessionId, params.coachId).catch(
-      console.error
-    );
+    // Notify only on the first successful completion; editing notes does not
+    // re-complete the shift or alter its approved duration.
+    if (completion.changed) {
+      void notifyParentsSessionComplete(params.sessionId).catch(console.error);
+      void sendCentreFeedbackRequest(params.sessionId, user.id).catch(console.error);
+    }
 
     revalidatePath("/coach");
     return { success: true };

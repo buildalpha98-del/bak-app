@@ -1,4 +1,7 @@
 "use server";
+import { z } from "zod";
+import { payRateSchema } from "@/lib/auth/action-schemas";
+import { requireStaff, requireAdmin } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -120,6 +123,9 @@ export async function getCoachPayRates(): Promise<{
 export async function updateCoachDefaultRate(
   rate: number
 ): Promise<{ error: string | null }> {
+  await requireAdmin();
+  z.number().nonnegative().finite().parse(rate);
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -160,6 +166,9 @@ export async function upsertCoachSessionRate(input: {
   rate_unit: RateUnit;
   effective_from: string;
 }): Promise<{ error: string | null }> {
+  await requireAdmin();
+  input = payRateSchema.omit({ user_id: true }).parse(input);
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -213,6 +222,9 @@ export async function upsertCoachSessionRate(input: {
 export async function deleteCoachSessionRate(
   rateId: string
 ): Promise<{ error: string | null }> {
+  await requireAdmin();
+  z.uuid().parse(rateId);
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -245,6 +257,9 @@ export async function setSessionRateOverride(input: {
   rate: number;
   reason: string;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+  input = z.object({ sessionId: z.uuid(), rate: z.number().nonnegative().finite(), reason: z.string().trim().min(1).max(2000) }).strict().parse(input);
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -285,6 +300,9 @@ export async function setSessionRateOverride(input: {
 export async function removeSessionRateOverride(
   sessionId: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+  z.uuid().parse(sessionId);
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -658,6 +676,9 @@ export async function approveHoursAdjustment(input: {
   sessionId: string;
   approvedDuration: number;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -706,6 +727,9 @@ export async function rejectHoursAdjustment(input: {
   sessionId: string;
   reason: string;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {

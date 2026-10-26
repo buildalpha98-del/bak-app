@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/launch/email";
@@ -16,12 +17,11 @@ import {
 
 export async function GET(request: Request) {
   // 1. Verify cron secret
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   const supabase = createSupabaseAdmin();
 

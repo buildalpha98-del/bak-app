@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import { sendTermPacks } from "@/lib/client/service-emails";
 
@@ -7,10 +8,9 @@ export const dynamic = "force-dynamic";
 // window), send each active centre its term wrap-up once. Idempotent
 // per (centre, term) via email_log markers.
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   try {
     const result = await sendTermPacks();

@@ -1,4 +1,5 @@
 "use server";
+import { limitAuthEmail } from "@/lib/auth/request-limit";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -60,6 +61,9 @@ export async function sendParentMagicLink(
   email: string,
   next?: string
 ): Promise<{ error: string | null }> {
+  const limited = await limitAuthEmail(email);
+  if (limited) return { error: limited };
+
   try {
     const supabase = await createSupabaseServerClient();
     // Parents reach this from either the public site (.com.au) or the
@@ -260,7 +264,7 @@ export async function completeParentRegistration(
 
     // 4. Generate referral code for this parent
     try {
-      const { generateReferralCode } = await import("@/lib/referrals/actions");
+      const { generateReferralCode } = await import("@/lib/referrals/internal");
       await generateReferralCode("parent", parentProfile.id);
     } catch (refErr) {
       console.error("Referral code generation error:", refErr);
@@ -272,7 +276,7 @@ export async function completeParentRegistration(
     if (data.referral_code) {
       try {
         const { createReferralRecord, markReferralRegistered } = await import(
-          "@/lib/referrals/actions"
+          "@/lib/referrals/internal"
         );
         const { data: codeRow } = await createSupabaseAdmin()
           .from("referral_codes")

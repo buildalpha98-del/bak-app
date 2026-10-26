@@ -1,4 +1,6 @@
 "use server";
+import { z } from "zod";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -157,9 +159,15 @@ export async function getRegion(
 // 3. Create Region
 // ============================================================
 
+const regionSchema = z.object({ name: z.string().trim().min(1).max(200), code: z.string().trim().min(1).max(30), state: z.string().trim().min(1).max(50), suburbs: z.array(z.string().max(100)).max(1000), target_centres: z.number().int().nonnegative().nullable().optional(), regional_manager_id: z.uuid().nullable().optional(), notes: z.string().max(10000).nullable().optional(), status: z.enum(["active", "planned", "inactive"]).optional() }).strict();
+
 export async function createRegion(
   regionData: CreateRegionData
 ): Promise<{ data: Region | null; error: string | null }> {
+  await requireAdmin();
+  regionData = regionSchema.parse(regionData);
+
+
   try {
     const admin = createSupabaseAdmin();
 
@@ -220,6 +228,11 @@ export async function updateRegion(
   id: string,
   updates: UpdateRegionData
 ): Promise<{ data: Region | null; error: string | null }> {
+  await requireAdmin();
+  z.uuid().parse(id);
+  updates = regionSchema.partial().parse(updates);
+
+
   try {
     const admin = createSupabaseAdmin();
 
@@ -280,6 +293,10 @@ export async function updateRegion(
 export async function deleteRegion(
   id: string
 ): Promise<{ data: null; error: string | null }> {
+  await requireAdmin();
+  z.uuid().parse(id);
+
+
   try {
     const admin = createSupabaseAdmin();
 
@@ -305,6 +322,8 @@ export async function deleteRegion(
 export async function autoAssignRegion(
   suburb: string
 ): Promise<{ data: { regionId: string; regionName: string } | null; error: string | null }> {
+  await requireAdmin();
+
   try {
     const admin = createSupabaseAdmin();
 

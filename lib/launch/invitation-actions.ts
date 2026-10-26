@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Foundation — Invitation actions
@@ -22,6 +23,11 @@ export async function sendIndividualInvitation(params: {
   schoolId?: string;
   invitedBy: string;
 }): Promise<{ success: boolean; invitationId?: string; error?: string }> {
+  await requireAdmin();
+
+  params = { ...params, invitedBy: (await requireAdmin()).user.id };
+
+
   try {
     const adminClient = createSupabaseAdmin();
 

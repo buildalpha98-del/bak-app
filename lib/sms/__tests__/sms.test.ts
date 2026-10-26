@@ -30,7 +30,7 @@ import {
 } from "../twilio-provider";
 import { MockSmsProvider } from "../mock-provider";
 import { getSmsProvider, __resetSmsProviderForTests } from "../index";
-import { sendSms, sendUrgentNotificationViaSms } from "../actions";
+import { sendSms, sendUrgentNotificationViaSms } from "../internal";
 
 beforeEach(() => {
   vi.clearAllMocks();
