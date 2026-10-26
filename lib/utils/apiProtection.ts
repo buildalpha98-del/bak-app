@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { rateLimit } from "./rateLimit";
@@ -42,10 +43,12 @@ export function requireRateLimit(
   return null;
 }
 
-export function requireCronAuth(req: NextRequest): NextResponse | null {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-  }
+export function requireCronAuth(req: Request): NextResponse | null {
+  const secret = process.env.CRON_SECRET;
+  const supplied = req.headers.get("authorization") ?? "";
+  if (!secret || !timingSafeEqual(
+    createHash("sha256").update(supplied).digest(),
+    createHash("sha256").update(`Bearer ${secret}`).digest()
+  )) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   return null;
 }
