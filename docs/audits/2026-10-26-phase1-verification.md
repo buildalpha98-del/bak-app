@@ -1,20 +1,21 @@
 # Phase 1 authorisation — implementation and verification
 
-Based on `origin/main` at `bb1a657`. This is a reviewable authorisation change, **not a completed production security remediation**. Migrations 103–108 are written but unapplied. No E2E tests, Vercel operations, package upgrades, `.env*` edits or rehearsal scripts were run.
+Based on `origin/main` at `bb1a657`. This is a reviewable authorisation change, **not a completed production security remediation**. Migrations 103–112 are written but unapplied. No E2E tests, Vercel operations, package upgrades, `.env*` edits or rehearsal scripts were run.
 
 ## Checks in this cloud instance
 
 - `npm ci --cache /tmp/bak-npm-cache --no-audit --no-fund`: passed, lockfile unchanged. The default cache was unwritable; a writable cache fixed installation without disabling integrity verification.
 - `npx tsc --noEmit`: passed.
-- `npx vitest run`: 172 files, 1,850 tests passed; no skipped tests.
-- `npm run build`: **blocked**, not passed. The egress proxy returns HTTP 403 for `fonts.googleapis.com`. Both Bricolage Grotesque and DM Sans fail to download. The build was also attempted with an ephemeral locally generated `CALENDAR_FEED_SECRET` in the process environment, because production-mode imports now require a key. No secret was saved to a file or printed. Further build-stage failures cannot be excluded until fonts are reachable.
-- Regression experiment: the new action-denial tests were copied into a clean `git archive bb1a657` outside the checkout, using the same installed dependencies. All original 20 test groups failed on the old code and pass on the changed code. This is separate from the full-suite results above.
+- `npx vitest run`: 173 files, 1,864 tests passed; no skipped tests.
+- `CALENDAR_FEED_SECRET="$(openssl rand -hex 32)" npm run build`: passed. The signing key was ephemeral in the process environment; no secret was saved or printed. Font downloads now work after the cloud network configuration was corrected. This validates compilation, not deployed credentials or database behaviour.
+- An intermediate standalone `tsc` overlapped the build and failed because Next regenerated `.next/types`; the final standalone check was run after the build.
+- Regression experiment: the new action-denial tests were copied into a clean `git archive bb1a657` outside the checkout, using the same installed dependencies. All 22 test groups failed on the old code and pass on the changed code. This is separate from the full-suite results above.
 - `npm audit --omit=dev --json --cache /tmp/bak-npm-cache`: exit 1; 36 flagged dependency entries (3 critical, 24 high, 8 moderate, 1 low). Reachability below. No upgrades.
 - `git diff --check`: passed.
 
-`A` below means `npx vitest run lib/auth/__tests__/action-denials.test.ts lib/__tests__/audit-p1-boundaries.test.ts`. The checked-in `phase1-action-gates.json` names each action. `R` means `npx vitest run lib/auth/__tests__/phase1.test.ts lib/auth/__tests__/route-denials.test.ts`.
+`A` below means `npx vitest run lib/auth/__tests__/action-denials.test.ts lib/__tests__/audit-p1-boundaries.test.ts`. The checked-in `phase1-action-gates.json` names each action. `P` means `npx vitest run lib/auth/__tests__/coach-pay-authorisation.test.ts` (12 tests, including real shared role and membership helpers with mocked database transport). `R` means `npx vitest run lib/auth/__tests__/phase1.test.ts lib/auth/__tests__/route-denials.test.ts`.
 
-`S` means the **unrun** seam test `npx playwright test e2e/audit-p1.spec.ts --workers=1`, test name `Phase 1: real coach/client sessions cannot cross authorisation boundaries`. It requires a locally built webpack application, matching `.next/server/server-reference-manifest.json`, authorised Supabase credentials and Jayden applying migrations first. Point `E2E_BASE_URL` at that local production server so the test does not launch a different dev build. It provisions throwaway users, centres, session, invoice, child, class, insight and notes; cleanup runs in `finally`. It fails rather than skipping when fixtures cannot be created. It sends no reset email on the expected denial path.
+`S` means the **unrun** seam test `npx playwright test e2e/audit-p1.spec.ts --workers=1`, test name `Phase 1: real coach/client sessions cannot cross authorisation boundaries`. It requires a locally built webpack application, matching `.next/server/server-reference-manifest.json`, authorised Supabase credentials and Jayden applying migrations first. Point `E2E_BASE_URL` at that local production server so the test does not launch a different dev build. It provisions throwaway users, centres, sessions, rate, replacement offer, invoice, child, class, insight and notes; cleanup runs in `finally`. It fails rather than skipping when fixtures cannot be created. It sends no reset email on the expected denial path.
 
 ## Verification table
 
@@ -25,8 +26,8 @@ Based on `origin/main` at `bb1a657`. This is a reviewable authorisation change, 
 | §2.3 | All audited outbound/launch invoice mutations require admin; launch creator comes from session | A: outbound/launch invoice groups |
 | §2.6 | Staff patch schema + admin gate; `103_protect_profile_privileges.sql` freezes role, also_coaches, default_pay_rate, status and financial_access | A; R `rejects extra privilege fields and invalid action values`; S profile PATCH matrix (unrun) |
 | §2.7 | `104_protect_client_membership.sql` freezes centre, role, primary, class IDs and user ID for non-admin callers; service role supported | S portal PATCH matrix (unrun); no live database claim |
-| §2.8 | `105_restrict_roster_rpc.sql`; optional server-only client injection in the existing `setSessionCoaches` helper; checked offer acceptance/coach withdrawal/decline use admin RPC after ownership checks | S direct coach RPC refusal + unchanged crew (unrun); existing session coach and shift tests pass; no alternative coach write path |
-| §2.9 | `approveHoursAdjustment` / `rejectHoursAdjustment` use shared operational-staff guard | A: pay-rates group. **Partial**: rate self-service, direct session pay/roster writes and rate resolver access remain; see below |
+| §2.8 | `105_restrict_roster_rpc.sql`, `112_protect_replacement_offer_integrity.sql`, `lib/rerostering/internal.ts`; optional server-only client injection in the existing `setSessionCoaches` helper; checked offer acceptance/coach withdrawal/decline use admin RPC after ownership checks | S direct coach RPC refusal + unchanged crew and forged offer target/status denied (unrun); existing session coach and shift tests pass; no alternative coach write path |
+| §2.9 | `lib/pay-rates/actions.ts`, read-only coach rate UI, `lib/sessions/coach-lifecycle.ts`, session/shift/workflow/legacy notes actions, ops decision queue, migrations 109–111: staff-managed rates with approval provenance, protected pay/roster fields, staff-only resolver, verified narrow lifecycle actions, overtime held at rostered pay until approved | A pay-rates/session groups; P coach mutation denial, assigned-second-coach start, lead confirmation, overtime cap, stale-row/error/idempotence tests; S own session PATCH matrix, allowed notes, own rate INSERT/UPDATE denial, resolver refusal (unrun) |
 | §2.10 | `108_freeze_submitted_coach_invoices.sql` permits non-staff edits only from draft, only to draft/flagged/ready, preserving owner/batch | S submitted invoice amount PATCH (unrun) |
 | §2.11 | Shared guard explicitly denies both fixed demo identities; CRM conversion/stage/demo actions, attendance and staff messaging get role gates | A: CRM, attendance, messages groups; R demo-identity denial |
 | §2.12 | New `admin/layout.tsx` and `ops/layout.tsx` authorise against verified user + DB role/status; existing middleware fast paths preserved. Audited launch dashboard/filter actions gated too | A layout boundary and data-loader groups; S forged role cookie + prefetch (unrun) |
@@ -41,7 +42,9 @@ Based on `origin/main` at `bb1a657`. This is a reviewable authorisation change, 
 
 ## Not fixed / limitations
 
-- **§2.9 is only partially fixed.** The brief explicitly requires the hours-approval action guards; those are implemented. The audit also raises the product question of coach rate self-service. The existing coach pay-rate policies and broad session UPDATE policy still allow unapproved rate/pay/roster changes, and `resolve_session_pay_rate` remains callable by coaches. Closing these safely needs a decision on rate approval and conversion of legitimate coach lifecycle writes to narrow authorised operations. This PR must not be described as closing all pay-authorisation holes.
+- Migrations 103–112 remain **unapplied**, and the real Supabase/action-transport seam is **unrun**. Keep this PR draft pending owner migration/seam verification. Code and unit results do not prove live database protection.
+- Existing pay rates are retained without falsely backfilling `approved_by`. Historical sessions/rates and closed payroll batches are not repriced or repaired; review those separately. Phase 2 resolver arithmetic and pay-calculation defects remain out of scope. Future coach overtime is reported separately; staff approval remains the only route to increasing payable minutes.
+- Replacement acceptance still spans several writes through the existing `setSessionCoaches` source of truth; this PR does not claim atomicity against simultaneous staff reassignments. Direct coach offer editing is removed and action ownership/status checks remain in place.
 - The audit's scratch `action-matrix.txt` of 845 actions is not in this checkout. The named actions were checked, with the replacement scoped checklist committed as JSON; no complete 845-action review is claimed.
 - **§2.3 correction:** the existing payroll `requireAdmin` was admin-role-only, not financial-access-aware as the audit describes. That admin-only mutation rule is preserved. Existing financial route layouts remain unchanged.
 - **§2.18 correction:** this tree has 24 relevant HTTP handlers including `/api/public/refresh-stats`, rather than 23. All 24 are covered.
@@ -49,7 +52,7 @@ Based on `origin/main` at `bb1a657`. This is a reviewable authorisation change, 
 - Rate limiting retains the existing per-instance in-memory store. It is not a distributed cap and cannot prevent abuse across multiple serverless instances.
 - No live RLS, trigger, RPC, action transport, email delivery or production behaviour was verified. All migrations and the seam spec require owner execution. In particular, the seam spec's positive fixture paths are type-checked but unrun.
 - Phases 2–5 and §2.20 storage are untouched. Dependency advisories below are not repaired in this PR.
-- Build and PR creation are externally blocked by egress policy. Required additions (`fonts.googleapis.com`, `fonts.gstatic.com`, `api.github.com`) are saved in the cloud settings draft, preserving package-manager presets. A draft save does not activate networking or publish an environment.
+
 
 ## Production dependency reachability
 
