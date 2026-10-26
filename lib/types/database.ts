@@ -10,6 +10,7 @@ import type {
   ComplianceStatus,
   CentreType,
   PricingModel,
+  InvoiceChannel,
   ContractStatus,
   CentreNoteCategory,
   TermStatus,
@@ -167,6 +168,9 @@ export interface Centre {
   age_groups: string[];
   pricing_model: PricingModel;
   agreed_rate: number | null;
+  /** Invoicing system (migration 103); null = not set. Optional until the
+   *  migration has run everywhere — read via lib/centres/billing.ts. */
+  invoiced_via?: InvoiceChannel | null;
   session_preferences: Record<string, unknown>;
   contract_status: ContractStatus;
   status_changed_at: string | null;

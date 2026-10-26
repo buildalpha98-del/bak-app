@@ -24,6 +24,9 @@ export type CentreType = "childcare_centre" | "school";
 
 export type PricingModel = "centre_funded" | "parent_funded" | "per_head";
 
+/** Which system a client is invoiced through (migration 103). */
+export type InvoiceChannel = "square" | "quickbooks";
+
 export type ContractStatus = "active" | "trial" | "paused" | "churned";
 
 export type CentreNoteCategory =
