@@ -13,6 +13,8 @@
 //
 // Pure: no I/O, date-only arithmetic.
 
+import { channelOf, payerOf, type ChannelKey, type Payer } from "@/lib/centres/billing";
+
 export interface MonthSession {
   id: string;
   centre_id: string;
@@ -35,6 +37,17 @@ export interface MonthCentre {
   contract_status: string;
   /** Per-session price; null when not set or not visible to the viewer. */
   agreed_rate: number | null;
+  /** Who pays (centre_funded / per_head / parent_funded). */
+  pricing_model?: string | null;
+  /** Invoicing system (migration 103); null/absent = not set. */
+  invoiced_via?: string | null;
+}
+
+export interface BillingSplit {
+  booked: number;
+  /** Centres/schools with something booked. */
+  clients: number;
+  value: number;
 }
 
 export interface CentreMonth {
@@ -85,6 +98,8 @@ export interface MonthBookings {
     value: number;
     /** Booked sessions at centres with no rate — value is understated by these. */
     unpriced: number;
+    by_payer: Record<Payer, BillingSplit>;
+    by_channel: Record<ChannelKey, BillingSplit>;
   };
 }
 
@@ -207,7 +222,20 @@ export function buildMonthBookings(
     centres: live.filter((r) => r.centre.type !== "school").length,
     value: rows.reduce((n, r) => n + (r.value ?? 0), 0),
     unpriced: rows.filter((r) => r.value == null).reduce((n, r) => n + r.booked - r.trials, 0),
+    by_payer: split(live, (r) => payerOf(r.centre.pricing_model), ["service", "parent"]),
+    by_channel: split(live, (r) => channelOf(r.centre.invoiced_via), ["square", "quickbooks", "unset"]),
   };
 
   return { month, first, last, weeks, rows, not_booked, totals };
+}
+
+function split<K extends string>(rows: CentreMonth[], keyOf: (r: CentreMonth) => K, keys: K[]): Record<K, BillingSplit> {
+  const out = Object.fromEntries(keys.map((k) => [k, { booked: 0, clients: 0, value: 0 }])) as Record<K, BillingSplit>;
+  for (const r of rows) {
+    const b = out[keyOf(r)];
+    b.booked += r.booked;
+    b.clients += 1;
+    b.value += r.value ?? 0;
+  }
+  return out;
 }

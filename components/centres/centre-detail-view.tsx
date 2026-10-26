@@ -96,6 +96,8 @@ import type {
   CentreNoteCategory,
 } from "@/lib/types/enums";
 
+import { CHANNEL_STYLE, INVOICE_CHANNEL_OPTIONS, PAYER_STYLE, channelOf, payerLabel, payerOf } from "@/lib/centres/billing";
+import type { InvoiceChannel } from "@/lib/types/enums";
 // ============================================================
 // Helpers
 // ============================================================
@@ -458,6 +460,14 @@ export function CentreDetailView({
                     {formatPricingModel(centre.pricing_model)}
                   </span>
                 </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className={`rounded-full border px-2 py-0.5 text-xs ${PAYER_STYLE[payerOf(centre.pricing_model)].badge}`}>
+                    {payerLabel(centre.pricing_model)}
+                  </span>
+                  <span className={`rounded-full border px-2 py-0.5 text-xs ${CHANNEL_STYLE[channelOf(centre.invoiced_via)].badge}`}>
+                    {CHANNEL_STYLE[channelOf(centre.invoiced_via)].label}
+                  </span>
+                </div>
                 {centre.agreed_rate !== null && hasFinancial && (
                   <div className="flex items-center gap-2">
                     <DollarSign className="size-4 text-muted-foreground" />
@@ -808,6 +818,7 @@ function EditCentreDialog({
   const [contactEmail, setContactEmail] = useState(centre.primary_contact_email ?? "");
   const [contactRole, setContactRole] = useState(centre.primary_contact_role ?? "");
   const [pricingModel, setPricingModel] = useState<PricingModel>(centre.pricing_model);
+  const [invoicedVia, setInvoicedVia] = useState<string>(centre.invoiced_via ?? "unset");
   const [agreedRate, setAgreedRate] = useState(centre.agreed_rate?.toString() ?? "");
   const [contractStatus, setContractStatus] = useState<ContractStatus>(centre.contract_status);
   const [groupSize, setGroupSize] = useState(centre.group_size?.toString() ?? "");
@@ -868,6 +879,11 @@ function EditCentreDialog({
       branding_mode: brandingMode,
       brand_colour: brandColour,
       curriculum_framework: framework,
+      // Only when changed: the column arrives with migration 103, and an
+      // unchanged field must never stop the rest of the form saving.
+      ...(invoicedVia !== (centre.invoiced_via ?? "unset")
+        ? { invoiced_via: invoicedVia === "unset" ? null : (invoicedVia as InvoiceChannel) }
+        : {}),
     };
 
     const { error: updateError } = await updateCentre(centre.id, payload);
@@ -1053,6 +1069,23 @@ function EditCentreDialog({
                   <SelectItem value="centre_funded">Centre Funded</SelectItem>
                   <SelectItem value="parent_funded">Parent Funded</SelectItem>
                   <SelectItem value="per_head">Per Head</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Centre funded and per head are service paid; parent funded is parent paid.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Invoiced via</Label>
+              <Select value={invoicedVia} onValueChange={(v) => setInvoicedVia(v ?? "unset")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unset">Not set</SelectItem>
+                  {INVOICE_CHANNEL_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

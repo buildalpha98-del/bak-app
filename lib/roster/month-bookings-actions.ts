@@ -42,7 +42,11 @@ export async function getMonthBookings(month?: string | null): Promise<{
     const [{ data: centreRows, error: centreErr }, { data: sessionRows, error: sessionErr }] = await Promise.all([
       supabase
         .from("centres")
-        .select(`id, name, type, colour, contract_status${financialAccess ? ", agreed_rate" : ""}`)
+        // "*" rather than a column list: invoiced_via arrives with
+        // migration 103, and naming a column that isn't there yet would
+        // fail the whole page. agreed_rate is dropped below for viewers
+        // without financial access, before anything leaves the server.
+        .select("*")
         .order("name"),
       supabase
         .from("sessions")
@@ -66,6 +70,8 @@ export async function getMonthBookings(month?: string | null): Promise<{
       colour: centreColour({ id: c.id as string, colour: c.colour as string | null }),
       contract_status: c.contract_status as string,
       agreed_rate: financialAccess && c.agreed_rate != null ? Number(c.agreed_rate) : null,
+      pricing_model: (c.pricing_model as string | null) ?? null,
+      invoiced_via: (c.invoiced_via as string | null | undefined) ?? null,
     }));
 
     const sessions: MonthSession[] = ((sessionRows ?? []) as unknown as Array<Record<string, unknown>>).map((s) => {

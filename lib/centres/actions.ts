@@ -8,6 +8,7 @@ import { resolvePeriod, type PeriodKey } from "@/lib/comparison/period";
 import type {
   CentreType,
   PricingModel,
+  InvoiceChannel,
   ContractStatus,
   CentreNoteCategory,
   BrandingMode,
@@ -142,6 +143,8 @@ export interface UpdateCentreData {
   age_groups?: string[];
   pricing_model?: PricingModel;
   agreed_rate?: number | null;
+  /** Migration 103 — send only when changed (see centre-detail-view). */
+  invoiced_via?: InvoiceChannel | null;
   session_preferences?: Record<string, unknown>;
   contract_status?: ContractStatus;
   /** P4 roster colour (#RRGGBB). */

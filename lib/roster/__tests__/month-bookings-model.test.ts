@@ -10,8 +10,8 @@ import {
 } from "../month-bookings-model";
 
 const centres: MonthCentre[] = [
-  { id: "a", name: "Al Bayan Liverpool", type: "school", colour: "#E8712A", contract_status: "active", agreed_rate: 165 },
-  { id: "b", name: "Birds Of Paradise", type: "childcare_centre", colour: "#2A7BE8", contract_status: "active", agreed_rate: null },
+  { id: "a", name: "Al Bayan Liverpool", type: "school", colour: "#E8712A", contract_status: "active", agreed_rate: 165, pricing_model: "centre_funded", invoiced_via: "quickbooks" },
+  { id: "b", name: "Birds Of Paradise", type: "childcare_centre", colour: "#2A7BE8", contract_status: "active", agreed_rate: null, pricing_model: "parent_funded", invoiced_via: "square" },
   { id: "c", name: "Quiet Centre", type: "childcare_centre", colour: "#2AE87B", contract_status: "active", agreed_rate: 150 },
   { id: "d", name: "Churned School", type: "school", colour: "#999999", contract_status: "churned", agreed_rate: 150 },
 ];
@@ -109,5 +109,21 @@ describe("buildMonthBookings", () => {
     expect(m.totals.booked).toBe(0);
     expect(m.totals.cancelled).toBe(1);
     expect(m.not_booked.map((c) => c.id)).toContain("c");
+  });
+});
+
+describe("billing split", () => {
+  it("totals sessions, clients and value by who pays and by invoicing system", () => {
+    const m = buildMonthBookings("2026-11", centres, [
+      s({ date: "2026-11-02" }),
+      s({ date: "2026-11-03" }),
+      s({ date: "2026-11-02", centre_id: "b" }),
+      s({ date: "2026-11-02", centre_id: "c" }), // per-centre rate 150, no pricing model/channel → service, unset
+    ]);
+    expect(m.totals.by_payer.service).toEqual({ booked: 3, clients: 2, value: 480 });
+    expect(m.totals.by_payer.parent).toEqual({ booked: 1, clients: 1, value: 0 });
+    expect(m.totals.by_channel.quickbooks).toEqual({ booked: 2, clients: 1, value: 330 });
+    expect(m.totals.by_channel.square).toEqual({ booked: 1, clients: 1, value: 0 });
+    expect(m.totals.by_channel.unset).toEqual({ booked: 1, clients: 1, value: 150 });
   });
 });
