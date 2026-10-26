@@ -202,7 +202,7 @@ describe("sports roster and partners (owner-supplied 2026-07-18)", () => {
       "10+ Partner schools",
       "50+ Childcare centres & ELCs",
       "5,000+ Kids coached",
-      "10+ Years on the ground",
+      "10+ Years coaching",
     ]);
   });
 });

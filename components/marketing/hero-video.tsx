@@ -96,7 +96,7 @@ export function HeroVideo() {
       <div className="absolute inset-0 flex items-center justify-center bg-[#FFF7F2] p-8 sm:p-10">
         <Image
           src={BRAND.logo}
-          alt="Build Alpha Kids club crest — fanned sports balls behind the club banner"
+          alt="Build Alpha Kids club crest, fanned sports balls behind the club banner"
           width={513}
           height={339}
           priority
@@ -109,7 +109,7 @@ export function HeroVideo() {
         <iframe
           data-hero-video
           src={mode === "ambient" ? AMBIENT_SRC : MANUAL_SRC}
-          title="Build Alpha Kids — our sessions in action"
+          title="Build Alpha Kids: our sessions in action"
           allow="autoplay; fullscreen; picture-in-picture"
           onLoad={() => setPlayerReady(true)}
           className={`absolute inset-0 size-full transition-opacity duration-700 ${
