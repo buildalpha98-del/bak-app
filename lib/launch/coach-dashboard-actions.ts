@@ -1,4 +1,5 @@
 "use server";
+import { requireRole } from "@/lib/auth/require-role";
 
 // ============================================================
 // Coach Dashboard — Server actions for "today first" experience
@@ -309,6 +310,9 @@ export async function markAttendance(params: {
   attendanceRecords: Array<{ childId: string; status: "present" | "absent" }>;
   walkIns?: Array<{ childName: string; parentName: string; parentPhone: string }>;
 }): Promise<{ success: boolean; error?: string }> {
+  await requireRole(["admin", "ops", "coach"]);
+
+
   try {
     const supabase = await createSupabaseServerClient();
 

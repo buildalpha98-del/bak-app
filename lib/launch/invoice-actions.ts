@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Foundation — Invoice server actions
@@ -37,6 +38,11 @@ export async function createCentreInvoice(params: {
   endDate: string;
   createdBy: string;
 }): Promise<{ success: boolean; invoiceId?: string; invoiceNumber?: string; error?: string }> {
+  await requireAdmin();
+
+  params = { ...params, createdBy: (await requireAdmin()).user.id };
+
+
   try {
     const adminClient = createSupabaseAdmin();
 
@@ -128,6 +134,11 @@ export async function createSchoolInvoice(params: {
   termEndDate: string;
   createdBy: string;
 }): Promise<{ success: boolean; invoiceId?: string; invoiceNumber?: string; error?: string }> {
+  await requireAdmin();
+
+  params = { ...params, createdBy: (await requireAdmin()).user.id };
+
+
   try {
     const adminClient = createSupabaseAdmin();
 
@@ -259,6 +270,9 @@ export async function updateInvoiceStatus(params: {
   status: "sent" | "paid" | "overdue";
   paymentDate?: string;
 }): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+
+
   try {
     const adminClient = createSupabaseAdmin();
 

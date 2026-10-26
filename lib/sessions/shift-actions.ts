@@ -1,4 +1,5 @@
 "use server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { triggerNotification, triggerNotificationForOps } from "@/lib/notifications/send";
@@ -160,6 +161,7 @@ export async function declineShift(
       sessionId,
       coaches: [],
       assignedBy: user.id,
+      client: createSupabaseAdmin(),
     });
     if (clearErr) return { error: clearErr };
 

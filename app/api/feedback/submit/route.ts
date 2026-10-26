@@ -1,3 +1,4 @@
+import { publicFeedbackSchema, allowFeedback } from "@/lib/feedback/input";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { autoCreateTask } from "@/lib/tasks/auto-create";
@@ -5,32 +6,10 @@ import { triggerNotificationForOps } from "@/lib/notifications/send";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { token, rating, comment } = body as {
-      token?: string;
-      rating?: number;
-      comment?: string;
-    };
-
-    // Validate inputs
-    if (!token || typeof token !== "string") {
-      return NextResponse.json(
-        { error: "Invalid feedback token." },
-        { status: 400 }
-      );
-    }
-
-    if (
-      typeof rating !== "number" ||
-      !Number.isInteger(rating) ||
-      rating < 1 ||
-      rating > 5
-    ) {
-      return NextResponse.json(
-        { error: "Rating must be a whole number between 1 and 5." },
-        { status: 400 }
-      );
-    }
+    if (!allowFeedback(request.headers)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    const parsed = publicFeedbackSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid feedback." }, { status: 400 });
+    const { token, rating, comment } = parsed.data;
 
     const admin = createSupabaseAdmin();
 

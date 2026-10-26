@@ -1,4 +1,6 @@
 "use server";
+import { idSchema, centreUpdateSchema } from "@/lib/auth/action-schemas";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getFinancialAccess } from "@/lib/auth/financial-access";
@@ -526,10 +528,16 @@ export async function updateCentre(
   id: string,
   data: UpdateCentreData
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+  idSchema.parse(id);
+  data = centreUpdateSchema.parse(data);
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
-    const updatePayload: Record<string, unknown> = { ...data };
+    const updatePayload: Record<string, unknown> = centreUpdateSchema.parse(data);
 
     // Track contract status changes
     if (data.contract_status) {

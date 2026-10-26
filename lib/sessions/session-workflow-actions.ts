@@ -382,7 +382,7 @@ export async function completeSession(
     try {
       if (centre?.send_feedback_emails && centre?.primary_contact_email) {
         const { createFeedbackRequest } = await import(
-          "@/lib/feedback/actions"
+          "@/lib/feedback/request"
         );
         const { feedbackRequestEmail } = await import(
           "@/lib/email/templates"

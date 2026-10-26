@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,18 +16,7 @@ import {
 // through the server client (admin/ops RLS); the change-request
 // requester's name is a client_users row, which staff can read.
 
-async function requireStaff() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { supabase, user: null, error: "Not authenticated." };
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
-    return { supabase, user: null, error: "Not authorised." };
-  }
-  return { supabase, user, error: null };
-}
+
 
 export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; error: string | null }> {
   try {

@@ -14,7 +14,6 @@ import {
   Clock,
   Shield,
   KeyRound,
-  Copy,
   Mail,
   MessageSquare,
   Banknote,
@@ -57,7 +56,6 @@ import {
   reactivateStaffMember,
   hardDeleteStaffMember,
   adminResetStaffPassword,
-  sendStaffPasswordResetEmail,
   setStaffFinancialAccess,
   setStaffAlsoCoaches,
   upsertPayRate,
@@ -216,9 +214,7 @@ export function StaffDetailView({
 
   // Password reset
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   // Financial access toggle
   const [financialBusy, setFinancialBusy] = useState(false);
@@ -744,72 +740,28 @@ export function StaffDetailView({
       {/* Reset Password Dialog */}
       <Dialog open={resetPasswordOpen} onOpenChange={(open) => {
         setResetPasswordOpen(open);
-        if (!open) { setTempPassword(null); setCopied(false); }
       }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Password for {profile.name}</DialogTitle>
             <DialogDescription>
-              Generate a temporary password or send a reset email to {profile.email}.
+              Send a password reset email to {profile.email}.
             </DialogDescription>
           </DialogHeader>
 
-          {tempPassword ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Temporary password generated. Share this with {profile.name.split(" ")[0]} — they&apos;ll be prompted to change it on first login.
-              </p>
-              <div className="flex items-center gap-2 rounded-lg border bg-muted p-3 font-mono text-sm">
-                <span className="flex-1 select-all">{tempPassword}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(tempPassword);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                >
-                  {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={async () => {
-                  setResetLoading(true);
-                  const res = await adminResetStaffPassword(profile.id);
-                  setResetLoading(false);
-                  if (res.data) setTempPassword(res.data.tempPassword);
-                }}
-                disabled={resetLoading}
-              >
-                <KeyRound className="h-4 w-4" />
-                {resetLoading ? "Generating..." : "Generate Temporary Password"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  setResetLoading(true);
-                  const res = await sendStaffPasswordResetEmail(profile.email);
-                  setResetLoading(false);
-                  if (!res.error) {
-                    setResetPasswordOpen(false);
-                    router.refresh();
-                  }
-                }}
-                disabled={resetLoading}
-              >
-                <Mail className="h-4 w-4" />
-                {resetLoading ? "Sending..." : "Send Reset Email"}
-              </Button>
-            </div>
-          )}
+          <Button disabled={resetLoading} onClick={async () => {
+            setResetLoading(true);
+            try {
+              const result = await adminResetStaffPassword(profile.id);
+              if (!result.error) setResetPasswordOpen(false);
+            } finally { setResetLoading(false); }
+          }}>
+            {resetLoading ? "Sending..." : "Send Reset Email"}
+          </Button>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setResetPasswordOpen(false)}>
-              {tempPassword ? "Done" : "Cancel"}
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

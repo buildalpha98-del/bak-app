@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -214,6 +215,8 @@ export async function recordChurnEvent(
   eventType: ChurnEventType,
   notes?: string
 ): Promise<{ data: ChurnEvent | null; error: string | null }> {
+  await requireStaff();
+
   const supabase = await createSupabaseServerClient();
 
   try {

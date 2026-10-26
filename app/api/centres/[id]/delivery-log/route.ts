@@ -1,3 +1,4 @@
+import { requireApiRole } from "@/lib/auth/api-role";
 import { NextResponse } from "next/server";
 import { getCentreDeliveryLog } from "@/lib/centres/delivery-log-actions";
 import { deliveryLogCsv } from "@/lib/centres/delivery-log";
@@ -7,6 +8,9 @@ import { deliveryLogCsv } from "@/lib/centres/delivery-log";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireApiRole(false);
+  if (denied) return denied;
+
   const { id } = await params;
   const term = new URL(request.url).searchParams.get("term");
   const { data, error } = await getCentreDeliveryLog(id, term);

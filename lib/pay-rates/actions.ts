@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -658,6 +659,9 @@ export async function approveHoursAdjustment(input: {
   sessionId: string;
   approvedDuration: number;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -706,6 +710,9 @@ export async function rejectHoursAdjustment(input: {
   sessionId: string;
   reason: string;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {

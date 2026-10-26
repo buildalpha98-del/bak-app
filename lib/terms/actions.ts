@@ -1,4 +1,6 @@
 "use server";
+import { idSchema, termCreateSchema, termUpdateSchema } from "@/lib/auth/action-schemas";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -223,6 +225,12 @@ export async function getActiveCoaches(): Promise<{
 export async function createTerm(
   data: CreateTermData
 ): Promise<{ data: Term | null; error: string | null }> {
+  await requireStaff();
+
+
+  data = termCreateSchema.parse(data);
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -254,23 +262,31 @@ export async function updateTerm(
   id: string,
   data: UpdateTermData
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+  idSchema.parse(id);
+  data = termUpdateSchema.parse(data);
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
     // If activating, complete the currently active term first
     if (data.status === "active") {
-      const { data: activeTerm } = await supabase
+      const { data: activeTerm, error: activeError } = await supabase
         .from("terms")
         .select("id")
         .eq("status", "active")
         .neq("id", id)
         .maybeSingle();
 
+      if (activeError) throw activeError;
       if (activeTerm) {
-        await supabase
+        const { error: completeError } = await supabase
           .from("terms")
           .update({ status: "completed" as TermStatus })
           .eq("id", activeTerm.id);
+        if (completeError) throw completeError;
       }
     }
 
@@ -294,32 +310,41 @@ export async function updateTerm(
 export async function deleteTerm(
   id: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+  idSchema.parse(id);
+
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
     // Check term is draft
-    const { data: term } = await supabase
+    const { data: term, error: termError } = await supabase
       .from("terms")
       .select("status")
       .eq("id", id)
       .single();
 
+    if (termError) throw termError;
     if (term?.status !== "draft") {
       return { error: "Only draft terms can be deleted." };
     }
 
     // Check no sessions exist
-    const { count } = await supabase
+    const { count, error: countError } = await supabase
       .from("sessions")
       .select("id", { count: "exact", head: true })
       .eq("term_id", id);
 
+    if (countError) throw countError;
     if (count && count > 0) {
       return { error: "Cannot delete a term that has generated sessions." };
     }
 
     // Delete templates first, then the term
-    await supabase.from("term_templates").delete().eq("term_id", id);
+    const { error: templateError } = await supabase.from("term_templates").delete().eq("term_id", id);
+    if (templateError) throw templateError;
     const { error } = await supabase.from("terms").delete().eq("id", id);
 
     if (error) throw error;
@@ -337,6 +362,9 @@ export async function deleteTerm(
 export async function createTemplateEntry(
   data: CreateTemplateEntryData
 ): Promise<{ data: TermTemplate | null; error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -374,6 +402,9 @@ export async function updateTemplateEntry(
   id: string,
   data: UpdateTemplateEntryData
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -397,6 +428,9 @@ export async function updateTemplateEntry(
 export async function deleteTemplateEntry(
   id: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -424,6 +458,9 @@ export async function generateSessionsForWeek(
   data: { created: number; skipped: number } | null;
   error: string | null;
 }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -537,6 +574,9 @@ export async function generateSessionsForWeek(
 export async function duplicateTerm(
   data: DuplicateTermData
 ): Promise<{ data: Term | null; error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
