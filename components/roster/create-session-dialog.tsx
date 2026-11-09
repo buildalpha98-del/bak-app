@@ -518,17 +518,21 @@ export function CreateSessionDialog({
           {/* Sport rotation — create mode only, alternative to Repeats */}
           {!isEdit && (
             <div className="space-y-3">
-              {repeatFreq === "none" && (
-                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <input
-                    type="checkbox"
-                    className="size-4 rounded border-input"
-                    checked={rotateSports}
-                    onChange={(e) => setRotateSports(e.target.checked)}
-                  />
-                  Rotate through multiple sports (weekly blocks)
-                </label>
-              )}
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-input"
+                  checked={rotateSports}
+                  onChange={(e) => {
+                    setRotateSports(e.target.checked);
+                    if (e.target.checked) {
+                      setRepeatFreq("none");
+                      setRepeatUntil("");
+                    }
+                  }}
+                />
+                Different sport on different weeks (rotate sports)
+              </label>
 
               {rotateSports && (
                 <div className="space-y-3 rounded-lg border p-3">
