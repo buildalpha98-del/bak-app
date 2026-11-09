@@ -84,7 +84,7 @@ export const LEGAL_LAST_UPDATED = "15 July 2026";
  * decision for Jayden and that lawyer — not a tidy-up.
  */
 export const LEGAL_DRAFT_NOTICE =
-  "This is a draft prepared for legal review and is not yet a final policy. It describes how Build Alpha Kids actually handles information today. If anything here is unclear or looks wrong, please tell us — see the contact details at the end.";
+  "This is a draft prepared for legal review and is not yet a final policy. It describes how Build Alpha Kids actually handles information today. If anything here is unclear or looks wrong, please tell us. See the contact details at the end.";
 
 // ------------------------------------------------------------
 // Privacy Policy
@@ -116,16 +116,16 @@ export const PRIVACY_PAGE: LegalPage = {
         // Source: supabase/migrations/017_children_and_attendance.sql —
         // the `children` table. medical_notes and photo_url are real
         // columns, so they are disclosed rather than glossed.
-        "About your child, when you enrol them: their first and last name, date of birth, age group, gender, and any medical notes you or your centre give us — for example allergies, asthma, or a condition our coaches need to know about. We may also hold a photo of your child.",
+        "About your child, when you enrol them: their first and last name, date of birth, age group, gender, and any medical notes you or your centre give us, for example allergies, asthma, or a condition our coaches need to know about. We may also hold a photo of your child.",
         "About your child's participation, as the program runs: attendance at each session, skill ratings recorded by coaches, written observations by coaches, photos taken during sessions, and development insights generated from that data (see 'AI-assisted insights' below).",
-        "About payments: the amount, what it was for, and the reference numbers Square gives us for the transaction. We never receive or store your card number — see 'Payments' below.",
+        "About payments: the amount, what it was for, and the reference numbers Square gives us for the transaction. We never receive or store your card number. See 'Payments' below.",
         "If you enquire or subscribe: the name, email, phone, suburb and message you send us through an enquiry form, or just your email address if you subscribe to our newsletter.",
       ],
     },
     {
       heading: "Sensitive information",
       body: [
-        "Health information — the medical notes above — is 'sensitive information' under the Privacy Act and gets extra protection. We collect it only so our coaches can keep your child safe during a session, and we only collect it because you or your child's centre have given it to us for that purpose.",
+        "Health information, meaning the medical notes above, is 'sensitive information' under the Privacy Act and gets extra protection. We collect it only so our coaches can keep your child safe during a session, and we only collect it because you or your child's centre have given it to us for that purpose.",
         "You do not have to give us medical information. If you do not, we may not be able to safely include your child in some activities.",
       ],
     },
@@ -136,7 +136,7 @@ export const PRIVACY_PAGE: LegalPage = {
       ],
       bullets: [
         "To enrol your child, manage bookings and take payment.",
-        "To run sessions safely — including knowing about a medical condition before a child starts.",
+        "To run sessions safely, including knowing about a medical condition before a child starts.",
         "To record attendance and track skill development over a term.",
         "To send you booking confirmations, receipts, reminders and cancellation notices.",
         "To send you marketing emails or SMS, but only if you have opted in. You can opt out at any time.",
@@ -152,7 +152,7 @@ export const PRIVACY_PAGE: LegalPage = {
         "Our coaches can upload photos taken during a session. Those photos are stored against the session and are visible to the coach who took them, to our administrators, and to the director of the centre where the session ran.",
         // Honest gap. There is NO consent column anywhere in the schema, so
         // we must not describe a consent process the software does not have.
-        "TODO-CONFIRM: Build Alpha Kids does not currently record a photo or media consent flag against a child in this system. Before launch, confirm how photo consent is obtained and recorded (for example, through the centre's own enrolment forms), how a parent asks for a photo to be removed, and whether photos are ever used for marketing. This section must then describe that actual process — and if photos may be used publicly, that requires its own clear consent and must be stated here.",
+        "TODO-CONFIRM: Build Alpha Kids does not currently record a photo or media consent flag against a child in this system. Before launch, confirm how photo consent is obtained and recorded (for example, through the centre's own enrolment forms), how a parent asks for a photo to be removed, and whether photos are ever used for marketing. This section must then describe that actual process, and if photos may be used publicly, that requires its own clear consent and must be stated here.",
       ],
     },
     {
@@ -161,11 +161,11 @@ export const PRIVACY_PAGE: LegalPage = {
         // The material disclosure. Source: app/api/insights/generate/route.ts
         // and app/api/cron/child-insights/route.ts — both build a prompt
         // containing the child's full name.
-        "We use an artificial intelligence service provided by Anthropic (the Claude API) to help write development insight reports about your child — a summary of their strengths, areas for growth, and suggestions for parents and coaches.",
-        "We think you should know exactly what is sent. When an insight is generated, we send Anthropic: your child's first and last name, their age group and approximate age in years, the name and dates of the school term, their attendance record for each sport, and the skill ratings their coaches recorded. This information identifies your child by name — it is not anonymised or aggregated with other children.",
+        "We use an artificial intelligence service provided by Anthropic (the Claude API) to help write development insight reports about your child: a summary of their strengths, areas for growth, and suggestions for parents and coaches.",
+        "We think you should know exactly what is sent. When an insight is generated, we send Anthropic: your child's first and last name, their age group and approximate age in years, the name and dates of the school term, their attendance record for each sport, and the skill ratings their coaches recorded. This information identifies your child by name. It is not anonymised or aggregated with other children.",
         "We do not send your child's medical notes, date of birth, gender, photos, your contact details, or any payment information to Anthropic.",
         "Insights are generated when a coach or administrator asks for one, and automatically at the end of a term for children who have skill ratings for that term. The report that comes back is stored in our system and shown to you in your parent account.",
-        "Anthropic processes this information on our behalf as a service provider. TODO-CONFIRM: the applicable Anthropic terms and data-processing commitments (including their retention of API inputs and whether the data may be used for training) should be confirmed and summarised here by the reviewing lawyer, and Jayden should decide whether parents are offered a way to opt out of AI-generated insights — the system does not currently have an opt-out.",
+        "Anthropic processes this information on our behalf as a service provider. TODO-CONFIRM: the applicable Anthropic terms and data-processing commitments (including their retention of API inputs and whether the data may be used for training) should be confirmed and summarised here by the reviewing lawyer, and Jayden should decide whether parents are offered a way to opt out of AI-generated insights. The system does not currently have an opt-out.",
       ],
     },
     {
@@ -180,12 +180,12 @@ export const PRIVACY_PAGE: LegalPage = {
         // lib/utils/errorTracking.ts is a console-logging stub with a
         // "swap to Sentry when ready" TODO and @sentry/nextjs is not a
         // dependency. Naming it would be a false disclosure.
-        "Supabase — our database, sign-in and file storage. This is where the information above is held.",
-        "Vercel — hosting. Our application runs on Vercel's servers.",
-        "Anthropic — the AI service described above.",
-        "Resend — sending our emails, such as booking confirmations and receipts.",
-        "Square — processing card payments.",
-        "Twilio — sending SMS notifications, if you have opted in to them.",
+        "Supabase: our database, sign-in and file storage. This is where the information above is held.",
+        "Vercel: hosting. Our application runs on Vercel's servers.",
+        "Anthropic: the AI service described above.",
+        "Resend: sending our emails, such as booking confirmations and receipts.",
+        "Square: processing card payments.",
+        "Twilio: sending SMS notifications, if you have opted in to them.",
       ],
     },
     {
@@ -197,7 +197,7 @@ export const PRIVACY_PAGE: LegalPage = {
         // (yyndmywxfxklzaftfhon), region ap-southeast-2 (Sydney) — both
         // moved from Mumbai in Oct 2026. If either region changes, this
         // sentence must change in the same deploy.
-        "Our application runs on servers in Sydney, Australia, and our database — where your information and your child's records are stored — is also in Sydney, Australia.",
+        "Our application runs on servers in Sydney, Australia, and our database, where your information and your child's records are stored, is also in Sydney, Australia.",
         "TODO-CONFIRM: the countries in which Anthropic, Resend, Square and Twilio store and process the information we send them. Each provider is based outside Australia, but the specific countries must be confirmed from each provider's own terms rather than assumed.",
       ],
     },
@@ -209,7 +209,7 @@ export const PRIVACY_PAGE: LegalPage = {
         // it to Square. Card numbers never reach our server or our DB.
         // Source: supabase/migrations/035_bookings_payments.sql — the
         // `payments` table stores square_payment_id / square_order_id only.
-        "Card payments are handled by Square. When you pay, your card details go directly from your browser to Square — they do not pass through our servers, and we do not store your card number.",
+        "Card payments are handled by Square. When you pay, your card details go directly from your browser to Square. They do not pass through our servers, and we do not store your card number.",
         "What we keep is the amount, what it was for, and the reference numbers Square returns so we can match the payment to your booking and issue a refund if one is due.",
       ],
     },
@@ -221,7 +221,7 @@ export const PRIVACY_PAGE: LegalPage = {
         // the per-table `ENABLE ROW LEVEL SECURITY` statements; magic-link
         // auth per docs/auth-magic-link-setup.md.
         "Your information is held in our Supabase database. Access is restricted by database-level security rules, so a parent account can only reach that parent's own information, and staff accounts are limited by their role and the centres they work with.",
-        "You sign in with a single-use link sent to your email address — there is no password to be guessed or reused.",
+        "You sign in with a single-use link sent to your email address. There is no password to be guessed or reused.",
         "We do not claim any security certification, and no system is perfectly secure. If you believe your account or your child's information has been compromised, please contact us straight away.",
       ],
     },
@@ -232,7 +232,7 @@ export const PRIVACY_PAGE: LegalPage = {
         // or scheduled-deletion logic exists anywhere in the codebase, and
         // no cron in vercel.json does this.
         "TODO-CONFIRM: our system does not currently delete or anonymise records automatically. In practice this means information about a child is kept until it is removed by hand.",
-        "TODO-CONFIRM: how long Build Alpha Kids intends to keep child records, parent records, booking and payment records (noting the separate record-keeping obligations that apply to financial records), enquiry and newsletter records — and what happens to a child's information after they leave a program. These periods must be decided and stated here. We have deliberately not written a retention period we do not actually honour.",
+        "TODO-CONFIRM: how long Build Alpha Kids intends to keep child records, parent records, booking and payment records (noting the separate record-keeping obligations that apply to financial records), enquiry and newsletter records, and what happens to a child's information after they leave a program. These periods must be decided and stated here. We have deliberately not written a retention period we do not actually honour.",
       ],
     },
     {
@@ -244,8 +244,8 @@ export const PRIVACY_PAGE: LegalPage = {
         // (The "Account Deletion / Data Export in PortalSettings" note in the
         // global CLAUDE.md belongs to a DIFFERENT project — SOLVR — and was
         // verified as absent here.)
-        "For anything else — a full copy of your child's records, a correction you cannot make yourself, or a request to delete information — please contact us and we will handle it manually. We do not yet have a self-service export or account-deletion button.",
-        "TODO-CONFIRM: the timeframe within which Build Alpha Kids will respond to an access or correction request, and whether any fee applies. (The Privacy Act sets expectations here — this should be confirmed with the reviewing lawyer.)",
+        "For anything else, such as a full copy of your child's records, a correction you cannot make yourself, or a request to delete information, please contact us and we will handle it manually. We do not yet have a self-service export or account-deletion button.",
+        "TODO-CONFIRM: the timeframe within which Build Alpha Kids will respond to an access or correction request, and whether any fee applies. (The Privacy Act sets expectations here. This should be confirmed with the reviewing lawyer.)",
       ],
     },
     {
@@ -260,7 +260,7 @@ export const PRIVACY_PAGE: LegalPage = {
     {
       heading: "Making a complaint",
       body: [
-        "If you think we have mishandled your or your child's personal information, please tell us first — contact details are below — and we will look into it and respond to you.",
+        "If you think we have mishandled your or your child's personal information, please tell us first, and we will look into it and respond to you. Contact details are below.",
         "TODO-CONFIRM: a named privacy contact (a person or role, with an email address) to receive privacy complaints, and the process and timeframe for responding to one. Do not publish this page without it: a complaints process with nobody at the end of it is worse than none.",
         "If you are not satisfied with our response, you can take your complaint to the Office of the Australian Information Commissioner (OAIC), which oversees the Privacy Act. You can reach the OAIC at oaic.gov.au or on 1300 363 992.",
       ],
@@ -269,7 +269,7 @@ export const PRIVACY_PAGE: LegalPage = {
       heading: "Changes to this policy",
       body: [
         "If we change this policy, we will update the 'Last updated' date at the top of this page and publish the new version here.",
-        "If we make a change that materially affects how we handle your or your child's information — for example, sharing it with a new service provider, or sending it somewhere new overseas — we will tell account holders by email rather than relying on you to re-read this page.",
+        "If we make a change that materially affects how we handle your or your child's information, for example sharing it with a new service provider or sending it somewhere new overseas, we will tell account holders by email rather than relying on you to re-read this page.",
       ],
     },
     {
@@ -291,7 +291,7 @@ export const TERMS_PAGE: LegalPage = {
   intro:
     "These terms cover using this website, booking a session, and what you and we each agree to. Plain English, no traps.",
   description:
-    "The terms that apply when you use the Build Alpha Kids website, book a session, or pay for a program — including cancellations, refunds and liability.",
+    "The terms that apply when you use the Build Alpha Kids website, book a session, or pay for a program, including cancellations, refunds and liability.",
   sections: [
     {
       heading: "About these terms",
@@ -304,7 +304,7 @@ export const TERMS_PAGE: LegalPage = {
     {
       heading: "Who this service is for",
       body: [
-        "Our programs are for children. The account, the booking and the payment are for the parent or guardian — you book on your child's behalf, and you confirm you are their parent or guardian and are allowed to enrol them.",
+        "Our programs are for children. The account, the booking and the payment are for the parent or guardian: you book on your child's behalf, and you confirm you are their parent or guardian and are allowed to enrol them.",
         "We also work with childcare centres, schools and other organisations. If you are booking on behalf of an organisation, you confirm you are authorised to do so.",
         // Honest: no age gate is implemented anywhere. Don't claim one.
         "TODO-CONFIRM: whether Build Alpha Kids requires account holders to be 18 or over. The site does not currently verify a user's age, so no age requirement is stated here. If one is intended, it needs to be stated and enforced rather than only written down.",
@@ -314,7 +314,7 @@ export const TERMS_PAGE: LegalPage = {
       heading: "Your account",
       body: [
         // Source: docs/auth-magic-link-setup.md — magic-link auth, no passwords.
-        "You sign in with a single-use link sent to your email address, so there is no password to manage. Please keep access to your email secure — anyone who can read your email can sign in to your account.",
+        "You sign in with a single-use link sent to your email address, so there is no password to manage. Please keep access to your email secure: anyone who can read your email can sign in to your account.",
         "Please give us accurate information, and keep your details and your child's details up to date. We rely on what you tell us about your child's health to keep them safe.",
       ],
     },
@@ -327,8 +327,8 @@ export const TERMS_PAGE: LegalPage = {
         "Card payments are processed by Square. Your card details go directly to Square and we never see or store your card number.",
         // Owner-confirmed per the brief; consistent with content.ts:72-77.
         "NSW Active Kids vouchers are accepted for both our after-school clinics and our school holiday clinics.",
-        "TODO-CONFIRM: how an Active Kids voucher is applied in practice — at the time of booking or as a reimbursement — and what happens to the voucher if a booking is later cancelled. The booking system does not currently record a voucher against a booking, so this process happens outside the software and needs to be described accurately.",
-        "TODO-CONFIRM: whether Build Alpha Kids is registered for GST and whether displayed prices include GST. (The application reads this from a BAK_GST_REGISTERED environment variable, so the value is not in our code.)",
+        "TODO-CONFIRM: how an Active Kids voucher is applied in practice, at the time of booking or as a reimbursement, and what happens to the voucher if a booking is later cancelled. The booking system does not currently record a voucher against a booking, so this process happens outside the software and needs to be described accurately.",
+        "TODO-CONFIRM: whether Build Alpha Kids is registered for GST and whether displayed prices include GST. (The application reads this from an environment variable, so the value is not in our code.)",
       ],
     },
     {
@@ -344,10 +344,10 @@ export const TERMS_PAGE: LegalPage = {
         // Honest nuance: NO Square refund API call exists in the codebase.
         // docs/square-cutover.md confirms refunds are issued by hand from the
         // Square seller dashboard. So we must not imply an automatic refund.
-        "Card refunds are processed by us through Square and are returned to the card you paid with. Refunds are not automatic — cancelling releases your spot and records your refund eligibility, and we then action the refund.",
+        "Card refunds are processed by us through Square and are returned to the card you paid with. Refunds are not automatic: cancelling releases your spot and records your refund eligibility, and we then action the refund.",
         "TODO-CONFIRM: how long a refund takes to reach a parent. Our cancellation email currently tells parents to allow 5–10 business days. Because refunds are actioned by hand rather than by the system, confirm that this is a timeframe the business can actually meet, and correct either this page or that email so the two agree.",
-        "If we have to cancel a session — for weather, a coach being unavailable, or anything else — we will let you know and you will be offered a refund.",
-        "TODO-CONFIRM: what happens when a session is cancelled by Build Alpha Kids rather than by the parent — refund, credit, or transfer to another session — and whether wet-weather cancellations are treated differently. The system records a cancellation but does not encode this policy.",
+        "If we have to cancel a session for weather, a coach being unavailable, or anything else, we will let you know and you will be offered a refund.",
+        "TODO-CONFIRM: what happens when a session is cancelled by Build Alpha Kids rather than by the parent, such as a refund, credit, or transfer to another session, and whether wet-weather cancellations are treated differently. The system records a cancellation but does not encode this policy.",
       ],
     },
     {
@@ -355,7 +355,7 @@ export const TERMS_PAGE: LegalPage = {
       body: [
         "Please tell us about any medical condition, allergy or requirement that affects your child's participation, and keep it current. We share it with the coaches running your child's session so they can look after them.",
         "We ask that children and parents treat coaches, other children and the venue with respect. We may ask a child to sit out, or remove them from a program, if their behaviour puts themselves or others at risk.",
-        "TODO-CONFIRM: Build Alpha Kids' policy on drop-off and pick-up, supervision before and after a session, what happens if a child is not collected, and the behaviour and exclusion policy — including whether a refund applies if a child is removed from a program.",
+        "TODO-CONFIRM: Build Alpha Kids' policy on drop-off and pick-up, supervision before and after a session, what happens if a child is not collected, and the behaviour and exclusion policy, including whether a refund applies if a child is removed from a program.",
       ],
     },
     {
@@ -376,7 +376,7 @@ export const TERMS_PAGE: LegalPage = {
     {
       heading: "Our content",
       body: [
-        "The content on this site — our text, images, logo and branding — belongs to us or our licensors. You are welcome to read and share it, but please do not copy it for your own commercial use without asking us first.",
+        "The content on this site, meaning our text, images, logo and branding, belongs to us or our licensors. You are welcome to read and share it, but please do not copy it for your own commercial use without asking us first.",
       ],
     },
     {
@@ -387,7 +387,7 @@ export const TERMS_PAGE: LegalPage = {
         "Nothing in these terms excludes, restricts or modifies your rights under the Australian Consumer Law. Our services come with guarantees that cannot be excluded, and if we fail to meet them you have remedies under that law.",
         "Beyond those rights, we provide this website as it is. We work to keep the information on it accurate and the site available, but we do not guarantee it will be uninterrupted or error-free.",
         "Sport involves physical activity and a risk of injury. We take safety seriously and our coaches are trained for it, but we cannot guarantee that no one will ever be hurt.",
-        "TODO-CONFIRM: Build Alpha Kids' insurance position (public liability and any personal accident cover), and what limitation of liability — if any — should apply here. This section makes no claim about insurance because none could be established from our records. This is a section for the reviewing lawyer to write.",
+        "TODO-CONFIRM: Build Alpha Kids' insurance position (public liability and any personal accident cover), and what limitation of liability, if any, should apply here. This section makes no claim about insurance because none could be established from our records. This is a section for the reviewing lawyer to write.",
       ],
     },
     {

@@ -61,7 +61,11 @@ expect exactly one.
 - **Name:** Build Alpha Kids (never abbreviated)
 - **Primary:** #E8712A (orange). Dark text: #1A1A1A. Secondary: #666666
 - **Client portal:** teal/blue accent. Parent portal: warmer consumer design
-- **Language:** Australian English
+- **Language:** Australian English. "Program", never "programme" (marketing copy)
+- **Copy:** No emoji in UI copy, and no em dashes in new copy: use a full stop, comma, colon or "to" instead.
+- **Facts:** 10+ years coaching (Jayden's coaching experience; never "10+ years on the ground"). Pricing stays behind "Get a quote"; no prices on the marketing site.
+- **Partners:** Arrahman College is not listed as a partner until it re-engages.
+- **Imagery:** Decorative sport balls come from the rebuilt set (October 2026): balls-row.svg, the singles in public/images/brand/balls/, and balls-hem-wide.svg for the uniform-style band along a bottom edge. Never recolour them, restyle them or add gradients. The tennis ball is green to match the crest. The hem is `components/marketing/ball-hem.tsx`, used only on the B2B CTA band (`<CtaBand hem />`).
 
 ## User Roles
 

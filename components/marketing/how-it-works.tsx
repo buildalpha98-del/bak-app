@@ -9,7 +9,7 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 const STEPS = [
   {
     title: "Sign in with just your email",
-    body: "Magic link straight to your inbox — no passwords to invent, remember or reset.",
+    body: "Magic link straight to your inbox. No passwords to invent, remember or reset.",
   },
   {
     title: "Book and pay online in 60 seconds",
@@ -17,7 +17,7 @@ const STEPS = [
   },
   {
     title: "They play, learn and grow",
-    body: "Qualified coaches run every session — real skills, big smiles, zero screens.",
+    body: "Qualified coaches run every session: real skills, big smiles, zero screens.",
   },
   {
     title: "Track their progress all term",

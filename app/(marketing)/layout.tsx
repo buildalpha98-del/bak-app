@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(getCanonicalSiteUrl()),
   title: {
     template: `%s | ${SITE.name}`,
-    default: `${SITE.name} — ${SITE.tagline}`,
+    default: `${SITE.name}: ${SITE.tagline}`,
   },
   description: HOMEPAGE.heroSub,
   openGraph: {

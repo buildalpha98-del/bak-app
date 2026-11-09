@@ -22,21 +22,21 @@ const PILLARS = [
   {
     label: "For schools",
     ball: BALL_COLORS.blue,
-    body: "Curriculum-friendly multi-sport programs on your grounds — primary, high school and after-school. Your school engages us directly: we design around your bell times, our coaches bring every bit of equipment, and you get one provider and one invoice.",
+    body: "Curriculum-friendly multi-sport programs on your grounds: primary, high school and after-school. Your school engages us directly: we design around your bell times, our coaches bring every bit of equipment, and you get one provider and one invoice.",
     href: "/schools",
     cta: "School programs",
   },
   {
     label: "For childcare & ELCs",
     ball: BALL_COLORS.green,
-    body: "EYLF-aligned sessions built into the childcare day for ages two to five. Your centre books us on a flat fee — or families opt in on a simple session-package rate. Either way our coaches run it end to end, with zero extra admin for your educators.",
+    body: "EYLF-aligned sessions built into the childcare day for ages two to five. Your centre books us on a flat fee, or families opt in on a simple session-package rate. Either way our coaches run it end to end, with zero extra admin for your educators.",
     href: "/programs/childcare",
     cta: "Childcare programs",
   },
   {
     label: "For parents",
     ball: BALL_COLORS.yellow,
-    body: "After-school clinics through term and full-throttle multi-sport days in the holidays. Book and pay online in about 60 seconds, NSW Active Kids vouchers accepted — numbers are capped and the best days sell out fast.",
+    body: "After-school clinics through term and full-throttle multi-sport days in the holidays. Book and pay online in about 60 seconds, NSW Active Kids vouchers accepted. Numbers are capped and the best days sell out fast.",
     href: "/holiday-clinics",
     cta: "See clinic dates",
   },
@@ -48,7 +48,7 @@ export function WhatWeDo() {
       <SectionHeading
         eyebrow="What we do"
         title="Real coaching, wherever kids already are"
-        intro="Schools, childcare centres and holiday clinics across South-West Sydney — same coaches, same energy, zero hassle."
+        intro="Schools, childcare centres and holiday clinics across South-West Sydney: same coaches, same energy, zero hassle."
       />
 
       <div className="mt-12 grid gap-6 md:grid-cols-3">
