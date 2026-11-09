@@ -60,6 +60,8 @@ export interface CreateSessionData {
   centre_id: string;
   sport: string;
   coach_id?: string;
+  /** Whole crew, first = primary. Wins over `coach_id` when non-empty. */
+  coach_ids?: string[];
   pay_rate_override?: number;
   school_class_ids?: string[] | null;
 }
@@ -71,6 +73,8 @@ export interface UpdateSessionData {
   centre_id?: string;
   sport?: string;
   coach_id?: string | null;
+  /** Whole crew, first = primary; [] clears the shift. Wins over `coach_id`. */
+  coach_ids?: string[];
   pay_rate_override?: number | null;
   cancellation_reason?: string;
   program_id?: string | null;
@@ -307,8 +311,13 @@ export async function createSession(
   try {
     const supabase = await createSupabaseServerClient();
 
-    if (data.coach_id) {
-      const certCheck = await checkCoachCertsForSession(data.coach_id, data.date);
+    const crew = data.coach_ids?.length
+      ? data.coach_ids
+      : data.coach_id
+        ? [data.coach_id]
+        : [];
+    for (const coachId of crew) {
+      const certCheck = await checkCoachCertsForSession(coachId, data.date);
       if (!certCheck.ok) {
         return { data: null, error: certCheck.message };
       }
@@ -343,11 +352,11 @@ export async function createSession(
 
     if (error) throw error;
 
-    // If a coach was provided, write a primary row through the helper.
-    if (data.coach_id) {
+    // If coaches were provided, write them through the helper (first = primary).
+    if (crew.length > 0) {
       const { error: writeErr } = await setSessionCoaches({
         sessionId: session.id,
-        coaches: [{ userId: data.coach_id, isPrimary: true }],
+        coaches: crew.map((userId, i) => ({ userId, isPrimary: i === 0 })),
         assignedBy: user.id,
       });
       if (writeErr) {
@@ -388,8 +397,17 @@ export async function updateSession(
     } = await supabase.auth.getUser();
     if (!user) return { error: "Not authenticated." };
 
-    // Cert guard for coach assignment (unchanged behaviour).
-    if (data.coach_id) {
+    const crewKeyInPatch =
+      Object.prototype.hasOwnProperty.call(data, "coach_ids") &&
+      data.coach_ids !== undefined;
+    const nextCrew: string[] | null = crewKeyInPatch
+      ? (data.coach_ids as string[])
+      : data.coach_id
+        ? [data.coach_id]
+        : null;
+
+    // Cert guard for coach assignment.
+    if (nextCrew && nextCrew.length > 0) {
       const { data: existing, error: fetchErr } = await supabase
         .from("sessions")
         .select("date")
@@ -397,14 +415,17 @@ export async function updateSession(
         .single();
       if (fetchErr || !existing) return { error: "Session not found." };
       const sessionDate = (data.date as string | undefined) ?? existing.date;
-      const certCheck = await checkCoachCertsForSession(data.coach_id, sessionDate);
-      if (!certCheck.ok) return { error: certCheck.message };
+      for (const coachId of nextCrew) {
+        const certCheck = await checkCoachCertsForSession(coachId, sessionDate);
+        if (!certCheck.ok) return { error: certCheck.message };
+      }
     }
 
     // Separate coach_id from the rest of the patch — it now writes
     // through session_coaches; the trigger maintains the cache column.
     const coachKeyInPatch = Object.prototype.hasOwnProperty.call(data, "coach_id");
-    const { coach_id: nextCoachId, ...patch } = data;
+    const { coach_id: nextCoachId, coach_ids: _crewIds, ...patch } = data;
+    void _crewIds;
 
     // Apply the non-coach patch directly (status, date, time, etc.)
     if (Object.keys(patch).length > 0) {
@@ -413,11 +434,13 @@ export async function updateSession(
     }
 
     // Apply the coach change, if any, through the helper.
-    if (coachKeyInPatch) {
-      const coaches =
-        nextCoachId === null || nextCoachId === undefined
+    if (crewKeyInPatch || coachKeyInPatch) {
+      const ids: string[] = crewKeyInPatch
+        ? (data.coach_ids as string[])
+        : nextCoachId === null || nextCoachId === undefined
           ? []
-          : [{ userId: nextCoachId, isPrimary: true }];
+          : [nextCoachId];
+      const coaches = ids.map((userId, i) => ({ userId, isPrimary: i === 0 }));
       const { error: writeErr } = await setSessionCoaches({
         sessionId: id,
         coaches,
@@ -966,7 +989,7 @@ export async function repeatSessionForward(
     const { data: source } = await supabase
       .from("sessions")
       .select(
-        "id, term_id, date, time, duration_minutes, centre_id, sport, coach_id, pay_rate_override, school_class_ids"
+        "id, term_id, date, time, duration_minutes, centre_id, sport, coach_id, pay_rate_override, school_class_ids, session_coaches(user_id, is_primary)"
       )
       .eq("id", sessionId)
       .maybeSingle();
@@ -993,6 +1016,15 @@ export async function repeatSessionForward(
         centre_id: source.centre_id,
         sport: source.sport,
         coach_id: source.coach_id ?? undefined,
+        coach_ids: (
+          (source.session_coaches as unknown as Array<{
+            user_id: string;
+            is_primary: boolean;
+          }> | null) ?? []
+        )
+          .slice()
+          .sort((a, b) => Number(b.is_primary) - Number(a.is_primary))
+          .map((c) => c.user_id),
         pay_rate_override: source.pay_rate_override ?? undefined,
         school_class_ids: source.school_class_ids ?? null,
       },

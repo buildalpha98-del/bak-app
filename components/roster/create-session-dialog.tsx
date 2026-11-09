@@ -21,6 +21,10 @@ import {
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  CoachChipMultiselect,
+  type ChipCoach,
+} from "./coach-chip-multiselect";
+import {
   createSession,
   createRecurringSessions,
   createSportRotationSessions,
@@ -79,7 +83,7 @@ export function CreateSessionDialog({
   const [duration, setDuration] = useState("0.75"); // hours
   const [centreId, setCentreId] = useState("");
   const [sport, setSport] = useState("");
-  const [coachId, setCoachId] = useState("");
+  const [crew, setCrew] = useState<ChipCoach[]>([]);
   const [classIds, setClassIds] = useState<string[]>([]);
   const [payRateOverride, setPayRateOverride] = useState("");
   const [repeatFreq, setRepeatFreq] = useState<RecurrenceFrequency | "none">(
@@ -109,7 +113,13 @@ export function CreateSessionDialog({
         );
         setCentreId(editSession.centre_id);
         setSport(editSession.sport);
-        setCoachId(editSession.coach_id ?? "");
+        setCrew(
+          (editSession.assigned_coaches ?? []).map((c) => ({
+            id: c.user_id,
+            name: c.name ?? "(unknown)",
+            inactive: !coaches.some((opt) => opt.id === c.user_id),
+          }))
+        );
         setClassIds(editSession.school_class_ids ?? []);
         setPayRateOverride(
           editSession.pay_rate_override?.toString() ?? ""
@@ -120,7 +130,18 @@ export function CreateSessionDialog({
         setDuration("0.75");
         setCentreId("");
         setSport("");
-        setCoachId(defaultCoachId ?? "");
+        setCrew(
+          defaultCoachId
+            ? [
+                {
+                  id: defaultCoachId,
+                  name:
+                    coaches.find((c) => c.id === defaultCoachId)?.name ??
+                    "(unknown)",
+                },
+              ]
+            : []
+        );
         setClassIds([]);
         setPayRateOverride("");
       }
@@ -173,7 +194,7 @@ export function CreateSessionDialog({
         duration_minutes: durationMinutes,
         centre_id: centreId,
         sport,
-        coach_id: coachId || null,
+        coach_ids: crew.map((c) => c.id),
         school_class_ids: classIds.length > 0 ? classIds : null,
         // A viewer who can't see pay was sent null — never write it back
         // over a real override.
@@ -207,7 +228,7 @@ export function CreateSessionDialog({
           time,
           duration_minutes: durationMinutes,
           centre_id: centreId,
-          coach_id: coachId || undefined,
+          coach_ids: crew.map((c) => c.id),
           school_class_ids: classIds.length > 0 ? classIds : null,
           pay_rate_override: payRateOverride
             ? parseFloat(payRateOverride)
@@ -240,7 +261,7 @@ export function CreateSessionDialog({
         duration_minutes: durationMinutes,
         centre_id: centreId,
         sport,
-        coach_id: coachId || undefined,
+        coach_ids: crew.map((c) => c.id),
         school_class_ids: classIds.length > 0 ? classIds : null,
         pay_rate_override: payRateOverride
           ? parseFloat(payRateOverride)
@@ -420,22 +441,15 @@ export function CreateSessionDialog({
             </div>
           )}
 
-          {/* Coach (optional) */}
+          {/* Coaches (optional) — first is the lead; drag to reorder */}
           <div className="space-y-1.5">
-            <Label>Coach</Label>
-            <Select value={coachId} onValueChange={(v) => setCoachId(v ?? "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Unassigned" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Unassigned</SelectItem>
-                {coaches.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Coaches</Label>
+            <CoachChipMultiselect
+              value={crew}
+              options={coaches.map((c) => ({ id: c.id, name: c.name }))}
+              onChange={setCrew}
+              disabled={saving}
+            />
           </div>
 
           {/* Classes (renders only for schools with a class list) */}
