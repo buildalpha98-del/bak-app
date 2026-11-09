@@ -73,7 +73,7 @@ export function SessionCardMenu({
     toast.success(
       `${data.created} shift${data.created === 1 ? "" : "s"} created` +
         (data.skipped.length > 0
-          ? ` — ${data.skipped.length} skipped (already booked)`
+          ? ` — ${data.skipped.length} skipped (already booked: ${data.blockedBy.join("; ")})`
           : "") +
         "."
     );

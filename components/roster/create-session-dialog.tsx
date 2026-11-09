@@ -225,7 +225,7 @@ export function CreateSessionDialog({
           (result.skipped.length > 0
             ? ` — ${result.skipped.length} date${
                 result.skipped.length === 1 ? "" : "s"
-              } skipped (already booked)`
+              } skipped (already booked: ${result.blockedBy.join("; ")})`
             : "") +
           "."
       );
@@ -267,7 +267,7 @@ export function CreateSessionDialog({
             (result.skipped.length > 0
               ? ` — ${result.skipped.length} date${
                   result.skipped.length === 1 ? "" : "s"
-                } skipped (already booked)`
+                } skipped (already booked: ${result.blockedBy.join("; ")})`
               : "") +
             "."
         );
@@ -318,7 +318,7 @@ export function CreateSessionDialog({
     toast.success(
       `${result.created} shift${result.created === 1 ? "" : "s"} created` +
         (result.skipped.length > 0
-          ? ` — ${result.skipped.length} skipped (already booked)`
+          ? ` — ${result.skipped.length} skipped (already booked: ${result.blockedBy.join("; ")})`
           : "") +
         "."
     );

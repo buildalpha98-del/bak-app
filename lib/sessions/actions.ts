@@ -803,6 +803,8 @@ export interface RecurrenceResult {
   created: number;
   /** Dates skipped because an identical shift already existed. */
   skipped: string[];
+  /** One line per skipped date naming the shift that blocked it. */
+  blockedBy: string[];
   /** First per-date failure message, if any date errored. */
   firstError: string | null;
 }
@@ -822,21 +824,33 @@ async function createSessionsOnDates(
 
   const { data: existing } = await supabase
     .from("sessions")
-    .select("date, time")
+    .select("date, time, status, profiles:coach_id(name)")
     .eq("centre_id", data.centre_id)
     .eq("sport", data.sport)
     .neq("status", "cancelled")
     .in("date", dates);
-  const taken = new Set(
-    (existing ?? [])
-      .filter((s) => (s.time as string).slice(0, 5) === data.time.slice(0, 5))
-      .map((s) => s.date as string)
-  );
+  const taken = new Map<string, string>();
+  for (const s of existing ?? []) {
+    if ((s.time as string).slice(0, 5) !== data.time.slice(0, 5)) continue;
+    const coach =
+      (s.profiles as unknown as { name: string } | null)?.name ?? "no coach";
+    taken.set(
+      s.date as string,
+      `${s.date} ${(s.time as string).slice(0, 5)} ${data.sport} (${coach}, ${s.status})`
+    );
+  }
 
-  const result: RecurrenceResult = { created: 0, skipped: [], firstError: null };
+  const result: RecurrenceResult = {
+    created: 0,
+    skipped: [],
+    blockedBy: [],
+    firstError: null,
+  };
   for (const date of dates) {
-    if (taken.has(date)) {
+    const blocker = taken.get(date);
+    if (blocker) {
       result.skipped.push(date);
+      result.blockedBy.push(blocker);
       continue;
     }
     const { error } = await createSession({ ...data, date });
@@ -889,6 +903,7 @@ export interface SportRotationBlock {
 export interface SportRotationResult {
   created: number;
   skipped: string[];
+  blockedBy: string[];
   firstError: string | null;
 }
 
@@ -905,7 +920,12 @@ export async function createSportRotationSessions(
     }
 
     const perBlockDates = sportRotationDates(data.date, blocks);
-    const result: SportRotationResult = { created: 0, skipped: [], firstError: null };
+    const result: SportRotationResult = {
+      created: 0,
+      skipped: [],
+      blockedBy: [],
+      firstError: null,
+    };
 
     for (let i = 0; i < blocks.length; i++) {
       const { data: blockResult, error } = await createSessionsOnDates(
@@ -915,6 +935,7 @@ export async function createSportRotationSessions(
       if (blockResult) {
         result.created += blockResult.created;
         result.skipped.push(...blockResult.skipped);
+        result.blockedBy.push(...blockResult.blockedBy);
         result.firstError = result.firstError ?? blockResult.firstError;
       } else if (error) {
         result.firstError = result.firstError ?? error;
