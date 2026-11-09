@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Foundation — Storage bucket setup
@@ -12,6 +13,9 @@ export async function setupStorageBuckets(): Promise<{
   success: boolean;
   results: Array<{ bucket: string; created: boolean; error?: string }>;
 }> {
+  await requireAdmin();
+
+
   const supabase = createSupabaseAdmin();
   const results: Array<{ bucket: string; created: boolean; error?: string }> = [];
 

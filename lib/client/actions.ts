@@ -1,4 +1,7 @@
 "use server";
+import { limitAuthEmail } from "@/lib/auth/request-limit";
+import { idSchema,  } from "@/lib/auth/action-schemas";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -55,6 +58,9 @@ export interface ClientUserCentreSummary extends ClientUserCentre {
 export async function sendClientMagicLink(
   email: string
 ): Promise<{ error: string | null }> {
+  const limited = await limitAuthEmail(email);
+  if (limited) return { error: limited };
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -433,6 +439,12 @@ export async function getCentreClientUsers(
 export async function revokeClientAccess(
   clientUserId: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+  idSchema.parse(clientUserId);
+
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -969,6 +981,13 @@ export async function getActiveSharedLinks(
 export async function revokeSharedLink(
   linkId: string
 ): Promise<{ error: string | null }> {
+  idSchema.parse(linkId);
+  const client = await createSupabaseServerClient();
+  const { data: link, error: readError } = await client.from("shared_links").select("centre_id").eq("id", linkId).single();
+  if (readError || !link) return { error: readError?.message ?? "Link not found." };
+  const { cu, isAuthorised } = await getCallerClientUser(link.centre_id);
+  if (!isAuthorised || !cu?.is_primary) return { error: "Not authorised." };
+
   try {
     const supabase = await createSupabaseServerClient();
 

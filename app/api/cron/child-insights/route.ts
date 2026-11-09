@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -68,10 +69,9 @@ function parseInsightResponse(text: string): InsightContent {
 
 export async function GET(request: Request) {
   // Validate cron secret
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   const admin = createSupabaseAdmin();
 

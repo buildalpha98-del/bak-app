@@ -1,4 +1,6 @@
 "use server";
+import { headers } from "next/headers";
+import { publicFeedbackSchema, allowFeedback } from "@/lib/feedback/input";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -15,41 +17,7 @@ import { getMonday } from "@/lib/utils/roster";
  * Inserts a row with NULL rating — the centre fills it in via public link.
  * Returns the feedback_token UUID.
  */
-export async function createFeedbackRequest(
-  sessionId: string,
-  centreId: string,
-  coachId: string,
-  sport: string
-): Promise<{ token: string | null; error: string | null }> {
-  const admin = createSupabaseAdmin();
 
-  // Dedup: skip if a feedback request already exists for this session
-  const { data: existing } = await admin
-    .from("feedback_ratings")
-    .select("feedback_token")
-    .eq("session_id", sessionId)
-    .limit(1)
-    .single();
-
-  if (existing) {
-    return { token: existing.feedback_token, error: null };
-  }
-
-  const { data, error } = await admin
-    .from("feedback_ratings")
-    .insert({
-      session_id: sessionId,
-      centre_id: centreId,
-      coach_id: coachId,
-      sport,
-      // rating is NULL (pending)
-    })
-    .select("feedback_token")
-    .single();
-
-  if (error) return { token: null, error: error.message };
-  return { token: data.feedback_token, error: null };
-}
 
 /**
  * Get feedback details by token (for public page).
@@ -143,6 +111,10 @@ export async function submitPublicFeedback(
   rating: number,
   comment: string | null
 ): Promise<{ error: string | null }> {
+  if (!allowFeedback(await headers())) return { error: "Too many requests." };
+  const parsed = publicFeedbackSchema.safeParse({ token, rating, comment });
+  if (!parsed.success) return { error: "Invalid feedback." };
+
   if (rating < 1 || rating > 5) return { error: "Invalid rating." };
 
   const admin = createSupabaseAdmin();

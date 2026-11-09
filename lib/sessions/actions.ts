@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -389,6 +390,8 @@ export async function updateSession(
   id: string,
   data: UpdateSessionData
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -465,6 +468,8 @@ export async function updateSessionStatus(
   newStatus: SessionStatus,
   cancellationReason?: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -518,6 +523,8 @@ export async function bulkUpdateSessionStatus(
   ids: string[],
   newStatus: SessionStatus
 ): Promise<{ data: { updated: number; skipped: number } | null; error: string | null }> {
+  await requireStaff();
+
   try {
     const supabase = await createSupabaseServerClient();
 

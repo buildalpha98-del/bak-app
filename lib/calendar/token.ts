@@ -30,8 +30,12 @@ const VALID_TYPES: ReadonlySet<CalendarEntityType> = new Set([
   "centre",
 ]);
 
+if (process.env.NODE_ENV === "production" && !process.env.CALENDAR_FEED_SECRET) {
+  throw new Error("CALENDAR_FEED_SECRET is required in production.");
+}
+
 function getSecret(): string {
-  return process.env.CALENDAR_FEED_SECRET ?? "dev-secret";
+  return process.env.CALENDAR_FEED_SECRET || "dev-secret";
 }
 
 function signPayload(payload: string): string {

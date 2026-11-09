@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 const { supabaseMock, adminMock, financialAccessMock, sendEmailMock } =
   vi.hoisted(() => ({
     supabaseMock: {
-      auth: { getUser: vi.fn() },
+      auth: { getUser: vi.fn(), resetPasswordForEmail: vi.fn() },
       from: vi.fn(),
     },
     adminMock: {
@@ -13,7 +13,7 @@ const { supabaseMock, adminMock, financialAccessMock, sendEmailMock } =
         admin: {
           createUser: vi.fn(),
           deleteUser: vi.fn(),
-          updateUserById: vi.fn(),
+          updateUserById: vi.fn(), getUserById: vi.fn(),
           signOut: vi.fn(),
           generateLink: vi.fn(),
         },
@@ -80,7 +80,7 @@ function mockAuth(opts: RoleCfg) {
           eq: () => ({
             single: () =>
               Promise.resolve({
-                data: { role: opts.role, name: "Target", email: "t@x" },
+                data: { role: opts.role, status: "active", name: "Target", email: "t@x" },
                 error: null,
               }),
           }),
@@ -109,7 +109,9 @@ function mockAuth(opts: RoleCfg) {
     throw new Error(`unexpected table ${table}`);
   });
 
-  // adminMock is used for password resets + archive bans.
+  adminMock.auth.admin.getUserById.mockImplementation(async (id: string) => ({ data: { user: { email: `${id}@example.com` } }, error: null }));
+  supabaseMock.auth.resetPasswordForEmail.mockImplementation(async (email: string) => { passwordResets.push(email.split("@")[0]); return { error: null }; });
+  // adminMock is used for archive bans.
   adminMock.auth.admin.updateUserById.mockImplementation(
     async (id: string, payload: Record<string, unknown>) => {
       if ("password" in payload) {
@@ -162,20 +164,20 @@ describe("bulkResetPasswords", () => {
 
   it("rejects non-admin callers with 'Not authorised.'", async () => {
     mockAuth({ role: "ops" });
-    const result = await bulkResetPasswords(["s1", "s2"]);
+    const result = await bulkResetPasswords(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002"]);
     expect(result.reset).toBe(0);
     expect(result.error).toBe("Not authorised.");
   });
 
   it("resets 3 staff and writes 3 activity_log rows on the happy path", async () => {
     const ctx = mockAuth({ role: "admin" });
-    const result = await bulkResetPasswords(["s1", "s2", "s3"]);
+    const result = await bulkResetPasswords(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
     expect(result).toEqual({
       reset: 3,
       errors: [],
       error: null,
     });
-    expect(ctx.passwordResets).toEqual(["s1", "s2", "s3"]);
+    expect(ctx.passwordResets).toEqual(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
     expect(
       ctx.activityLogs.filter((l) => l.action === "staff_password_bulk_reset")
         .length,
@@ -186,7 +188,7 @@ describe("bulkResetPasswords", () => {
     // Force the second updateUserById call to fail by returning an
     // error from the admin client.
     let callIdx = 0;
-    adminMock.auth.admin.updateUserById.mockImplementation(async () => {
+    supabaseMock.auth.resetPasswordForEmail.mockImplementation(async () => {
       callIdx += 1;
       if (callIdx === 2) return { error: { message: "throttled" } };
       return { error: null };
@@ -195,16 +197,16 @@ describe("bulkResetPasswords", () => {
     mockAuth({ role: "admin" });
     // Re-stub the mock after mockAuth installed its own implementation
     callIdx = 0;
-    adminMock.auth.admin.updateUserById.mockImplementation(async () => {
+    supabaseMock.auth.resetPasswordForEmail.mockImplementation(async () => {
       callIdx += 1;
       if (callIdx === 2) return { error: { message: "throttled" } };
       return { error: null };
     });
 
-    const result = await bulkResetPasswords(["s1", "s2", "s3"]);
+    const result = await bulkResetPasswords(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
     expect(result.reset).toBe(2);
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0]).toEqual({ id: "s2", error: "throttled" });
+    expect(result.errors[0]).toEqual({ id: "00000000-0000-4000-8000-000000000002", error: "throttled" });
   });
 });
 
@@ -224,29 +226,29 @@ describe("bulkArchiveStaff", () => {
 
   it("rejects non-admin callers", async () => {
     mockAuth({ role: "ops" });
-    const result = await bulkArchiveStaff(["s1"]);
+    const result = await bulkArchiveStaff(["00000000-0000-4000-8000-000000000001"]);
     expect(result.archived).toBe(0);
     expect(result.error).toBe("Not authorised.");
   });
 
   it("archives 3 staff happily", async () => {
     const ctx = mockAuth({ role: "admin" });
-    const result = await bulkArchiveStaff(["s1", "s2", "s3"]);
+    const result = await bulkArchiveStaff(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
     expect(result.archived).toBe(3);
     expect(result.errors).toHaveLength(0);
-    expect(ctx.updates).toEqual(["s1", "s2", "s3"]);
+    expect(ctx.updates).toEqual(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
   });
 
   it("captures per-id failures", async () => {
     const ctx = mockAuth({
       role: "admin",
-      archiveFailIds: new Set(["s2"]),
+      archiveFailIds: new Set(["00000000-0000-4000-8000-000000000002"]),
     });
-    const result = await bulkArchiveStaff(["s1", "s2", "s3"]);
+    const result = await bulkArchiveStaff(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
     expect(result.archived).toBe(2);
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0].id).toBe("s2");
-    expect(ctx.updates).toEqual(["s1", "s2", "s3"]);
+    expect(result.errors[0].id).toBe("00000000-0000-4000-8000-000000000002");
+    expect(ctx.updates).toEqual(["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"]);
   });
 });
 
@@ -293,7 +295,7 @@ describe("exportStaffCsv", () => {
                 Promise.resolve({
                   data: [
                     {
-                      id: "s1",
+                      id: "00000000-0000-4000-8000-000000000001",
                       email: "s1@example.com",
                       name: "Sam One",
                       phone: "0400",
@@ -343,7 +345,7 @@ describe("exportStaffCsv", () => {
 
   it("omits the financial_access column when the caller lacks access", async () => {
     mockListAccess({ role: "ops", financialAccess: false });
-    const { csv, error } = await exportStaffCsv(["s1"]);
+    const { csv, error } = await exportStaffCsv(["00000000-0000-4000-8000-000000000001"]);
     expect(error).toBeNull();
     expect(csv).not.toBeNull();
     expect(csv!.split("\n")[0]).not.toContain("financial_access");
@@ -351,7 +353,7 @@ describe("exportStaffCsv", () => {
 
   it("includes the financial_access column when the caller has access", async () => {
     mockListAccess({ role: "admin", financialAccess: true });
-    const { csv, error } = await exportStaffCsv(["s1"]);
+    const { csv, error } = await exportStaffCsv(["00000000-0000-4000-8000-000000000001"]);
     expect(error).toBeNull();
     expect(csv).not.toBeNull();
     const header = csv!.split("\n")[0];
@@ -366,7 +368,7 @@ describe("exportStaffCsv", () => {
 
   it("rejects coach callers", async () => {
     mockListAccess({ role: "coach", financialAccess: false });
-    const result = await exportStaffCsv(["s1"]);
+    const result = await exportStaffCsv(["00000000-0000-4000-8000-000000000001"]);
     expect(result.csv).toBeNull();
     expect(result.error).toBe("Not authorised.");
   });

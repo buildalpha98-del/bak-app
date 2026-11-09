@@ -1,4 +1,6 @@
 "use server";
+import { z } from "zod";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { compileSchoolReport } from "@/lib/reports/school-report";
@@ -381,12 +383,18 @@ export async function updateReportContent(
     cover_image_url?: string | null;
   }
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+  z.uuid().parse(reportId);
+  updates = z.object({ title: z.string().max(500).optional(), content_json: z.custom<ReportContentJson>(value => typeof value === "object" && value !== null && !Array.isArray(value)).optional(), cover_image_url: z.url().nullable().optional() }).strict().parse(updates);
+
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
     const { error } = await supabase
       .from("centre_reports")
-      .update(updates)
+      .update({ title: updates.title, content_json: updates.content_json, cover_image_url: updates.cover_image_url })
       .eq("id", reportId);
 
     if (error) return { error: error.message };
@@ -497,6 +505,9 @@ export async function markReportSent(
 export async function deleteReport(
   reportId: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
 
@@ -790,6 +801,9 @@ export async function uploadCentreLogo(
   centreId: string,
   formData: FormData
 ): Promise<{ url: string | null; error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const file = formData.get("logo") as File | null;

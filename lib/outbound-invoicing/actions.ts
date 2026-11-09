@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -244,6 +245,9 @@ export async function generateOutboundInvoices(
   } | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -385,6 +389,9 @@ export async function updateOutboundLineItems(
   invoiceId: string,
   lineItems: OutboundLineItem[]
 ): Promise<{ data: boolean | null; error: string | null }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -431,6 +438,9 @@ export async function submitForApproval(invoiceId: string): Promise<{
   data: boolean | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -506,6 +516,9 @@ export async function approveInvoice(invoiceId: string): Promise<{
   data: boolean | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -557,6 +570,9 @@ export async function rejectInvoice(
   invoiceId: string,
   reason: string
 ): Promise<{ data: boolean | null; error: string | null }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -704,6 +720,9 @@ export async function generateInvoicePDF(invoiceId: string): Promise<{
   data: { pdfUrl: string } | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   try {
     const admin = createSupabaseAdmin();
 
@@ -822,6 +841,9 @@ export async function sendInvoice(invoiceId: string): Promise<{
   data: boolean | null;
   error: string | null;
 }> {
+  await requireAdmin();
+
+
   try {
     // 1. Auth check
     const supabase = await createSupabaseServerClient();
@@ -1052,6 +1074,9 @@ export async function recordPayment(
     notes: string | null;
   }
 ): Promise<{ data: boolean | null; error: string | null }> {
+  await requireAdmin();
+
+
   try {
     // 1. Auth check
     const supabase = await createSupabaseServerClient();
@@ -1156,6 +1181,9 @@ export async function voidInvoice(
   invoiceId: string,
   reason: string
 ): Promise<{ data: boolean | null; error: string | null }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -1515,6 +1543,9 @@ export interface InvoiceRegisterRow {
 export async function bulkApproveInvoices(
   invoiceIds: string[]
 ): Promise<{ approved: number; failed: { id: string; error: string }[] }> {
+  await requireAdmin();
+
+
   const failed: { id: string; error: string }[] = [];
   let approved = 0;
   for (const id of invoiceIds) {
@@ -1528,6 +1559,9 @@ export async function bulkApproveInvoices(
 export async function bulkSendInvoices(
   invoiceIds: string[]
 ): Promise<{ sent: number; failed: { id: string; error: string }[] }> {
+  await requireAdmin();
+
+
   const failed: { id: string; error: string }[] = [];
   let sent = 0;
   for (const id of invoiceIds) {

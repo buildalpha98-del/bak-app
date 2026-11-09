@@ -1,3 +1,4 @@
+import { requireApiRole } from "@/lib/auth/api-role";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -44,6 +45,9 @@ function generateCacheKey(message: string, context: string): string {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireApiRole(true);
+  if (denied) return denied;
+
   try {
     // 1. Auth check
     const supabase = await createSupabaseServerClient();

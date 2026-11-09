@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
@@ -20,10 +21,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret or admin
-    const cronSecret = request.headers.get("authorization");
-    if (cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-    }
+
+    const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
     const supabase = createSupabaseAdmin();
     const now = new Date();

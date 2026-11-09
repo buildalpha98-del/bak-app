@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
@@ -48,10 +49,9 @@ function daysBetween(dateStr: string, now: Date): number {
 }
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(req);
+  if (cronError) return cronError;
 
   const admin = createSupabaseAdmin();
   const now = new Date();

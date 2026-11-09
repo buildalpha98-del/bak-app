@@ -1,4 +1,5 @@
 "use server";
+import { requireRole } from "@/lib/auth/require-role";
 
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -192,6 +193,9 @@ export async function sendDirectMessage(
   recipientId: string,
   content: string
 ): Promise<DirectMessage> {
+  await requireRole(["admin", "ops", "coach"]);
+
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -266,6 +270,9 @@ export async function editDirectMessage(
   messageId: string,
   newContent: string
 ): Promise<DirectMessage> {
+  await requireRole(["admin", "ops", "coach"]);
+
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -310,6 +317,9 @@ export async function editDirectMessage(
 // ============================================================
 
 export async function deleteDirectMessage(messageId: string): Promise<void> {
+  await requireRole(["admin", "ops", "coach"]);
+
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

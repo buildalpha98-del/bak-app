@@ -217,7 +217,7 @@ export async function POST(request: Request) {
 
         if (count === 1) {
           const { processReferralConversion } = await import(
-            "@/lib/referrals/actions"
+            "@/lib/referrals/internal"
           );
           await processReferralConversion(
             parentProfile.id,

@@ -11,6 +11,8 @@ export interface SetSessionCoachesParams {
   coaches: SessionCoachInput[];
   /** Acting user id — recorded in `session_coaches.assigned_by`. */
   assignedBy: string;
+  /** Server-only: caller must verify ownership before supplying an admin client. */
+  client?: Awaited<ReturnType<typeof createSupabaseServerClient>>;
 }
 
 /**
@@ -39,6 +41,7 @@ export async function setSessionCoaches({
   sessionId,
   coaches,
   assignedBy,
+  client,
 }: SetSessionCoachesParams): Promise<{ error: string | null }> {
   // Pre-flight client-side validation — fails fast before round-trip.
   if (coaches.length > MAX_SESSION_COACHES) {
@@ -64,7 +67,7 @@ export async function setSessionCoaches({
     seen.add(c.userId);
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = client ?? await createSupabaseServerClient();
   const { error } = await supabase.rpc("set_session_coaches", {
     p_session_id: sessionId,
     p_coaches: coaches.map((c) => ({

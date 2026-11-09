@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Foundation — Bulk import actions for centres, schools, coaches
@@ -66,6 +67,11 @@ export async function importCentres(params: {
   sendInvitations: boolean;
   importedBy: string;
 }): Promise<ImportResult> {
+  await requireAdmin();
+
+  params = { ...params, importedBy: (await requireAdmin()).user.id };
+
+
   const admin = createSupabaseAdmin();
   const result: ImportResult = { created: 0, skipped: 0, invited: 0, errors: [] };
 
@@ -162,6 +168,11 @@ export async function importSchools(params: {
   sendInvitations: boolean;
   importedBy: string;
 }): Promise<ImportResult> {
+  await requireAdmin();
+
+  params = { ...params, importedBy: (await requireAdmin()).user.id };
+
+
   const admin = createSupabaseAdmin();
   const result: ImportResult = { created: 0, skipped: 0, invited: 0, errors: [] };
 
@@ -247,6 +258,11 @@ export async function importCoaches(params: {
   sendInvitations: boolean;
   importedBy: string;
 }): Promise<ImportResult> {
+  await requireAdmin();
+
+  params = { ...params, importedBy: (await requireAdmin()).user.id };
+
+
   const admin = createSupabaseAdmin();
   const result: ImportResult = { created: 0, skipped: 0, invited: 0, errors: [] };
 

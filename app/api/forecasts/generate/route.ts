@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { generateForecasts } from "@/lib/utils/revenueForecasting";
@@ -8,8 +9,8 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     // Verify cron secret or authenticated admin user
-    const cronSecret = request.headers.get("authorization");
-    const isCron = cronSecret === `Bearer ${process.env.CRON_SECRET}`;
+
+    const isCron = requireCronAuth(request) === null;
 
     if (!isCron) {
       const supabase = await createSupabaseServerClient();

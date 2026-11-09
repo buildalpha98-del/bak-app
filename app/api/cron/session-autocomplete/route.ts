@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import {
@@ -13,11 +14,10 @@ import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 // week from the school's term report and attendance figures.
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   const supabase = createSupabaseAdmin();
   const now = new Date();
