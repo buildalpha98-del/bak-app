@@ -39,7 +39,7 @@ const APPLE_SPLASH = [
 export const metadata: Metadata = {
   title: "Build Alpha Kids",
   description:
-    "Multi-sport coaching platform for Build Alpha Kids — managing workforce operations across childcare centres and schools.",
+    "Multi-sport coaching platform for Build Alpha Kids, managing workforce operations across childcare centres and schools.",
   // Google Search Console ownership proof (Jayden's account, added
   // 2026-08-14). Rendered on every page as
   // <meta name="google-site-verification">; must survive layout

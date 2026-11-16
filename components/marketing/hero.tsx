@@ -23,7 +23,7 @@ import { HeroVideo } from "@/components/marketing/hero-video";
 export function Hero() {
   return (
     <section
-      aria-label="Build Alpha Kids — multi-sport coaching for kids"
+      aria-label="Build Alpha Kids: multi-sport coaching for kids"
       className="relative bg-[#E8712A]"
     >
       {/* Court-line arcs — decorative, clipped inside the hero. */}
