@@ -47,7 +47,8 @@ export async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  emailType: string = "generic"
+  emailType: string = "generic",
+  options: { replyTo?: string; bcc?: string } = {}
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await getResend().emails.send({
@@ -55,6 +56,8 @@ export async function sendEmail(
       to,
       subject,
       html,
+      ...(options.replyTo ? { replyTo: options.replyTo } : {}),
+      ...(options.bcc ? { bcc: options.bcc } : {}),
     });
 
     if (error) {

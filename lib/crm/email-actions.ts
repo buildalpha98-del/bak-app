@@ -42,7 +42,15 @@ export async function sendLeadEmail(input: {
 </body>
 </html>`;
 
-    await sendEmail(input.to, input.subject, html);
+    // The sender gets a BCC copy and replies, so it lands in their own
+    // mailbox (Outlook) like a Sent item instead of vanishing into Resend.
+    const sent = await sendEmail(input.to, input.subject, html, "lead_email", {
+      replyTo: user?.email ?? undefined,
+      bcc: user?.email ?? undefined,
+    });
+    if (!sent.success) {
+      return { error: `Email was not sent: ${sent.error ?? "unknown error"}` };
+    }
 
     // Record activity
     await supabase.from("lead_activities").insert({
