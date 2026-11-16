@@ -165,6 +165,7 @@ export type NotificationEventType =
   | "demo_reminder"
   | "demo_outcome_recorded"
   | "lead_document_added"
+  | "new_enquiry"
   | "payment_batch_created"
   | "payment_batch_approved"
   | "coach_payment_ready"

@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
 
     await triggerNotification(
       {
-        type: "feedback_received",
+        type: "new_enquiry",
         title: `New website enquiry from ${centre_name.trim()}`,
         body: `${contact_name ?? "Unknown"} (${email}) submitted an enquiry via the website.`,
         entityType: "lead",

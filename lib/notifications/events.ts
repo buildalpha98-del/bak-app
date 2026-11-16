@@ -101,6 +101,8 @@ export const EVENT_TIER_MAP: Record<NotificationEventType, NotificationTier> = {
   demo_reminder: "urgent",
   demo_outcome_recorded: "informational",
   lead_document_added: "informational",
+  // New website enquiry: speed-to-lead matters, so push + email, not just the bell.
+  new_enquiry: "urgent",
 
   // Payroll
   payment_batch_created: "important",

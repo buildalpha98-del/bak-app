@@ -43,6 +43,8 @@ export function getNotificationUrl(
     case "centre_message":
       // Staff-side inbox for client-portal messages — deep-link the thread.
       return `${base}/centre-messages?centre=${entityId}`;
+    case "lead":
+      return userRole === "coach" ? base : `${base}/crm/${entityId}`;
     case "direct_message":
       return `${base}/messages?coach=${entityId}`;
     default:
