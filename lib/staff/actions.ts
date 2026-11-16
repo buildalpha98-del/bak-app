@@ -1021,6 +1021,69 @@ export async function setStaffAlsoCoaches(
 }
 
 // ============================================================
+/**
+ * Move an operations member down to coach only. Admin only, never your
+ * own account, and ops -> coach is the one direction offered (nobody is
+ * promoted here). They keep their shifts, pay rates and availability;
+ * they lose the /ops screens. `also_coaches` is cleared because a coach
+ * is in the coaching pool by role.
+ */
+export async function demoteOpsToCoach(
+  staffId: string,
+): Promise<{ error: string | null }> {
+  const parsed = z.string().uuid().safeParse(staffId);
+  if (!parsed.success) return { error: "Invalid request." };
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+  if (user.id === parsed.data) {
+    return { error: "You can't change your own role." };
+  }
+
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!actor || actor.role !== "admin") {
+    return { error: "Only admins can change a role." };
+  }
+
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", parsed.data)
+    .single();
+  if (!target) return { error: "Staff member not found." };
+  if (target.role !== "ops") {
+    return { error: "Only an operations member can be moved to coach." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      role: "coach",
+      also_coaches: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", parsed.data);
+  if (error) return { error: error.message };
+
+  await supabase.from("activity_log").insert({
+    user_id: user.id,
+    action: "staff_role_changed",
+    entity_type: "profile",
+    entity_id: parsed.data,
+    metadata: { from: "ops", to: "coach" },
+  });
+
+  return { error: null };
+}
+
+// ============================================================
 // Pay rates
 // ============================================================
 

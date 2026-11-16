@@ -32,6 +32,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
     <StaffDetailView
       data={data}
       canEditFinancialAccess
+      canChangeRole
       selfPushCount={selfPushCount}
     />
   );

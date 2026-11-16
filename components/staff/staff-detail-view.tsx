@@ -61,6 +61,7 @@ import {
   setStaffFinancialAccess,
   setStaffAlsoCoaches,
   upsertPayRate,
+  demoteOpsToCoach,
   upsertComplianceDoc,
   verifyComplianceDoc,
   upsertAvailabilitySlot,
@@ -172,6 +173,8 @@ interface StaffDetailViewProps {
    * page.tsx is the source of truth.
    */
   canEditFinancialAccess?: boolean;
+  /** Admin viewer: may move an ops member down to coach only. */
+  canChangeRole?: boolean;
   /**
    * When non-null the viewer IS this staff member (admin/ops viewing
    * their own row in /admin/staff/[id] or /ops/staff/[id]). We render
@@ -186,6 +189,7 @@ interface StaffDetailViewProps {
 export function StaffDetailView({
   data: initialData,
   canEditFinancialAccess = false,
+  canChangeRole = false,
   selfPushCount = null,
 }: StaffDetailViewProps) {
   const router = useRouter();
@@ -224,6 +228,7 @@ export function StaffDetailView({
   const [financialBusy, setFinancialBusy] = useState(false);
   // "Also coaches" — ops members only (migration 101)
   const [alsoCoachesBusy, setAlsoCoachesBusy] = useState(false);
+  const [roleBusy, setRoleBusy] = useState(false);
 
   // SMS test affordance — admin-only triage for verifying the SMS bridge
   // is reachable for this staff member. The send goes through the configured
@@ -264,6 +269,25 @@ export function StaffDetailView({
         ? `${profile.name} can now be rostered as a coach.`
         : `${profile.name} is no longer rostered as a coach.`,
     );
+  }
+
+  async function handleMakeCoachOnly() {
+    if (
+      !window.confirm(
+        `Make ${profile.name} a coach only? They will lose access to the Operations screens. Their shifts, pay rates and availability are kept.`,
+      )
+    ) {
+      return;
+    }
+    setRoleBusy(true);
+    const { error } = await demoteOpsToCoach(profile.id);
+    setRoleBusy(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setProfile((p) => ({ ...p, role: "coach", also_coaches: false }));
+    toast.success(`${profile.name} is now a coach only.`);
   }
 
   async function handleToggleFinancialAccess() {
@@ -382,6 +406,18 @@ export function StaffDetailView({
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5" />
                   {profile.also_coaches ? "Stop coaching" : "Also coaches"}
+                </Button>
+              )}
+              {canChangeRole && profile.role === "ops" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMakeCoachOnly}
+                  disabled={roleBusy}
+                  title="Removes their Operations access and keeps them as a coach."
+                >
+                  <UserX className="h-3.5 w-3.5" />
+                  Make coach only
                 </Button>
               )}
               {/* Grant is Admin accounts only; a leftover flag on anyone else can still be revoked. */}
