@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
     try {
       await sendEmail(email, ack.subject, ack.html, "enquiry_acknowledgement", {
         replyTo: CRM_MAILBOX,
+        bcc: CRM_MAILBOX,
       });
     } catch (err) {
       console.error("Enquiry acknowledgement email failed:", err);

@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
         subject,
         html,
         "lead_sequence",
-        { replyTo: CRM_MAILBOX }
+        { replyTo: CRM_MAILBOX, bcc: CRM_MAILBOX }
       );
 
       if (result.success) {
