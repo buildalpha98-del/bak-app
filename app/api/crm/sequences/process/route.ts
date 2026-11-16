@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
+import { CRM_MAILBOX } from "@/lib/email/client";
 import {
   renderMergeFields,
   buildEmailHtml,
@@ -90,7 +91,13 @@ export async function GET(request: NextRequest) {
       // Send email
       const html = buildEmailHtml(body);
 
-      const result = await sendEmail(lead.contact_email as string, subject, html);
+      const result = await sendEmail(
+        lead.contact_email as string,
+        subject,
+        html,
+        "lead_sequence",
+        { replyTo: CRM_MAILBOX }
+      );
 
       if (result.success) {
         await supabase

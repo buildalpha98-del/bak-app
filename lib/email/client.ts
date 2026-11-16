@@ -36,3 +36,8 @@ export function getResend(): Resend {
 //   - Set up `hello@buildalphakids.app` as a monitored inbox (forwards
 //     to your real one is fine) so replies aren't lost.
 export const FROM_EMAIL = "Build Alpha Kids <hello@buildalphakids.app>";
+
+// Outlook mailbox for CRM email: replies land here and sent lead emails are
+// BCC'd here so they can be reviewed. Not for transactional mail (invoices,
+// magic links) — those stay on hello@ only.
+export const CRM_MAILBOX = "abdul@buildalphakids.com.au";

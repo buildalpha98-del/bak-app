@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
+import { CRM_MAILBOX } from "@/lib/email/client";
 
 // ============================================================
 // Send email from lead detail page
@@ -42,11 +43,14 @@ export async function sendLeadEmail(input: {
 </body>
 </html>`;
 
-    // The sender gets a BCC copy and replies, so it lands in their own
-    // mailbox (Outlook) like a Sent item instead of vanishing into Resend.
+    // Replies go to the CRM Outlook mailbox, and it (plus the sender, if
+    // different) gets a BCC copy so the email can be reviewed like a Sent item.
+    const copyTo = [
+      ...new Set([CRM_MAILBOX, ...(user?.email ? [user.email] : [])]),
+    ];
     const sent = await sendEmail(input.to, input.subject, html, "lead_email", {
-      replyTo: user?.email ?? undefined,
-      bcc: user?.email ?? undefined,
+      replyTo: CRM_MAILBOX,
+      bcc: copyTo,
     });
     if (!sent.success) {
       return { error: `Email was not sent: ${sent.error ?? "unknown error"}` };

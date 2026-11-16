@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getBaseUrl } from "@/lib/utils/base-url";
 import { sydneyTodayIso } from "@/lib/utils/sydney-time";
 import { sendEmail } from "@/lib/email/send";
+import { CRM_MAILBOX } from "@/lib/email/client";
 import { enquiryAcknowledgementEmail } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
@@ -266,7 +267,9 @@ export async function POST(request: NextRequest) {
       centre_name.trim()
     );
     try {
-      await sendEmail(email, ack.subject, ack.html, "enquiry_acknowledgement");
+      await sendEmail(email, ack.subject, ack.html, "enquiry_acknowledgement", {
+        replyTo: CRM_MAILBOX,
+      });
     } catch (err) {
       console.error("Enquiry acknowledgement email failed:", err);
     }
