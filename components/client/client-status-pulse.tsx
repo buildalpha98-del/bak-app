@@ -9,7 +9,7 @@
 //   ClientHomePulseStrip  — used on /client/[centreId] (dashboard).
 //     Next session in N days · unread reports · unpaid invoices ·
 //     feedback this term. Active items use restrained brand orange
-//     (#0891B2), muted otherwise — calm surface when nothing needs
+//     (the portal accent), muted otherwise — calm surface when nothing needs
 //     attention.
 //
 //   ClientPortalPulseStrip — generic per-page strip used on
