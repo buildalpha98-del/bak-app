@@ -680,7 +680,7 @@ export function enquiryAcknowledgementEmail(
       <p>Hi ${greeting},</p>
       <p>Thanks for getting in touch about <strong>${escapeHtml(centreName)}</strong>. We've received your enquiry and someone from our team will be in touch soon.</p>
       <p>If you'd like to add anything in the meantime, just reply to this email.</p>
-      <p style="color:${BRAND_GREY};font-size:13px;">You can also reach us at <a href="mailto:contact@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">contact@buildalphakids.com.au</a>.</p>
+      <p style="color:${BRAND_GREY};font-size:13px;">You can also reach us at <a href="mailto:abdul@buildalphakids.com.au" style="color:${BRAND_ORANGE};text-decoration:none;">abdul@buildalphakids.com.au</a>.</p>
     `),
   };
 }
