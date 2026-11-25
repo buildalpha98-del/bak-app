@@ -26,3 +26,13 @@ export function summerClinicsEnabled() {
 
   return process.env.SQUARE_ENV === "sandbox";
 }
+
+export type SummerParticipant = { name: string; dates: string[] };
+
+export function summerParticipants(booking: {
+  booking_children: SummerParticipant[] | null;
+  child_name: string;
+  clinic_dates: string[];
+}): SummerParticipant[] {
+  return booking.booking_children ?? [{ name: booking.child_name, dates: booking.clinic_dates }];
+}

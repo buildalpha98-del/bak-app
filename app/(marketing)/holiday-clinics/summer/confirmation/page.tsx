@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Section } from "@/components/marketing/section";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { SUMMER_CLINICS, formatSummerDate, summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
+import { SUMMER_CLINICS, formatSummerDate, summerClinicsEnabled, summerParticipants } from "@/lib/bookings/summer-clinics";
 import { reconcileSummerBooking } from "@/lib/bookings/summer-reconciliation";
 
 export default async function Confirmation({ searchParams }: { searchParams: Promise<{ booking?: string }> }) {
@@ -11,7 +11,7 @@ export default async function Confirmation({ searchParams }: { searchParams: Pro
   if (!summerClinicsEnabled() || !id.success) notFound();
   const db = createSupabaseAdmin();
   const { data: booking } = await db.from("summer_clinic_orders")
-    .select("status,clinic_dates,amount_cents,square_order_id").eq("id", id.data).maybeSingle();
+    .select("status,clinic_dates,child_name,booking_children,amount_cents,square_order_id").eq("id", id.data).maybeSingle();
   if (!booking || !booking.square_order_id) notFound();
 
   let paid = booking.status === "paid";
@@ -27,11 +27,16 @@ export default async function Confirmation({ searchParams }: { searchParams: Pro
   return (
     <Section aria-label="Booking status">
       <h1 className="text-3xl font-bold">{paid ? "Booking confirmed" : cancelled ? "Booking hold expired" : "Payment confirmation pending"}</h1>
-      <ul className="my-4 list-disc pl-6">
-        {SUMMER_CLINICS.filter((clinic) => booking.clinic_dates.includes(clinic.date)).map((clinic) => (
-          <li key={clinic.date}>{formatSummerDate(clinic.date)} · {clinic.title} · {clinic.park}, {clinic.suburb}</li>
-        ))}
-      </ul>
+      {summerParticipants(booking).map((child, index) => (
+        <section key={index} className="my-4">
+          <h2 className="font-semibold">Child {index + 1}</h2>
+          <ul className="list-disc pl-6">
+            {SUMMER_CLINICS.filter((clinic) => child.dates.includes(clinic.date)).map((clinic) => (
+              <li key={clinic.date}>{formatSummerDate(clinic.date)} · {clinic.title} · {clinic.park}, {clinic.suburb}</li>
+            ))}
+          </ul>
+        </section>
+      ))}
       {cancelled && <Link href="/holiday-clinics/summer" className="underline">Choose dates again</Link>}
       {!paid && !cancelled && <p>Refresh to check again. If Square has already charged you, call 0426 722 003 before paying again.</p>}
     </Section>
