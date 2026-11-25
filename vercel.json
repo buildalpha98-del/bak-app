@@ -2,6 +2,10 @@
   "regions": ["syd1"],
   "crons": [
     {
+      "path": "/api/cron/summer-clinic-alerts",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/summer-clinics",
       "schedule": "*/5 * * * *"
     },
