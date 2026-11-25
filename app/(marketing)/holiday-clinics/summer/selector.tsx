@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { SUMMER_CLINICS, formatSummerDate } from "@/lib/bookings/summer-clinics";
+import { SITE, phoneHref } from "@/lib/marketing/content";
 import { startSummerCheckout } from "./actions";
 
 type Child = { id: number; name: string; dates: string[] };
@@ -31,13 +32,10 @@ export function SummerSelector({ bookingKey, voucherKey }: { bookingKey: string;
       <input type="hidden" name="key" value={bookingKey} />
       <input type="hidden" name="children" value={JSON.stringify(children.map(({ name, dates }) => ({ name, dates })))} />
       <fieldset disabled={!ready || pending || !!result.url} className="space-y-6">
-        <legend className="text-lg font-bold">Choose one day for $50 or any three for $120 per child</legend>
+        <legend className="sr-only">Clinic dates and family details</legend>
         {children.map((child, index) => (
           <fieldset key={child.id} className="space-y-3 rounded-xl border p-4">
             <legend className="px-2 font-bold">Child {index + 1}</legend>
-            <label className="block">Child {index + 1} name
-              <input value={child.name} onChange={(event) => updateChild(child.id, { name: event.target.value })} required maxLength={100} className={fieldStyle} />
-            </label>
             {index > 0 && (
               <button type="button" className="min-h-11 underline" disabled={children[0].dates.length === 0}
                 onClick={() => updateChild(child.id, { dates: [...children[0].dates] })}>Use Child 1’s dates</button>
@@ -56,6 +54,9 @@ export function SummerSelector({ bookingKey, voucherKey }: { bookingKey: string;
                 </span>
               </label>
             ))}
+            <label className="block">Child {index + 1} name
+              <input value={child.name} onChange={(event) => updateChild(child.id, { name: event.target.value })} required maxLength={100} className={fieldStyle} />
+            </label>
             <p aria-live="polite">{child.dates.length === 3 ? "Three days · $120" : child.dates.length === 1
               ? "One day · $50" : child.dates.length === 2 ? "Select one more day for the $120 pass." : "Select clinic dates."}</p>
             {children.length > 1 && <button type="button" className="min-h-11 underline"
@@ -94,12 +95,25 @@ export function SummerSelector({ bookingKey, voucherKey }: { bookingKey: string;
           <p className="mt-3 font-bold">Total · ${total}</p>
         </section>
       )}
-      <button type="submit" name="payment" value="card" disabled={!ready || pending || !!result.url || !canBook}
-        className="rounded-xl bg-black px-5 py-3 font-bold text-white disabled:opacity-50">
-        {pending || result.url ? "Saving booking…" : "Continue to Square"}
-      </button>
-      <button type="submit" name="payment" value="voucher" disabled={!ready || pending || !!result.url || !canBook}
-        className="ml-3 rounded-xl border px-5 py-3 font-bold disabled:opacity-50">Request voucher payment</button>
+      <div className="space-y-4">
+        <button type="submit" name="payment" value="card" disabled={!ready || pending || !!result.url || !canBook}
+          className="min-h-11 w-full rounded-xl bg-black px-5 py-3 font-bold text-white disabled:opacity-50 sm:w-auto">
+          {pending || result.url ? "Saving booking…" : "Continue to Square"}
+        </button>
+        <details className="rounded-xl border px-4">
+          <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-semibold">
+            <span aria-hidden="true">+</span> Use a NSW Active and Creative Kids voucher
+          </summary>
+          <p>Request voucher payment and contact us to arrange it. We’ll hold your places for up to 24 hours.</p>
+          <div className="mt-1 flex flex-wrap gap-x-5">
+            <a className="inline-flex min-h-11 items-center underline" href={phoneHref()}>Call {SITE.phone}</a>
+            <a className="inline-flex min-h-11 items-center underline"
+              href={`mailto:${SITE.email}?subject=${encodeURIComponent("Summer clinic voucher enquiry")}`}>Email about a voucher</a>
+          </div>
+          <button type="submit" name="payment" value="voucher" disabled={!ready || pending || !!result.url || !canBook}
+            className="mb-4 min-h-11 w-full rounded-xl border px-5 py-3 font-bold disabled:opacity-50 sm:w-auto">Request voucher payment</button>
+        </details>
+      </div>
       {result.error && <p role="alert">{result.error}</p>}
       {result.url && <p><a className="underline" href={result.url}>Continue to booking</a></p>}
     </form>
