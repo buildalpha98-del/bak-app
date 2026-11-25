@@ -6,6 +6,7 @@ import {
   ClinicCard,
   ClinicsEmptyState,
 } from "@/components/marketing/clinic-card";
+import { summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
 import { getOpenHolidayClinics } from "@/lib/marketing/clinics";
 import type { PublicClinic } from "@/lib/marketing/clinics-shared";
 import { safeFetch } from "@/lib/marketing/safe-fetch";
@@ -44,11 +45,22 @@ export async function HolidayClinicsSection({
     []
   );
 
+  const summerAvailable = summerClinicsEnabled();
+
   return (
     <Section aria-label={title} className="bg-white">
       <SectionHeading eyebrow={eyebrow} title={title} intro={intro} />
 
-      {clinics.length === 0 ? (
+      {summerAvailable && (
+        <div className="mt-8">
+          <StickerButton href="/holiday-clinics/summer">
+            Book Summer Sports clinics
+            <ArrowRight className="size-5" aria-hidden="true" />
+          </StickerButton>
+        </div>
+      )}
+
+      {clinics.length === 0 && summerAvailable ? null : clinics.length === 0 ? (
         <div className="mt-12">
           <ClinicsEmptyState />
         </div>
