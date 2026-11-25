@@ -1,5 +1,8 @@
 "use server";
 
+import { createHmac } from "node:crypto";
+import { isIP } from "node:net";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { SUMMER_CLINICS, formatSummerDate, summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
@@ -29,9 +32,19 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
   if (!input.success) return { error: "Choose one or three dates and enter your child's name and your email." };
 
   const { key, child, email, dates } = input.data;
+  let clientFingerprint: string | undefined;
+  if (process.env.VERCEL_ENV === "production") {
+    const address = (await headers()).get("x-vercel-forwarded-for")?.trim();
+    if (!address || !isIP(address) || !process.env.CRON_SECRET) {
+      return { error: "Could not start checkout. Please try again or call 0426 722 003." };
+    }
+    clientFingerprint = createHmac("sha256", process.env.CRON_SECRET)
+      .update(`summer-clinics:${address}`).digest("hex");
+  }
   const admin = createSupabaseAdmin();
   const { data: order, error } = await admin.rpc("reserve_summer_clinic_order", {
     order_key: key, chosen_dates: [...dates].sort(), name: child, email,
+    ...(clientFingerprint && { client_fingerprint: clientFingerprint }),
   });
   if (error || !order) {
     return { error: error?.code === "P0001" ? error.message : "Could not reserve those dates. Refresh the page and try again." };

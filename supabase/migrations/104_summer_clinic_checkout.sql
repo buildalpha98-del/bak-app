@@ -12,6 +12,7 @@ CREATE TABLE public.summer_clinic_orders (
   square_payment_id text UNIQUE,
   checkout_url text,
   last_checked_at timestamptz,
+  client_key text,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -19,12 +20,15 @@ CREATE INDEX summer_clinic_held_check_idx
   ON public.summer_clinic_orders (last_checked_at NULLS FIRST, id)
   WHERE status = 'held' AND square_order_id IS NOT NULL;
 
+CREATE INDEX summer_clinic_client_attempt_idx
+  ON public.summer_clinic_orders (client_key, created_at) WHERE client_key IS NOT NULL;
+
 ALTER TABLE public.summer_clinic_orders ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.summer_clinic_orders FROM anon, authenticated;
 GRANT SELECT, UPDATE ON public.summer_clinic_orders TO service_role;
 
 CREATE FUNCTION public.reserve_summer_clinic_order(
-  order_key uuid, chosen_dates date[], name text, email text
+  order_key uuid, chosen_dates date[], name text, email text, client_fingerprint text DEFAULT NULL
 ) RETURNS public.summer_clinic_orders
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
@@ -58,6 +62,20 @@ BEGIN
     RETURN reserved;
   END IF;
 
+  IF client_fingerprint IS NOT NULL AND (
+    SELECT count(*) FROM public.summer_clinic_orders
+    WHERE client_key = client_fingerprint AND created_at > now() - interval '30 minutes'
+  ) >= 6
+  THEN
+    RAISE EXCEPTION 'Too many recent checkout attempts. Try again in 30 minutes.' USING ERRCODE = 'P0001';
+  END IF;
+
+  IF (SELECT count(*) FROM public.summer_clinic_orders
+      WHERE lower(parent_email) = lower(email) AND status = 'held') >= 3
+  THEN
+    RAISE EXCEPTION 'Finish an existing checkout for this email or try again later.' USING ERRCODE = 'P0001';
+  END IF;
+
   FOREACH clinic_date IN ARRAY chosen_dates LOOP
     IF (SELECT count(*) FROM public.summer_clinic_orders
         WHERE status IN ('held', 'paid') AND clinic_date = ANY(clinic_dates)) >= 100
@@ -66,12 +84,12 @@ BEGIN
     END IF;
   END LOOP;
 
-  INSERT INTO public.summer_clinic_orders (id, clinic_dates, child_name, parent_email, amount_cents)
-  VALUES (order_key, chosen_dates, name, email, CASE cardinality(chosen_dates) WHEN 1 THEN 5000 ELSE 12000 END)
+  INSERT INTO public.summer_clinic_orders (id, clinic_dates, child_name, parent_email, amount_cents, client_key)
+  VALUES (order_key, chosen_dates, name, email, CASE cardinality(chosen_dates) WHEN 1 THEN 5000 ELSE 12000 END, client_fingerprint)
   RETURNING * INTO reserved;
   RETURN reserved;
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.reserve_summer_clinic_order(uuid,date[],text,text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.reserve_summer_clinic_order(uuid,date[],text,text) TO service_role;
+REVOKE ALL ON FUNCTION public.reserve_summer_clinic_order(uuid,date[],text,text,text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.reserve_summer_clinic_order(uuid,date[],text,text,text) TO service_role;
