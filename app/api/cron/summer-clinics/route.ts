@@ -11,6 +11,15 @@ export async function GET(request: Request) {
   if (!summerClinicsEnabled()) return NextResponse.json({ checked: 0 });
 
   const db = createSupabaseAdmin();
+  const expiry = new Date(Date.now() - 30 * 60_000).toISOString();
+  // A Square URL is returned only after its identifiers have been saved on a
+  // held row. If this update wins a race with creation, that URL stays private.
+  const { data: unexposed, error: cleanupError } = await db.from("summer_clinic_orders")
+    .update({ status: "cancelled" }).eq("status", "held")
+    .is("square_order_id", null).is("checkout_url", null)
+    .lte("created_at", expiry).select("id");
+  if (cleanupError) return NextResponse.json({ error: "Could not clear stale clinic holds." }, { status: 500 });
+
   const { data: bookings, error } = await db.from("summer_clinic_orders")
     .select("id, square_order_id, square_link_id, amount_cents, created_at").eq("status", "held")
     .not("square_order_id", "is", null)
@@ -33,7 +42,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     checked: results.length,
     confirmed: results.filter((result) => result.status === "fulfilled" && result.value === "confirmed").length,
-    released: results.filter((result) => result.status === "fulfilled" && result.value === "released").length,
+    released: unexposed.length + results.filter((result) => result.status === "fulfilled" && result.value === "released").length,
     failed: results.filter((result) => result.status === "rejected").length,
   });
 }

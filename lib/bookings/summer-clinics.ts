@@ -14,10 +14,15 @@ export function formatSummerDate(date: string) {
 }
 
 export function summerClinicsEnabled() {
-  return process.env.BAK_SUMMER_CLINICS_ENABLED === "true" &&
-    process.env.SQUARE_ENV === "sandbox" &&
-    process.env.VERCEL_ENV !== "production" &&
-    Boolean(process.env.SQUARE_LOCATION_ID && process.env.SQUARE_ACCESS_TOKEN &&
-      process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY &&
-      process.env.BAK_SUMMER_CHECKOUT_ORIGIN);
+  if (process.env.BAK_SUMMER_CLINICS_ENABLED !== "true" ||
+    !process.env.SQUARE_LOCATION_ID || !process.env.SQUARE_ACCESS_TOKEN ||
+    !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    !process.env.BAK_SUMMER_CHECKOUT_ORIGIN) return false;
+
+  if (process.env.VERCEL_ENV === "production") {
+    return process.env.BAK_SUMMER_CHECKOUT_ORIGIN === "https://buildalphakids.com.au" &&
+      Boolean(process.env.CRON_SECRET);
+  }
+
+  return process.env.SQUARE_ENV === "sandbox";
 }

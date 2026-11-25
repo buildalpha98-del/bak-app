@@ -1,8 +1,9 @@
 import "server-only";
-import { getSquareApiUrl } from "@/lib/payments/square-config";
 
 export async function summerSquare<T>(path: string, payload?: object, method = payload ? "POST" : "GET"): Promise<T> {
-  const base = new URL(getSquareApiUrl()).origin;
+  const base = process.env.VERCEL_ENV === "production"
+    ? "https://connect.squareup.com"
+    : "https://connect.squareupsandbox.com";
   const response = await fetch(base + "/v2" + path, {
     method,
     headers: {
