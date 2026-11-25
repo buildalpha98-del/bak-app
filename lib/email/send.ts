@@ -48,17 +48,21 @@ export async function sendEmail(
   subject: string,
   html: string,
   emailType: string = "generic",
-  options: { replyTo?: string; bcc?: string | string[] } = {}
+  options: { replyTo?: string; bcc?: string | string[]; idempotencyKey?: string } = {}
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await getResend().emails.send({
+    const message = {
       from: FROM_EMAIL,
       to,
       subject,
       html,
       ...(options.replyTo ? { replyTo: options.replyTo } : {}),
       ...(options.bcc ? { bcc: options.bcc } : {}),
-    });
+    };
+    const mail = getResend().emails;
+    const { error } = options.idempotencyKey
+      ? await mail.send(message, { idempotencyKey: options.idempotencyKey })
+      : await mail.send(message);
 
     if (error) {
       console.error("Resend send error:", error);
