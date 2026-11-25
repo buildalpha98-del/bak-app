@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Section } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
 import { summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
-import { SITE, phoneHref } from "@/lib/marketing/content";
+import { StickerButton } from "@/components/marketing/sticker-button";
 import { SummerSelector } from "./selector";
 
 export const dynamic = "force-dynamic";
@@ -13,18 +13,21 @@ export default function SummerClinicsPage() {
   const sandbox = process.env.VERCEL_ENV !== "production";
   return (
     <>
-      <HeroLite label="Summer clinics" eyebrow={sandbox ? "Sandbox test booking" : "Holiday clinics"} title="Summer Sports Holiday Program"
-        intro={`Six themed sessions in Casula and Auburn. Ages 4–15, 10 am–1 pm each day. Book all your children together.${sandbox ? " Use test details only." : ""}`} />
-      <Section aria-label="Choose clinic dates">
-        <aside aria-labelledby="clinic-voucher-heading" className="mx-auto mb-8 max-w-3xl rounded-xl border p-4">
-          <h2 id="clinic-voucher-heading" className="font-bold">Using a NSW Active and Creative Kids voucher?</h2>
-          <p className="mt-1">Choose your children and dates below, then select Request voucher payment. We’ll hold the places for up to 24 hours while you contact us to arrange payment. Keep the voucher handy for payment.</p>
-          <div className="mt-2 flex flex-wrap gap-x-5">
-            <a className="inline-flex min-h-11 items-center underline" href={phoneHref()}>Call {SITE.phone}</a>
-            <a className="inline-flex min-h-11 items-center underline"
-              href={`mailto:${SITE.email}?subject=${encodeURIComponent("Summer clinic voucher enquiry")}`}>Email about a voucher</a>
-          </div>
-        </aside>
+      <HeroLite
+        label="Summer clinics"
+        eyebrow={sandbox ? "Sandbox test booking" : "22 December – 14 January"}
+        title="Summer Sports Holiday Program"
+        intro={`Six themed sports days in Casula and Auburn for ages 4–15. Every session runs 10 am–1 pm.${sandbox ? " Use test details only." : ""}`}
+      >
+        <p className="mt-4 text-base font-bold text-[#111]">One day $50 · Any three days $120 per child</p>
+        <p className="mt-1 text-sm font-medium text-[#111]">Mix locations and book siblings in one checkout.</p>
+        <StickerButton href="#clinic-dates" className="mt-6">Choose clinic dates</StickerButton>
+      </HeroLite>
+      <Section id="clinic-dates" tabIndex={-1} aria-labelledby="clinic-dates-heading" className="scroll-mt-24 pt-14">
+        <div className="mx-auto mb-5 max-w-3xl">
+          <h2 id="clinic-dates-heading" className="font-heading text-2xl font-extrabold">Choose your dates</h2>
+          <p className="mt-2">Pick one or three dates for each child. You can add siblings below.</p>
+        </div>
         <SummerSelector bookingKey={randomUUID()} voucherKey={randomUUID()} />
       </Section>
     </>
