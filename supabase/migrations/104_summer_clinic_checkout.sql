@@ -8,10 +8,16 @@ CREATE TABLE public.summer_clinic_orders (
   amount_cents integer NOT NULL CHECK (amount_cents IN (5000, 12000)),
   status text NOT NULL DEFAULT 'held' CHECK (status IN ('held', 'paid', 'cancelled')),
   square_order_id text UNIQUE,
+  square_link_id text UNIQUE,
   square_payment_id text UNIQUE,
   checkout_url text,
+  last_checked_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE INDEX summer_clinic_held_check_idx
+  ON public.summer_clinic_orders (last_checked_at NULLS FIRST, id)
+  WHERE status = 'held' AND square_order_id IS NOT NULL;
 
 ALTER TABLE public.summer_clinic_orders ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.summer_clinic_orders FROM anon, authenticated;

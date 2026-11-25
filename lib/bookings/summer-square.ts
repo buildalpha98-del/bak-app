@@ -1,10 +1,10 @@
 import "server-only";
 import { getSquareApiUrl } from "@/lib/payments/square-config";
 
-export async function summerSquare<T>(path: string, payload?: object): Promise<T> {
+export async function summerSquare<T>(path: string, payload?: object, method = payload ? "POST" : "GET"): Promise<T> {
   const base = new URL(getSquareApiUrl()).origin;
   const response = await fetch(base + "/v2" + path, {
-    method: payload ? "POST" : "GET",
+    method,
     headers: {
       Authorization: `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
       "Content-Type": "application/json",

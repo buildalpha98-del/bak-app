@@ -36,6 +36,9 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
   if (error || !order) {
     return { error: error?.code === "P0001" ? error.message : "Could not reserve those dates. Refresh the page and try again." };
   }
+  if (Date.parse(order.created_at) <= Date.now() - 30 * 60_000) {
+    return { error: "This checkout has expired. Reload to start a new booking." };
+  }
   if (order.checkout_url) return { url: order.checkout_url as string };
 
   try {
@@ -53,7 +56,7 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
       checkout_options: { redirect_url: confirmation.href },
     });
     const { error: saveError } = await admin.from("summer_clinic_orders").update({
-      square_order_id: link.order_id, checkout_url: link.url,
+      square_order_id: link.order_id, square_link_id: link.id, checkout_url: link.url,
     }).eq("id", key).eq("status", "held");
     if (saveError) throw saveError;
     return { url: link.url };
