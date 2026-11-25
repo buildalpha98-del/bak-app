@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
 import type { Metadata } from "next";
 import { Section } from "@/components/marketing/section";
 import { HeroLite } from "@/components/marketing/hero-lite";
@@ -57,7 +59,12 @@ export default async function HolidayClinicsPage() {
       />
 
       <Section aria-label="Upcoming clinic dates" className="bg-white">
-        {clinics.length === 0 ? (
+        {summerClinicsEnabled() && (
+          <Link className="mb-8 inline-block rounded-xl bg-black px-5 py-3 font-bold text-white" href="/holiday-clinics/summer">
+            Book Summer Sports clinics
+          </Link>
+        )}
+        {clinics.length === 0 && summerClinicsEnabled() ? null : clinics.length === 0 ? (
           <ClinicsEmptyState />
         ) : (
           <ClinicFilters clinics={clinics} />
