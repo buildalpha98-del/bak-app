@@ -13,7 +13,7 @@ export default function SummerClinicsPage() {
   return (
     <>
       <HeroLite label="Summer clinics" eyebrow={sandbox ? "Sandbox test booking" : "Holiday clinics"} title="Summer Sports Holiday Program"
-        intro={`Six themed sessions in Casula and Auburn. Ages 4–15, 10 am–1 pm each day. Book one child at a time.${sandbox ? " Use test details only." : ""}`} />
+        intro={`Six themed sessions in Casula and Auburn. Ages 4–15, 10 am–1 pm each day. Book all your children together.${sandbox ? " Use test details only." : ""}`} />
       <Section aria-label="Choose clinic dates"><SummerSelector bookingKey={randomUUID()} /></Section>
     </>
   );

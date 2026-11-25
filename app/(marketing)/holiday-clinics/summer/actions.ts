@@ -8,15 +8,20 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { SUMMER_CLINICS, formatSummerDate, summerClinicsEnabled } from "@/lib/bookings/summer-clinics";
 import { summerSquare } from "@/lib/bookings/summer-square";
 
-const inputSchema = z.object({
-  key: z.uuid(),
-  child: z.string().trim().min(1).max(100),
-  email: z.email().max(254),
+const participantSchema = z.object({
+  name: z.string().trim().min(1).max(100),
   dates: z.array(z.string()).max(3).refine((dates) =>
     (dates.length === 1 || dates.length === 3) &&
     new Set(dates).size === dates.length &&
     dates.every((date) => SUMMER_CLINICS.some((clinic) => clinic.date === date)),
   ),
+});
+const inputSchema = z.object({
+  key: z.uuid(),
+  name: z.string().trim().min(1).max(100),
+  phone: z.string().trim().regex(/^(?:\+?61[ -]?|0)4(?:[ -]?\d){8}$/),
+  email: z.email().max(254),
+  children: z.array(participantSchema).min(1).max(6),
 });
 
 type Link = { payment_link: { id: string; order_id: string; url: string } };
@@ -25,13 +30,20 @@ type CheckoutResult = { url?: string; error?: string };
 
 export async function startSummerCheckout(_previous: CheckoutResult, form: FormData): Promise<CheckoutResult> {
   if (!summerClinicsEnabled()) return { error: "Bookings are currently closed." };
+  let children: unknown;
+  const participants = form.get("children");
+  if (typeof participants === "string" && participants.length <= 5000) {
+    try { children = JSON.parse(participants); } catch { /* Invalid form payload. */ }
+  }
   const input = inputSchema.safeParse({
-    key: form.get("key"), child: form.get("child"), email: form.get("email"),
-    dates: form.getAll("dates"),
+    key: form.get("key"), name: form.get("parentName"), email: form.get("email"),
+    phone: form.get("phone"), children,
   });
-  if (!input.success) return { error: "Choose one or three dates and enter your child's name and your email." };
+  if (!input.success) return { error: "Enter your details and choose one or three dates for each child." };
 
-  const { key, child, email, dates } = input.data;
+  const { key, name, phone, email } = input.data;
+  const digits = phone.replace(/\D/g, "");
+  const mobile = digits.startsWith("0") ? `+61${digits.slice(1)}` : `+${digits}`;
   let clientFingerprint: string | undefined;
   if (process.env.VERCEL_ENV === "production") {
     const address = (await headers()).get("x-vercel-forwarded-for")?.trim();
@@ -42,8 +54,8 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
       .update(`summer-clinics:${address}`).digest("hex");
   }
   const admin = createSupabaseAdmin();
-  const { data: order, error } = await admin.rpc("reserve_summer_clinic_order", {
-    order_key: key, chosen_dates: [...dates].sort(), name: child, email,
+  const { data: order, error } = await admin.rpc("reserve_summer_family_order", {
+    order_key: key, participants: input.data.children, guardian_name: name, email, guardian_phone: mobile,
     ...(clientFingerprint && { client_fingerprint: clientFingerprint }),
   });
   if (error || !order) {
@@ -62,11 +74,12 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
     const { payment_link: link } = await summerSquare<Link>("/online-checkout/payment-links", {
       idempotency_key: key,
       quick_pay: {
-        name: `Summer Sports · ${description}`,
+        name: `Summer Sports · ${input.data.children.length} ${input.data.children.length === 1 ? "child" : "children"} · ${description}`,
         location_id: process.env.SQUARE_LOCATION_ID,
         price_money: { amount: order.amount_cents, currency: "AUD" },
       },
       checkout_options: { redirect_url: confirmation.href },
+      pre_populated_data: { buyer_email: email, buyer_phone_number: mobile },
     });
     const { data: saved, error: saveError } = await admin.from("summer_clinic_orders").update({
       square_order_id: link.order_id, square_link_id: link.id, checkout_url: link.url,
