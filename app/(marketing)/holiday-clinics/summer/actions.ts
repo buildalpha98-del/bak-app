@@ -55,10 +55,10 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
       },
       checkout_options: { redirect_url: confirmation.href },
     });
-    const { error: saveError } = await admin.from("summer_clinic_orders").update({
+    const { data: saved, error: saveError } = await admin.from("summer_clinic_orders").update({
       square_order_id: link.order_id, square_link_id: link.id, checkout_url: link.url,
-    }).eq("id", key).eq("status", "held");
-    if (saveError) throw saveError;
+    }).eq("id", key).eq("status", "held").select("id").maybeSingle();
+    if (saveError || !saved) throw new Error("Could not save the active checkout.");
     return { url: link.url };
   } catch {
     return { error: "Square checkout could not open. Retry with the same details to recover your reservation." };

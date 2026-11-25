@@ -40,7 +40,7 @@ BEGIN
     ]
     OR EXISTS (
       SELECT 1 FROM unnest(chosen_dates) AS d
-      WHERE (d + TIME '10:00') AT TIME ZONE 'Australia/Sydney' <= now()
+      WHERE (d + TIME '10:00') AT TIME ZONE 'Australia/Sydney' <= now() + interval '90 minutes'
     )
   THEN
     RAISE EXCEPTION 'Choose one or three available clinic dates.' USING ERRCODE = '22023';
