@@ -36,7 +36,7 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
     try { children = JSON.parse(participants); } catch { /* Invalid form payload. */ }
   }
   const input = inputSchema.safeParse({
-    key: form.get("key"), name: form.get("parentName"), email: form.get("email"),
+    key: form.get("payment") === "voucher" ? form.get("voucherKey") : form.get("key"), name: form.get("parentName"), email: form.get("email"),
     phone: form.get("phone"), children,
   });
   if (!input.success) return { error: "Enter your details and choose one or three dates for each child." };
@@ -53,14 +53,17 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
     clientFingerprint = createHmac("sha256", process.env.CRON_SECRET)
       .update(`summer-clinics:${address}`).digest("hex");
   }
+  const voucher = form.get("payment") === "voucher";
   const admin = createSupabaseAdmin();
-  const { data: order, error } = await admin.rpc("reserve_summer_family_order", {
+  const { data: order, error } = await admin.rpc(voucher ? "request_summer_voucher_order" : "reserve_summer_family_order", {
     order_key: key, participants: input.data.children, guardian_name: name, email, guardian_phone: mobile,
     ...(clientFingerprint && { client_fingerprint: clientFingerprint }),
   });
   if (error || !order) {
     return { error: error?.code === "P0001" ? error.message : "Could not reserve those dates. Refresh the page and try again." };
   }
+  if (voucher) return { url: `/holiday-clinics/summer/confirmation?booking=${key}` };
+  if (order.voucher_state) return { error: "This booking is already awaiting voucher payment." };
   if (Date.parse(order.created_at) <= Date.now() - 30 * 60_000) {
     return { error: "This checkout has expired. Reload to start a new booking." };
   }
@@ -83,7 +86,7 @@ export async function startSummerCheckout(_previous: CheckoutResult, form: FormD
     });
     const { data: saved, error: saveError } = await admin.from("summer_clinic_orders").update({
       square_order_id: link.order_id, square_link_id: link.id, checkout_url: link.url,
-    }).eq("id", key).eq("status", "held").select("id").maybeSingle();
+    }).eq("id", key).eq("status", "held").is("voucher_state", null).select("id").maybeSingle();
     if (saveError || !saved) throw new Error("Could not save the active checkout.");
     return { url: link.url };
   } catch {

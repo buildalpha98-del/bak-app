@@ -7,7 +7,7 @@ import { startSummerCheckout } from "./actions";
 type Child = { id: number; name: string; dates: string[] };
 const fieldStyle = "mt-1 block w-full rounded-lg border p-3";
 
-export function SummerSelector({ bookingKey }: { bookingKey: string }) {
+export function SummerSelector({ bookingKey, voucherKey }: { bookingKey: string; voucherKey: string }) {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   const [nextId, setNextId] = useState(1);
@@ -27,6 +27,7 @@ export function SummerSelector({ bookingKey }: { bookingKey: string }) {
 
   return (
     <form action={submit} className="mx-auto max-w-3xl space-y-6">
+      <input type="hidden" name="voucherKey" value={voucherKey} />
       <input type="hidden" name="key" value={bookingKey} />
       <input type="hidden" name="children" value={JSON.stringify(children.map(({ name, dates }) => ({ name, dates })))} />
       <fieldset disabled={!ready || pending || !!result.url} className="space-y-6">
@@ -76,7 +77,7 @@ export function SummerSelector({ bookingKey }: { bookingKey: string }) {
           <label className="block">Parent mobile
             <input name="phone" value={contact.phone} onChange={(event) => setContact({ ...contact, phone: event.target.value })} type="tel" placeholder="0400 000 000" required maxLength={20} autoComplete="tel" className={fieldStyle} />
           </label>
-          <p className="text-sm">We’ll pass your email and mobile to Square to prefill checkout.</p>
+          <p className="text-sm">If you pay by card now, we’ll pass your email and mobile to Square to prefill checkout.</p>
         </fieldset>
       </fieldset>
       {canBook && (
@@ -93,12 +94,14 @@ export function SummerSelector({ bookingKey }: { bookingKey: string }) {
           <p className="mt-3 font-bold">Total · ${total}</p>
         </section>
       )}
-      <button type="submit" disabled={!ready || pending || !!result.url || !canBook}
+      <button type="submit" name="payment" value="card" disabled={!ready || pending || !!result.url || !canBook}
         className="rounded-xl bg-black px-5 py-3 font-bold text-white disabled:opacity-50">
-        {pending || result.url ? "Opening Square…" : "Continue to Square"}
+        {pending || result.url ? "Saving booking…" : "Continue to Square"}
       </button>
+      <button type="submit" name="payment" value="voucher" disabled={!ready || pending || !!result.url || !canBook}
+        className="ml-3 rounded-xl border px-5 py-3 font-bold disabled:opacity-50">Request voucher payment</button>
       {result.error && <p role="alert">{result.error}</p>}
-      {result.url && <p><a className="underline" href={result.url}>Open Square checkout</a></p>}
+      {result.url && <p><a className="underline" href={result.url}>Continue to booking</a></p>}
     </form>
   );
 }

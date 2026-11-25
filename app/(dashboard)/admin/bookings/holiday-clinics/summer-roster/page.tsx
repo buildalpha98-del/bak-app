@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -24,6 +25,7 @@ export default async function SummerRoster() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Summer clinic roster</h1>
+      <Link className="underline" href="/admin/bookings/holiday-clinics/vouchers">Manage voucher requests</Link>
       {SUMMER_CLINICS.map((clinic) => {
         const attendees = bookings.flatMap((booking) => summerParticipants(booking)
           .flatMap((child, index) => child.dates.includes(clinic.date)

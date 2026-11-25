@@ -13,7 +13,7 @@ type Payment = {
   };
 };
 
-type HeldBooking = { id: string; square_order_id: string; amount_cents: number };
+type HeldBooking = { id: string; square_order_id: string; amount_cents: number; voucher_credit_cents?: number };
 
 export async function reconcileSummerBooking(
   db: ReturnType<typeof createSupabaseAdmin>,
@@ -30,7 +30,7 @@ export async function reconcileSummerBooking(
       payment.status !== "COMPLETED" ||
       payment.order_id !== booking.square_order_id ||
       payment.location_id !== process.env.SQUARE_LOCATION_ID ||
-      payment.total_money?.amount !== booking.amount_cents ||
+      payment.total_money?.amount !== booking.amount_cents - (booking.voucher_credit_cents ?? 0) ||
       payment.total_money?.currency !== "AUD"
     ) continue;
 
@@ -50,6 +50,7 @@ export async function reconcileSummerBooking(
 export async function expireSummerBooking(
   db: ReturnType<typeof createSupabaseAdmin>,
   booking: HeldBooking & { square_link_id: string },
+  preserveVoucherHold = false,
 ): Promise<boolean> {
   const orderPath = `/orders/${encodeURIComponent(booking.square_order_id)}`;
   let { order } = await summerSquare<Order>(orderPath);
@@ -67,7 +68,7 @@ export async function expireSummerBooking(
 
   if (order.state !== "CANCELED" || order.tenders?.length) return false;
   const { data, error } = await db.from("summer_clinic_orders")
-    .update({ status: "cancelled" }).eq("id", booking.id).eq("status", "held")
+    .update(preserveVoucherHold ? { voucher_balance_closed_at: new Date().toISOString(), checkout_url: null } : { status: "cancelled" }).eq("id", booking.id).eq("status", "held")
     .eq("square_order_id", booking.square_order_id).select("id").maybeSingle();
   if (error) throw new Error("Could not release cancelled clinic reservation.");
   return Boolean(data);

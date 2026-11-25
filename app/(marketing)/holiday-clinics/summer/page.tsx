@@ -18,14 +18,14 @@ export default function SummerClinicsPage() {
       <Section aria-label="Choose clinic dates">
         <aside aria-labelledby="clinic-voucher-heading" className="mx-auto mb-8 max-w-3xl rounded-xl border p-4">
           <h2 id="clinic-voucher-heading" className="font-bold">Using a NSW Active and Creative Kids voucher?</h2>
-          <p className="mt-1">Contact us before paying so we can check eligibility, clinic availability and any balance due. Keep your voucher code handy for payment.</p>
+          <p className="mt-1">Choose your children and dates below, then select Request voucher payment. We’ll hold the places for up to 24 hours while you contact us to arrange payment. Keep the voucher handy for payment.</p>
           <div className="mt-2 flex flex-wrap gap-x-5">
             <a className="inline-flex min-h-11 items-center underline" href={phoneHref()}>Call {SITE.phone}</a>
             <a className="inline-flex min-h-11 items-center underline"
               href={`mailto:${SITE.email}?subject=${encodeURIComponent("Summer clinic voucher enquiry")}`}>Email about a voucher</a>
           </div>
         </aside>
-        <SummerSelector bookingKey={randomUUID()} />
+        <SummerSelector bookingKey={randomUUID()} voucherKey={randomUUID()} />
       </Section>
     </>
   );
