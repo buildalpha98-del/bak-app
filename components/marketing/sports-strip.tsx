@@ -14,7 +14,7 @@ export function SportsStrip() {
       <SectionHeading
         eyebrow="The sports"
         title="One club. Eighteen sports."
-        intro="Every program mixes them all — so kids find the sports they love instead of specialising before they can tie their laces."
+        intro="Every program mixes them all, so kids find the sports they love instead of specialising before they can tie their laces."
       />
 
       <ul className="mt-10 flex flex-wrap gap-x-5 gap-y-6">
