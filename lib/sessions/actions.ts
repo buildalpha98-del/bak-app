@@ -813,6 +813,142 @@ export async function deleteSession(
 }
 
 // ============================================================
+// Bulk delete — a whole run of shifts instead of one week at a time
+// ============================================================
+
+/**
+ * `series`: this shift and every later one at the same centre with the same
+ * sport, weekday and time. `centre`: this shift and every later shift at the
+ * centre, whatever the sport or time. Past shifts are never in scope.
+ */
+export type DeleteScope = "series" | "centre";
+
+export interface DeleteScopePreview {
+  /** Drafts that would be deleted (includes the shift itself). */
+  deletable: number;
+  /** In scope but not draft (published, confirmed, completed…), so kept. */
+  kept: number;
+}
+
+const DELETE_CHUNK = 100;
+
+async function sessionsInDeleteScope(
+  id: string,
+  scope: DeleteScope
+): Promise<{
+  rows: { id: string; status: string }[];
+  error: string | null;
+}> {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { rows: [], error: "Not authenticated." };
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!actor || (actor.role !== "admin" && actor.role !== "ops")) {
+    return { rows: [], error: "Only admin or ops can delete shifts." };
+  }
+
+  const { data: source } = await supabase
+    .from("sessions")
+    .select("id, status, centre_id, sport, date, time")
+    .eq("id", id)
+    .single();
+  if (!source) return { rows: [], error: "Session not found." };
+  if (source.status !== "draft") {
+    return { rows: [], error: "Only draft sessions can be deleted." };
+  }
+
+  let query = supabase
+    .from("sessions")
+    .select("id, status, date, time, sport")
+    .eq("centre_id", source.centre_id)
+    .gte("date", source.date)
+    .limit(2000);
+  if (scope === "series") {
+    query = query
+      .eq("sport", source.sport)
+      .eq("time", source.time);
+  }
+  const { data: candidates, error } = await query;
+  if (error) return { rows: [], error: error.message };
+
+  const weekday = (d: string) => new Date(`${d}T00:00:00Z`).getUTCDay();
+  const sourceDay = weekday(source.date as string);
+  const rows = (candidates ?? [])
+    .filter((c) => scope === "centre" || weekday(c.date as string) === sourceDay)
+    .filter((c) => c.status !== "cancelled")
+    .map((c) => ({ id: c.id as string, status: c.status as string }));
+  return { rows, error: null };
+}
+
+export async function previewSessionDelete(
+  id: string,
+  scope: DeleteScope
+): Promise<{ data: DeleteScopePreview | null; error: string | null }> {
+  try {
+    const { rows, error } = await sessionsInDeleteScope(id, scope);
+    if (error) return { data: null, error };
+    const deletable = rows.filter((r) => r.status === "draft").length;
+    return { data: { deletable, kept: rows.length - deletable }, error: null };
+  } catch (err) {
+    console.error("previewSessionDelete error:", err);
+    return { data: null, error: "Failed to count shifts." };
+  }
+}
+
+export async function deleteSessionsInScope(
+  id: string,
+  scope: DeleteScope
+): Promise<{ data: DeleteScopePreview | null; error: string | null }> {
+  try {
+    const { rows, error } = await sessionsInDeleteScope(id, scope);
+    if (error) return { data: null, error };
+
+    // Same rule as deleteSession: only drafts. Anything published or later
+    // has to be cancelled, so it stays and is reported.
+    const draftIds = rows.filter((r) => r.status === "draft").map((r) => r.id);
+
+    const supabase = await createSupabaseServerClient();
+    let deleted = 0;
+    for (let i = 0; i < draftIds.length; i += DELETE_CHUNK) {
+      const chunk = draftIds.slice(i, i + DELETE_CHUNK);
+      const { error: delErr } = await supabase
+        .from("sessions")
+        .delete()
+        .in("id", chunk)
+        .eq("status", "draft");
+      if (delErr) throw delErr;
+      deleted += chunk.length;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await supabase.from("activity_log").insert({
+      user_id: user?.id ?? null,
+      action: "sessions_bulk_deleted",
+      entity_type: "session",
+      entity_id: id,
+      metadata: { scope, deleted, kept: rows.length - draftIds.length },
+    });
+
+    return {
+      data: { deletable: deleted, kept: rows.length - draftIds.length },
+      error: null,
+    };
+  } catch (err) {
+    console.error("deleteSessionsInScope error:", err);
+    return { data: null, error: "Failed to delete shifts." };
+  }
+}
+
+// ============================================================
 // Recurring sessions — repeat a shift across weeks
 // ============================================================
 

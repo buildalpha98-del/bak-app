@@ -55,6 +55,10 @@ import {
   updateSessionStatus,
   updateSession,
   deleteSession,
+  previewSessionDelete,
+  deleteSessionsInScope,
+  type DeleteScope,
+  type DeleteScopePreview,
   assignCoaches,
 } from "@/lib/sessions/actions";
 import { getReplacementSuggestions } from "@/lib/sessions/scheduling-actions";
@@ -156,6 +160,10 @@ export function SessionDetailSheet({
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteScope, setDeleteScope] = useState<"this" | DeleteScope>("this");
+  const [scopePreviews, setScopePreviews] = useState<
+    Partial<Record<DeleteScope, DeleteScopePreview>>
+  >({});
   const [notesOpen, setNotesOpen] = useState(false);
 
   // Pay rate override
@@ -293,8 +301,47 @@ export function SessionDetailSheet({
     onUpdate();
   }
 
+  useEffect(() => {
+    setDeleteScope("this");
+    setScopePreviews({});
+    if (!showDeleteConfirm || !session) return;
+    let cancelled = false;
+    for (const scope of ["series", "centre"] as const) {
+      previewSessionDelete(session.id, scope).then(({ data }) => {
+        if (!cancelled && data) {
+          setScopePreviews((prev) => ({ ...prev, [scope]: data }));
+        }
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [showDeleteConfirm, session?.id]);
+
   async function handleDelete() {
     setSaving(true);
+    if (deleteScope !== "this") {
+      const { data, error } = await deleteSessionsInScope(
+        session!.id,
+        deleteScope
+      );
+      setSaving(false);
+      if (error || !data) {
+        toast.error(error ?? "Failed to delete shifts.");
+        return;
+      }
+      toast.success(
+        `${data.deletable} shift${data.deletable === 1 ? "" : "s"} deleted` +
+          (data.kept > 0
+            ? ` — ${data.kept} kept (published or later shifts can't be deleted, cancel them instead)`
+            : "") +
+          "."
+      );
+      setShowDeleteConfirm(false);
+      onOpenChange(false);
+      onUpdate();
+      return;
+    }
     const { error } = await deleteSession(session!.id);
     setSaving(false);
     if (error) {
@@ -1224,6 +1271,68 @@ export function SessionDetailSheet({
                         <p className="text-sm font-medium text-red-700">
                           Are you sure? This cannot be undone.
                         </p>
+                        {(() => {
+                          const dayName = new Date(
+                            `${session.date}T00:00:00Z`
+                          ).toLocaleDateString("en-AU", {
+                            weekday: "long",
+                            timeZone: "UTC",
+                          });
+                          const options: Array<{
+                            value: "this" | DeleteScope;
+                            label: string;
+                          }> = [
+                            { value: "this", label: "Just this shift" },
+                            {
+                              value: "series",
+                              label: `This and all later ${session.sport} shifts at ${session.centre_name} on ${dayName}s at ${formatTime12(session.time.slice(0, 5))}${
+                                scopePreviews.series
+                                  ? ` (${scopePreviews.series.deletable})`
+                                  : ""
+                              }`,
+                            },
+                            {
+                              value: "centre",
+                              label: `This and all later shifts at ${session.centre_name}, any sport or time${
+                                scopePreviews.centre
+                                  ? ` (${scopePreviews.centre.deletable})`
+                                  : ""
+                              }`,
+                            },
+                          ];
+                          const chosen =
+                            deleteScope === "this"
+                              ? null
+                              : scopePreviews[deleteScope];
+                          return (
+                            <div className="space-y-1.5">
+                              {options.map((o) => (
+                                <label
+                                  key={o.value}
+                                  className="flex items-start gap-2 text-sm text-foreground"
+                                >
+                                  <input
+                                    type="radio"
+                                    name="delete-scope"
+                                    className="mt-0.5 size-4"
+                                    checked={deleteScope === o.value}
+                                    onChange={() => setDeleteScope(o.value)}
+                                    disabled={saving}
+                                  />
+                                  {o.label}
+                                </label>
+                              ))}
+                              {chosen && chosen.kept > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {chosen.kept} later shift
+                                  {chosen.kept === 1 ? " is" : "s are"} already
+                                  published or past draft and will be kept —
+                                  cancel those instead.
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })()}
                         <div className="flex gap-2">
                           <Button
                             variant="destructive"
@@ -1232,7 +1341,9 @@ export function SessionDetailSheet({
                             onClick={handleDelete}
                           >
                             <Trash2 className="mr-1.5 size-4" />
-                            Delete Permanently
+                            {deleteScope === "this"
+                              ? "Delete Permanently"
+                              : `Delete ${scopePreviews[deleteScope]?.deletable ?? ""} shifts permanently`}
                           </Button>
                           <Button
                             variant="outline"
