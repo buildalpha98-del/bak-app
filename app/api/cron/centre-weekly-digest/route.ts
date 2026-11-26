@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import { sendWeeklyCentreDigests } from "@/lib/client/service-emails";
 
@@ -8,10 +9,9 @@ export const dynamic = "force-dynamic";
 // day starts, year-round. Idempotent per (centre, week) via
 // email_log markers, so retries can't double-send.
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   try {
     const result = await sendWeeklyCentreDigests();

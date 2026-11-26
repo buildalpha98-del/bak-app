@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 // ============================================================
 // Launch Foundation — In-app notifications utility

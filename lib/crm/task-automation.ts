@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { LeadStage } from "@/lib/types/enums";

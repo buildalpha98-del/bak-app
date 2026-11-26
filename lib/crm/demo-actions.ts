@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -29,6 +30,9 @@ export async function scheduleDemoSession(input: {
   coachId?: string;
   attendeesExpected?: number;
 }): Promise<{ data: DemoSession | null; error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -136,6 +140,9 @@ export async function recordDemoOutcome(input: {
   coachFeedback?: string;
   decisionMakerFeedback?: string;
 }): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -281,6 +288,9 @@ export async function getDemosForLead(
 export async function cancelDemoSession(
   demoId: string
 ): Promise<{ error: string | null }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {

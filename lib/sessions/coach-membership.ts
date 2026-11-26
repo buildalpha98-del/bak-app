@@ -45,12 +45,13 @@ export async function isCoachOnSession(
   sessionId: string,
   userId: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("session_coaches")
     .select("user_id")
     .eq("session_id", sessionId)
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw error;
   return Boolean(data);
 }
 

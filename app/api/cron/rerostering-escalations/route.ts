@@ -1,5 +1,6 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
-import { processRerosteringEscalations } from "@/lib/rerostering/actions";
+import { processRerosteringEscalations } from "@/lib/rerostering/internal";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,9 @@ export const dynamic = "force-dynamic";
 // cascade never fired.
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   try {
     const { expired, escalated } = await processRerosteringEscalations();

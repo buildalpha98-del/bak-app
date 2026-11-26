@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { triggerNotificationForOps } from "@/lib/notifications/send";
@@ -7,10 +8,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   // Validate cron secret
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   const admin = createSupabaseAdmin();
   const today = new Date();

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/auth/request-limit", () => ({ limitAuthEmail: async () => null }));
+
 // vi.hoisted so these exist before the hoisted vi.mock factories run.
 const { signInWithOtpMock, headersMock } = vi.hoisted(() => ({
   signInWithOtpMock: vi.fn(),

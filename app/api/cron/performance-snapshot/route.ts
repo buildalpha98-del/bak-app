@@ -1,3 +1,4 @@
+import { requireCronAuth } from "@/lib/utils/apiProtection";
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -10,10 +11,9 @@ import { checkBadgeEligibility, awardBadges } from "@/lib/utils/performance/badg
  * saves snapshots, and checks/awards new badges.
  */
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorised." }, { status: 401 });
-  }
+
+  const cronError = requireCronAuth(request);
+  if (cronError) return cronError;
 
   try {
     const admin = createSupabaseAdmin();

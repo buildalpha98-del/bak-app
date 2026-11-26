@@ -1,3 +1,4 @@
+import { requireApiRole } from "@/lib/auth/api-role";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -73,6 +74,9 @@ function parseInsightResponse(text: string): InsightContent {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await requireApiRole(false);
+  if (denied) return denied;
+
   try {
     // Auth check
     const { user, error: authError } = await requireAuth(request);

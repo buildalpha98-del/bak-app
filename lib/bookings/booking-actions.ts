@@ -359,7 +359,7 @@ export async function applyBookingAdjustments(
 
     if (input.discountCode) {
       const { validateDiscountCode } = await import(
-        "@/lib/referrals/discount-actions"
+        "@/lib/referrals/discount-internal"
       );
       const result = await validateDiscountCode(input.discountCode.trim());
       if (result.error || !result.data?.valid) {
@@ -558,14 +558,14 @@ export async function confirmBookingPayment(
     const bookingRow = booking as Record<string, unknown>;
     if (bookingRow.discount_code_id) {
       const { redeemDiscountCode } = await import(
-        "@/lib/referrals/discount-actions"
+        "@/lib/referrals/discount-internal"
       );
       void redeemDiscountCode(bookingRow.discount_code_id as string).catch(
         console.error
       );
     }
     if (bookingRow.referral_reward_id) {
-      const { redeemReferralReward } = await import("@/lib/referrals/actions");
+      const { redeemReferralReward } = await import("@/lib/referrals/internal");
       void redeemReferralReward(bookingRow.referral_reward_id as string).catch(
         console.error
       );

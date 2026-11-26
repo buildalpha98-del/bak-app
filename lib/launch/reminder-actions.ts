@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Foundation — Reminder settings server actions
@@ -14,6 +15,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function toggleReminders(
   enabled: boolean
 ): Promise<{ success: boolean }> {
+  await requireAdmin();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -48,6 +52,9 @@ export async function triggerReminders(): Promise<{
   data?: Record<string, unknown>;
   error?: string;
 }> {
+  await requireAdmin();
+
+
   try {
     const cronSecret = process.env.CRON_SECRET;
     if (!cronSecret) {

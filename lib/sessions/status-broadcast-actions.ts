@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { sendUrgentNotificationViaSms } from "@/lib/sms/actions";
+import { sendUrgentNotificationViaSms } from "@/lib/sms/internal";
 
 // ============================================================
 // Types

@@ -1,4 +1,5 @@
 "use server";
+import { requireAdmin } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -26,17 +27,7 @@ export interface BatchInvoiceRow extends CoachInvoice {
   subtotal: number;
 }
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated.", user: null };
-  const { data: profile } = await supabase
-    .from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") {
-    return { error: "Admin access required.", user: null };
-  }
-  return { error: null, user };
-}
+
 
 // ============================================================
 // 1. Create or get payment batch for a period

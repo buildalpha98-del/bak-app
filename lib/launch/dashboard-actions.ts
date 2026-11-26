@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 // ============================================================
 // Launch Dashboard — server actions for admin landing page
@@ -191,6 +192,9 @@ function monthKey(date: Date): string {
 // ========================
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
+  await requireStaff();
+
+
   const admin = createSupabaseAdmin();
 
   const weekRange = getWeekRange();
@@ -706,6 +710,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 export async function getRecentActivity(
   limit: number = 20
 ): Promise<ActivityItem[]> {
+  await requireStaff();
+
+
   const admin = createSupabaseAdmin();
   const items: ActivityItem[] = [];
 
@@ -855,6 +862,9 @@ export async function getRecentActivity(
 // link target — keep this fast (3 lightweight counts, all `head: true`).
 
 export async function getAdminStatusPulse(): Promise<AdminStatusPulse> {
+  await requireStaff();
+
+
   const admin = createSupabaseAdmin();
 
   // Sessions with no coach assigned that still need rostering

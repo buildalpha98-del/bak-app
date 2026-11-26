@@ -57,7 +57,7 @@ import {
   deletePushSubscription,
   sendPushToUser,
   getPushSubscriptionCount,
-} from "../actions";
+} from "../internal";
 import { signVapidJwt, base64UrlDecode } from "../sign";
 
 // ---------------------------------------------------------------------------

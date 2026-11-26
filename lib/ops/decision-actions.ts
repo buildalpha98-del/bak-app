@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,25 +16,14 @@ import {
 // through the server client (admin/ops RLS); the change-request
 // requester's name is a client_users row, which staff can read.
 
-async function requireStaff() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { supabase, user: null, error: "Not authenticated." };
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || (profile.role !== "admin" && profile.role !== "ops")) {
-    return { supabase, user: null, error: "Not authorised." };
-  }
-  return { supabase, user, error: null };
-}
+
 
 export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; error: string | null }> {
   try {
     const { supabase, error: authErr } = await requireStaff();
     if (authErr) return { data: null, error: authErr };
 
-    const [{ data: tasks }, { data: flagged }, { data: changes }] = await Promise.all([
+    const [{ data: tasks, error: tasksError }, { data: flagged, error: flaggedError }, { data: changes, error: changesError }] = await Promise.all([
       supabase
         .from("tasks")
         .select("id, title, description, linked_entity_id, created_at, column:task_columns!column_id(is_final)")
@@ -42,7 +32,7 @@ export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; 
       supabase
         .from("sessions")
         .select(
-          "id, date, sport, duration_minutes, actual_duration_minutes, headcount, completed_at, updated_at, centres:centre_id(name), profiles:coach_id(name)"
+          "id, date, sport, duration_minutes, actual_duration_minutes, reported_duration_minutes, headcount, completed_at, updated_at, centres:centre_id(name), profiles:coach_id(name)"
         )
         .eq("needs_ops_review", true)
         .eq("status", "completed")
@@ -57,6 +47,10 @@ export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; 
         .order("created_at"),
     ]);
 
+    if (tasksError) throw tasksError;
+    if (flaggedError) throw flaggedError;
+    if (changesError) throw changesError;
+
     // Hours adjustments: the task carries the ask; the session carries where.
     // Open = not in a final column (tasks has no status column).
     const parsed = (tasks ?? [])
@@ -64,9 +58,10 @@ export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; 
       .map(parseHoursAdjustmentTask)
       .filter((t): t is NonNullable<typeof t> => t !== null);
     const sessionIds = parsed.map((t) => t.session_id);
-    const { data: hoursSessions } = sessionIds.length
+    const { data: hoursSessions, error: hoursError } = sessionIds.length
       ? await supabase.from("sessions").select("id, date, sport, centres:centre_id(name)").in("id", sessionIds)
-      : { data: [] as Array<{ id: string; date: string; sport: string; centres: unknown }> };
+      : { data: [] as Array<{ id: string; date: string; sport: string; centres: unknown }>, error: null };
+    if (hoursError) throw hoursError;
     const sessionById = new Map((hoursSessions ?? []).map((s) => [s.id as string, s]));
     const hours: HoursAdjustmentItem[] = parsed.map((t) => {
       const s = sessionById.get(t.session_id);
@@ -91,9 +86,9 @@ export async function getDecisionQueue(): Promise<{ data: DecisionQueue | null; 
         sport: s.sport as string,
         date: s.date as string,
         rostered_minutes: s.duration_minutes as number,
-        actual_minutes: (s.actual_duration_minutes as number | null) ?? null,
+        actual_minutes: (s.reported_duration_minutes as number | null) ?? (s.actual_duration_minutes as number | null) ?? null,
         headcount: (s.headcount as number | null) ?? null,
-        cause: reviewCause({ actual_duration_minutes: (s.actual_duration_minutes as number | null) ?? null, duration_minutes: s.duration_minutes as number }),
+        cause: reviewCause({ actual_duration_minutes: (s.reported_duration_minutes as number | null) ?? (s.actual_duration_minutes as number | null) ?? null, duration_minutes: s.duration_minutes as number }),
         since: ((s.completed_at as string | null) ?? (s.updated_at as string)) as string,
       }));
 
@@ -170,12 +165,13 @@ export async function settleAutoClosedSessions(): Promise<{ data: { settled: num
   try {
     const { supabase, user, error: authErr } = await requireStaff();
     if (authErr || !user) return { data: null, error: authErr };
-    const { data: rows } = await supabase
+    const { data: rows, error: rowsError } = await supabase
       .from("sessions")
-      .select("id, duration_minutes, actual_duration_minutes")
+      .select("id, duration_minutes, actual_duration_minutes, reported_duration_minutes")
       .eq("needs_ops_review", true)
       .eq("status", "completed");
-    const auto = (rows ?? []).filter((s) => reviewCause({ actual_duration_minutes: (s.actual_duration_minutes as number | null) ?? null, duration_minutes: s.duration_minutes as number }) === "auto_closed");
+    if (rowsError) throw rowsError;
+    const auto = (rows ?? []).filter((s) => reviewCause({ actual_duration_minutes: (s.reported_duration_minutes as number | null) ?? (s.actual_duration_minutes as number | null) ?? null, duration_minutes: s.duration_minutes as number }) === "auto_closed");
     for (const s of auto) {
       const { error } = await supabase
         .from("sessions")

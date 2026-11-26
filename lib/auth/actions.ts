@@ -1,4 +1,5 @@
 "use server";
+import { limitAuthEmail } from "@/lib/auth/request-limit";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -62,6 +63,8 @@ export async function signOut() {
 
 export async function requestPasswordReset(formData: FormData) {
   const email = formData.get("email") as string;
+  const limited = await limitAuthEmail(email);
+  if (limited) return { error: limited };
 
   if (!email) {
     return { error: "Email is required." };

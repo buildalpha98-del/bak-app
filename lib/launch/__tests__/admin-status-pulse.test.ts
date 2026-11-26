@@ -15,6 +15,13 @@ vi.mock("@/lib/supabase/admin", () => ({
 // stub the supabase admin it shares so getY1Targets doesn't error out
 // (we don't exercise it here).
 
+vi.mock("@/lib/supabase/server", () => ({
+  createSupabaseServerClient: async () => ({
+    auth: { getUser: async () => ({ data: { user: { id: "admin", email: "admin@example.com" } }, error: null }) },
+    from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { role: "admin", status: "active" }, error: null }) }) }) }),
+  }),
+}));
+
 import { getAdminStatusPulse } from "../dashboard-actions";
 
 beforeEach(() => {

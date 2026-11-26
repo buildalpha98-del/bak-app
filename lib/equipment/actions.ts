@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { COACH_POOL_FILTER } from "@/lib/staff/coach-pool";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -706,6 +707,9 @@ export async function getCoachesSimple(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
+  await requireStaff();
+
+
   // Use admin client — reference data all authenticated users should see
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase
@@ -727,6 +731,9 @@ export async function getCentresSimple(): Promise<{
   data: { id: string; name: string }[] | null;
   error: string | null;
 }> {
+  await requireStaff();
+
+
   // Use admin client — reference data all authenticated users should see
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase

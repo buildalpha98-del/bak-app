@@ -1,4 +1,5 @@
 "use server";
+import { requireStaff } from "@/lib/auth/require-role";
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -17,6 +18,9 @@ export async function convertLeadToCustomer(input: {
   data: { centreId: string } | null;
   error: string | null;
 }> {
+  await requireStaff();
+
+
   try {
     const supabase = await createSupabaseServerClient();
     const {

@@ -1,0 +1,146 @@
+{
+  "lib/staff/actions.ts": [
+    "requireAdmin",
+    "createStaffMember",
+    "adminResetStaffPassword",
+    "sendStaffPasswordResetEmail",
+    "updateStaffMember",
+    "upsertPayRate"
+  ],
+  "lib/launch/import-actions.ts": [
+    "requireAdmin",
+    "importCentres",
+    "importSchools",
+    "importCoaches"
+  ],
+  "lib/launch/invoice-actions.ts": [
+    "requireAdmin",
+    "createCentreInvoice",
+    "createSchoolInvoice",
+    "updateInvoiceStatus"
+  ],
+  "lib/outbound-invoicing/actions.ts": [
+    "requireAdmin",
+    "generateOutboundInvoices",
+    "updateOutboundLineItems",
+    "submitForApproval",
+    "approveInvoice",
+    "rejectInvoice",
+    "generateInvoicePDF",
+    "sendInvoice",
+    "recordPayment",
+    "voidInvoice",
+    "bulkApproveInvoices",
+    "bulkSendInvoices"
+  ],
+  "lib/pay-rates/actions.ts": [
+    "requireStaff",
+    "approveHoursAdjustment",
+    "rejectHoursAdjustment",
+    "setSessionRateOverride",
+    "removeSessionRateOverride"
+  ],
+  "lib/regions/actions.ts": [
+    "requireAdmin",
+    "createRegion",
+    "updateRegion",
+    "deleteRegion",
+    "autoAssignRegion"
+  ],
+  "lib/launch/invitation-actions.ts": [
+    "requireAdmin",
+    "sendIndividualInvitation"
+  ],
+  "lib/launch/reminder-actions.ts": [
+    "requireAdmin",
+    "triggerReminders",
+    "toggleReminders"
+  ],
+  "lib/launch/storage-setup.ts": [
+    "requireAdmin",
+    "setupStorageBuckets"
+  ],
+  "lib/launch/coach-dashboard-actions.ts": [
+    "requireRole",
+    "markAttendance"
+  ],
+  "lib/crm/actions.ts": [
+    "requireStaff",
+    "createLead",
+    "updateLead",
+    "changeLeadStage",
+    "addLeadActivity",
+    "deleteLead",
+    "bulkChangeStage",
+    "bulkAssignOwner",
+    "bulkDeleteLeads",
+    "importLeadsFromCsv"
+  ],
+  "lib/crm/conversion-actions.ts": [
+    "requireStaff",
+    "convertLeadToCustomer"
+  ],
+  "lib/crm/demo-actions.ts": [
+    "requireStaff",
+    "scheduleDemoSession",
+    "recordDemoOutcome",
+    "cancelDemoSession"
+  ],
+  "lib/messages/actions.ts": [
+    "requireRole",
+    "sendDirectMessage",
+    "editDirectMessage",
+    "deleteDirectMessage"
+  ],
+  "lib/client/actions.ts": [
+    "requireStaff",
+    "revokeClientAccess"
+  ],
+  "lib/centres/actions.ts": [
+    "requireStaff",
+    "updateCentre"
+  ],
+  "lib/terms/actions.ts": [
+    "requireStaff",
+    "createTerm",
+    "updateTerm",
+    "deleteTerm",
+    "createTemplateEntry",
+    "updateTemplateEntry",
+    "deleteTemplateEntry",
+    "generateSessionsForWeek",
+    "duplicateTerm"
+  ],
+  "lib/reports/actions.ts": [
+    "requireStaff",
+    "updateReportContent",
+    "deleteReport",
+    "uploadCentreLogo"
+  ],
+  "lib/launch/dashboard-actions.ts": [
+    "requireStaff",
+    "getDashboardMetrics",
+    "getAdminStatusPulse",
+    "getRecentActivity"
+  ],
+  "lib/equipment/actions.ts": [
+    "requireStaff",
+    "getCoachesSimple",
+    "getCentresSimple"
+  ],
+  "lib/forms/actions.ts": [
+    "requireStaff",
+    "getCoachesForFilter",
+    "getCentresForFilter"
+  ],
+  "lib/churn/actions.ts": [
+    "requireStaff",
+    "recordChurnEvent"
+  ],
+  "lib/sessions/actions.ts": [
+    "requireStaff",
+    "updateSession",
+    "updateSessionStatus",
+    "bulkUpdateSessionStatus"
+  ]
+}
