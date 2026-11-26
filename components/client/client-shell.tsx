@@ -121,7 +121,7 @@ export function ClientShell({
         // pushes our header below the system status bar instead of
         // letting it draw underneath.
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
-        className="sticky top-0 z-40 flex min-h-14 items-center border-b bg-card px-4"
+        className="sticky top-0 z-40 flex min-h-14 items-center border-b-2 border-ink bg-card px-4"
       >
         {/* Mobile menu toggle */}
         <button
@@ -135,7 +135,7 @@ export function ClientShell({
 
         {/* Logo — white-label centres show their own mark (falls back
             to the BAK crest until a logo is uploaded). */}
-        <Link href={`/client/${clientUser.centre_id}`} className="shrink-0">
+        <Link href={`/client/${clientUser.centre_id}`} className="flex shrink-0 items-center gap-2">
           <AppLogo
             size="sm"
             logoUrl={
@@ -145,6 +145,11 @@ export function ClientShell({
             }
             alt={clientUser.centre_name}
           />
+          {clientUser.centre_branding_mode !== "white_label" && (
+            <span className="hidden font-display text-sm font-bold tracking-tight text-foreground sm:inline">
+              Build Alpha Kids
+            </span>
+          )}
         </Link>
 
         {/* Centre name or multi-centre switcher */}
@@ -164,7 +169,7 @@ export function ClientShell({
           <div className="relative">
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-portal-100 text-sm font-medium text-portal-700 hover:bg-portal-200 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink bg-cta text-sm font-bold text-cta-foreground transition-colors"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             aria-label="User menu"
           >
@@ -179,7 +184,7 @@ export function ClientShell({
                 onClick={() => setUserMenuOpen(false)}
               />
               {/* Dropdown */}
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-card py-1 shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border-2 border-ink bg-card py-1 shadow-sticker">
                 <div className="border-b px-4 py-3">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {clientUser.name}
@@ -214,7 +219,7 @@ export function ClientShell({
 
       <div className="flex">
         {/* Desktop sidebar */}
-        <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:bg-card md:min-h-[calc(100dvh-3.5rem)]">
+        <aside className="hidden md:flex md:w-56 md:flex-col md:border-r-2 md:border-ink md:bg-card md:min-h-[calc(100dvh-3.5rem)]">
           <nav className="flex flex-col gap-1 p-3">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -224,10 +229,10 @@ export function ClientShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-full border-2 px-3 py-2 text-sm font-semibold transition-colors",
                     active
-                      ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "border-ink bg-cta text-cta-foreground shadow-sticker-sm"
+                      : "border-transparent text-foreground/75 hover:bg-cream hover:text-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -246,10 +251,10 @@ export function ClientShell({
             <Link
               href={`/client/${clientUser.centre_id}/settings`}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-full border-2 px-3 py-2 text-sm font-semibold transition-colors",
                 isActive(`/client/${clientUser.centre_id}/settings`)
-                  ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "border-ink bg-cta text-cta-foreground shadow-sticker-sm"
+                  : "border-transparent text-foreground/75 hover:bg-cream hover:text-foreground"
               )}
             >
               <Settings className="h-4 w-4 shrink-0" />
@@ -276,10 +281,10 @@ export function ClientShell({
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-full border-2 px-3 py-2 text-sm font-semibold transition-colors",
                         active
-                          ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? "border-ink bg-cta text-cta-foreground shadow-sticker-sm"
+                          : "border-transparent text-foreground/75 hover:bg-cream hover:text-foreground"
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
@@ -294,10 +299,10 @@ export function ClientShell({
                   href={`/client/${clientUser.centre_id}/settings`}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-full border-2 px-3 py-2 text-sm font-semibold transition-colors",
                     isActive(`/client/${clientUser.centre_id}/settings`)
-                      ? "border-l-2 border-portal-600 bg-portal-50 text-portal-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "border-ink bg-cta text-cta-foreground shadow-sticker-sm"
+                      : "border-transparent text-foreground/75 hover:bg-cream hover:text-foreground"
                   )}
                 >
                   <Settings className="h-4 w-4 shrink-0" />

@@ -74,7 +74,6 @@ export function ClientLoginForm() {
     <AuthShell
       title="Centre Portal"
       description="Sign in to view your sessions, reports, and more"
-      accent="teal"
     >
       {sent ? (
         <div className="text-center space-y-4 py-4 animate-fade-up">

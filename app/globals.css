@@ -137,21 +137,29 @@
     --safe-left: env(safe-area-inset-left, 0px);
 }
 
-/* Client-portal accent scale (white-label). One anchor var —
-   --portal-brand — drives the whole scale via color-mix; defaults
-   reproduce the portal's original cyan, and shades are numbered like
-   the tailwind ones they replaced so the cyan-N → portal-N sweep
-   stays reviewable.
+/* Client-portal accent scale. Default (every "bak_branded" centre): the
+   Build Alpha Kids palette — owner decision 2026-10-13, replacing the teal
+   the portal carried since July. Steps are chosen so the ones used as TEXT
+   stay AA: 600 #B5521A is 5.0:1 on white (4.7:1 on cream), 700 is `rust`.
+   500 is the brand orange itself — fills, dots, icons only (3.1:1).
 
-   The formulas are declared on BOTH :root and .portal-brand-scope on
-   purpose: a custom property that references another resolves where
-   it is DECLARED, so overriding --portal-brand on a descendant of
-   :root alone would never reach shades computed at :root. The shell
-   sets `--portal-brand` inline AND carries .portal-brand-scope, so
-   the same element recomputes the scale and its subtree inherits the
-   re-themed values. */
-:root, .portal-brand-scope {
-    --portal-brand: #0891B2;
+   White-label centres set --portal-brand inline on the shell together with
+   .portal-brand-scope, which recomputes the scale from THEIR colour via
+   color-mix. A custom property that references another resolves where it
+   is DECLARED, so the formulas live on the scope class itself. */
+:root {
+    --portal-brand: #E8712A;
+    --portal-50: #FFF7F2;
+    --portal-100: #FFEFE3;
+    --portal-200: #FFDCC2;
+    --portal-300: #F7B488;
+    --portal-400: #EF9257;
+    --portal-500: #E8712A;
+    --portal-600: #B5521A;
+    --portal-700: #993C1D;
+    --portal-800: #7A2F16;
+}
+.portal-brand-scope {
     --portal-50: color-mix(in oklab, var(--portal-brand) 7%, white);
     --portal-100: color-mix(in oklab, var(--portal-brand) 14%, white);
     --portal-200: color-mix(in oklab, var(--portal-brand) 28%, white);
@@ -161,28 +169,19 @@
     --portal-600: var(--portal-brand);
     --portal-700: color-mix(in oklab, var(--portal-brand) 82%, black);
     --portal-800: color-mix(in oklab, var(--portal-brand) 68%, black);
-}
-
-/* Portal design language — the warmth from the 2026-09 pitch mock,
-   delivered at token level so every portal page inherits it without
-   component churn. .portal-surface sits UNCONDITIONALLY on the client
-   shell and shared-link roots (unlike .portal-brand-scope, which only
-   appears when a centre sets a brand colour): a warm cream canvas,
-   crisp white cards, and slightly stronger warm borders. Admin, ops,
-   coach and parent surfaces never carry the class and are untouched.
-   Dark mode keeps its own values — cream on dark would be a torch. */
-.portal-surface {
-    --portal-canvas: oklch(0.978 0.013 72);        /* warm cream */
-    --background: oklch(0.978 0.013 72);
-    --card: oklch(0.998 0.002 75);                  /* cards pop off the cream */
-    --border: oklch(0.885 0.02 68);                 /* warmer, a touch stronger */
-    /* The portal keeps its teal (owner decision, 2026-07-16 and again
-       2026-10-12) with the sticker shapes: CTAs are a light tint of the
-       centre's accent with ink text, which stays AA (≥4.5:1) for ANY
-       brand colour a centre picks, where the full-strength accent would
-       not (ink on a dark brand fails, white on a light one fails). */
+    /* A white-label centre's CTAs, active nav and eyebrows wear ITS tint
+       with ink text (AA for any brand colour), never our yellow. */
     --cta: var(--portal-200);
     --cta-foreground: #111111;
+}
+
+/* Portal surface — .portal-surface sits UNCONDITIONALLY on the client
+   shell and shared-link roots. Since 2026-10-13 the portal wears the same
+   design system as the staff side; this only pins its canvas. */
+.portal-surface {
+    /* Same cream page and white cards as the staff side (design system).
+       The CTA is the brand yellow here too: no override of --cta. */
+    --portal-canvas: #FFF7F2;
     background-color: var(--portal-canvas);
 }
 @theme inline {

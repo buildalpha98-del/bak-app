@@ -212,7 +212,7 @@ export async function sendWeeklyCentreDigests(): Promise<{
 
       const html = `
         <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
-          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#0891B2;text-transform:uppercase">${eyebrow}</p>
+          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#993C1D;text-transform:uppercase">${eyebrow}</p>
           <h1 style="font-size:20px;margin:4px 0 12px">Hi ${centre.name},</h1>
           ${
             upcoming.length > 0
@@ -221,7 +221,7 @@ export async function sendWeeklyCentreDigests(): Promise<{
               : `<p style="font-size:14px;color:#334155">No sessions scheduled this week.</p>`
           }
           ${lastWeekLine ? `<p style="font-size:14px;color:#334155"><strong>Last week:</strong> ${lastWeekLine}</p>` : ""}
-          <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:12px;background:#0891B2;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600">Open your portal</a>
+          <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:12px;background:#FFD23F;color:#111111;border:2px solid #111111;text-decoration:none;padding:10px 18px;border-radius:9999px;font-size:14px;font-weight:600">Open your portal</a>
           <p style="font-size:12px;color:#94a3b8;margin-top:20px">${signoff}</p>
         </div>`;
 
@@ -371,7 +371,7 @@ export async function sendTermPacks(): Promise<{
 
       const html = `
         <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
-          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#0891B2;text-transform:uppercase">${term.name} wrap-up</p>
+          <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:#993C1D;text-transform:uppercase">${term.name} wrap-up</p>
           <h1 style="font-size:20px;margin:4px 0 12px">${centre.name} — what we achieved together</h1>
           <table style="width:100%;border-collapse:separate;border-spacing:6px;margin:12px 0"><tr>
             ${statCell("sessions delivered", String(sessions.length))}
@@ -386,7 +386,7 @@ export async function sendTermPacks(): Promise<{
               : ""
           }
           <p style="font-size:14px;color:#334155">The full breakdown — attendance trends, session ratings and sport-by-sport charts — is live on your Impact page.</p>
-          <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:8px;background:#0891B2;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600">See your full term impact</a>
+          <a href="${PORTAL_BASE}/client-login" style="display:inline-block;margin-top:8px;background:#FFD23F;color:#111111;border:2px solid #111111;text-decoration:none;padding:10px 18px;border-radius:9999px;font-size:14px;font-weight:600">See your full term impact</a>
           <p style="font-size:12px;color:#94a3b8;margin-top:20px">${
             centre.branding_mode === "white_label"
               ? "Thanks for a great term of sport — we can't wait for the next one."

@@ -49,6 +49,12 @@ function tokenHex(body: string, name: string): string {
 }
 
 const root = block(":root");
+/** The portal scale lives in its own :root block (starts with --portal-brand). */
+const portalRoot = (() => {
+  const m = CSS.match(/:root\s*\{(\s*--portal-brand[^}]*)\}/);
+  if (!m) throw new Error("Could not find the :root portal scale block");
+  return m[1];
+})();
 
 describe("oklchToHex", () => {
   it("converts the brand orange token", () => {
@@ -134,6 +140,20 @@ describe("globals.css brand token pairs clear WCAG AA", () => {
     for (const ground of ["background", "card"]) {
       const ratio = contrastRatio(tokenHex(root, "foreground"), tokenHex(root, ground));
       expect(ratio, `--foreground on --${ground}`).toBeGreaterThanOrEqual(AA_THRESHOLD);
+    }
+  });
+
+  // Client portal (2026-10-13: full brand, teal dropped). The portal scale's
+  // TEXT steps (text-portal-600/700/800, ~140 uses) must stay AA on both the
+  // white card and the cream page. 500 is the raw brand orange: icons/fills
+  // only, so it is held to the 3:1 non-text floor instead.
+  it("client portal scale: text steps clear AA, 500 clears 3:1", () => {
+    for (const ground of ["#FFFFFF", "#FFF7F2"]) {
+      for (const step of ["portal-600", "portal-700", "portal-800"]) {
+        const ratio = contrastRatio(tokenHex(portalRoot, step), ground);
+        expect(ratio, `--${step} on ${ground}`).toBeGreaterThanOrEqual(AA_THRESHOLD);
+      }
+      expect(contrastRatio(tokenHex(portalRoot, "portal-500"), ground)).toBeGreaterThanOrEqual(2.9);
     }
   });
 

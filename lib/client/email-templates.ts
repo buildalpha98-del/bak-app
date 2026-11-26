@@ -2,7 +2,11 @@
 // Client portal email templates
 // ============================================================
 
-const BRAND_TEAL = "#0891B2";
+// Design system: charcoal header band (white text 16:1), yellow CTA with
+// ink text (13:1). The centre emails were teal until 2026-10-13.
+const BRAND_CHARCOAL = "#1A1A1A";
+const BRAND_YELLOW = "#FFD23F";
+const BRAND_INK = "#111111";
 const BRAND_DARK = "#1A1A1A";
 const BRAND_GREY = "#666666";
 
@@ -14,7 +18,7 @@ function clientLayout(content: string): string {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F5;padding:24px 0;">
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:8px;overflow:hidden;max-width:600px;width:100%;">
-        <tr><td style="background:${BRAND_TEAL};padding:20px 24px;">
+        <tr><td style="background:${BRAND_CHARCOAL};padding:20px 24px;">
           <h1 style="margin:0;color:#FFFFFF;font-size:18px;font-weight:700;">Build Alpha Kids</h1>
           <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Centre Portal</p>
         </td></tr>
@@ -52,7 +56,7 @@ export function clientInvitationEmail(
       </ul>
       <p>Click the button below to access your portal — no password needed, we'll send you a magic link each time you sign in.</p>
       <div style="text-align:center;margin:24px 0;">
-        <a href="${loginUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_TEAL};color:#FFFFFF;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;">Access Your Portal</a>
+        <a href="${loginUrl}" style="display:inline-block;padding:14px 32px;background:${BRAND_YELLOW};color:${BRAND_INK};border:2px solid ${BRAND_INK};text-decoration:none;border-radius:9999px;font-weight:700;font-size:16px;">Access Your Portal</a>
       </div>
       <p style="color:${BRAND_GREY};font-size:13px;">If you didn't expect this invitation, you can safely ignore this email.</p>
     `),
